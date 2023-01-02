@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.venues.dao.RmVenuesInfoMapper">
+
+    <select id="queryAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select * from RM_VENUES_INFO
+    </select>
+
+    <insert id="add" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        insert into RM_VENUES_INFO(
+        VENUES_ID,
+        VENUES_ADDRES,
+        PICTURES_ONE,
+        PICTURES_TWO,
+        PICTURES_THREE,
+        RESPONSIBLE_PERSON,
+        NUMBER,
+        USE_STATUS,
+        CREATOR,
+        CREATE_TIME,
+        LAST_MODIFIER,
+        LAST_MODIFY_TIME
+        )values (
+        #{venuesId},
+        #{venuesAddres},
+        #{picturesOne},
+        #{picturesTwo},
+        #{picturesThree},
+        #{responsiblePerson},
+        #{number},
+        #{useStatus},
+        #{creator},
+        #{createTime},
+        #{lastModifier},
+        #{lastModifyTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        UPDATE
+            RM_VENUES_INFO
+        set VENUES_ADDRES=#{venuesAddres},
+            PICTURES_ONE=#{picturesOne},
+            PICTURES_TWO=#{picturesTwo},
+            PICTURES_THREE=#{picturesThree},
+            RESPONSIBLE_PERSON=#{responsiblePerson},
+            NUMBER =#{number},
+            USE_STATUS=#{useStatus},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME= #{lastModifyTime}
+        WHERE VENUES_ID = #{venuesId}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        delete from RM_VENUES_INFO
+        where VENUES_ID = #{venuesId}
+    </delete>
+
+    <select id="getByResponsiblePerson" parameterType="String" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+            *
+        from RM_VENUES_INFO
+        where RESPONSIBLE_PERSON=#{responsiblePerson}
+    </select>
+
+</mapper>
