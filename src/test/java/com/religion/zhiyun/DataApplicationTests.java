@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @SpringBootTest
-public class Weixin01ApplicationTests {
+public class DataApplicationTests {
     @Autowired
     DataSource dataSource;
     @Test
