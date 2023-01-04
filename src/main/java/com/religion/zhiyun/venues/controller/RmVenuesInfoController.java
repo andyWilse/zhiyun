@@ -1,13 +1,13 @@
 package com.religion.zhiyun.venues.controller;
 
 
-import com.google.gson.JsonObject;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,7 +27,7 @@ public class RmVenuesInfoController {
     @PostMapping("/add")
     @ResponseBody
     public String add(@RequestBody String venuesJson) {
-        VenuesEntity venuesEntity=JsonUtils.jsonTOBean(venuesJson,VenuesEntity.class);
+        VenuesEntity venuesEntity = JsonUtils.jsonTOBean(venuesJson, VenuesEntity.class);
         rmVenuesInfoService.add(venuesEntity);
         return "添加成功！";
     }
@@ -35,7 +35,6 @@ public class RmVenuesInfoController {
     @PostMapping("/update")
     public void update(@RequestBody String venuesJson) {
         VenuesEntity venuesEntity=JsonUtils.jsonTOBean(venuesJson,VenuesEntity.class);
-
         rmVenuesInfoService.update(venuesEntity);
     }
 
@@ -44,9 +43,10 @@ public class RmVenuesInfoController {
         rmVenuesInfoService.delete("venuesId");
     }
 
-    @RequestMapping("/getByResponsiblePerson/{responsiblePerson}")
-    public void getByResponsiblePerson(@PathVariable String responsiblePerson) {
-        rmVenuesInfoService.getByResponsiblePerson(responsiblePerson);
+    @RequestMapping("/queryAll")
+    public String getByResponsiblePerson() {
+        List<VenuesEntity> list = rmVenuesInfoService.queryAll();
+        return JsonUtils.objectTOJSONString(list);
     }
 
 }

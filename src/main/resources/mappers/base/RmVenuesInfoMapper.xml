@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.venues.dao.RmVenuesInfoMapper">
+    <sql id="venuesColumn">
+        VENUES_ID as venuesId ,
+        VENUES_NAME as venuesName,
+        RELIGIOUS_SECT as religiousSect,
+        REGISTER_NBR as registerNbr,
+        VENUES_PHONE as venuesPhone,
+        ORGANIZATION as organization,
+        VENUES_ADDRES as venuesAddres,
+        PICTURES_ONE as picturesOne,
+        PICTURES_TWO as picturesTwo,
+        PICTURES_THREE as picturesThree,
+        RESPONSIBLE_PERSON  as responsiblePerson,
+        LIAISON_MAN as liaisonMan,
+        BRIEF_INTRODUCTION as briefIntroduction,
+        VENUES_STATUS as venuesStatus,
+        CREATOR as creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+
+    </sql>
+    <select id="queryAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+            <include refid="venuesColumn"/>
+        from RM_VENUES_INFO
+    </select>
+
+    <insert id="add" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        insert into RM_VENUES_INFO(
+            VENUES_ID,
+            VENUES_NAME,
+            RELIGIOUS_SECT,
+            REGISTER_NBR,
+            VENUES_PHONE,
+            ORGANIZATION,
+            VENUES_ADDRES,
+            PICTURES_ONE,
+            PICTURES_TWO,
+            PICTURES_THREE,
+            RESPONSIBLE_PERSON,
+            LIAISON_MAN,
+            BRIEF_INTRODUCTION,
+            VENUES_STATUS,
+            CREATOR,
+            CREATE_TIME,
+            LAST_MODIFIER,
+            LAST_MODIFY_TIME
+        )values (
+        #{venuesId},
+        #{venuesName},
+        #{religiousSect},
+        #{registerNbr},
+        #{venuesPhone},
+        #{organization},
+        #{venuesAddres},
+        #{picturesOne},
+        #{picturesTwo},
+        #{picturesThree},
+        #{responsiblePerson},
+        #{liaisonMan},
+        #{briefIntroduction},
+        #{venuesStatus},
+        #{creator},
+        #{createTime},
+        #{lastModifier},
+        #{lastModifyTime}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        UPDATE
+            RM_VENUES_INFO
+        set VENUES_ADDRES=#{venuesAddres},
+            PICTURES_ONE=#{picturesOne},
+            PICTURES_TWO=#{picturesTwo},
+            PICTURES_THREE=#{picturesThree},
+            RESPONSIBLE_PERSON=#{responsiblePerson},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME= #{lastModifyTime}
+        WHERE VENUES_ID = #{venuesId}
+    </update>
+
+    <delete id="delete" parameterType="String">
+        delete from RM_VENUES_INFO
+        where VENUES_ID = #{venuesId}
+    </delete>
+
+    <select id="getByResponsiblePerson" parameterType="String" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+            *
+        from RM_VENUES_INFO
+        where RESPONSIBLE_PERSON=#{responsiblePerson}
+    </select>
+
+</mapper>

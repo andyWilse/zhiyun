@@ -6,6 +6,8 @@ import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     @Autowired
@@ -30,5 +32,10 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     public VenuesEntity getByResponsiblePerson(String responsiblePerson) {
         return rmVenuesInfoMapper.getByResponsiblePerson(responsiblePerson
         );
+    }
+
+    @Override
+    public List<VenuesEntity> queryAll() {
+        return rmVenuesInfoMapper.queryAll();
     }
 }
