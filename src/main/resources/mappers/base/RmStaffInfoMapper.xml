@@ -2,10 +2,48 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.religion.zhiyun.staff.dao.RmStaffInfoMapper">
+    <sql id="staffColumn">
+        STAFF_ID as staffId,
+        STAFF_CD as staffCd,
+        STAFF_CN_NM as staffName,
+        CERT_TYPE_CD as certTypeCD,
+        CERT_NBR as certNbr,
+        RELIGIOUS_SECT as religiousSect,
+        STAFF_PICTURE as staffPicture,
+        STAFF_TELPHONE as staffTelphone,
+        STAFF_STATUS as staffStatus,
+        STAFF_POST as staffPost,
+        REL_VENUES_ID as relVenuesId,
+        CREATOR as creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+    </sql>
+
 
     <insert id="add" parameterType="com.religion.zhiyun.staff.entity.StaffEntity">
           insert into rm_staff_info VALUES(#{staffId},#{staffCd},#{staffName},#{certTypeCD},#{certNbr},#{religiousSect},#{staffPicture},
           #{staffTelphone},#{staffStatus},#{staffPost},#{relVenuesId},#{creator},#{createTime},#{lastModifier},#{lastModifyTime})
     </insert>
+    <update id="update">
+        update rm_staff_info
+        set
+            RELIGIOUS_SECT=#{religiousSect},
+            STAFF_PICTURE=#{staffPicture},
+            STAFF_TELPHONE=#{staffTelphone},
+            STAFF_STATUS=#{staffStatus},
+            STAFF_POST=#{staffPost},
+            REL_VENUES_ID=#{relVenuesId},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME= #{lastModifyTime}
+        WHERE STAFF_ID = #{staffId}
+    </update>
+    <delete id="delete">
+        delete from rm_staff_info
+        where STAFF_ID = #{staffId}
+    </delete>
+    <select id="all" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+        select <include refid="staffColumn"/> from rm_staff_info
+    </select>
 
 </mapper>
