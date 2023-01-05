@@ -4,7 +4,8 @@
 <mapper namespace="com.religion.zhiyun.staff.dao.RmStaffInfoMapper">
 
     <insert id="add" parameterType="com.religion.zhiyun.staff.entity.StaffEntity">
-
+          insert into rm_staff_info VALUES(#{staffId},#{staffCd},#{staffName},#{certTypeCD},#{certNbr},#{religiousSect},#{staffPicture},
+          #{staffTelphone},#{staffStatus},#{staffPost},#{relVenuesId},#{creator},#{createTime},#{lastModifier},#{lastModifyTime})
     </insert>
 
 </mapper>
