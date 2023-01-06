@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.event.dao.RmEventInfoMapper">
+    <sql id="eventColumn">
+        EVENT_ID as eventId,
+        ACCESS_NUMBER as accessNumber,
+        WARN_TIME as warnTime,
+        REL_VENUES_ID as relVenuesId,
+        RESPONSIBLE_PERSON as responsiblePerson,
+        EVENT_TYPE as eventType,
+        EVENT_STATE as eventState,
+        HANDLE_RESULTS as handleTesults,
+        HANDLE_TIME as handleTime
+    </sql>
+
+    <insert id="addEvent">
+        insert into rm_event_info values (#{eventId},#{accessNumber},#{warnTime},#{relVenuesId},#{responsiblePerson},
+        #{eventType},#{eventState},#{handleTesults},#{handleTime})
+    </insert>
+    <update id="updateEvent">
+        update rm_event_info
+        set RESPONSIBLE_PERSON=#{responsiblePerson},
+            EVENT_TYPE=#{eventType},
+            EVENT_STATE=#{eventState},
+            HANDLE_RESULTS=#{handleTesults}
+        where EVENT_ID=#{eventId}
+    </update>
+    <delete id="deleteEvent">
+        delete from rm_event_info
+        where EVENT_ID=#{eventId}
+    </delete>
+    <select id="allEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        select <include refid="eventColumn"/>
+        from rm_event_info
+    </select>
+</mapper>

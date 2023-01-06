@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.sys.dao.RmSysInfoMapper">
+    <sql id="sysColumn">
+        DICT_ID as dictId,
+        DICT_TYPE_CD as dictTypeId,
+        DICT_CD as dictCd,
+        DICT_EN_DESC as dictEnDesc,
+        DICT_CN_DESC as dictCnDesc,
+        VALID_IND as validInd
+    </sql>
+
+    <insert id="addSys">
+        insert into rm_sys_dict values(#{dictId},#{dictTypeId},#{dictCd},#{dictEnDesc},#{dictCnDesc},#{validInd})
+    </insert>
+    <update id="updateSys">
+        update rm_sys_dict
+        set DICT_CD=#{dictCd},
+            DICT_EN_DESC=#{dictEnDesc},
+            DICT_CN_DESC=#{dictCnDesc},
+            VALID_IND=#{validInd}
+        where DICT_ID=#{dictId}
+    </update>
+    <delete id="deleteSys">
+        delete from rm_sys_dict
+        where DICT_ID=#{dictId}
+    </delete>
+
+    <select id="allSys" resultType="com.religion.zhiyun.sys.entity.SysEntity">
+        select <include refid="sysColumn"/>
+        from rm_sys_dict
+    </select>
+</mapper>

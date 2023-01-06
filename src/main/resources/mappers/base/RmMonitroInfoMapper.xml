@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper">
+    <sql id="monitroColumn">
+        MONITOR_ID as monitorId,
+        ACCESS_NUMBER as accessNumber,
+        STATE as state,
+        FUNCTION_TYPE as functionType,
+        VENUES_ID as venuesId,
+        CREATOR as creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+    </sql>
+
+    <insert id="addMonitro">
+        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{state},#{functionType},#{venuesId},
+        #{creator},#{createTime},#{lastModifier},#{lastModifyTime})
+    </insert>
+    <update id="updateMonitro">
+        update rm_monitor_manage_info
+        set STATE=#{state},
+            FUNCTION_TYPE=#{functionType},
+            VENUES_ID=#{venuesId},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME= #{lastModifyTime}
+        where MONITOR_ID=#{monitorId}
+    </update>
+
+    <delete id="deleteMonitro">
+        delete from rm_monitor_manage_info
+        where MONITOR_ID=#{monitorId}
+    </delete>
+    <select id="allMonitro" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        select
+        <include refid="monitroColumn"/>
+        from rm_monitor_manage_info
+    </select>
+</mapper>
