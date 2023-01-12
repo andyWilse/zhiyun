@@ -24,7 +24,7 @@ public class LogsEntity  implements Serializable {
     private String userName;//用户名
 
     @Column(name = "USER_NBR")
-    private int userNbr;//用户编号
+    private String userNbr;//用户编号
 
     @Column(name = "INTERFACE_CODE")
     private String interfaceCode;//接口

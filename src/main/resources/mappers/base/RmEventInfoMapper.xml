@@ -14,6 +14,18 @@
         HANDLE_RESULTS as handleTesults,
         HANDLE_TIME as handleTime
     </sql>
+    <sql id="infoColumn">
+        rm_event_info.ACCESS_NUMBER as accessNumber,
+        WARN_TIME as warnTime,
+        EVENT_TYPE as eventType,
+        EVENT_STATE as eventState,
+        VENUES_PHONE as venuesPhone,
+        VENUES_NAME as VENUES_NAME,
+        RELIGIOUS_SECT as religiousSect,
+        ORGANIZATION as organization,
+        VENUES_ADDRES as venuesAddres,
+        rm_staff_info.STAFF_TELPHONE as staffTelphone
+    </sql>
 
     <insert id="addEvent">
         insert into rm_event_info values (#{eventId},#{accessNumber},#{warnTime},#{relVenuesId},#{responsiblePerson},
@@ -34,5 +46,36 @@
     <select id="allEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
         select <include refid="eventColumn"/>
         from rm_event_info
+    </select>
+
+    <select id="allEventByState" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        select <include refid="eventColumn"/> from rm_event_info
+        where EVENT_STATE=00
+        order by WARN_TIME desc
+    </select>
+    <select id="getByEventId" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        SELECT <include refid="infoColumn"/>
+        FROM rm_event_info
+        INNER JOIN rm_monitor_manage_info ON rm_event_info.ACCESS_NUMBER=rm_monitor_manage_info.ACCESS_NUMBER
+        INNER JOIN rm_venues_info ON rm_event_info.REL_VENUES_ID=rm_venues_info.VENUES_ID
+        WHERE rm_event_info.EVENT_ID=#{eventId}
+    </select>
+    <select id="getByType" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        select <include refid="eventColumn"/> from rm_event_info
+        <where>
+            <if test="eventType!=null and eventType!=''">
+                EVENT_TYPE=#{eventType}
+            </if>
+        </where>
+        ORDER BY WARN_TIME DESC
+    </select>
+    <select id="getAllNum" resultType="java.util.Map">
+        /*SELECT EVENT_TYPE '类型', COUNT(1) '数量' FROM rm_event_info GROUP BY EVENT_TYPE*/
+        SELECT COUNT(EVENT_ID) AS total,
+        SUM(CASE WHEN EVENT_TYPE = 00 THEN 1 ELSE 0 END) AS fire,
+        SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS face,
+        SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS task,
+        SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS crowd
+        FROM rm_event_info
     </select>
 </mapper>

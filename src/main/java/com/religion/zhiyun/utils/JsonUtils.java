@@ -153,5 +153,8 @@ public class JsonUtils {
     public static JSONArray jsonTOList(String jsonStr) {
         return JSON.parseArray(jsonStr);
     }
+
+    public static void jsonTOBean(String sysJson) {
+    }
 }
 

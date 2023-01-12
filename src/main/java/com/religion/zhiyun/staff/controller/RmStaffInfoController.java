@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/staff")
+@CrossOrigin
 public class RmStaffInfoController {
 
     @Autowired

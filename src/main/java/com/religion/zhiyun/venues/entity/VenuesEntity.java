@@ -32,7 +32,7 @@ public  class VenuesEntity implements Serializable {
     private String registerNbr;// 登记证号
 
     @Column(name = "VENUES_PHONE")
-    private int venuesPhone;// 场所电话
+    private String venuesPhone;// 场所电话
 
     @Column(name = "ORGANIZATION")
     private String organization;// 所属机构

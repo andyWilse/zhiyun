@@ -21,8 +21,46 @@
         CREATE_TIME as createTime,
         LAST_MODIFIER as lastModifier,
         LAST_MODIFY_TIME as lastModifyTime
-
     </sql>
+
+    <sql id="twoColumn">
+        VENUES_ID as venuesId ,
+        VENUES_NAME as venuesName,
+        rm_venues_info.RELIGIOUS_SECT as religiousSect,
+        REGISTER_NBR as registerNbr,
+        VENUES_PHONE as venuesPhone,
+        ORGANIZATION as organization,
+        VENUES_ADDRES as venuesAddres,
+        PICTURES_ONE as picturesOne,
+        PICTURES_TWO as picturesTwo,
+        PICTURES_THREE as picturesThree,
+        rm_venues_info.RESPONSIBLE_PERSON  as responsiblePerson,
+        LIAISON_MAN as liaisonMan,
+        BRIEF_INTRODUCTION as briefIntroduction,
+        VENUES_STATUS as venuesStatus,
+        rm_staff_info.STAFF_CD as staffCd,
+        STAFF_CN_NM as staffName,
+        CERT_TYPE_CD as certTypeCD,
+        CERT_NBR as certNbr,
+        STAFF_PICTURE as staffPicture,
+        STAFF_TELPHONE as staffTelphone,
+        STAFF_STATUS as staffStatus,
+        STAFF_POST as staffPost,
+    </sql>
+    <select id="getByVenuesFaculty" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        SELECT <include refid="twoColumn"/>
+        FROM rm_venues_info
+        INNER JOIN rm_staff_info ON rm_staff_info.STAFF_CD=rm_venues_info.RESPONSIBLE_PERSON
+        <!--<where>
+            <if test="venuesName!=null and venuesName!=''">
+                VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+            <if test="venuesName!=null and venuesName!=''">
+                STAFF_CN_NM=#{responsiblePerson}
+            </if>
+        </where>-->
+    </select>
+
     <select id="queryAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
             <include refid="venuesColumn"/>
@@ -95,5 +133,33 @@
         from RM_VENUES_INFO
         where RESPONSIBLE_PERSON=#{responsiblePerson}
     </select>
+    <select id="querySectAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select <include refid="venuesColumn"/> from RM_VENUES_INFO
+        <where>
+            <if test="religiousSect!=null and religiousSect!=''">
+                RELIGIOUS_SECT=#{religiousSect}
+            </if>
+        </where>
+    </select>
+    <select id="getVenueByID" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select <include refid="venuesColumn"/>
+        from RM_VENUES_INFO
+        where VENUES_ID=#{venuesId}
+        <!--<where>
+            <if test="VENUES_ID!=null and VENUES_ID!=''">
+                VENUES_ID=#{venuesId,jdbcType=VARCHAR}
+            </if>
+        </where>-->
+    </select>
+    <select id="getAllNum" resultType="java.util.Map">
+        SELECT COUNT(VENUES_ID) AS total,
+        SUM(CASE WHEN RELIGIOUS_SECT = '伊斯兰教' THEN 1 ELSE 0 END) AS Islamism,
+        SUM(CASE WHEN RELIGIOUS_SECT = '基督教' THEN 1 ELSE 0 END) AS Christianity,
+        SUM(CASE WHEN RELIGIOUS_SECT = '天主教' THEN 1 ELSE 0 END) AS Catholicism,
+        SUM(CASE WHEN RELIGIOUS_SECT = '佛教' THEN 1 ELSE 0 END) AS Buddhism,
+        SUM(CASE WHEN RELIGIOUS_SECT = '道教' THEN 1 ELSE 0 END) AS Taoism
+        FROM rm_venues_info
+    </select>
+
 
 </mapper>

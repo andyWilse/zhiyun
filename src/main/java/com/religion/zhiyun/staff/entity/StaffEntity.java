@@ -21,7 +21,7 @@ public class StaffEntity implements Serializable {
     private int staffId;//主键ID
 
     @Column(name = "STAFF_CD")
-    private int staffCd;//人员编号
+    private String staffCd;//人员编号
 
     @Column(name = "STAFF_CN_NM")
     private String staffName;//中文名称
@@ -39,10 +39,10 @@ public class StaffEntity implements Serializable {
     private String staffPicture;//教职人员照片
 
     @Column(name = "STAFF_TELPHONE")
-    private int staffTelphone;//电话号码
+    private String staffTelphone;//电话号码
 
     @Column(name = "STAFF_STATUS")
-    private int staffStatus;//状态  00-入职中；01-在职；02-已离职
+    private String staffStatus;//状态  00-入职中；01-在职；02-已离职
 
     @Column(name = "STAFF_POST")
     private int staffPost;//职位

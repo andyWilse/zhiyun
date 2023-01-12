@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/monitor")
+@CrossOrigin(origins = {"*"})
 public class RmMonitroInfoController {
     @Autowired
     private RmMonitroInfoService rmMonitroInfoService;
@@ -40,4 +42,27 @@ public class RmMonitroInfoController {
         rmMonitroInfoService.deleteMonitro("monitroId");
     }
 
+    //摄像头数量
+    @RequestMapping("/getAllNum")
+    public String getAllNum(){
+        List<Map<String, Object>> list = rmMonitroInfoService.getAllNum();
+        return JsonUtils.objectTOJSONString(list);
+    }
+
+    /**
+     * 根据摄像头状态查看摄像头信息
+     * @param state
+     * @return
+     */
+    @RequestMapping("/getMonitorByState")
+    public String getMonitorByState(String state){
+        List<MonitroEntity> list = rmMonitroInfoService.getMonitorByState(state);
+        return JsonUtils.objectTOJSONString(list);
+    }
+
+    @RequestMapping("/getMonitorByVenuesId")//有问题
+    public String getMonitorByVenuesId(String state){
+        List<MonitroEntity> list = rmMonitroInfoService.getMonitorByVenuesId(state);
+        return JsonUtils.objectTOJSONString(list);
+    }
 }

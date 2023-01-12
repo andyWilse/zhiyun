@@ -25,13 +25,13 @@ public class MonitroEntity implements Serializable {
     private String accessNumber;//监控设备接入编号
 
     @Column(name = "STATE")
-    private int state;//状态
+    private String state;//状态
 
     @Column(name = "FUNCTION_TYPE")
     private String functionType;//功能类别
 
-    @Column(name = "VENUES_ID")
-    private int venuesId;//场所
+    @Column(name = "REL_VENUES_ID")
+    private int relVenuesId;//场所
 
     @Column(name = "CREATOR")
     private String creator;//创建人

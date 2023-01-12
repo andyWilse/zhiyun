@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
@@ -31,5 +32,20 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     @Override
     public void deleteMonitro(String monitroId) {
         rmMonitroInfoMapper.deleteMonitro(monitroId);
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllNum() {
+        return rmMonitroInfoMapper.getAllNum();
+    }
+
+    @Override
+    public List<MonitroEntity> getMonitorByState(String state) {
+        return rmMonitroInfoMapper.getMonitorByState(state);
+    }
+
+    @Override
+    public List<MonitroEntity> getMonitorByVenuesId(String state) {
+        return rmMonitroInfoMapper.getMonitorByVenuesId(state);
     }
 }

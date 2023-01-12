@@ -11,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/sys")
+@CrossOrigin
 public class RmSysInfoController {
     @Autowired
     private RmSysInfoService rmSysInfoService;

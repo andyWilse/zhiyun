@@ -8,22 +8,40 @@
         ACCESS_NUMBER as accessNumber,
         STATE as state,
         FUNCTION_TYPE as functionType,
-        VENUES_ID as venuesId,
+        REL_VENUES_ID as relVenuesId,
         CREATOR as creator,
         CREATE_TIME as createTime,
         LAST_MODIFIER as lastModifier,
         LAST_MODIFY_TIME as lastModifyTime
     </sql>
+    <sql id="getMonitorByVenuesIdColumn">
+        rm_monitor_manage_info.MONITOR_ID as monitorId,
+        rm_monitor_manage_info.ACCESS_NUMBER as accessNumber,
+        rm_monitor_manage_info.STATE as state,
+        rm_monitor_manage_info.FUNCTION_TYPE as functionType,
+        rm_monitor_manage_info.VENUES_ID as venuesId,
+        rm_venues_info.VENUES_NAME as venuesName,
+        rm_venues_info.RELIGIOUS_SECT as religiousSect,
+        rm_venues_info.REGISTER_NBR as registerNbr,
+        rm_venues_info.VENUES_PHONE as venuesPhone,
+        rm_venues_info.ORGANIZATION as organization,
+        rm_venues_info.VENUES_ADDRES as venuesAddres,
+        rm_venues_info.PICTURES_ONE as picturesOne,
+        rm_venues_info.RESPONSIBLE_PERSON  as responsiblePerson,
+        rm_venues_info.LIAISON_MAN as liaisonMan,
+        rm_venues_info.BRIEF_INTRODUCTION as briefIntroduction,
+        rm_venues_info.VENUES_STATUS as venuesStatus
+    </sql>
 
     <insert id="addMonitro">
-        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{state},#{functionType},#{venuesId},
+        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{state},#{functionType},#{relVenuesId},
         #{creator},#{createTime},#{lastModifier},#{lastModifyTime})
     </insert>
     <update id="updateMonitro">
         update rm_monitor_manage_info
         set STATE=#{state},
             FUNCTION_TYPE=#{functionType},
-            VENUES_ID=#{venuesId},
+            REL_VENUES_ID=#{relVenuesId},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
         where MONITOR_ID=#{monitorId}
@@ -37,5 +55,21 @@
         select
         <include refid="monitroColumn"/>
         from rm_monitor_manage_info
+    </select>
+    <select id="getAllNum" resultType="java.util.Map">
+        SELECT COUNT(MONITOR_ID) AS total,
+        SUM(CASE WHEN STATE =01 THEN 1 ELSE 0 END) AS on_line,
+        SUM(CASE WHEN STATE =02 THEN 1 ELSE 0 END) AS REPAIR
+        FROM rm_monitor_manage_info
+    </select>
+    <select id="getMonitorByState" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        select <include refid="monitroColumn"/> from rm_monitor_manage_info
+        where state=#{state}
+        ORDER BY MONITOR_ID DESC
+    </select>
+    <select id="getMonitorByVenuesId" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        SELECT <include refid="monitroColumn"/>FROM rm_monitor_manage_info
+        INNER JOIN rm_venues_info ON rm_venues_info.VENUES_ID=rm_monitor_manage_info.REL_VENUES_ID
+        WHERE state=#{state}
     </select>
 </mapper>

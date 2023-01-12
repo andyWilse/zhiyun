@@ -19,7 +19,7 @@ class ZhiyunApplicationTests {
         venuesEntity.setVenuesName("DAO_001");
         venuesEntity.setReligiousSect("DAO_JIOA");
         venuesEntity.setRegisterNbr("d001");
-        venuesEntity.setVenuesPhone(1886523001);
+        venuesEntity.setVenuesPhone("1886523001");
         venuesEntity.setOrganization("瓯海街道");
         venuesEntity.setVenuesAddres("F:\\15outwork\\p001.pic");
         venuesEntity.setPicturesOne("");

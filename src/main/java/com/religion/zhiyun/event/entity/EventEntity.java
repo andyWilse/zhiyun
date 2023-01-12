@@ -34,10 +34,10 @@ public class EventEntity implements Serializable {
     private String responsiblePerson;//责任人
 
     @Column(name = "EVENT_TYPE")
-    private int eventType;//事件类型  00-火灾预警；01-人脸识别；02-任务预警；03-人流聚集
+    private String eventType;//事件类型  00-火灾预警；01-人脸识别；02-任务预警；03-人流聚集
 
     @Column(name = "EVENT_STATE")
-    private int eventState;//事件状态   00-待查实；01-已完成；02-误报
+    private String eventState;//事件状态   00-待查实；01-已完成；02-误报
 
     @Column(name = "HANDLE_RESULTS")
     private String handleTesults;//处理结果

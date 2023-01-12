@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
@@ -37,5 +38,25 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     @Override
     public List<VenuesEntity> queryAll() {
         return rmVenuesInfoMapper.queryAll();
+    }
+
+    @Override
+    public List<VenuesEntity> querySectAll(String religiousSect) {
+        return rmVenuesInfoMapper.querySectAll(religiousSect);
+    }
+
+    @Override
+    public List<VenuesEntity> getByVenuesFaculty(String venuesName, String responsiblePerson) {
+        return rmVenuesInfoMapper.getByVenuesFaculty(venuesName,responsiblePerson);
+    }
+
+    @Override
+    public VenuesEntity getVenueByID(String venuesId) {
+        return rmVenuesInfoMapper.getVenueByID(venuesId);
+    }
+
+    @Override
+    public List<Map<String, Object>> getAllNum() {
+        return rmVenuesInfoMapper.getAllNum();
     }
 }

@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
@@ -31,4 +32,25 @@ public interface RmEventInfoMapper {
      */
     void deleteEvent(String eventId);
 
+    /**
+     * 根据未完成的状态展示
+     * @return
+     */
+    List<EventEntity> allEventByState();
+
+    /**
+     * 根据事件id查询事件、场所、监控设备信息
+     * @param eventId
+     * @return
+     */
+    EventEntity getByEventId(String eventId);
+
+    /**
+     * 根据类型查看
+     * @param eventType
+     * @return
+     */
+    List<EventEntity> getByType(String eventType);
+
+    List<Map<String,Object>> getAllNum();
 }
