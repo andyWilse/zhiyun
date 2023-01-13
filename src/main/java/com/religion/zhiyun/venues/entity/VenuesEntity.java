@@ -40,14 +40,8 @@ public  class VenuesEntity implements Serializable {
     @Column(name = "VENUES_ADDRES")
     private String venuesAddres;//场所地址
 
-    @Column(name = "PICTURES_ONE")
-    private String picturesOne;//照片1
-
-    @Column(name = "PICTURES_TWO")
-    private String picturesTwo;//照片2
-
-    @Column(name = "PICTURES_THREE")
-    private String picturesThree;//照片3
+    @Column(name = "PICTURES_PATH")
+    private String picturesPath;//照片地址
 
     @Column(name = "RESPONSIBLE_PERSON")
     private String responsiblePerson;//负责人

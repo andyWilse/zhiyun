@@ -2,7 +2,9 @@ package com.religion.zhiyun.event.dao;
 
 
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -53,4 +55,19 @@ public interface RmEventInfoMapper {
     List<EventEntity> getByType(String eventType);
 
     List<Map<String,Object>> getAllNum();
+
+    /* 分页查询
+     * @param page
+     * @param size
+     * @param accessNumber
+     * @return
+     */
+    List<VenuesEntity> getEventsByPage(@Param("page") Integer page, @Param("size") Integer size,
+                                       @Param("accessNumber") String accessNumber);
+
+    /**
+     * 总条数
+     * @return
+     */
+    Long getTotal();
 }

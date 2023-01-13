@@ -3,6 +3,7 @@ package com.religion.zhiyun.event.controller;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.cors.CorsConfiguration;
@@ -85,6 +86,19 @@ public class RmEventInfoController {
     public String getAllNum(){
         List<Map<String, Object>> list = rmEventInfoService.getAllNum();
         return JsonUtils.objectTOJSONString(list);
+    }
+
+    @GetMapping("/findpage")
+    public RespPageBean getEventByPage(@RequestParam Map<String, Object> map){
+
+        String accessNumber = (String)map.get("accessNumber");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return rmEventInfoService.getEventsByPage(page,size,accessNumber);
     }
 
 }

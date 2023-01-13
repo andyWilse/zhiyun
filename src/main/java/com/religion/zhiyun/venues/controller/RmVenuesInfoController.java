@@ -1,12 +1,17 @@
 package com.religion.zhiyun.venues.controller;
 
 
+import com.religion.zhiyun.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -18,30 +23,34 @@ public class RmVenuesInfoController {
     @Autowired
     private RmVenuesInfoService rmVenuesInfoService;
 
-    @PostMapping("/insert")
-    @ResponseBody
-    public String insert(@RequestBody Map map) {
-        System.out.println("");
-        return "添加成功！";
-    }
-
     @PostMapping("/add")
     @ResponseBody
-    public String add(@RequestBody String venuesJson) {
-        VenuesEntity venuesEntity = JsonUtils.jsonTOBean(venuesJson, VenuesEntity.class);
+    public CommonResult add(@RequestBody VenuesEntity venuesEntity) {
+        //VenuesEntity venuesEntity = JsonUtils.jsonTOBean(venuesJson, VenuesEntity.class);
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        venuesEntity.setCreateTime(timestamp);
+        venuesEntity.setLastModifyTime(timestamp);
+        venuesEntity.setCreator("first");
+        venuesEntity.setLastModifier("last");
+        venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
         rmVenuesInfoService.add(venuesEntity);
-        return "添加成功！";
+        return CommonResult.success("添加成功！");
     }
 
-    @PostMapping("/update")
-    public void update(@RequestBody String venuesJson) {
-        VenuesEntity venuesEntity=JsonUtils.jsonTOBean(venuesJson,VenuesEntity.class);
+    @PostMapping("/updateVenues")
+    @ResponseBody
+    public CommonResult updateVenues(@RequestBody VenuesEntity venuesEntity) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        venuesEntity.setLastModifyTime(timestamp);
+        venuesEntity.setLastModifier("last");
         rmVenuesInfoService.update(venuesEntity);
+        return CommonResult.success("修改成功！");
     }
 
     @PostMapping("/delete")
-    public void delete() {
-        rmVenuesInfoService.delete("venuesId");
+    @ResponseBody
+    public int delete(@RequestBody VenuesEntity venuesEntity) {
+        return rmVenuesInfoService.delete(venuesEntity.getVenuesId());
     }
 
     @RequestMapping("/queryAll")
@@ -86,5 +95,18 @@ public class RmVenuesInfoController {
         VenuesEntity byResponsiblePerson = rmVenuesInfoService.getByResponsiblePerson(responsiblePerson);
         return JsonUtils.objectTOJSONString(byResponsiblePerson);
     }
+
+    @GetMapping("/find")
+    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map){
+        String venuesName = (String)map.get("venuesName");
+        String responsiblePerson = (String)map.get("responsiblePerson");
+        String religiousSect = (String)map.get("religiousSect");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+        return rmVenuesInfoService.getEmpByPage(page,size,venuesName,responsiblePerson,religiousSect);
+    }
+
 
 }

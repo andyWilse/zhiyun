@@ -2,6 +2,7 @@ package com.religion.zhiyun.venues.dao;
 
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public interface RmVenuesInfoMapper {
      * 删除
      * @param venuesId
      */
-    void delete(String venuesId);
+    int delete(int venuesId);
 
     /**
      * 根据负责人获取
@@ -59,4 +60,26 @@ public interface RmVenuesInfoMapper {
     VenuesEntity getVenueByID(String venuesId);
 
     List<Map<String,Object>> getAllNum();
+
+    /**
+     * 分页查询
+     * @param page
+     * @param size
+     * @param venuesName
+     * @param responsiblePerson
+     * @param religiousSect
+     * @return
+     */
+    List<VenuesEntity> getEmpByPage(@Param("page") Integer page,
+                                    @Param("size") Integer size,
+                                    @Param("venuesName") String venuesName,
+                                    @Param("responsiblePerson") String responsiblePerson,
+                                    @Param("religiousSect") String religiousSect
+    );
+
+    /**
+     * 总条数
+     * @return
+     */
+    Long getTotal();
 }

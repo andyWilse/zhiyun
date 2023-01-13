@@ -4,10 +4,12 @@ package com.religion.zhiyun.userLogs.controller;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
 import com.religion.zhiyun.userLogs.service.RmUserLogsInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/logs")
@@ -39,5 +41,18 @@ public class RmUserLogsInfoController {
     public void updateLogs(@RequestBody String logsJson) {
         LogsEntity logsEntity=JsonUtils.jsonTOBean(logsJson,LogsEntity.class);
         rmUserLogsInfoService.updatelogs(logsEntity);
+    }
+
+    @GetMapping("/findpage")
+    public RespPageBean getLogsByPage(@RequestParam Map<String, Object> map){
+
+        String userName = (String)map.get("userName");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return rmUserLogsInfoService.getLogsByPage(page,size,userName);
     }
 }

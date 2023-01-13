@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.file.dao.RmFileMapper">
+
+    <insert id="add" parameterType="com.religion.zhiyun.file.entity.FileEntity"
+            keyColumn="fileId"
+            useGeneratedKeys="true" keyProperty="fileId"
+    >
+        insert into
+            RM_FILE_INFO (
+            FILE_NAME,
+            FILE_PATH,
+            FILE_TYPE,
+            FILE_TITLE,
+            CREATOR,
+            CREATE_TIME
+            )
+            values(
+                #{fileName},
+                #{filePath},
+                #{fileType},
+                #{fileTitle},
+                #{creator},
+                #{createTime}
+            )
+    </insert>
+
+
+</mapper>

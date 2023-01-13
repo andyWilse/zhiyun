@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper">
     <sql id="logsColumn">
         ID as id,
@@ -28,4 +27,21 @@
         select <include refid="logsColumn"/>
         from rm_user_logs_info
     </select>
+
+    <select id="getLogsByPage" resultType="com.religion.zhiyun.userLogs.entity.LogsEntity">
+        select
+        <include refid="logsColumn"/>
+        from RM_USER_LOGS_INFO
+        where 1=1
+        <if test="userName != null and userName != ''">
+            AND  USER_NAME LIKE CONCAT('%',#{userName},'%')
+        </if>
+        order by FK_DATE desc
+        limit #{page},#{size}
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_USER_LOGS_INFO
+    </select>
+
 </mapper>

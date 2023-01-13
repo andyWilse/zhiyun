@@ -72,4 +72,21 @@
         INNER JOIN rm_venues_info ON rm_venues_info.VENUES_ID=rm_monitor_manage_info.REL_VENUES_ID
         WHERE state=#{state}
     </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_MONITOR_MANAGE_INFO
+    </select>
+
+    <select id="getMonitrosByPage" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        select
+        <include refid="monitroColumn"/>
+        from RM_MONITOR_MANAGE_INFO
+        where 1=1
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  ACCESS_NUMBER LIKE CONCAT('%',#{accessNumber},'%')
+        </if>
+        order by LAST_MODIFY_TIME desc
+        limit #{page},#{size}
+    </select>
+
 </mapper>

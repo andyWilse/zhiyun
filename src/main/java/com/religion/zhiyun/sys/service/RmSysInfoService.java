@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface RmSysInfoService {
 
-    List<SysEntity> allSys();
+    List<SysEntity> getSysDicts(String dictTypeCd);
     void addSys(SysEntity sysEntity);
     void updateSys(SysEntity sysEntity);
     void deleteSys(String sysId);

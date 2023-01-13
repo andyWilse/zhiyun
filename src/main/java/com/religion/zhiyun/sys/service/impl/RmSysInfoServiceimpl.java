@@ -13,9 +13,10 @@ public class RmSysInfoServiceimpl implements RmSysInfoService {
     @Autowired
     private RmSysInfoMapper rmSysInfoMapper;
 
+
     @Override
-    public List<SysEntity> allSys() {
-        return rmSysInfoMapper.allSys();
+    public List<SysEntity> getSysDicts(String dictTypeCd) {
+        return rmSysInfoMapper.getSysDicts(dictTypeCd);
     }
 
     @Override

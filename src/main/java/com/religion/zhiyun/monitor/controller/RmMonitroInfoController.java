@@ -4,6 +4,7 @@ package com.religion.zhiyun.monitor.controller;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,5 +65,18 @@ public class RmMonitroInfoController {
     public String getMonitorByVenuesId(String state){
         List<MonitroEntity> list = rmMonitroInfoService.getMonitorByVenuesId(state);
         return JsonUtils.objectTOJSONString(list);
+    }
+
+    @GetMapping("/findpage")
+    public RespPageBean getMonitroByPage(@RequestParam Map<String, Object> map){
+
+        String accessNumber = (String)map.get("accessNumber");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return rmMonitroInfoService.getMonitrosByPage(page,size,accessNumber);
     }
 }

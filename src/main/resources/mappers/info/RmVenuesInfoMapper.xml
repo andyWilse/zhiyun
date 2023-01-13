@@ -10,9 +10,7 @@
         VENUES_PHONE as venuesPhone,
         ORGANIZATION as organization,
         VENUES_ADDRES as venuesAddres,
-        PICTURES_ONE as picturesOne,
-        PICTURES_TWO as picturesTwo,
-        PICTURES_THREE as picturesThree,
+        PICTURES_PATH as picturesPath,
         RESPONSIBLE_PERSON  as responsiblePerson,
         LIAISON_MAN as liaisonMan,
         BRIEF_INTRODUCTION as briefIntroduction,
@@ -21,6 +19,7 @@
         CREATE_TIME as createTime,
         LAST_MODIFIER as lastModifier,
         LAST_MODIFY_TIME as lastModifyTime
+
     </sql>
 
     <sql id="twoColumn">
@@ -40,13 +39,14 @@
         VENUES_STATUS as venuesStatus,
         rm_staff_info.STAFF_CD as staffCd,
         STAFF_CN_NM as staffName,
-        CERT_TYPE_CD as certTypeCD,
+        CERT_TYPE_CD as certTypeCd,
         CERT_NBR as certNbr,
         STAFF_PICTURE as staffPicture,
         STAFF_TELPHONE as staffTelphone,
         STAFF_STATUS as staffStatus,
         STAFF_POST as staffPost,
     </sql>
+
     <select id="getByVenuesFaculty" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         SELECT <include refid="twoColumn"/>
         FROM rm_venues_info
@@ -63,7 +63,7 @@
 
     <select id="queryAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
-            <include refid="venuesColumn"/>
+        <include refid="venuesColumn"/>
         from RM_VENUES_INFO
     </select>
 
@@ -76,9 +76,7 @@
             VENUES_PHONE,
             ORGANIZATION,
             VENUES_ADDRES,
-            PICTURES_ONE,
-            PICTURES_TWO,
-            PICTURES_THREE,
+            PICTURES_PATH,
             RESPONSIBLE_PERSON,
             LIAISON_MAN,
             BRIEF_INTRODUCTION,
@@ -88,44 +86,44 @@
             LAST_MODIFIER,
             LAST_MODIFY_TIME
         )values (
-        #{venuesId},
-        #{venuesName},
-        #{religiousSect},
-        #{registerNbr},
-        #{venuesPhone},
-        #{organization},
-        #{venuesAddres},
-        #{picturesOne},
-        #{picturesTwo},
-        #{picturesThree},
-        #{responsiblePerson},
-        #{liaisonMan},
-        #{briefIntroduction},
-        #{venuesStatus},
-        #{creator},
-        #{createTime},
-        #{lastModifier},
-        #{lastModifyTime}
-        )
+                    #{venuesId},
+                    #{venuesName},
+                    #{religiousSect},
+                    #{registerNbr},
+                    #{venuesPhone},
+                    #{organization},
+                    #{venuesAddres},
+                    #{picturesPath},
+                    #{responsiblePerson},
+                    #{liaisonMan},
+                    #{briefIntroduction},
+                    #{venuesStatus},
+                    #{creator},
+                    #{createTime},
+                    #{lastModifier},
+                    #{lastModifyTime}
+                )
     </insert>
 
     <update id="update" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
         UPDATE
             RM_VENUES_INFO
         set VENUES_ADDRES=#{venuesAddres},
-            PICTURES_ONE=#{picturesOne},
-            PICTURES_TWO=#{picturesTwo},
-            PICTURES_THREE=#{picturesThree},
+            PICTURES_PATH=#{picturesPath},
+            RELIGIOUS_SECT=#{religiousSect},
+            VENUES_PHONE=#{venuesPhone},
             RESPONSIBLE_PERSON=#{responsiblePerson},
+            LIAISON_MAN=#{liaisonMan},
+            ORGANIZATION=#{organization},
+            BRIEF_INTRODUCTION=#{briefIntroduction},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
         WHERE VENUES_ID = #{venuesId}
     </update>
 
-    <delete id="delete" parameterType="String">
-        delete from RM_VENUES_INFO
-        where VENUES_ID = #{venuesId}
-    </delete>
+    <update id="delete" >
+        update RM_VENUES_INFO set VENUES_STATUS='02' where VENUES_ID = #{venuesId}
+    </update>
 
     <select id="getByResponsiblePerson" parameterType="String" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
@@ -133,6 +131,7 @@
         from RM_VENUES_INFO
         where RESPONSIBLE_PERSON=#{responsiblePerson}
     </select>
+
     <select id="querySectAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select <include refid="venuesColumn"/> from RM_VENUES_INFO
         <where>
@@ -141,6 +140,7 @@
             </if>
         </where>
     </select>
+
     <select id="getVenueByID" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select <include refid="venuesColumn"/>
         from RM_VENUES_INFO
@@ -159,6 +159,28 @@
         SUM(CASE WHEN RELIGIOUS_SECT = '佛教' THEN 1 ELSE 0 END) AS Buddhism,
         SUM(CASE WHEN RELIGIOUS_SECT = '道教' THEN 1 ELSE 0 END) AS Taoism
         FROM rm_venues_info
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_VENUES_INFO where VENUES_STATUS!='02'
+    </select>
+
+    <select id="getEmpByPage" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+        <include refid="venuesColumn"/>
+        from RM_VENUES_INFO
+        where VENUES_STATUS!='02'
+        <if test="venuesName != null and venuesName != ''">
+            AND  VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
+        </if>
+        <if test="responsiblePerson != null and responsiblePerson != ''">
+            AND  RESPONSIBLE_PERSON = #{responsiblePerson}
+        </if>
+        <if test="religiousSect != null and religiousSect != ''">
+            AND  RELIGIOUS_SECT = #{religiousSect}
+        </if>
+        order by LAST_MODIFY_TIME desc
+        limit #{page},#{size}
     </select>
 
 

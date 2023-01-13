@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/sys")
-@CrossOrigin
+@RequestMapping("/dict")
 public class RmSysInfoController {
     @Autowired
     private RmSysInfoService rmSysInfoService;
 
-    @RequestMapping("/allSys")
-    public String allSys(){
-        List<SysEntity> list = rmSysInfoService.allSys();
-        return JsonUtils.objectTOJSONString(list);
+    @GetMapping("/getSysDicts")
+    @ResponseBody
+    public Object[] getSysDicts(@RequestParam("dictTypeCd") String dictTypeCd){
+        List<SysEntity> list = rmSysInfoService.getSysDicts(dictTypeCd);
+        return list.toArray();
     }
 
     @ResponseBody

@@ -20,7 +20,7 @@ public class SysEntity implements Serializable {
     private int dictId;//主键ID
 
     @Column(name = "DICT_TYPE_CD")
-    private String dictTypeId;//字典类型
+    private String dictTypeCd;//字典类型
 
     @Column(name = "DICT_CD")
     private String dictCd;//字典值
@@ -33,4 +33,13 @@ public class SysEntity implements Serializable {
 
     @Column(name = "VALID_IND")
     private String validInd;//是否有效
+
+
+    public String getDictTypeCd() {
+        return dictTypeCd;
+    }
+
+    public void setDictTypeCd(String dictTypeCd) {
+        this.dictTypeCd = dictTypeCd;
+    }
 }

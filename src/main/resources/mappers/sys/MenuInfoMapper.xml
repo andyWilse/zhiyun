@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.menus.dao.MenuInfoMapper">
+    <sql id="menuColumn">
+        MENU_ID as menuId ,
+        PMSN_CD as pmsnCd,
+        PARENT_ID as parentId,
+        MENU_PRT_IDS as menuPrtIds,
+        MENU_NM as menuNm,
+        SORT_LVL as sortLvl,
+        HREF as href,
+        ICON_NM as iconNm,
+        RESOURCE_TYPE as resourceType,
+        APP_CODE as appCode,
+        VALID_IND  as validInd
+
+    </sql>
+
+    <select id="findRoot" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from RM_SYS_MENU_INFO
+        where RESOURCE_TYPE='02'
+    </select>
+
+    <select id="findAllParents" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from RM_SYS_MENU_INFO
+        where RESOURCE_TYPE='01'
+    </select>
+
+    <select id="findAllChilds" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from RM_SYS_MENU_INFO
+        where MENU_ID in
+        <foreach collection="array" item="menuPrtIds" index="index" open="(" close=")" separator=",">
+            #{menuPrtIds}
+        </foreach>
+
+
+
+    </select>
+
+
+</mapper>

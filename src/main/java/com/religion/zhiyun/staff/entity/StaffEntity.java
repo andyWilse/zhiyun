@@ -27,7 +27,7 @@ public class StaffEntity implements Serializable {
     private String staffName;//中文名称
 
     @Column(name = "CERT_TYPE_CD")
-    private String certTypeCD;//有效证件类型
+    private String certTypeCd;//有效证件类型
 
     @Column(name = "CERT_NBR")
     private String certNbr;//有效证件号码
