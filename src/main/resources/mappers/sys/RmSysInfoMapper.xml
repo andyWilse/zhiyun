@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.religion.zhiyun.sys.dao.RmSysInfoMapper">
+<mapper namespace="com.religion.zhiyun.sys.dict.dao.RmSysInfoMapper">
 
     <sql id="sysColumn">
         DICT_ID as dictId,
@@ -28,7 +28,7 @@
         where DICT_ID=#{dictId}
     </delete>
 
-    <select id="getSysDicts" resultType="com.religion.zhiyun.sys.entity.SysEntity">
+    <select id="getSysDicts" resultType="com.religion.zhiyun.sys.dict.entity.SysEntity">
         select
         <include refid="sysColumn"/>
         from RM_SYS_DICT

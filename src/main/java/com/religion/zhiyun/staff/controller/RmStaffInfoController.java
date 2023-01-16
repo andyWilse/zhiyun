@@ -1,6 +1,6 @@
 package com.religion.zhiyun.staff.controller;
 
-import com.religion.zhiyun.login.api.CommonResult;
+import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -9,6 +9,7 @@ import com.religion.zhiyun.utils.enums.ParamCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
@@ -47,18 +48,20 @@ public class RmStaffInfoController {
     }
 
     @PostMapping("/update")
-    public void update(@RequestBody String staffJson) {
-        StaffEntity staffEntity=JsonUtils.jsonTOBean(staffJson,StaffEntity.class);
+    public void update(@RequestBody StaffEntity staffEntity) {
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        staffEntity.setLastModifyTime(timestamp);
+        staffEntity.setLastModifier("last");
         rmStaffInfoService.update(staffEntity);
     }
 
-    @PostMapping("/delete")
-    public void delete() {
-        rmStaffInfoService.delete("staffId");
+    @PostMapping("/delete/{staffId}")
+    public void delete(@PathVariable int staffId) {
+        rmStaffInfoService.delete(staffId);
     }
 
     @GetMapping("/find")
-    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map){
+    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map) throws IOException {
 
         String staffName = (String)map.get("staffName");
         String staffPost = (String)map.get("staffPost");

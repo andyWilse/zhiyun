@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.religion.zhiyun.file.dao.RmFileMapper">
+<mapper namespace="com.religion.zhiyun.sys.file.dao.RmFileMapper">
 
-    <insert id="add" parameterType="com.religion.zhiyun.file.entity.FileEntity"
+    <insert id="add" parameterType="com.religion.zhiyun.sys.file.entity.FileEntity"
             keyColumn="fileId"
             useGeneratedKeys="true" keyProperty="fileId"
     >
@@ -25,6 +25,18 @@
                 #{createTime}
             )
     </insert>
+
+    <select id="queryPath" resultType="com.religion.zhiyun.sys.file.entity.FileEntity">
+        select
+            FILE_ID as fileId,
+            FILE_NAME as fileName,
+            FILE_PATH as filePath
+        from RM_FILE_INFO
+        where FILE_ID in
+        <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">
+            #{fileIds}
+        </foreach>
+    </select>
 
 
 </mapper>

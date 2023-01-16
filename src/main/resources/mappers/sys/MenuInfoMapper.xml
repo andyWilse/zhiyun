@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.religion.zhiyun.menus.dao.MenuInfoMapper">
+<mapper namespace="com.religion.zhiyun.sys.menus.dao.MenuInfoMapper">
     <sql id="menuColumn">
         MENU_ID as menuId ,
         PMSN_CD as pmsnCd,
@@ -17,21 +17,24 @@
 
     </sql>
 
-    <select id="findRoot" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+    <select id="findRoot" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">
         select
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
-        where RESOURCE_TYPE='02'
+        where RESOURCE_TYPE is not null
     </select>
 
-    <select id="findAllParents" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+    <select id="findMenus" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">
         select
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
-        where RESOURCE_TYPE='01'
+        where 1=1
+        <if test="_parameter != null and _parameter != ''">
+            and RESOURCE_TYPE = #{resourceType}
+        </if>
     </select>
 
-    <select id="findAllChilds" resultType="com.religion.zhiyun.menus.entity.MenuEntity">
+    <select id="findAllChilds" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">
         select
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
@@ -39,9 +42,6 @@
         <foreach collection="array" item="menuPrtIds" index="index" open="(" close=")" separator=",">
             #{menuPrtIds}
         </foreach>
-
-
-
     </select>
 
 

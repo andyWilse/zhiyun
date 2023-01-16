@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.sys.menus.dao.RolePesnMapper">
+
+    <insert id="add" parameterType="string">
+        INSERT INTO
+            RM_SYS_ROLE_PESN
+            (PMSN_CD,ROLE_ID)
+            values(#{pmsnCd},#{roleId})
+    </insert>
+
+    <select id="getMenuByRole" resultType="String">
+        select
+            PMSN_CD
+        from RM_SYS_ROLE_PESN
+        where 1=1
+        <if test="roleId != null and roleId != ''">
+            AND  ROLE_ID = #{roleId}
+        </if>
+
+    </select>
+
+    <delete id="delete" parameterType="string">
+        delete  from RM_SYS_ROLE_PESN where ROLE_ID = #{roleId}
+
+    </delete>
+
+</mapper>

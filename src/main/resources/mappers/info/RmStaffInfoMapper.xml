@@ -32,30 +32,32 @@
             RELIGIOUS_SECT=#{religiousSect},
             STAFF_PICTURE=#{staffPicture},
             STAFF_TELPHONE=#{staffTelphone},
-            STAFF_STATUS=#{staffStatus},
             STAFF_POST=#{staffPost},
             REL_VENUES_ID=#{relVenuesId},
+            CERT_TYPE_CD =#{certTypeCd},
+            CERT_NBR =#{certNbr},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
         WHERE STAFF_ID = #{staffId}
     </update>
-    <delete id="delete">
-        delete from rm_staff_info
-        where STAFF_ID = #{staffId}
-    </delete>
+
+    <update id="delete">
+        update RM_STAFF_INFO set STAFF_STATUS='02' where STAFF_ID = #{staffId}
+    </update>
+
     <select id="all" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
         select <include refid="staffColumn"/> from rm_staff_info
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_STAFF_INFO
+        select count(*) from RM_STAFF_INFO  where STAFF_STATUS!='02'
     </select>
 
     <select id="getStaffByPage" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
         select
         <include refid="staffColumn"/>
         from RM_STAFF_INFO
-        where 1=1
+        where STAFF_STATUS!='02'
         <if test="staffName != null and staffName != ''">
             AND  STAFF_CN_NM LIKE CONCAT('%',#{staffName},'%')
         </if>

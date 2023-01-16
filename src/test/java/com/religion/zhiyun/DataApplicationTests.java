@@ -1,7 +1,6 @@
 package com.religion.zhiyun;
 
-import com.religion.zhiyun.user.entity.UserLogin;
-import com.religion.zhiyun.user.dao.UserLoginMapper;
+import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class DataApplicationTests {
         connection.close();
     }
     @Autowired
-    UserLoginMapper userLoginMapper;
+    SysUserMapper userLoginMapper;
 
     @Autowired
     RmVenuesInfoMapper rmVenuesInfoMapper;

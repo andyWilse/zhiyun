@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,21 @@ public class JsonUtils {
     public static String mapToJson(Map<String, Object> map) {
         Gson gson = new Gson();
         return gson.toJson(map, Map.class);
+    }
+
+    /**
+     * Map转成json
+     */
+    public static String maparrToJson(Map<String, String[]> map) {
+        Gson gson = new Gson();
+        Map <String,String> smap=new HashMap<>();
+        Set<String> set = map.keySet();
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()){
+            Object next = iterator.next();
+            smap.put((String) next,map.get(next)[0]);
+        }
+        return gson.toJson(smap, Map.class);
     }
 
     /**

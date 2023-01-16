@@ -3,6 +3,7 @@ package com.religion.zhiyun.staff.service;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.utils.RespPageBean;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface RmStaffInfoService {
@@ -13,7 +14,7 @@ public interface RmStaffInfoService {
 
     void update(StaffEntity staffEntity);
 
-    void delete(String staffId);
+    void delete(int staffId);
 
     /**
      * 分页查询
@@ -24,7 +25,7 @@ public interface RmStaffInfoService {
      * @param religiousSect
      * @return
      */
-    RespPageBean getStaffByPage(Integer page, Integer size, String staffName, String staffPost, String religiousSect);
+    RespPageBean getStaffByPage(Integer page, Integer size, String staffName, String staffPost, String religiousSect) throws IOException;
 
     Long getMaxStaffCd();
 

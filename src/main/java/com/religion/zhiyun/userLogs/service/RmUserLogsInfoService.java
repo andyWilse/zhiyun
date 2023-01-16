@@ -21,4 +21,11 @@ public interface RmUserLogsInfoService {
      */
     RespPageBean getLogsByPage(Integer page, Integer size, String userName);
 
+    /**
+     * 保存日志信息
+     * @param response
+     * @param cnName
+     */
+    void savelogs(String response,String cnName);
+
 }

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.user.dao.SysUserMapper">
+
+    <sql id="userColumn">
+        USER_ID as userId,
+        LOGIN_NM as loginNm,
+        PASSWORDS as passwords,
+        WEAK_PW_IND as weakPwInd,
+        USER_NM as userNm,
+        USER_MOBILE as userMobile,
+        USER_EMAIL as userEmail,
+        USER_PHOTO_URL as userPhotoUrl,
+        IDENTITY as identity,
+        USER_NBR as userNbr,
+        CREATE_TIME as createTime
+    </sql>
+
+    <select id="queryAll" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select * from RM_SYS_USER_INFO
+    </select>
+
+    <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity">
+        INSERT INTO
+            RM_SYS_USER_INFO
+            (
+                 OFC_ID,
+                 DEP_ID,
+                 LOGIN_NM,
+                 PASSWORDS,
+                 USER_NBR,
+                 USER_NM,
+                 USER_EMAIL,
+                 USER_TEL,
+                 USER_MOBILE,
+                 USER_TYPE_CD,
+                 USER_PHOTO_URL,
+                 LOGIN_IP,
+                 LOGIN_TIME,
+                 LOGIN_IND,
+                 VALID_IND,
+                 USER_OA_NM,
+                 WEAK_PW_IND,
+                 IDENTITY,
+                 CREATE_TIME,
+                 LAST_MODIFY_TIME
+             )
+             VALUES
+            (
+                 10001,
+                 NULL,
+                 #{loginNm},
+                 #{passwords},
+                 #{userNbr},
+                 #{userNm},
+                 #{userEmail},
+                 NULL,
+                 #{userMobile},
+                 NULL,
+                 #{userPhotoUrl},
+                 NULL,
+                 NULL,
+                 '0',
+                 '1',
+                 NULL,
+                 #{weakPwInd},
+                 #{identity},
+                 #{createTime},
+                 #{lastModifyTime}
+             );
+    </insert>
+
+    <select id="queryByName" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+            <include refid="userColumn"/>
+        from RM_SYS_USER_INFO where LOGIN_NM = #{loginNm}
+    </select>
+
+    <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+            <include refid="userColumn"/>
+        from RM_SYS_USER_INFO where USER_NBR = #{userNbr}
+    </select>
+
+    <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+        <include refid="userColumn"/>
+        from RM_SYS_USER_INFO
+        where VALID_IND='1'
+        <if test="loginNm != null and loginNm != ''">
+            AND  LOGIN_NM LIKE CONCAT('%',#{loginNm},'%')
+        </if>
+        <if test="identity != null and identity != ''">
+            AND  IDENTITY = #{identity}
+        </if>
+        order by LAST_MODIFY_TIME desc
+        limit #{page},#{size}
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_SYS_USER_INFO  where  VALID_IND='1'
+    </select>
+
+    <select id="getMaxUserNbr" resultType="java.lang.Long">
+        select max(USER_NBR) as userNbr from RM_SYS_USER_INFO
+    </select>
+
+    <update id="delete">
+        update RM_SYS_USER_INFO set VALID_IND='0' where USER_ID = #{userId}
+    </update>
+
+    <update id="update">
+        update RM_SYS_USER_INFO
+        set
+            LOGIN_NM = #{loginNm},
+            PASSWORDS = #{passwords},
+            USER_NM = #{userNm},
+            USER_MOBILE = #{userMobile},
+            USER_EMAIL = #{userEmail},
+            USER_PHOTO_URL = #{userPhotoUrl},
+            IDENTITY = #{identity},
+            USER_NBR = #{userNbr},
+            WEAK_PW_IND=#{weakPwInd},
+            LAST_MODIFY_TIME = #{lastModifyTime}
+        WHERE USER_ID = #{userId}
+    </update>
+
+</mapper>

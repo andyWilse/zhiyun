@@ -1,6 +1,6 @@
 package com.religion.zhiyun.utils.fileutil;
 
-import com.religion.zhiyun.file.entity.FileEntity;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import org.apache.log4j.Logger;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;

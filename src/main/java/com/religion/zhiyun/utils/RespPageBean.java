@@ -1,38 +1,20 @@
 package com.religion.zhiyun.utils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
+@Getter
+@Setter
 public class RespPageBean {
 
     private Long total;
     private List<?> data;
     private Object[] datas;
+    private Object[] dataone;
 
-    public Long getTotal()
-    {
-        return total;
-    }
+    private String result;
+    private long code;
 
-    public void setTotal(Long total)
-    {
-        this.total = total;
-    }
-
-    public List<?> getData()
-    {
-        return data;
-    }
-
-    public void setData(List<?> data)
-    {
-        this.data = data;
-    }
-
-    public Object[] getDatas() {
-        return datas;
-    }
-
-    public void setDatas(Object[] datas) {
-        this.datas = datas;
-    }
 }

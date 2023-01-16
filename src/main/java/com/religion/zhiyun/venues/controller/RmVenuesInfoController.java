@@ -1,7 +1,7 @@
 package com.religion.zhiyun.venues.controller;
 
 
-import com.religion.zhiyun.login.api.CommonResult;
+import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
@@ -47,10 +47,15 @@ public class RmVenuesInfoController {
         return CommonResult.success("修改成功！");
     }
 
-    @PostMapping("/delete")
-    @ResponseBody
-    public int delete(@RequestBody VenuesEntity venuesEntity) {
-        return rmVenuesInfoService.delete(venuesEntity.getVenuesId());
+    @PostMapping("/update")
+    public void update(@RequestBody String venuesJson) {
+        VenuesEntity venuesEntity=JsonUtils.jsonTOBean(venuesJson,VenuesEntity.class);
+        rmVenuesInfoService.update(venuesEntity);
+    }
+
+    @PostMapping("/delete/{venuesId}")
+    public void delete(@PathVariable int venuesId) {
+        rmVenuesInfoService.delete(venuesId);
     }
 
     @RequestMapping("/queryAll")
@@ -58,8 +63,6 @@ public class RmVenuesInfoController {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll();
         return JsonUtils.objectTOJSONString(list);
     }
-
-
 
     //根据教派类别查询
     @RequestMapping("/querySectAll")

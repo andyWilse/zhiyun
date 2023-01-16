@@ -30,7 +30,7 @@ public interface RmStaffInfoMapper {
      * 删除
      * @param staffId
      */
-    void delete(String staffId);
+    void delete(int staffId);
 
     /**
      * 分页查询
@@ -41,7 +41,7 @@ public interface RmStaffInfoMapper {
      * @param religiousSect
      * @return
      */
-    List<VenuesEntity> getStaffByPage(@Param("page") Integer page,
+    List<StaffEntity> getStaffByPage(@Param("page") Integer page,
                                       @Param("size") Integer size,
                                       @Param("staffName") String staffName,
                                       @Param("staffPost") String staffPost,

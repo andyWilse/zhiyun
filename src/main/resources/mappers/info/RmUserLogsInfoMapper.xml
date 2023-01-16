@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper">
+    <sql id="logsColumn">
+        ID as id,
+        USER_NAME as userName,
+        USER_NBR as userNbr,
+        INTERFACE_CODE as interfaceCode,
+        INTERFACE_NAME as interfaceName,
+        REQUEST_PARAM as requestParam,
+        RESPONSE_RESULT as responseResult,
+        FK_DATE as fkDate
+    </sql>
+
+    <insert id="addlogs">
+        insert into
+            RM_USER_LOGS_INFO
+                (
+                 USER_NAME,
+                 USER_NBR,
+                 INTERFACE_CODE,
+                 INTERFACE_NAME,
+                 REQUEST_PARAM,
+                 RESPONSE_RESULT,
+                 FK_DATE
+                 )
+        values(#{userName},#{userNbr},#{interfaceCode},#{interfaceName},
+        #{requestParam},#{responseResult},#{fkDate})
+
+    </insert>
+    <update id="updatelogs">
+
+    </update>
+    <delete id="deletelogs"></delete>
+
+    <select id="alllogs" resultType="com.religion.zhiyun.userLogs.entity.LogsEntity">
+        select <include refid="logsColumn"/>
+        from rm_user_logs_info
+    </select>
+
+    <select id="getLogsByPage" resultType="com.religion.zhiyun.userLogs.entity.LogsEntity">
+        select
+        <include refid="logsColumn"/>
+        from RM_USER_LOGS_INFO
+        where 1=1
+        <if test="userName != null and userName != ''">
+            AND  USER_NAME LIKE CONCAT('%',#{userName},'%')
+        </if>
+        order by FK_DATE desc
+        limit #{page},#{size}
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_USER_LOGS_INFO
+    </select>
+
+</mapper>

@@ -61,4 +61,5 @@ public class StaffEntity implements Serializable {
 
     @Column(name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;//最后修改时间
+
 }
