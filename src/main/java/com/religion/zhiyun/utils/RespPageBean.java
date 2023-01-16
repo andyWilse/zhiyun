@@ -14,7 +14,31 @@ public class RespPageBean {
     private Object[] datas;
     private Object[] dataone;
 
-    private String result;
     private long code;
+    private String result;
+    private Object[] resultArr;
+
+    public RespPageBean(){
+        super();
+    }
+
+    public RespPageBean(long code){
+        this.code=code;
+    }
+    public RespPageBean(long code,String result){
+        this.code=code;
+        this.result=result;
+    }
+
+    public RespPageBean(long code,Object[] resultArr){
+        this.code=code;
+        this.resultArr=resultArr;
+    }
+
+    public RespPageBean(long code,String result,Object[] resultArr){
+        this.code=code;
+        this.result=result;
+        this.resultArr=resultArr;
+    }
 
 }

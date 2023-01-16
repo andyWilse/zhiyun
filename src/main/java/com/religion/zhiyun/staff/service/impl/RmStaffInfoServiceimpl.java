@@ -4,15 +4,23 @@ import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class RmStaffInfoServiceimpl implements RmStaffInfoService {
+
     @Autowired
     private RmStaffInfoMapper staffInfoMapper;
     @Autowired
@@ -20,8 +28,30 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     
 
     @Override
-    public void add(StaffEntity staffEntity) {
-        staffInfoMapper.add(staffEntity);
+    public RespPageBean add(StaffEntity staffEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        Timestamp timestamp = null;
+        try {
+            timestamp = new Timestamp(new Date().getTime());
+            staffEntity.setCreateTime(timestamp);
+            staffEntity.setLastModifyTime(timestamp);
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            String nbr = request.getHeader("login-name");
+            staffEntity.setCreator(nbr);
+            staffEntity.setLastModifier(nbr);
+            staffEntity.setStaffStatus(ParamCode.STAFF_STATUS_01.getCode());
+            Long maxStaffCd = staffInfoMapper.getMaxStaffCd();
+            if(null==maxStaffCd){
+                maxStaffCd=1001l;
+            }
+            maxStaffCd++;
+            staffEntity.setStaffCd(String.valueOf(maxStaffCd));
+            staffInfoMapper.add(staffEntity);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code);
     }
 
     @Override
@@ -30,8 +60,20 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public void update(StaffEntity staffEntity) {
-        staffInfoMapper.update(staffEntity);
+    public RespPageBean update(StaffEntity staffEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            staffEntity.setLastModifyTime(timestamp);
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            String nbr = request.getHeader("login-name");
+            staffEntity.setLastModifier(nbr);
+            staffInfoMapper.update(staffEntity);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code);
     }
 
     @Override

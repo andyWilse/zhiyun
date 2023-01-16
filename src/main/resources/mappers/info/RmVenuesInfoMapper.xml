@@ -167,8 +167,25 @@
 
     <select id="getEmpByPage" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
-        <include refid="venuesColumn"/>
-        from RM_VENUES_INFO
+            VENUES_ID as venuesId ,
+            VENUES_NAME as venuesName,
+            d.DICT_CN_DESC as religiousSect,
+            REGISTER_NBR as registerNbr,
+            VENUES_PHONE as venuesPhone,
+            ORGANIZATION as organization,
+            VENUES_ADDRES as venuesAddres,
+            PICTURES_PATH as picturesPath,
+            RESPONSIBLE_PERSON  as responsiblePerson,
+            LIAISON_MAN as liaisonMan,
+            BRIEF_INTRODUCTION as briefIntroduction,
+            VENUES_STATUS as venuesStatus,
+            CREATOR as creator,
+            CREATE_TIME as createTime,
+            LAST_MODIFIER as lastModifier,
+            LAST_MODIFY_TIME as lastModifyTime
+
+        from RM_VENUES_INFO ve
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         where VENUES_STATUS!='02'
         <if test="venuesName != null and venuesName != ''">
             AND  VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')

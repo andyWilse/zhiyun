@@ -1,12 +1,19 @@
 package com.religion.zhiyun.venues.services.impl;
 
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -16,13 +23,42 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     private RmVenuesInfoMapper rmVenuesInfoMapper;
 
     @Override
-    public void add(VenuesEntity venuesEntity) {
-        rmVenuesInfoMapper.add(venuesEntity);
+    public RespPageBean add(VenuesEntity venuesEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        try{
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            venuesEntity.setCreateTime(timestamp);
+            venuesEntity.setLastModifyTime(timestamp);
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            String nbr = request.getHeader("login-name");
+            venuesEntity.setCreator(nbr);
+            venuesEntity.setLastModifier(nbr);
+            venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
+            rmVenuesInfoMapper.add(venuesEntity);
+        }catch (Exception e){
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        RespPageBean bean=new RespPageBean(code);
+        return bean;
     }
 
     @Override
-    public void update(VenuesEntity venuesEntity) {
-        rmVenuesInfoMapper.update(venuesEntity);
+    public RespPageBean update(VenuesEntity venuesEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        Timestamp timestamp = null;
+        try {
+            timestamp = new Timestamp(new Date().getTime());
+            venuesEntity.setLastModifyTime(timestamp);
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            String nbr = request.getHeader("login-name");
+            venuesEntity.setLastModifier(nbr);
+            rmVenuesInfoMapper.update(venuesEntity);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code);
     }
 
     @Override

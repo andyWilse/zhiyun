@@ -8,11 +8,11 @@ import java.util.List;
 
 public interface RmStaffInfoService {
 
-    void add(StaffEntity staffEntity);
+    RespPageBean add(StaffEntity staffEntity);
 
     List<StaffEntity> all();
 
-    void update(StaffEntity staffEntity);
+    RespPageBean update(StaffEntity staffEntity);
 
     void delete(int staffId);
 

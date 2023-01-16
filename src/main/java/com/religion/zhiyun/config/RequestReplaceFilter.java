@@ -30,7 +30,8 @@ public class RequestReplaceFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         if (!(request instanceof MyRequestWrapper)) {
-            request = new MyRequestWrapper(request);
+            //request = new MyRequestWrapper(request);
+
         }
         filterChain.doFilter(request, response);
     }

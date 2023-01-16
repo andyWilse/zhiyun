@@ -55,8 +55,23 @@
 
     <select id="getStaffByPage" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
         select
-        <include refid="staffColumn"/>
-        from RM_STAFF_INFO
+            STAFF_ID as staffId,
+            STAFF_CD as staffCd,
+            STAFF_CN_NM as staffName,
+            CERT_TYPE_CD as certTypeCd,
+            CERT_NBR as certNbr,
+            d.DICT_CN_DESC as religiousSect,
+            STAFF_PICTURE as staffPicture,
+            STAFF_TELPHONE as staffTelphone,
+            STAFF_STATUS as staffStatus,
+            STAFF_POST as staffPost,
+            REL_VENUES_ID as relVenuesId,
+            CREATOR as creator,
+            CREATE_TIME as createTime,
+            LAST_MODIFIER as lastModifier,
+            LAST_MODIFY_TIME as lastModifyTime
+        from RM_STAFF_INFO ve
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         where STAFF_STATUS!='02'
         <if test="staffName != null and staffName != ''">
             AND  STAFF_CN_NM LIKE CONCAT('%',#{staffName},'%')

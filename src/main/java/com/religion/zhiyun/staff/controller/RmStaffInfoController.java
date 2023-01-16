@@ -26,19 +26,8 @@ public class RmStaffInfoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public CommonResult add(@RequestBody StaffEntity staffEntity) {
-
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        staffEntity.setCreateTime(timestamp);
-        staffEntity.setLastModifyTime(timestamp);
-        staffEntity.setCreator("first");
-        staffEntity.setLastModifier("last");
-        staffEntity.setStaffStatus(ParamCode.STAFF_STATUS_01.getCode());
-        Long maxStaffCd = rmStaffInfoService.getMaxStaffCd();
-        maxStaffCd++;
-        staffEntity.setStaffCd(String.valueOf(maxStaffCd));
-        rmStaffInfoService.add(staffEntity);
-        return CommonResult.success("添加成功！");
+    public RespPageBean add(@RequestBody StaffEntity staffEntity) {
+        return  rmStaffInfoService.add(staffEntity);
     }
 
     @RequestMapping("/all")
@@ -48,11 +37,8 @@ public class RmStaffInfoController {
     }
 
     @PostMapping("/update")
-    public void update(@RequestBody StaffEntity staffEntity) {
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        staffEntity.setLastModifyTime(timestamp);
-        staffEntity.setLastModifier("last");
-        rmStaffInfoService.update(staffEntity);
+    public RespPageBean update(@RequestBody StaffEntity staffEntity) {
+       return rmStaffInfoService.update(staffEntity);
     }
 
     @PostMapping("/delete/{staffId}")

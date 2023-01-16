@@ -25,16 +25,8 @@ public class RmVenuesInfoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public CommonResult add(@RequestBody VenuesEntity venuesEntity) {
-        //VenuesEntity venuesEntity = JsonUtils.jsonTOBean(venuesJson, VenuesEntity.class);
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        venuesEntity.setCreateTime(timestamp);
-        venuesEntity.setLastModifyTime(timestamp);
-        venuesEntity.setCreator("first");
-        venuesEntity.setLastModifier("last");
-        venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
-        rmVenuesInfoService.add(venuesEntity);
-        return CommonResult.success("添加成功！");
+    public RespPageBean add(@RequestBody VenuesEntity venuesEntity) {
+        return rmVenuesInfoService.add(venuesEntity);
     }
 
     @PostMapping("/updateVenues")

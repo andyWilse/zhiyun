@@ -8,8 +8,8 @@ import java.util.Map;
 
 public interface RmVenuesInfoService {
 
-    void add(VenuesEntity venuesEntity);
-    void update(VenuesEntity venuesEntity);
+    RespPageBean add(VenuesEntity venuesEntity);
+    RespPageBean update(VenuesEntity venuesEntity);
     int delete(int venuesId);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
 

@@ -11,6 +11,11 @@ import com.religion.zhiyun.utils.fileutil.FileUpDown;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.thymeleaf.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -18,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -25,54 +31,17 @@ import java.util.List;
 public class RmFileController {
     @Autowired
     private RmFileService rmFileService;
-    @Autowired
-    private RmFileMapper rmFileMapper;
 
-    @Value("${images.upload.url}")
-    private String  pathUpload;
 
     @RequestMapping("/images/upload")
     public RespPageBean uploadImage(HttpServletRequest request) {
-        String refpath="";
-        List<FileEntity> fileEntities = FileUpDown.imagesUpload(request, pathUpload);
-        if(null!=fileEntities && fileEntities.size()>0){
-            for (int i=0;i<fileEntities.size();i++){
-                FileEntity fileEntity = fileEntities.get(i);
-                fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
-                Timestamp timestamp = new Timestamp(new Date().getTime());
-                fileEntity.setCreateTime(timestamp);
-                fileEntity.setCreator("first");
-                rmFileService.add(fileEntity);
-                if(i==fileEntities.size()-1){
-                    refpath+=fileEntity.getFileId()+"";
-                }else{
-                    refpath+=fileEntity.getFileId()+",";
-                }
-            }
-        }
-
-        RespPageBean page =new RespPageBean();
-        page.setResult(refpath);
-        page.setCode(ResultCode.SUCCESS.code());
-        return page;
+        return rmFileService.uploadImage(request);
     }
 
     @GetMapping("/show")
     @ResponseBody
-    public Object[] getSysDicts(@RequestParam("picture") String picture) throws IOException {
-        String[] split = picture.split(",");
-        List<FileEntity> fileEntities = rmFileMapper.queryPath(split);
-        List<FileEntity> plist=new ArrayList<>();
-        if(null!=fileEntities && fileEntities.size()>0) {
-            String[] path=new String[fileEntities.size()];
-            for (int i = 0; i < fileEntities.size(); i++) {
-                FileEntity fileEntity = fileEntities.get(i);
-                String image = FileToBase.getImage(fileEntity.getFilePath(), fileEntity.getFileName());
-                fileEntity.setFilePath(image);
-                plist.add(fileEntity);
-            }
-        }
-        return plist.toArray();
+    public RespPageBean getSysDicts(@RequestParam("picture") String picture) throws IOException {
+        return rmFileService.showPicture(picture);
     }
 
 }

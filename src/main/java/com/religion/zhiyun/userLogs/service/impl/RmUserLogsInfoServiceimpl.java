@@ -2,14 +2,11 @@ package com.religion.zhiyun.userLogs.service.impl;
 
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
 import com.religion.zhiyun.userLogs.service.RmUserLogsInfoService;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.RespPageBean;
 import com.religion.zhiyun.utils.base.HttpServletRequestReader;
-import com.religion.zhiyun.utils.enums.InfoEnums;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 @Service

@@ -18,19 +18,19 @@ public interface SysUserService {
      * @return
      * @throws IOException
      */
-    RespPageBean getUsersByPage(Integer page, Integer size, String identity, String loginNm) throws IOException;
+    RespPageBean getUsersByPage(Map<String, Object> map) throws IOException;
 
     /**
      * 新增
      * @param sysUserEntity
      */
-    void add(SysUserEntity sysUserEntity);
+    RespPageBean add(SysUserEntity sysUserEntity);
 
     /**
      * 修改
      * @param sysUserEntity
      */
-    void update(SysUserEntity sysUserEntity);
+    RespPageBean update(SysUserEntity sysUserEntity);
 
     /**
      * 密码修改

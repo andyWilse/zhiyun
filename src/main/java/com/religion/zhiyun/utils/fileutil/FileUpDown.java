@@ -2,6 +2,13 @@ package com.religion.zhiyun.utils.fileutil;
 
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -17,6 +24,7 @@ public class FileUpDown {
     private static Logger logger = Logger.getLogger(FileUpDown.class);
 
     public static List<FileEntity> imagesUpload(HttpServletRequest request,String pathUpload){
+
         //获取文件在服务器的储存位置
         String path = request.getSession().getServletContext().getRealPath("/upload");
         File filePath = new File(path);

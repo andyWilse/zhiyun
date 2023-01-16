@@ -6,7 +6,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-@Configuration
+//@Configuration
 public class WebMvcConfigurerConfig {
 
  /*   // 当前跨域请求最大有效时长。这里默认1天

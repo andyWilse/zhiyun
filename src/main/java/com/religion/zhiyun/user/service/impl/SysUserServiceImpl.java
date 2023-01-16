@@ -5,8 +5,10 @@ import com.religion.zhiyun.user.dao.SysRoleMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
-import com.religion.zhiyun.userLogs.service.RmUserLogsInfoService;
+import com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper;
+import com.religion.zhiyun.userLogs.entity.LogsEntity;
 import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.base.HttpServletRequestReader;
 import com.religion.zhiyun.utils.enums.InfoEnums;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,57 +29,87 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private SysRoleMapper sysRoleMapper;
     @Autowired
-    private RmUserLogsInfoService rmUserLogsInfoService;
+    private RmUserLogsInfoMapper rmUserLogsInfoMapper;
 
     @Override
-    public RespPageBean getUsersByPage(Integer page, Integer size, String identity, String loginNm) throws IOException {
+    public RespPageBean getUsersByPage(Map<String, Object> map) throws IOException {
 
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
-        }
-        List<SysUserEntity> dataList=sysUserMapper.getUsersByPage(page,size,identity,loginNm);
-        if(null!=dataList && dataList.size()>0){
-            for(int i=0;i<dataList.size();i++){
-                SysUserEntity sysUserEntity = dataList.get(i);
-                String ident = sysUserEntity.getIdentity();
-                String roleNm = sysRoleMapper.getRoleNm(ident);
-                sysUserEntity.setIdentity(roleNm);
-            }
-        }
-        Object[] objects = dataList.toArray();
-        Long total=sysUserMapper.getTotal();
         RespPageBean respPageBean = new RespPageBean();
-        respPageBean.setDatas(objects);
-        respPageBean.setTotal(total);
+        long code= ResultCode.SUCCESS.getCode();
 
+        try {
+            String identity = (String)map.get("identity");
+            String loginNm = (String)map.get("loginNm");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            List<SysUserEntity> dataList=sysUserMapper.getUsersByPage(page,size,identity,loginNm);
+            if(null!=dataList && dataList.size()>0){
+                for(int i=0;i<dataList.size();i++){
+                    SysUserEntity sysUserEntity = dataList.get(i);
+                    String ident = sysUserEntity.getIdentity();
+                    String roleNm = sysRoleMapper.getRoleNm(ident);
+                    sysUserEntity.setIdentity(roleNm);
+                }
+            }
+            Object[] objects = dataList.toArray();
+            Long total=sysUserMapper.getTotal();
+            respPageBean.setDatas(objects);
+            respPageBean.setTotal(total);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
         //rmUserLogsInfoService.savelogs( JsonUtils.objectTOJSONString(respPageBean), InfoEnums.USER_FIND.getName());
-
+        respPageBean.setCode(code);
         return respPageBean;
     }
 
     @Override
-    public void add(SysUserEntity sysUserEntity) {
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        sysUserEntity.setCreateTime(timestamp);
-        sysUserEntity.setLastModifyTime(timestamp);
-        Long maxCustCd = sysUserMapper.getMaxUserNbr();
-        maxCustCd++;
-        sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
-        //密码加密
-        String passwords = sysUserEntity.getPasswords();
-        sysUserEntity.setWeakPwInd(passwords);
-        String pass =DigestUtils.md5Hex(passwords);
-        sysUserEntity.setPasswords(pass);
-
-        sysUserMapper.add(sysUserEntity);
-        rmUserLogsInfoService.savelogs( "新增成功", InfoEnums.USER_ADD.getName());
-
+    public RespPageBean add(SysUserEntity sysUserEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        Timestamp timestamp = null;
+        try {
+            timestamp = new Timestamp(new Date().getTime());
+            sysUserEntity.setCreateTime(timestamp);
+            sysUserEntity.setLastModifyTime(timestamp);
+            Long maxCustCd = sysUserMapper.getMaxUserNbr();
+            maxCustCd++;
+            sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
+            //密码加密
+            String passwords = sysUserEntity.getPasswords();
+            sysUserEntity.setWeakPwInd(passwords);
+            String pass =DigestUtils.md5Hex(passwords);
+            sysUserEntity.setPasswords(pass);
+            //新增用户
+            sysUserMapper.add(sysUserEntity);
+            //保存日志
+            //this.savelogs( "新增成功", InfoEnums.USER_ADD.getName());
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code);
     }
 
     @Override
-    public void update(SysUserEntity sysUserEntity) {
-        sysUserMapper.update(sysUserEntity);
-        rmUserLogsInfoService.savelogs( "修改成功", InfoEnums.USER_UPDATE.getName());
+    public RespPageBean update(SysUserEntity sysUserEntity) {
+        long code= ResultCode.SUCCESS.getCode();
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            sysUserEntity.setLastModifyTime(timestamp);
+            sysUserMapper.update(sysUserEntity);
+            //保存日志
+           //this.savelogs( "修改成功", InfoEnums.USER_UPDATE.getName());
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code);
 
     }
 
@@ -122,12 +154,37 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public void delete(int userId) {
         sysUserMapper.delete(userId);
-        rmUserLogsInfoService.savelogs( "删除成功", InfoEnums.USER_DELETE.getName());
+        //this.savelogs( "删除成功", InfoEnums.USER_DELETE.getName());
 
     }
 
     @Override
     public SysUserEntity queryByNbr(String userNbr) {
         return sysUserMapper.queryByNbr(userNbr);
+    }
+
+    /**
+     * 日志信息封存
+     * @param response
+     * @param cnName
+     */
+    public void savelogs(String response,String cnName) {
+        LogsEntity logsEntity=new LogsEntity();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String nbr = request.getHeader("login-name");
+        logsEntity.setUserNbr(nbr);
+        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
+        if(null!=sysUserEntity){
+            logsEntity.setUserName(sysUserEntity.getLoginNm());
+        }
+        String servletPath = request.getServletPath();
+        logsEntity.setInterfaceCode(servletPath);
+        logsEntity.setInterfaceName(cnName);
+        String body = HttpServletRequestReader.ReadAsChars(request);
+        logsEntity.setRequestParam(body);
+        logsEntity.setResponseResult(response);
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        logsEntity.setFkDate(timestamp);
+        rmUserLogsInfoMapper.addlogs(logsEntity);
     }
 }
