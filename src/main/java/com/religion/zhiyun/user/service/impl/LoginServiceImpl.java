@@ -48,8 +48,9 @@ public class LoginServiceImpl implements LoginService {
                     .withHeader(header)
                     .withClaim("username",userinfo.getLoginNm())
                     .withClaim("password",userinfo.getPasswords())
-                   /* .withClaim("name",userinfo.getUserNm())
-                    .withClaim("identity",userinfo.getIdentity())*/
+                    .withClaim("userNbr",userinfo.getUserNbr())
+                    .withClaim("identity",userinfo.getIdentity())
+                    .withClaim("expireAt",date)
                     .withExpiresAt(date)
                     .sign(algorithm);
         }catch (Exception e){

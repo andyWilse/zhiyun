@@ -5,7 +5,9 @@ import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,10 +37,12 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
             timestamp = new Timestamp(new Date().getTime());
             staffEntity.setCreateTime(timestamp);
             staffEntity.setLastModifyTime(timestamp);
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-            String nbr = request.getHeader("login-name");
-            staffEntity.setCreator(nbr);
-            staffEntity.setLastModifier(nbr);
+            SysUserEntity entity = TokenUtils.getToken();
+            if(null==entity){
+                throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+            }
+            staffEntity.setCreator(entity.getLoginNm());
+            staffEntity.setLastModifier(entity.getLoginNm());
             staffEntity.setStaffStatus(ParamCode.STAFF_STATUS_01.getCode());
             Long maxStaffCd = staffInfoMapper.getMaxStaffCd();
             if(null==maxStaffCd){
@@ -63,11 +67,13 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     public RespPageBean update(StaffEntity staffEntity) {
         long code= ResultCode.SUCCESS.getCode();
         try {
+            SysUserEntity entity = TokenUtils.getToken();
+            if(null==entity){
+                throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+            }
+            staffEntity.setLastModifier(entity.getLoginNm());
             Timestamp timestamp = new Timestamp(new Date().getTime());
             staffEntity.setLastModifyTime(timestamp);
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-            String nbr = request.getHeader("login-name");
-            staffEntity.setLastModifier(nbr);
             staffInfoMapper.update(staffEntity);
         } catch (Exception e) {
             code=ResultCode.FAILED.getCode();

@@ -1,11 +1,11 @@
 package com.religion.zhiyun.sys.file.controller;
 
-import Decoder.BASE64Encoder;
 import com.religion.zhiyun.sys.file.entity.ResponseVo;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.io.*;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/file")
@@ -34,8 +34,10 @@ public class FileController {
         String data = encoder.encode(fileByte).toString();*/
 
         //进行base64编码
-        BASE64Encoder encoder = new BASE64Encoder();
-        String data = encoder.encode(fileByte);
+        /*BASE64Encoder encoder = new BASE64Encoder();
+        String data = encoder.encode(fileByte);*/
+        Base64.Encoder encoder = Base64.getEncoder();
+        String data = encoder.encodeToString(fileByte);
         return data;
     }
 }

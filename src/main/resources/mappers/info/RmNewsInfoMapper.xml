@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.news.dao.RmNewsInfoMapper">
+
+    <sql id="newsColumn">
+        NEWS_ID as newsId,
+        NEWS_VIEWS as newsViews,
+        NEWS_TITLE as newsTitle,
+        NEWS_KEYWORD as newsKeyword,
+        NEWS_CONTENT as newsContent,
+        NEWS_FROM as newsFrom,
+        NEWS_TYPE as newsType,
+        NEWS_DOWN as newsDown,
+        NEWS_PICTURES_PATH as newsPicturesPath,
+        CREATOR as creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+    </sql>
+
+    <insert id="add" parameterType="com.religion.zhiyun.news.entity.NewsEntity">
+        INSERT INTO
+            RM_NEWS_INFO(
+                 NEWS_VIEWS,
+                 NEWS_TITLE,
+                 NEWS_KEYWORD,
+                 NEWS_CONTENT,
+                 NEWS_FROM,
+                 NEWS_TYPE,
+                 NEWS_DOWN,
+                 NEWS_PICTURES_PATH,
+                 CREATOR,
+                 CREATE_TIME,
+                 LAST_MODIFIER,
+                 LAST_MODIFY_TIME)
+             VALUES(
+                 #{newsViews},
+                 #{newsTitle},
+                 #{newsKeyword},
+                 #{newsContent},
+                 #{newsFrom},
+                 #{newsType},
+                 #{newsDown},
+                 #{newsPicturesPath},
+                 #{creator},
+                 #{createTime},
+                 #{lastModifier},
+                 #{lastModifyTime}
+             );
+    </insert>
+
+    <select id="getNewsByPage" resultType="com.religion.zhiyun.news.entity.NewsEntity">
+        select
+            NEWS_ID as newsId,
+            NEWS_VIEWS as newsViews,
+            NEWS_TITLE as newsTitle,
+            NEWS_KEYWORD as newsKeyword,
+            NEWS_CONTENT as newsContent,
+            NEWS_FROM as newsFrom,
+            dict.DICT_CN_DESC as newsType,
+            NEWS_DOWN as newsDown,
+            NEWS_PICTURES_PATH as newsPicturesPath,
+            CREATOR as creator,
+            CREATE_TIME as createTime,
+            LAST_MODIFIER as lastModifier,
+            LAST_MODIFY_TIME as lastModifyTim
+        from RM_NEWS_INFO  news
+        LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
+        where NEWS_DOWN='1'
+        <if test="newsTitle != null and newsTitle != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        </if>
+        order by LAST_MODIFY_TIME desc
+        limit #{page},#{size}
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(*) from RM_NEWS_INFO  where  NEWS_DOWN='1'
+    </select>
+
+    <update id="delete">
+        update RM_NEWS_INFO set NEWS_DOWN='0' where NEWS_ID = #{newsId}
+    </update>
+
+    <update id="update" parameterType="com.religion.zhiyun.news.entity.NewsEntity">
+        update RM_NEWS_INFO
+        set
+            NEWS_VIEWS=#{newsViews},
+            NEWS_TITLE=#{newsTitle},
+            NEWS_KEYWORD=#{newsKeyword},
+            NEWS_CONTENT=#{newsContent},
+            NEWS_FROM=#{newsFrom},
+            NEWS_TYPE=#{newsType},
+            NEWS_PICTURES_PATH=#{newsPicturesPath},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME=#{lastModifyTime}
+
+        WHERE NEWS_ID=#{newsId}
+    </update>
+
+</mapper>
