@@ -18,7 +18,7 @@ public interface RmVenuesInfoService {
     List<VenuesEntity> querySectAll(String religiousSect);
     List<VenuesEntity> getByVenuesFaculty(String venuesName,String responsiblePerson);
     VenuesEntity getVenueByID(String venuesId);
-    List<Map<String,Object>> getAllNum();
+    Map<String,Object> getAllNum();
 
     /**
      * 分页查询
@@ -29,6 +29,6 @@ public interface RmVenuesInfoService {
      * @param religiousSect
      * @return
      */
-    RespPageBean getEmpByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect);
+    RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect);
 
 }

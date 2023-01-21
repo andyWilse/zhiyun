@@ -93,16 +93,16 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public List<Map<String, Object>> getAllNum() {
+    public Map<String, Object> getAllNum() {
         return rmVenuesInfoMapper.getAllNum();
     }
 
     @Override
-    public RespPageBean getEmpByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect) {
+    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect) {
         if(page!=null&&size!=null){
             page=(page-1)*size;
         }
-        List<VenuesEntity> dataList=rmVenuesInfoMapper.getEmpByPage(page,size,venuesName,responsiblePerson,religiousSect);
+        List<VenuesEntity> dataList=rmVenuesInfoMapper.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
         Object[] objects = dataList.toArray();
         /*VenuesEntity[] date = new VenuesEntity[dataList.size()];
         VenuesEntity[] datas = dataList.toArray(date);*/

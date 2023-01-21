@@ -3,7 +3,9 @@ package com.religion.zhiyun.event.service.impl;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    public void deleteEvent(String eventId) {
+    public void deleteEvent(int eventId) {
         rmEventInfoMapper.deleteEvent(eventId);
     }
 
@@ -47,8 +49,20 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    public List<EventEntity> getByType(String eventType) {
-        return rmEventInfoMapper.getByType(eventType);
+    public RespPageBean getByType(String eventType) {
+        long code= ResultCode.SUCCESS.getCode();
+        List<Map<String, Object>> map=null;
+        try {
+            if("all".equals(eventType)){
+                eventType="";
+            }
+            map = rmEventInfoMapper.getByType(eventType);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+
+        return new RespPageBean(code,map);
     }
 
     @Override
@@ -68,5 +82,25 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         bean.setDatas(objects);
         bean.setTotal(total);
         return bean;
+    }
+
+    @Override
+    public RespPageBean getEvents() {
+        long code= ResultCode.SUCCESS.getCode();
+        List<Map<String, Object>> events = null;
+        try {
+            events = rmEventInfoMapper.getEvents(ParamCode.EVENT_STATE_00.getCode(),"");
+            for(int i=0;i<events.size();i++){
+                Map<String, Object> map = events.get(0);
+                String path = (String) map.get("path");
+                String[] split = path.split(",");
+                map.put("path",split[0]);
+            }
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+
+        return new RespPageBean(code,events);
     }
 }

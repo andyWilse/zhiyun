@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/event")
-@CrossOrigin(origins = {"*"})
 public class RmEventInfoController {
     @Autowired
     private RmEventInfoService rmEventInfoService;
@@ -32,9 +31,9 @@ public class RmEventInfoController {
         rmEventInfoService.updateEvent(eventEntity);
     }
 
-    @PostMapping("/deleteEvent")
-    public void delete() {
-        rmEventInfoService.deleteEvent("eventId");
+    @PostMapping("/deleteEvent/{eventId}")
+    public void delete(@PathVariable int eventId) {
+        rmEventInfoService.deleteEvent(eventId);
     }
 
 
@@ -50,10 +49,10 @@ public class RmEventInfoController {
      * 未完成的事件展示
      * @return
      */
-    @RequestMapping(value = "/allEventBytime",method = RequestMethod.POST)
-    public String allEventBytime() {
-        List<EventEntity> list = rmEventInfoService.allEventByState();
-        return JsonUtils.objectTOJSONString(list);
+    @RequestMapping(value = "/undoEvents")
+    public RespPageBean allEventBytime() {
+        //List<EventEntity> list = rmEventInfoService.allEventByState();
+        return rmEventInfoService.getEvents();
     }
 
     /**
@@ -72,10 +71,10 @@ public class RmEventInfoController {
       * @param eventType
      * @return
      */
-    @RequestMapping("/getEventByType")
-    public String getEventByType( String eventType) {
-        List<EventEntity> list = rmEventInfoService.getByType(eventType);
-        return JsonUtils.objectTOJSONString(list);
+    @RequestMapping("/getEventByType/{eventType}")
+    public RespPageBean getEventByType(@PathVariable String eventType) {
+
+        return rmEventInfoService.getByType(eventType);
     }
 
     /**
@@ -94,11 +93,9 @@ public class RmEventInfoController {
         String accessNumber = (String)map.get("accessNumber");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
-
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-
         return rmEventInfoService.getEventsByPage(page,size,accessNumber);
     }
 
-}
+    }

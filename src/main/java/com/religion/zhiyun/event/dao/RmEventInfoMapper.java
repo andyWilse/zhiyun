@@ -32,7 +32,7 @@ public interface RmEventInfoMapper {
      * 删除
      * @param eventId
      */
-    void deleteEvent(String eventId);
+    void deleteEvent(int eventId);
 
     /**
      * 根据未完成的状态展示
@@ -52,7 +52,7 @@ public interface RmEventInfoMapper {
      * @param eventType
      * @return
      */
-    List<EventEntity> getByType(String eventType);
+    List<Map<String,Object>> getByType(@Param("eventType") String eventType);
 
     List<Map<String,Object>> getAllNum();
 
@@ -70,4 +70,11 @@ public interface RmEventInfoMapper {
      * @return
      */
     Long getTotal();
+
+    /**
+     * 手机端（预警查询）
+     * @return
+     */
+    List<Map<String,Object>> getEvents(String eventState,String eventType);
+
 }

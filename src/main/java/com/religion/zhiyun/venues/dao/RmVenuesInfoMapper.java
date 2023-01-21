@@ -58,8 +58,11 @@ public interface RmVenuesInfoMapper {
 
     //根据id获取该教堂
     VenuesEntity getVenueByID(String venuesId);
-
-    List<Map<String,Object>> getAllNum();
+    /**
+     * 获取各教堂数量
+     * @return
+     */
+    Map<String,Object> getAllNum();
 
     /**
      * 分页查询
@@ -70,7 +73,7 @@ public interface RmVenuesInfoMapper {
      * @param religiousSect
      * @return
      */
-    List<VenuesEntity> getEmpByPage(@Param("page") Integer page,
+    List<VenuesEntity> getVenuesByPage(@Param("page") Integer page,
                                     @Param("size") Integer size,
                                     @Param("venuesName") String venuesName,
                                     @Param("responsiblePerson") String responsiblePerson,
@@ -82,4 +85,5 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     Long getTotal();
+
 }

@@ -39,6 +39,7 @@
             HANDLE_RESULTS=#{handleTesults}
         where EVENT_ID=#{eventId}
     </update>
+
     <delete id="deleteEvent">
         delete from rm_event_info
         where EVENT_ID=#{eventId}
@@ -60,27 +61,17 @@
         INNER JOIN rm_venues_info ON rm_event_info.REL_VENUES_ID=rm_venues_info.VENUES_ID
         WHERE rm_event_info.EVENT_ID=#{eventId}
     </select>
-    <select id="getByType" resultType="com.religion.zhiyun.event.entity.EventEntity">
-        select <include refid="eventColumn"/> from rm_event_info
+
+    <select id="getByType" resultType="map">
+        select
+            <include refid="eventColumn"/>
+        from rm_event_info
         <where>
             <if test="eventType!=null and eventType!=''">
                 EVENT_TYPE=#{eventType}
             </if>
         </where>
         ORDER BY WARN_TIME DESC
-    </select>
-    <select id="getAllNum" resultType="java.util.Map">
-        /*SELECT EVENT_TYPE '类型', COUNT(1) '数量' FROM rm_event_info GROUP BY EVENT_TYPE*/
-        SELECT COUNT(EVENT_ID) AS total,
-        SUM(CASE WHEN EVENT_TYPE = 00 THEN 1 ELSE 0 END) AS fire,
-        SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS face,
-        SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS task,
-        SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS crowd
-        FROM rm_event_info
-    </select>
-
-    <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_EVENT_INFO
     </select>
 
     <select id="getEventsByPage" resultType="com.religion.zhiyun.event.entity.EventEntity">
@@ -94,4 +85,45 @@
         order by HANDLE_TIME desc
         limit #{page},#{size}
     </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(EVENT_ID) from RM_EVENT_INFO
+    </select>
+
+    <select id="getAllNum" resultType="java.util.Map">
+        /*SELECT EVENT_TYPE '类型', COUNT(1) '数量' FROM rm_event_info GROUP BY EVENT_TYPE*/
+        SELECT
+            COUNT(EVENT_ID) AS total,
+            SUM(CASE WHEN EVENT_TYPE = 00 THEN 1 ELSE 0 END) AS fire,
+            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS face,
+            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS task,
+            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS crowd
+        FROM rm_event_info
+        where EVENT_STATE='00'
+    </select>
+
+    <select id="getEvents" resultType="map">
+        select
+            ev.WARN_TIME as warnTime,
+            case ev.EVENT_TYPE
+                when '01' then '火灾预警'
+                when '02' then '人脸识别'
+                when '03' then '任务预警'
+                when '04' then '人流聚集'
+            end as eventType,
+            ve.VENUES_NAME as venuesName,
+            ve.PICTURES_PATH as  path
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where 1=1
+        <if test="eventState != null and eventState != ''">
+            AND  ev.EVENT_STATE=#{eventState}
+        </if>
+        <if test="eventType != null and eventType != ''">
+            AND  ev.EVENT_TYPE =#{eventType}
+        </if>
+    </select>
+
+
+
 </mapper>

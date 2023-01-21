@@ -14,8 +14,8 @@ import java.io.InputStreamReader;
 /**
  * @Description: 解决request.getInputStream()只能读取一次的问题
  * @PackageName: net.dlet.dhdemo.utils.dhutils
- * @Name: MyRequestWrapper
- * @Author: cure
+ * @Name: ，。模块【，8uil/[;.-MyRequestWrapper
+ * @Author: cure,0就ik
  * @CreateDate: 2020/09/06 4:44
  * @ModifyUser:
  * @ModifyDate:

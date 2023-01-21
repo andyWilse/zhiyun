@@ -14,13 +14,13 @@ public interface RmEventInfoService {
 
     void updateEvent(EventEntity eventEntity);
 
-    void deleteEvent(String eventId);
+    void deleteEvent(int eventId);
 
     List<EventEntity> allEventByState();
 
     EventEntity getByEventId(String eventId);
 
-    List<EventEntity> getByType(String eventType);
+    RespPageBean getByType(String eventType);
     List<Map<String,Object>> getAllNum();
 
     /**
@@ -31,4 +31,10 @@ public interface RmEventInfoService {
      * @return
      */
     RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber);
+
+    /**
+     * 手机端（预警查询）
+     * @return
+     */
+    RespPageBean getEvents();
 }

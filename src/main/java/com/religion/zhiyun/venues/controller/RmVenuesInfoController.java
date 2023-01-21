@@ -80,8 +80,8 @@ public class RmVenuesInfoController {
     //教堂的数量展示
     @RequestMapping("/getAllNum")
     public String getAllNum(){
-        List<Map<String, Object>> list = rmVenuesInfoService.getAllNum();
-        return JsonUtils.objectTOJSONString(list);
+        Map<String, Object> map = rmVenuesInfoService.getAllNum();
+        return JsonUtils.objectTOJSONString(map);
     }
 
     //教堂的数量展示
@@ -92,7 +92,7 @@ public class RmVenuesInfoController {
     }
 
     @GetMapping("/find")
-    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map){
+    public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map){
         String venuesName = (String)map.get("venuesName");
         String responsiblePerson = (String)map.get("responsiblePerson");
         String religiousSect = (String)map.get("religiousSect");
@@ -100,8 +100,7 @@ public class RmVenuesInfoController {
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmVenuesInfoService.getEmpByPage(page,size,venuesName,responsiblePerson,religiousSect);
+        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
     }
-
 
 }

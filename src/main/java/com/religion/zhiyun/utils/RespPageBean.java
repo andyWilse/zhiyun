@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -17,6 +18,7 @@ public class RespPageBean {
     private long code;
     private String result;
     private Object[] resultArr;
+    private List<Map<String, Object>> resultMap;
 
     public RespPageBean(){
         super();
@@ -39,6 +41,11 @@ public class RespPageBean {
         this.code=code;
         this.result=result;
         this.resultArr=resultArr;
+    }
+
+    public RespPageBean(long code,List<Map<String, Object>> resultMap){
+        this.code=code;
+        this.resultMap=resultMap;
     }
 
 }

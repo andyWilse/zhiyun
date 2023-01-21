@@ -151,21 +151,24 @@
             </if>
         </where>-->
     </select>
-    <select id="getAllNum" resultType="java.util.Map">
-        SELECT COUNT(VENUES_ID) AS total,
-        SUM(CASE WHEN RELIGIOUS_SECT = '伊斯兰教' THEN 1 ELSE 0 END) AS Islamism,
-        SUM(CASE WHEN RELIGIOUS_SECT = '基督教' THEN 1 ELSE 0 END) AS Christianity,
-        SUM(CASE WHEN RELIGIOUS_SECT = '天主教' THEN 1 ELSE 0 END) AS Catholicism,
-        SUM(CASE WHEN RELIGIOUS_SECT = '佛教' THEN 1 ELSE 0 END) AS Buddhism,
-        SUM(CASE WHEN RELIGIOUS_SECT = '道教' THEN 1 ELSE 0 END) AS Taoism
+
+    <select id="getAllNum" resultType="map">
+        SELECT
+            COUNT(VENUES_ID) AS total,
+            SUM(CASE WHEN RELIGIOUS_SECT = '伊斯兰教' THEN 1 ELSE 0 END) AS Islamism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '基督教' THEN 1 ELSE 0 END) AS Christianity,
+            SUM(CASE WHEN RELIGIOUS_SECT = '天主教' THEN 1 ELSE 0 END) AS Catholicism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '佛教' THEN 1 ELSE 0 END) AS Buddhism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '道教' THEN 1 ELSE 0 END) AS Taoism
         FROM rm_venues_info
+        where VENUES_STATUS='01'
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_VENUES_INFO where VENUES_STATUS!='02'
+        select count(VENUES_ID) from RM_VENUES_INFO where VENUES_STATUS!='02'
     </select>
 
-    <select id="getEmpByPage" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+    <select id="getVenuesByPage" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
             VENUES_ID as venuesId ,
             VENUES_NAME as venuesName,
@@ -199,6 +202,5 @@
         order by LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
-
 
 </mapper>
