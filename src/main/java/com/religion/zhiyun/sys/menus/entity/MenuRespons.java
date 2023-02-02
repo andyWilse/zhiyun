@@ -11,6 +11,7 @@ public class MenuRespons {
     private MenuEntity parents;
     private int menuId;
     private String menuNm;
+    private String iconNm;
 
     private Object[] childs;
 }

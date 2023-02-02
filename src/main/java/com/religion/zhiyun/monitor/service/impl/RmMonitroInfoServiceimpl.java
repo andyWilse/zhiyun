@@ -56,7 +56,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
         if(page!=null&&size!=null){
             page=(page-1)*size;
         }
-        List<VenuesEntity> dataList=rmMonitroInfoMapper.getMonitrosByPage(page,size,accessNumber);
+        List<MonitroEntity> dataList=rmMonitroInfoMapper.getMonitrosByPage(page,size,accessNumber);
         Object[] objects = dataList.toArray();
         Long total=rmMonitroInfoMapper.getTotal();
         RespPageBean bean = new RespPageBean();

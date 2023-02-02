@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +86,12 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             List<NewsEntity> dataList = rmNewsInfoMapper.getNewsByPage(page, size, newsTitle);
             Object[] objects=null;
             if(null!=dataList && dataList.size()>0){
+                for(int i=0;i< dataList.size();i++){
+                    NewsEntity newsEntity = dataList.get(i);
+                    Timestamp createTime = newsEntity.getCreateTime();
+                    String strn = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createTime);
+                    newsEntity.setReleaseTime(strn);
+                }
                 objects = dataList.toArray();
             }
             Long total=rmNewsInfoMapper.getTotal();

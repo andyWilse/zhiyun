@@ -32,7 +32,7 @@ public interface RmMonitroInfoMapper {
      * @param accessNumber
      * @return
      */
-    List<VenuesEntity> getMonitrosByPage(@Param("page") Integer page, @Param("size") Integer size,
+    List<MonitroEntity> getMonitrosByPage(@Param("page") Integer page, @Param("size") Integer size,
                                          @Param("accessNumber") String accessNumber);
 
     /**

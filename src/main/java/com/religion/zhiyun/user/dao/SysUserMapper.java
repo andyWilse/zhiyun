@@ -45,7 +45,7 @@ public interface SysUserMapper {
      * 新增
      * @param sysUserEntity
      */
-    void add(SysUserEntity sysUserEntity);
+    int add(SysUserEntity sysUserEntity);
 
     /**
      * 修改

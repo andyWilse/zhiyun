@@ -6,7 +6,7 @@
     <sql id="monitroColumn">
         MONITOR_ID as monitorId,
         ACCESS_NUMBER as accessNumber,
-        STATE as state,
+        CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
         FUNCTION_TYPE as functionType,
         REL_VENUES_ID as relVenuesId,
         CREATOR as creator,
@@ -79,13 +79,22 @@
 
     <select id="getMonitrosByPage" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
         select
-        <include refid="monitroColumn"/>
-        from RM_MONITOR_MANAGE_INFO
+            MONITOR_ID as monitorId,
+            ACCESS_NUMBER as accessNumber,
+            CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
+            FUNCTION_TYPE as functionType,
+            v.VENUES_ADDRES as venuesAddres,
+            r.CREATOR as creator,
+            r.CREATE_TIME as createTime,
+            r.LAST_MODIFIER as lastModifier,
+            r.LAST_MODIFY_TIME as lastModifyTime
+        from RM_MONITOR_MANAGE_INFO r
+        left join RM_VENUES_INFO v on r.REL_VENUES_ID=v.VENUES_ID
         where 1=1
         <if test="accessNumber != null and accessNumber != ''">
             AND  ACCESS_NUMBER LIKE CONCAT('%',#{accessNumber},'%')
         </if>
-        order by LAST_MODIFY_TIME desc
+        order by r.LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
 

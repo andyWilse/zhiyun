@@ -32,6 +32,9 @@ public class NewsEntity {
     @Column(name = "NEWS_FROM")
     private String newsFrom;//来源
 
+    @Column(name = "NEWS_REF")
+    private String newsRef;//链接
+
     @Column(name = "NEWS_TYPE")
     private String newsType;//新闻分类：01-社会新闻；02-政治新闻,
 
@@ -52,4 +55,7 @@ public class NewsEntity {
 
     @Column(name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;//最后修改时间
+
+    private String releaseTime;//发布日期
+
 }

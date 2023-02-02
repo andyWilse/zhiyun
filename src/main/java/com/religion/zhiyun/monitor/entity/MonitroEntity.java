@@ -37,12 +37,18 @@ public class MonitroEntity implements Serializable {
     private String creator;//创建人
 
     @Column(name = "CREATE_TIME")
-    private Timestamp createTime;//创建时间
+    private String createTime;//创建时间
 
     @Column(name = "LAST_MODIFIER")
     private String lastModifier;//最后修改人
 
     @Column(name = "LAST_MODIFY_TIME")
-    private Timestamp lastModifyTime;//最后修改时间
+    private String lastModifyTime;//最后修改时间
+
+
+    private String venuesAddres;//场所地址
+
+
+
 
 }

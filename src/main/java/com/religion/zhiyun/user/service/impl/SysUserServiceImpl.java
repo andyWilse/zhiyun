@@ -3,7 +3,9 @@ package com.religion.zhiyun.user.service.impl;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.user.dao.SysRoleMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
+import com.religion.zhiyun.user.dao.SysUserRoleRelMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
@@ -26,10 +28,15 @@ import java.util.Map;
 public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private SysUserMapper sysUserMapper;
+
     @Autowired
     private SysRoleMapper sysRoleMapper;
+
     @Autowired
     private RmUserLogsInfoMapper rmUserLogsInfoMapper;
+
+    @Autowired
+    private SysUserRoleRelMapper sysUserRoleRelMapper;
 
     @Override
     public RespPageBean getUsersByPage(Map<String, Object> map) throws IOException {
@@ -87,8 +94,16 @@ public class SysUserServiceImpl implements SysUserService {
             sysUserEntity.setPasswords(pass);
             //新增用户
             sysUserMapper.add(sysUserEntity);
+
+            //新增用户角色关系
+            UserRoleEntity userRoleEntity=new UserRoleEntity();
+            userRoleEntity.setUserId(String.valueOf(sysUserEntity.getUserId()));
+            userRoleEntity.setRoleId(String.valueOf(sysUserEntity.getIdentity()));
+            sysUserRoleRelMapper.add(userRoleEntity);
+
             //保存日志
             //this.savelogs( "新增成功", InfoEnums.USER_ADD.getName());
+
         } catch (Exception e) {
             code=ResultCode.FAILED.getCode();
             e.printStackTrace();

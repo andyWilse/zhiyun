@@ -25,7 +25,7 @@ public class EventEntity implements Serializable {
     private String accessNumber;//预警设备
 
     @Column(name = "WARN_TIME")
-    private Timestamp warnTime;//预警时间
+    private String warnTime;//预警时间
 
     @Column(name = "REL_VENUES_ID")
     private int relVenuesId;//地点   关联场所主键id
@@ -43,6 +43,8 @@ public class EventEntity implements Serializable {
     private String handleTesults;//处理结果
 
     @Column(name = "HANDLE_TIME")
-    private Timestamp handleTime;//处理时间
+    private String handleTime;//处理时间
+
+    private String venuesAddres;//场所地址
 
 }

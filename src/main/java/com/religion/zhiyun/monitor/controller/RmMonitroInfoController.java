@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/monitor")
-@CrossOrigin(origins = {"*"})
 public class RmMonitroInfoController {
     @Autowired
     private RmMonitroInfoService rmMonitroInfoService;

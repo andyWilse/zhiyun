@@ -41,6 +41,7 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
                 respons.setMenuId(menuEntity.getMenuId());
                 respons.setMenuNm(menuEntity.getMenuNm());
                 respons.setChilds(allChilds.toArray());
+                respons.setIconNm(menuEntity.getIconNm());
                 childList.add(respons);
             }
         }

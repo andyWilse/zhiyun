@@ -10,6 +10,7 @@
         NEWS_KEYWORD as newsKeyword,
         NEWS_CONTENT as newsContent,
         NEWS_FROM as newsFrom,
+        NEWS_REF as newsRef,
         NEWS_TYPE as newsType,
         NEWS_DOWN as newsDown,
         NEWS_PICTURES_PATH as newsPicturesPath,
@@ -27,6 +28,7 @@
                  NEWS_KEYWORD,
                  NEWS_CONTENT,
                  NEWS_FROM,
+                 NEWS_REF,
                  NEWS_TYPE,
                  NEWS_DOWN,
                  NEWS_PICTURES_PATH,
@@ -40,6 +42,7 @@
                  #{newsKeyword},
                  #{newsContent},
                  #{newsFrom},
+                 #{newsRef},
                  #{newsType},
                  #{newsDown},
                  #{newsPicturesPath},
@@ -58,6 +61,7 @@
             NEWS_KEYWORD as newsKeyword,
             NEWS_CONTENT as newsContent,
             NEWS_FROM as newsFrom,
+            NEWS_REF as newsRef,
             dict.DICT_CN_DESC as newsType,
             NEWS_DOWN as newsDown,
             NEWS_PICTURES_PATH as newsPicturesPath,
@@ -76,7 +80,7 @@
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_NEWS_INFO  where  NEWS_DOWN='1'
+        select count(NEWS_ID) from RM_NEWS_INFO  where  NEWS_DOWN='1'
     </select>
 
     <update id="delete">
@@ -91,6 +95,7 @@
             NEWS_KEYWORD=#{newsKeyword},
             NEWS_CONTENT=#{newsContent},
             NEWS_FROM=#{newsFrom},
+            NEWS_REF=#{newsRef},
             NEWS_TYPE=#{newsType},
             NEWS_PICTURES_PATH=#{newsPicturesPath},
             LAST_MODIFIER=#{lastModifier},

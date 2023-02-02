@@ -21,7 +21,7 @@
         select * from RM_SYS_USER_INFO
     </select>
 
-    <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity">
+    <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO
             RM_SYS_USER_INFO
             (
