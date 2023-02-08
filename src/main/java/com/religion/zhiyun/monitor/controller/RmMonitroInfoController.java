@@ -78,4 +78,12 @@ public class RmMonitroInfoController {
 
         return rmMonitroInfoService.getMonitrosByPage(page,size,accessNumber);
     }
+
+
+    @RequestMapping("/getMonitorURLByAccessNum")
+    public String getMonitorURLByAccessNum(String accessNum){
+        return rmMonitroInfoService.getMonitorURLByAccessNum(accessNum);
+
+    }
+
 }

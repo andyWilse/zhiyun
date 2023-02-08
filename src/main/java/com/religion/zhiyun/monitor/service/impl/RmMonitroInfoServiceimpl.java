@@ -64,4 +64,9 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
         bean.setTotal(total);
         return bean;
     }
+
+    @Override
+    public String getMonitorURLByAccessNum(String accessNum) {
+        return rmMonitroInfoMapper.getMonitorURLByAccessNum(accessNum);
+    }
 }

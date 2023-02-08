@@ -24,6 +24,9 @@ public class MonitroEntity implements Serializable {
     @Column(name = "ACCESS_NUMBER")
     private String accessNumber;//监控设备接入编号
 
+    @Column(name = "MONITOR_URL")
+    private String monitorURL;//监控url
+
     @Column(name = "STATE")
     private String state;//状态
 

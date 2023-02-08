@@ -6,6 +6,7 @@
     <sql id="monitroColumn">
         MONITOR_ID as monitorId,
         ACCESS_NUMBER as accessNumber,
+        MONITOR_URL as monitorURL,
         CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
         FUNCTION_TYPE as functionType,
         REL_VENUES_ID as relVenuesId,
@@ -14,27 +15,10 @@
         LAST_MODIFIER as lastModifier,
         LAST_MODIFY_TIME as lastModifyTime
     </sql>
-    <sql id="getMonitorByVenuesIdColumn">
-        rm_monitor_manage_info.MONITOR_ID as monitorId,
-        rm_monitor_manage_info.ACCESS_NUMBER as accessNumber,
-        rm_monitor_manage_info.STATE as state,
-        rm_monitor_manage_info.FUNCTION_TYPE as functionType,
-        rm_monitor_manage_info.VENUES_ID as venuesId,
-        rm_venues_info.VENUES_NAME as venuesName,
-        rm_venues_info.RELIGIOUS_SECT as religiousSect,
-        rm_venues_info.REGISTER_NBR as registerNbr,
-        rm_venues_info.VENUES_PHONE as venuesPhone,
-        rm_venues_info.ORGANIZATION as organization,
-        rm_venues_info.VENUES_ADDRES as venuesAddres,
-        rm_venues_info.PICTURES_ONE as picturesOne,
-        rm_venues_info.RESPONSIBLE_PERSON  as responsiblePerson,
-        rm_venues_info.LIAISON_MAN as liaisonMan,
-        rm_venues_info.BRIEF_INTRODUCTION as briefIntroduction,
-        rm_venues_info.VENUES_STATUS as venuesStatus
-    </sql>
+
 
     <insert id="addMonitro">
-        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{state},#{functionType},#{relVenuesId},
+        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{monitorURL},#{state},#{functionType},#{relVenuesId},
         #{creator},#{createTime},#{lastModifier},#{lastModifyTime})
     </insert>
     <update id="updateMonitro">
@@ -81,6 +65,7 @@
         select
             MONITOR_ID as monitorId,
             ACCESS_NUMBER as accessNumber,
+            MONITOR_URL as monitorURL,
             CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
             FUNCTION_TYPE as functionType,
             v.VENUES_ADDRES as venuesAddres,
@@ -96,6 +81,10 @@
         </if>
         order by r.LAST_MODIFY_TIME desc
         limit #{page},#{size}
+    </select>
+    <select id="getMonitorURLByAccessNum" resultType="java.lang.String">
+        SELECT monitor_url FROM rm_monitor_manage_info
+        WHERE access_number=#{accessNumber}
     </select>
 
 </mapper>

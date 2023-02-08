@@ -40,4 +40,7 @@ public interface RmMonitroInfoMapper {
      * @return
      */
     Long getTotal();
+
+    //根据设备编号返回监控url
+    String getMonitorURLByAccessNum(String accessNum);
 }

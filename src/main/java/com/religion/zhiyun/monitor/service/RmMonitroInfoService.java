@@ -27,4 +27,6 @@ public interface RmMonitroInfoService {
      */
     RespPageBean getMonitrosByPage(Integer page, Integer size, String accessNumber);
 
+    String getMonitorURLByAccessNum(String accessNum);
+
 }
