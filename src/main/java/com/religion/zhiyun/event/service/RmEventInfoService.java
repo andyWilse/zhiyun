@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface RmEventInfoService {
 
-    void addEvent(EventEntity eventEntity);
+    void addEvent(String eventEntity);
 
     List<EventEntity> allEvent();
 

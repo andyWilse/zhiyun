@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="eventTask" name="预警任务" isExecutable="true">
+    <documentation>紧急事件预警流程</documentation>
+    <startEvent id="warnStart" name="开始流程"></startEvent>
+    <userTask id="zuYuan" name="三人驻堂组员" activiti:assignee="$INITIATOR">
+      <extensionElements>
+        <modeler:activiti-idm-initiator xmlns:modeler="http://activiti.com/modeler"><![CDATA[true]]></modeler:activiti-idm-initiator>
+      </extensionElements>
+    </userTask>
+    <userTask id="zuZhang" name="三人驻堂组长"></userTask>
+    <userTask id="jieGan" name="街镇干事"></userTask>
+    <userTask id="jieWei" name="街镇委员"></userTask>
+    <userTask id="quGan" name="区干事"></userTask>
+    <userTask id="quWei" name="区委员"></userTask>
+    <userTask id="superMast" name="超级管理员"></userTask>
+    <endEvent id="warnEnd" name="结束流程"></endEvent>
+    <sequenceFlow id="quGanFlow" name="通过" sourceRef="quGan" targetRef="warnEnd"></sequenceFlow>
+    <sequenceFlow id="mastFlow" name="通过" sourceRef="superMast" targetRef="warnEnd"></sequenceFlow>
+    <sequenceFlow id="startFlow" name="启动" sourceRef="warnStart" targetRef="zuYuan"></sequenceFlow>
+    <sequenceFlow id="flow1" name="上报" sourceRef="zuYuan" targetRef="zuZhang"></sequenceFlow>
+    <sequenceFlow id="flow2" name="上报" sourceRef="zuZhang" targetRef="jieGan"></sequenceFlow>
+    <sequenceFlow id="flow3" name="上报" sourceRef="jieGan" targetRef="jieWei"></sequenceFlow>
+    <sequenceFlow id="flow4" name="上报" sourceRef="jieWei" targetRef="quGan"></sequenceFlow>
+    <sequenceFlow id="flow5" name="上报" sourceRef="quGan" targetRef="quWei"></sequenceFlow>
+    <sequenceFlow id="flow6" name="上报" sourceRef="quWei" targetRef="superMast"></sequenceFlow>
+    <sequenceFlow id="zuZhangFlow" name="通过" sourceRef="zuZhang" targetRef="warnEnd"></sequenceFlow>
+    <sequenceFlow id="jieGanFlow" name="通过" sourceRef="jieGan" targetRef="warnEnd"></sequenceFlow>
+    <sequenceFlow id="jieWeiFlow" name="通过" sourceRef="jieWei" targetRef="warnEnd"></sequenceFlow>
+    <sequenceFlow id="quWeiFlow" name="通过" sourceRef="quWei" targetRef="warnEnd"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_eventTask">
+    <bpmndi:BPMNPlane bpmnElement="eventTask" id="BPMNPlane_eventTask">
+      <bpmndi:BPMNShape bpmnElement="warnStart" id="BPMNShape_warnStart">
+        <omgdc:Bounds height="29.999999999999993" width="30.000000000000004" x="29.999999105930353" y="44.999997317791106"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="zuYuan" id="BPMNShape_zuYuan">
+        <omgdc:Bounds height="80.0" width="100.0" x="89.99999731779107" y="14.999999552965177"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="zuZhang" id="BPMNShape_zuZhang">
+        <omgdc:Bounds height="80.0" width="100.00000000000003" x="224.99999329447766" y="14.999999552965177"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="jieGan" id="BPMNShape_jieGan">
+        <omgdc:Bounds height="80.0" width="99.99999999999994" x="359.9999892711643" y="19.99999806284916"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="jieWei" id="BPMNShape_jieWei">
+        <omgdc:Bounds height="80.0" width="100.00000000000006" x="479.99998569488565" y="14.999999552965177"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="quGan" id="BPMNShape_quGan">
+        <omgdc:Bounds height="80.0" width="100.0" x="614.9999816715723" y="19.9999955296521"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="quWei" id="BPMNShape_quWei">
+        <omgdc:Bounds height="79.99999999999999" width="100.0" x="749.9999552965185" y="19.999993145467"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="superMast" id="BPMNShape_superMast">
+        <omgdc:Bounds height="80.0" width="100.0" x="884.9999736249455" y="19.99999374151325"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="warnEnd" id="BPMNShape_warnEnd">
+        <omgdc:Bounds height="28.0" width="28.0" x="554.9999669194236" y="134.9999959766866"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="zuZhangFlow" id="BPMNEdge_zuZhangFlow">
+        <omgdi:waypoint x="304.8909022238631" y="94.99999955296518"></omgdi:waypoint>
+        <omgdi:waypoint x="555.2837304108949" y="146.19556091020658"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="quGanFlow" id="BPMNEdge_quGanFlow">
+        <omgdi:waypoint x="663.0799813936954" y="99.9999955296521"></omgdi:waypoint>
+        <omgdi:waypoint x="581.4167644812225" y="142.53291484921436"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="jieWeiFlow" id="BPMNEdge_jieWeiFlow">
+        <omgdi:waypoint x="530.8333209342666" y="94.99999955296518"></omgdi:waypoint>
+        <omgdi:waypoint x="558.5981499576842" y="128.31771817488126"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="189.99999731779107" y="54.99999955296518"></omgdi:waypoint>
+        <omgdi:waypoint x="224.99999329447766" y="54.99999955296518"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="324.9999932944777" y="56.85185090811168"></omgdi:waypoint>
+        <omgdi:waypoint x="359.9999892711643" y="58.14814670770266"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="459.9999892711642" y="57.91666528830935"></omgdi:waypoint>
+        <omgdi:waypoint x="479.99998569488565" y="57.083332327505"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="579.9999856948857" y="56.851849969890516"></omgdi:waypoint>
+        <omgdi:waypoint x="614.9999816715723" y="58.14814511272676"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="714.9999816715723" y="59.99999464662041"></omgdi:waypoint>
+        <omgdi:waypoint x="749.9999552965185" y="59.99999402849868"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="849.9999552965185" y="59.99999336622483"></omgdi:waypoint>
+        <omgdi:waypoint x="884.9999736249455" y="59.9999935207554"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="quWeiFlow" id="BPMNEdge_quWeiFlow">
+        <omgdi:waypoint x="774.7371884139704" y="99.99999314546699"></omgdi:waypoint>
+        <omgdi:waypoint x="582.6190309047064" y="145.75637205200408"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="jieGanFlow" id="BPMNEdge_jieGanFlow">
+        <omgdi:waypoint x="459.9999892711642" y="98.99999806284916"></omgdi:waypoint>
+        <omgdi:waypoint x="487.9999797940263" y="98.99999806284916"></omgdi:waypoint>
+        <omgdi:waypoint x="487.9999797940263" y="142.99999922513962"></omgdi:waypoint>
+        <omgdi:waypoint x="554.9999669194236" y="142.99999922513962"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="mastFlow" id="BPMNEdge_mastFlow">
+        <omgdi:waypoint x="934.9999736249455" y="99.99999374151325"></omgdi:waypoint>
+        <omgdi:waypoint x="934.9999736249455" y="133.99999642372143"></omgdi:waypoint>
+        <omgdi:waypoint x="594.9519509836614" y="157.61444624002814"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="startFlow" id="BPMNEdge_startFlow">
+        <omgdi:waypoint x="59.97926656363707" y="59.211615157612144"></omgdi:waypoint>
+        <omgdi:waypoint x="89.99999731779107" y="57.63157737345911"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

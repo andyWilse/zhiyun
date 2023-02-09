@@ -49,6 +49,9 @@ public class SysUserEntity {
     @Column(comment = "工号",defaultValue="" ,name = "USER_NBR")
     private String userNbr;
 
+    @Column(comment = "工号",defaultValue="" ,name = "OFC_ID")
+    private String ofcId;
+
     @Column(comment = "创建时间",name = "CREATE_TIME")
     private Timestamp createTime;
 

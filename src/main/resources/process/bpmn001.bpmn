@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="eventTaskf" name="预警任务001" isExecutable="true">
+    <startEvent id="startFirst" name="开始"></startEvent>
+    <userTask id="userTsk2" name="任务2"></userTask>
+    <userTask id="userTsk3" name="任务3"></userTask>
+    <userTask id="userTsk1" name="任务1"></userTask>
+    <sequenceFlow id="flow002" name="节点002" sourceRef="startFirst" targetRef="userTsk2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${type==2}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow003" name="节点003" sourceRef="startFirst" targetRef="userTsk3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${type==3}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endOver" name="结束"></endEvent>
+    <sequenceFlow id="flow03" name="节点03" sourceRef="userTsk3" targetRef="endOver"></sequenceFlow>
+    <sequenceFlow id="flow02" name="节点02" sourceRef="userTsk2" targetRef="endOver"></sequenceFlow>
+    <sequenceFlow id="flow01" name="节点01" sourceRef="userTsk1" targetRef="endOver"></sequenceFlow>
+    <sequenceFlow id="flow001" name="节点001" sourceRef="startFirst" targetRef="userTsk1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${type==1}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_eventTaskf">
+    <bpmndi:BPMNPlane bpmnElement="eventTaskf" id="BPMNPlane_eventTaskf">
+      <bpmndi:BPMNShape bpmnElement="startFirst" id="BPMNShape_startFirst">
+        <omgdc:Bounds height="30.0" width="30.0" x="0.0" y="174.9999858438977"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="userTsk2" id="BPMNShape_userTsk2">
+        <omgdc:Bounds height="80.0" width="100.0" x="269.9999839067466" y="144.9999907612805"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="userTsk3" id="BPMNShape_userTsk3">
+        <omgdc:Bounds height="80.00000000000003" width="100.0" x="269.9999919533732" y="239.9999856948859"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="userTsk1" id="BPMNShape_userTsk1">
+        <omgdc:Bounds height="80.0" width="100.0" x="254.99999240040802" y="44.999997317791106"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endOver" id="BPMNShape_endOver">
+        <omgdc:Bounds height="28.0" width="28.0" x="629.9999812245375" y="89.99999731779107"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow02" id="BPMNEdge_flow02">
+        <omgdi:waypoint x="369.9999839067466" y="172.4999916696074"></omgdi:waypoint>
+        <omgdi:waypoint x="630.4179861644468" y="107.3954958360759"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow03" id="BPMNEdge_flow03">
+        <omgdi:waypoint x="369.9999919533732" y="249.74247849838616"></omgdi:waypoint>
+        <omgdi:waypoint x="552.9999980330468" y="138.99999848008162"></omgdi:waypoint>
+        <omgdi:waypoint x="630.9331431046392" y="109.0257053821709"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow001" id="BPMNEdge_flow001">
+        <omgdi:waypoint x="29.10398788513399" y="184.89336996486455"></omgdi:waypoint>
+        <omgdi:waypoint x="254.99999240040802" y="103.10344408980538"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow01" id="BPMNEdge_flow01">
+        <omgdi:waypoint x="354.999992400408" y="84.9999973177911"></omgdi:waypoint>
+        <omgdi:waypoint x="454.9999879300598" y="84.9999973177911"></omgdi:waypoint>
+        <omgdi:waypoint x="630.0701922064154" y="102.59964810755619"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow002" id="BPMNEdge_flow002">
+        <omgdi:waypoint x="29.997984822710826" y="189.75411746907952"></omgdi:waypoint>
+        <omgdi:waypoint x="269.9999839067466" y="185.81966212954947"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow003" id="BPMNEdge_flow003">
+        <omgdi:waypoint x="29.386721290452215" y="194.24524796900243"></omgdi:waypoint>
+        <omgdi:waypoint x="269.9999919533732" y="265.2458869694101"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

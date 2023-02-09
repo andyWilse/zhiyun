@@ -6,7 +6,7 @@
     <sql id="monitroColumn">
         MONITOR_ID as monitorId,
         ACCESS_NUMBER as accessNumber,
-        MONITOR_URL as monitorURL,
+        r.MONITOR_URL as monitorUrl,
         CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
         FUNCTION_TYPE as functionType,
         REL_VENUES_ID as relVenuesId,
@@ -16,11 +16,32 @@
         LAST_MODIFY_TIME as lastModifyTime
     </sql>
 
-
-    <insert id="addMonitro">
-        insert into rm_monitor_manage_info values(#{monitorId},#{accessNumber},#{monitorURL},#{state},#{functionType},#{relVenuesId},
-        #{creator},#{createTime},#{lastModifier},#{lastModifyTime})
+    <insert id="addMonitro" >
+        insert into rm_monitor_manage_info
+        (
+        ACCESS_NUMBER,
+        MONITOR_URL,
+        STATE,
+        FUNCTION_TYPE,
+        REL_VENUES_ID,
+        CREATOR,
+        CREATE_TIME,
+        LAST_MODIFIER,
+        LAST_MODIFY_TIME
+        )
+        values(
+        #{accessNumber},
+        #{monitorUrl},
+        #{state},
+        #{functionType},
+        #{relVenuesId},
+        #{creator},
+        #{createTime},
+        #{lastModifier},
+        #{lastModifyTime}
+        )
     </insert>
+
     <update id="updateMonitro">
         update rm_monitor_manage_info
         set STATE=#{state},

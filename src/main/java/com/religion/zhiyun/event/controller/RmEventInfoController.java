@@ -20,8 +20,9 @@ public class RmEventInfoController {
     @PostMapping("/addEvent")
     @ResponseBody
     public String addEvent(@RequestBody String eventJson) {
-        EventEntity eventEntity = JsonUtils.jsonTOBean(eventJson, EventEntity.class);
-        rmEventInfoService.addEvent(eventEntity);
+        System.out.println(eventJson);
+        //EventEntity eventEntity = JsonUtils.jsonTOBean(eventJson, EventEntity.class);
+        rmEventInfoService.addEvent(eventJson);
         return "添加成功！";
     }
 
