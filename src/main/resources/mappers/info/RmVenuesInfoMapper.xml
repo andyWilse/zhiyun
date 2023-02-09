@@ -155,11 +155,11 @@
     <select id="getAllNum" resultType="map">
         SELECT
             COUNT(VENUES_ID) AS total,
-            SUM(CASE WHEN RELIGIOUS_SECT = '伊斯兰教' THEN 1 ELSE 0 END) AS Islamism,
-            SUM(CASE WHEN RELIGIOUS_SECT = '基督教' THEN 1 ELSE 0 END) AS Christianity,
-            SUM(CASE WHEN RELIGIOUS_SECT = '天主教' THEN 1 ELSE 0 END) AS Catholicism,
-            SUM(CASE WHEN RELIGIOUS_SECT = '佛教' THEN 1 ELSE 0 END) AS Buddhism,
-            SUM(CASE WHEN RELIGIOUS_SECT = '道教' THEN 1 ELSE 0 END) AS Taoism
+            SUM(CASE WHEN RELIGIOUS_SECT = '100100000005' THEN 1 ELSE 0 END) AS Islamism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '100100000003' THEN 1 ELSE 0 END) AS Christianity,
+            SUM(CASE WHEN RELIGIOUS_SECT = '100100000004' THEN 1 ELSE 0 END) AS Catholicism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '100100000001' THEN 1 ELSE 0 END) AS Buddhism,
+            SUM(CASE WHEN RELIGIOUS_SECT = '100100000002' THEN 1 ELSE 0 END) AS Taoism
         FROM rm_venues_info
         where VENUES_STATUS='01'
     </select>
