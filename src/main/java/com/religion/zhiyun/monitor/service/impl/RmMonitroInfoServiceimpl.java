@@ -3,6 +3,7 @@ package com.religion.zhiyun.monitor.service.impl;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.utils.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,5 +69,33 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     @Override
     public String getMonitorURLByAccessNum(String accessNum) {
         return rmMonitroInfoMapper.getMonitorURLByAccessNum(accessNum);
+    }
+
+    @Override
+    public RespPageBean getVenuesMonitor(String venuesName,String accessNumber) {
+        long code= ResultCode.SUCCESS.getCode();
+        List<Map<String, Object>> map=null;
+        try {
+            map = rmMonitroInfoMapper.getVenuesMonitor(venuesName,accessNumber);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+
+        return new RespPageBean(code,map);
+    }
+
+    @Override
+    public RespPageBean getMonitors(String venuesName, String accessNumber, String state) {
+        long code= ResultCode.SUCCESS.getCode();
+        List<Map<String, Object>> map=null;
+        try {
+            map = rmMonitroInfoMapper.getMonitors(venuesName,accessNumber,state);
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
+        }
+
+        return new RespPageBean(code,map);
     }
 }

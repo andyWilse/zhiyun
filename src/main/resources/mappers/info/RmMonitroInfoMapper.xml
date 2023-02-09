@@ -63,8 +63,9 @@
     </select>
     <select id="getAllNum" resultType="java.util.Map">
         SELECT COUNT(MONITOR_ID) AS total,
-        SUM(CASE WHEN STATE =01 THEN 1 ELSE 0 END) AS on_line,
-        SUM(CASE WHEN STATE =02 THEN 1 ELSE 0 END) AS REPAIR
+        SUM(CASE WHEN STATE =01 THEN 1 ELSE 0 END) AS onLine,
+        SUM(CASE WHEN STATE =02 THEN 1 ELSE 0 END) AS repair,
+        (select count(v.VENUES_ID) from rm_venues_info v where v.VENUES_STATUS='01') as religionsNum
         FROM rm_monitor_manage_info
     </select>
     <select id="getMonitorByState" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
@@ -106,6 +107,76 @@
     <select id="getMonitorURLByAccessNum" resultType="java.lang.String">
         SELECT monitor_url FROM rm_monitor_manage_info
         WHERE access_number=#{accessNumber}
+    </select>
+
+    <select id="getVenuesMonitor" resultType="map">
+        select
+            VENUES_NAME as venuesName,
+            VENUES_ADDRES as venuesAddres,
+            ORGANIZATION as organization,
+            REGISTER_NBR as registerNbr,
+            RESPONSIBLE_PERSON  as responsiblePerson,
+            sr.STAFF_TELPHONE as responsiblePersonPhone,
+            LIAISON_MAN as liaisonMan,
+            sl.STAFF_TELPHONE as liaisonManPhone,
+            d.DICT_CN_DESC as religiousSect,
+            VENUES_PHONE as venuesPhone,
+            PICTURES_PATH as picturesPath,
+            m.MONITOR_URL as monitorUrl,
+            BRIEF_INTRODUCTION as briefIntroduction,
+            ve.CREATOR as creator,
+            ve.CREATE_TIME as createTime,
+            ve.LAST_MODIFIER as lastModifier,
+            ve.LAST_MODIFY_TIME as lastModifyTime
+        from RM_VENUES_INFO ve
+        left join rm_staff_info sr on ve.RESPONSIBLE_PERSON=sr.STAFF_CN_NM
+        left join rm_staff_info sl on ve.LIAISON_MAN=sl.STAFF_CN_NM
+        left join rm_monitor_manage_info m on ve.VENUES_ID=m.rel_venues_id
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
+        where VENUES_STATUS!='02'
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  m.ACCESS_NUMBER =#{accessNumber}
+        </if>
+        <if test="venuesName != null and venuesName != ''">
+            AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
+        </if>
+    </select>
+
+
+    <select id="getMonitors" resultType="map">
+        select
+            VENUES_NAME as venuesName,
+            VENUES_ADDRES as venuesAddres,
+            ORGANIZATION as organization,
+            REGISTER_NBR as registerNbr,
+            RESPONSIBLE_PERSON  as responsiblePerson,
+            sr.STAFF_TELPHONE as responsiblePersonPhone,
+            LIAISON_MAN as liaisonMan,
+            sl.STAFF_TELPHONE as liaisonManPhone,
+            d.DICT_CN_DESC as religiousSect,
+            VENUES_PHONE as venuesPhone,
+            PICTURES_PATH as picturesPath,
+            m.MONITOR_URL as monitorUrl,
+            BRIEF_INTRODUCTION as briefIntroduction,
+            ve.CREATOR as creator,
+            ve.CREATE_TIME as createTime,
+            ve.LAST_MODIFIER as lastModifier,
+            ve.LAST_MODIFY_TIME as lastModifyTime
+        from rm_monitor_manage_info m
+        left join  RM_VENUES_INFO ve on ve.VENUES_ID=m.rel_venues_id
+        left join rm_staff_info sr on ve.RESPONSIBLE_PERSON=sr.STAFF_CN_NM
+        left join rm_staff_info sl on ve.LIAISON_MAN=sl.STAFF_CN_NM
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
+        where VENUES_STATUS!='02'
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  m.ACCESS_NUMBER =#{accessNumber}
+        </if>
+        <if test="venuesName != null and venuesName != ''">
+            AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
+        </if>
+        <if test="state != null and state != ''">
+            AND  m.STATE =#{state}
+        </if>
     </select>
 
 </mapper>

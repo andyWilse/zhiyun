@@ -64,11 +64,42 @@
 
     <select id="getByType" resultType="map">
         select
-            <include refid="eventColumn"/>
-        from rm_event_info
+            EVENT_ID as eventId,
+            ACCESS_NUMBER as accessNumber,
+            DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
+            v.VENUES_ADDRES as venuesAddres,
+            e.RESPONSIBLE_PERSON as responsiblePerson,
+            EVENT_TYPE as eventType,
+            case EVENT_TYPE
+            when '01' then '火灾预警'
+            when '02' then '人脸识别'
+            when '03' then '任务预警'
+            when '04' then '人流聚集'
+            else '其他'
+            end as eventTypeNm,
+            EVENT_STATE as eventState,
+            case EVENT_STATE
+            when '00' then '待查实'
+            when '01' then '已完成'
+            when '02' then '误报'
+            else '其他'
+            end as eventStateNm,
+            HANDLE_RESULTS as handleTesults,
+            DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
+            v.PICTURES_PATH as picturesPath,
+            v.VENUES_NAME as venuesName,
+            e.event_level as eventLevel,
+            case event_level
+            when '01' then '警告'
+            when '02' then '查看'
+            else '其他'
+            end as eventLevelNm
+
+        from RM_EVENT_INFO e
+        left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
         <where>
             <if test="eventType!=null and eventType!=''">
-                EVENT_TYPE=#{eventType}
+                e.EVENT_TYPE=#{eventType}
             </if>
         </where>
         ORDER BY WARN_TIME DESC
@@ -143,7 +174,5 @@
             AND  ev.EVENT_TYPE =#{eventType}
         </if>
     </select>
-
-
 
 </mapper>

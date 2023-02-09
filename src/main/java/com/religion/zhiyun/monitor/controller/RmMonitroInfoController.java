@@ -79,11 +79,27 @@ public class RmMonitroInfoController {
         return rmMonitroInfoService.getMonitrosByPage(page,size,accessNumber);
     }
 
-
     @RequestMapping("/getMonitorURLByAccessNum/{accessNum}")
     public String getMonitorURLByAccessNum(@PathVariable String accessNum){
         return rmMonitroInfoService.getMonitorURLByAccessNum(accessNum);
 
+    }
+
+    @RequestMapping("/getVenuesMonitor")
+    public RespPageBean getVenuesMonitor(@RequestParam Map<String, Object> map) {
+        String venuesName = (String) map.get("venuesName");
+        String accessNumber = (String) map.get("accessNumber");
+
+        return rmMonitroInfoService.getVenuesMonitor(venuesName,accessNumber);
+    }
+
+    @RequestMapping("/getMonitors")
+    public RespPageBean getMonitors(@RequestParam Map<String, Object> map) {
+        String venuesName = (String) map.get("venuesName");
+        String accessNumber = (String) map.get("accessNumber");
+        String state = (String) map.get("state");
+
+        return rmMonitroInfoService.getMonitors(venuesName,accessNumber,state);
     }
 
 }
