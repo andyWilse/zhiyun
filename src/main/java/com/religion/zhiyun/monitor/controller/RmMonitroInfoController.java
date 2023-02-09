@@ -80,8 +80,8 @@ public class RmMonitroInfoController {
     }
 
 
-    @RequestMapping("/getMonitorURLByAccessNum")
-    public String getMonitorURLByAccessNum(String accessNum){
+    @RequestMapping("/getMonitorURLByAccessNum/{accessNum}")
+    public String getMonitorURLByAccessNum(@PathVariable String accessNum){
         return rmMonitroInfoService.getMonitorURLByAccessNum(accessNum);
 
     }
