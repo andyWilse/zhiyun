@@ -61,7 +61,7 @@ public class RmUserLogsInfoServiceimpl implements RmUserLogsInfoService {
         return bean;
     }
 
-    @Override
+/*    @Override
     public void savelogs(String response,String cnName) {
         LogsEntity logsEntity=new LogsEntity();
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -77,6 +77,38 @@ public class RmUserLogsInfoServiceimpl implements RmUserLogsInfoService {
         String body = HttpServletRequestReader.ReadAsChars(request);
         logsEntity.setRequestParam(body);
         logsEntity.setResponseResult(response);
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        logsEntity.setFkDate(timestamp);
+
+        rmUserLogsInfoMapper.addlogs(logsEntity);
+    }*/
+
+    @Override
+    public void savelogs(String response,String cnName) {//InfoEnums枚举，新增提示和操作
+        //new一个日志对象
+        LogsEntity logsEntity=new LogsEntity();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        //获取该请求头的内容，为工号
+        String nbr = request.getHeader("login-name");
+        logsEntity.setUserNbr(nbr);
+        //根据工号查询用户信息的对象
+        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
+        //对象不为空
+        if(null!=sysUserEntity){
+            //对象的登录名赋到日志对象的名字
+            logsEntity.setUserName(sysUserEntity.getLoginNm());
+        }
+        //接口路径
+        String servletPath = request.getServletPath();
+        logsEntity.setInterfaceCode(servletPath);
+        //接口名字
+        logsEntity.setInterfaceName(cnName);
+        //请求参数
+        String body = HttpServletRequestReader.ReadAsChars(request);
+        logsEntity.setRequestParam(body);
+        //响应
+        logsEntity.setResponseResult(response);
+        //时间
         Timestamp timestamp = new Timestamp(new Date().getTime());
         logsEntity.setFkDate(timestamp);
 

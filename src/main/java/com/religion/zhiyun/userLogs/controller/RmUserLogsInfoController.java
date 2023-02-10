@@ -55,4 +55,6 @@ public class RmUserLogsInfoController {
 
         return rmUserLogsInfoService.getLogsByPage(page,size,userName);
     }
+
+
 }
