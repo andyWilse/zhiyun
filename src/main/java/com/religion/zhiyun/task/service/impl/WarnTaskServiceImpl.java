@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
+import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.config.TestCommand;
 import com.religion.zhiyun.task.service.WarnTaskService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
@@ -37,41 +38,48 @@ public class WarnTaskServiceImpl implements WarnTaskService {
     public Object deployment() {
         //第一步
         DeploymentBuilder builder=  repositoryService.createDeployment();
-        builder.addClasspathResource("processes/zuYuan.bpmn");
+        builder.addClasspathResource(TaskParamsEnum.ZY_REPORT_TASK_PATH.getCode());
         String id = builder.deploy().getId();
-        repositoryService.setDeploymentKey(id,"zyTask");
-        log.info("流程id："+id);
+        repositoryService.setDeploymentKey(id,TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode());
+        log.info(TaskParamsEnum.ZY_REPORT_TASK_PATH.getName()+"流程id："+id+",部署成功");
         return id;
     }
 
     @Override
     public Object launch() {
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+        SysUserEntity sysUserEntity = null;
+        try {
+            SysUserEntity entity = TokenUtils.getToken();
+            if(null==entity){
+                throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+            }
+            String ofcId = entity.getOfcId();
+            String userId = entity.getUId();
+            String userNbr = entity.getUserNbr();
+            Authentication.setAuthenticatedUserId(userNbr);
+            //taskService.setAssignee("assignee1",userId);
+
+            //inputUser就是在bpmn中Assignee配置的参数
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("assignee2", ofcId);
+            /**start**/
+            //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
+            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+            RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
+            ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode(),variables);
+            String processInstanceId = processInstance.getProcessInstanceId();
+            /**end**/
+            //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
+            TaskQuery taskQuery = taskService.createTaskQuery();
+            Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+            taskService.complete(tmp.getId(),variables);
+
+            //返回下一节点处理人
+            sysUserEntity = sysUserMapper.queryByUserId(ofcId);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("未知错误，请联系管理员！") ;
         }
-        String nbr = entity.getUserNbr();
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String userId = sysUserEntity.getUserId()+"";
-        String ofcId = sysUserEntity.getOfcId();
-        Authentication.setAuthenticatedUserId(userId);
-
-        //inputUser就是在bpmn中Assignee配置的参数
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("assignee1", ofcId);
-
-        /**start**/
-        //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
-        ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-        RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
-        ProcessInstance processInstance =runtimeService.startProcessInstanceByKey("zyTask",variables);
-        String processInstanceId = processInstance.getProcessInstanceId();
-        /**end**/
-
-        TaskQuery taskQuery = taskService.createTaskQuery();
-        Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
-        //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
-        taskService.complete(tmp.getId(),variables);
 
         return sysUserEntity.getLoginNm();
     }

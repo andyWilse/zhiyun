@@ -50,6 +50,8 @@ public class LoginServiceImpl implements LoginService {
                     .withClaim("password",userinfo.getPasswords())
                     .withClaim("userNbr",userinfo.getUserNbr())
                     .withClaim("identity",userinfo.getIdentity())
+                    .withClaim("ofcId", userinfo.getOfcId())
+                    .withClaim("userId",userinfo.getUserId())
                     .withClaim("expireAt",date)
                     .withExpiresAt(date)
                     .sign(algorithm);

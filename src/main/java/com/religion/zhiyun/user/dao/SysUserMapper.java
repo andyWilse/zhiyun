@@ -21,6 +21,9 @@ public interface SysUserMapper {
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
 
+    //根据用户id查询数据
+    SysUserEntity queryByUserId(@Param("userId") String userId);
+
     /**
      * 分页拆查询
      * @param page

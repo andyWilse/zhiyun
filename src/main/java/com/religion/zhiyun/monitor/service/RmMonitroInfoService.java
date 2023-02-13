@@ -29,4 +29,9 @@ public interface RmMonitroInfoService {
 
     String getMonitorURLByAccessNum(String accessNum);
 
+    /** 监控  **/
+    RespPageBean getVenuesMonitor(String venuesName,String accessNumber);
+
+    RespPageBean getMonitors(String venuesName,String accessNumber,String state);
+
 }

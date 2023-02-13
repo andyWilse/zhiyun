@@ -61,4 +61,6 @@ public class SysUserEntity {
     @Column(comment = "",name = "WEAK_PW_IND")
     private String weakPwInd;
 
+    private String uId;
+
 }

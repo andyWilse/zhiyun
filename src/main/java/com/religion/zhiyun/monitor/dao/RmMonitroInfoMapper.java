@@ -1,6 +1,7 @@
 package com.religion.zhiyun.monitor.dao;
 
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.utils.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,6 +20,7 @@ public interface RmMonitroInfoMapper {
     void updateMonitro(MonitroEntity monitroEntity);
 
     void deleteMonitro(String monitroId);
+
     List<Map<String,Object>> getAllNum();
 
     List<MonitroEntity> getMonitorByState(String state);
@@ -43,4 +45,11 @@ public interface RmMonitroInfoMapper {
 
     //根据设备编号返回监控url
     String getMonitorURLByAccessNum(String accessNum);
+
+    /** 监控  **/
+    List<Map<String,Object>> getVenuesMonitor(String venuesName,String accessNumber);
+
+    List<Map<String,Object>> getMonitors(String venuesName, String accessNumber, String state);
+
+
 }

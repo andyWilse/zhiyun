@@ -39,7 +39,7 @@ public class TestController {
     public Object get(){
         //第一步
         DeploymentBuilder builder=  repositoryService.createDeployment();
-        builder.addClasspathResource("process/testBpm.bpmn");
+        builder.addClasspathResource("processes/testBpm.bpmn");
         String id = builder.deploy().getId();
         repositoryService.setDeploymentKey(id,"nnffnn4d");
         System.out.println(id);
