@@ -65,7 +65,7 @@
     <select id="getByType" resultType="map">
         select
             EVENT_ID as eventId,
-            ACCESS_NUMBER as accessNumber,
+            m.ACCESS_NUMBER as accessNumber,
             DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
             v.VENUES_ADDRES as venuesAddres,
             e.RESPONSIBLE_PERSON as responsiblePerson,
@@ -93,10 +93,12 @@
             when '01' then '警告'
             when '02' then '查看'
             else '其他'
-            end as eventLevelNm
+            end as eventLevelNm,
+            m.MONITOR_URL as monitorUrl
 
         from RM_EVENT_INFO e
         left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
+        left join rm_monitor_manage_info m on e.ACCESS_NUMBER=m.ACCESS_NUMBER
         <where>
             <if test="eventType!=null and eventType!=''">
                 e.EVENT_TYPE=#{eventType}

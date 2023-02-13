@@ -3,7 +3,7 @@
   <process id="zyTask" name="预警任务流程图" isExecutable="true">
     <documentation>预警任务流程图</documentation>
     <startEvent id="startTask" name="开始流程"></startEvent>
-    <userTask id="zuYuan" name="组员" activiti:assignee="${assignee1}">
+    <userTask id="zuYuan" name="组员">
       <extensionElements>
         <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
       </extensionElements>

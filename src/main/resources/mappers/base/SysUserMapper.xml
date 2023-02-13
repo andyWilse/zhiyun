@@ -84,6 +84,13 @@
         from RM_SYS_USER_INFO where USER_NBR = #{userNbr}
     </select>
 
+    <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+        <include refid="userColumn"/>
+        from RM_SYS_USER_INFO
+        where USER_ID = #{userId}
+    </select>
+
     <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
         <include refid="userColumn"/>

@@ -87,7 +87,7 @@
         select
             MONITOR_ID as monitorId,
             ACCESS_NUMBER as accessNumber,
-            MONITOR_URL as monitorURL,
+            MONITOR_URL as monitorUrl,
             CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
             FUNCTION_TYPE as functionType,
             v.VENUES_ADDRES as venuesAddres,

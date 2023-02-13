@@ -30,11 +30,16 @@ public class TokenUtils {
             String username = verify.getClaim("username").asString();
             String identity = verify.getClaim("identity").asString();
             String userNbr = verify.getClaim("userNbr").asString();
-            //Long expireAt = verify.getClaim("expireAt").asLong();
+            String ofcId = verify.getClaim("ofcId").asString();
+            String userId = verify.getClaim("userId").asString();
 
+            //Long expireAt = verify.getClaim("expireAt").asLong();
             enti.setLoginNm(username);
             enti.setIdentity(identity);
             enti.setUserNbr(userNbr);
+            enti.setOfcId(ofcId);
+            enti.setUId(userId);
+
             //token参数不对
             /*if (!Strings.isNullOrEmpty(username)
                     && !Strings.isNullOrEmpty(identity)
