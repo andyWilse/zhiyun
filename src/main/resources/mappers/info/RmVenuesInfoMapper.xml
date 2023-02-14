@@ -194,7 +194,7 @@
             AND  VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
         </if>
         <if test="responsiblePerson != null and responsiblePerson != ''">
-            AND  RESPONSIBLE_PERSON = #{responsiblePerson}
+            AND  RESPONSIBLE_PERSON LIKE CONCAT('%',#{responsiblePerson},'%')
         </if>
         <if test="religiousSect != null and religiousSect != ''">
             AND  RELIGIOUS_SECT = #{religiousSect}
