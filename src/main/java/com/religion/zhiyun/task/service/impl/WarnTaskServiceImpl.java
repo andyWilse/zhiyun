@@ -2,9 +2,14 @@ package com.religion.zhiyun.task.service.impl;
 
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.config.TestCommand;
+import com.religion.zhiyun.task.dao.ActReProcdefMapper;
+import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.WarnTaskService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.*;
@@ -18,8 +23,10 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Slf4j
@@ -32,7 +39,12 @@ public class WarnTaskServiceImpl implements WarnTaskService {
     @Autowired
     private SysUserMapper sysUserMapper;
     @Autowired
+    private ActReProcdefMapper actReProcdefMapper;
+
+    @Autowired
     ManagementService managementService;
+    @Autowired
+    TaskInfoMapper taskInfoMapper;
 
     @Override
     public Object deployment() {
@@ -46,22 +58,16 @@ public class WarnTaskServiceImpl implements WarnTaskService {
     }
 
     @Override
-    public Object launch() {
-        SysUserEntity sysUserEntity = null;
+    @Transactional
+    public Object launch(TaskEntity taskEntity) {
+        String loginNm ="";
         try {
-            SysUserEntity entity = TokenUtils.getToken();
-            if(null==entity){
-                throw new RuntimeException("登录人信息丢失，请登陆后重试！");
-            }
-            String ofcId = entity.getOfcId();
-            String userId = entity.getUId();
-            String userNbr = entity.getUserNbr();
-            Authentication.setAuthenticatedUserId(userNbr);
-            //taskService.setAssignee("assignee1",userId);
+            loginNm = this.getLogin();
+            Authentication.setAuthenticatedUserId(loginNm);
 
             //inputUser就是在bpmn中Assignee配置的参数
             Map<String, Object> variables = new HashMap<>();
-            variables.put("assignee2", ofcId);
+            variables.put("assignee2", loginNm);
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
@@ -72,130 +78,206 @@ public class WarnTaskServiceImpl implements WarnTaskService {
             //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
             TaskQuery taskQuery = taskService.createTaskQuery();
             Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+            //taskService.setAssignee("assignee2",userNbr);
             taskService.complete(tmp.getId(),variables);
 
-            //返回下一节点处理人
-            sysUserEntity = sysUserMapper.queryByUserId(ofcId);
+            taskEntity.setLaunchPerson(loginNm);
+            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_PATH.getName());
+            taskEntity.setProcInstId(tmp.getProcessInstanceId());
+            //保存任务信息
+            taskInfoMapper.addTask(taskEntity);
+
+            log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
         } catch (RuntimeException e) {
             e.printStackTrace();
             throw new RuntimeException("未知错误，请联系管理员！") ;
         }
 
-        return sysUserEntity.getLoginNm();
+        return loginNm;
     }
 
     @Override
-    public Object report() {
+    @Transactional
+    public Object report(String procInstId) {
         SysUserEntity entity = TokenUtils.getToken();
         if(null==entity){
             throw new RuntimeException("登录人信息丢失，请登陆后重试！");
         }
-        String nbr = entity.getUserNbr();
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String userId = sysUserEntity.getUserId()+"";
-        String ofcId = sysUserEntity.getOfcId();
-        String identity = sysUserEntity.getIdentity();
+        String loginNm = entity.getLoginNm();
+        String identity = entity.getIdentity();
 
         //根据角色信息获取自己的待办 act_ru_task
-        List<Task> T = taskService.createTaskQuery().taskAssignee(userId).list();
+        //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+        //处理自己的待办
+        List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
         if(!ObjectUtils.isEmpty(T)) {
             for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "go",ofcId);
+                Map<String, Object> variables = this.setFlag(identity, "go",loginNm,procInstId);
                 variables.put("isSuccess", true);
                 //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
                 taskService.setVariableLocal(item.getId(),"isSuccess",false);
                 //增加审批备注
                 taskService.addComment(item.getId(),item.getProcessInstanceId(),"上报");
-                //getNode("1f81d0a0-a829-11ed-ba49-d8f883ed6283","",item);
                 //完成此次审批。由下节点审批
                 taskService.complete(item.getId(), variables);
             }
         }
-        return sysUserEntity.getLoginNm();
+        log.info("任务id："+procInstId+" 上报");
+        return loginNm;
     }
 
     @Override
-    public Object approve() {
+    @Transactional
+    public Object handle(String procInstId,String handleResults) {
         SysUserEntity entity = TokenUtils.getToken();
         if(null==entity){
             throw new RuntimeException("登录人信息丢失，请登陆后重试！");
         }
-        String nbr = entity.getUserNbr();
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String userId = sysUserEntity.getUserId()+"";
-        String ofcId = sysUserEntity.getOfcId();
-        String identity = sysUserEntity.getIdentity();
+        String loginNm = entity.getLoginNm();
+        String identity = entity.getIdentity();
+
         //根据角色信息获取自己的待办
-        List<Task> T = taskService.createTaskQuery().taskAssignee(userId).list();
+        //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+        //处理待办
+        List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
         if(!ObjectUtils.isEmpty(T)) {
             for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "end",ofcId);
+                Map<String, Object> variables = this.setFlag(identity, "end",loginNm,procInstId);
                 variables.put("isSuccess", true);
 
                 //设置本地参数。在myListener1监听中获取。
                 taskService.setVariableLocal(item.getId(),"isSuccess",true);
                 //增加审批备注
-                taskService.addComment(item.getId(),item.getProcessInstanceId(),"同意");
+                taskService.addComment(item.getId(),item.getProcessInstanceId(),handleResults);
                 //完成此次审批。如果下节点为endEvent。结束流程
                 taskService.complete(item.getId(), variables);
+
+                log.info("任务id："+procInstId+" 已处理，流程结束！");
             }
         }
-        return sysUserEntity.getLoginNm();
+        //更新处理结果
+        TaskEntity taskEntity=new TaskEntity();
+        taskEntity.setHandlePerson(loginNm);
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        taskEntity.setHandleTime(new Date());
+        taskEntity.setHandleResults(handleResults);
+        taskEntity.setProcInstId(procInstId);
+        taskInfoMapper.updateTask(taskEntity);
+
+        log.info("任务id："+procInstId+" 已处理，数据更新！");
+        return loginNm;
     }
 
     @Override
-    public Object getUnTask() {
+    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent) {
         SysUserEntity entity = TokenUtils.getToken();
         if(null==entity){
             throw new RuntimeException("登录人信息丢失，请登陆后重试！");
         }
-        String nbr = entity.getUserNbr();
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String userId = sysUserEntity.getUserId()+"";
+        String loginNm = entity.getLoginNm();
+        List<TaskEntity> taskEntities = taskInfoMapper.queryTasks(page, size, taskName, taskContent,loginNm);
 
+        return new RespPageBean(200l,taskEntities.toArray());
+    }
+
+    @Override
+    public String getTaskNum() {
+        String login = this.getLogin();
+        Map<String, Object> map = taskInfoMapper.getTaskNum(login);
+        String sum = JsonUtils.objectTOJSONString(map);
+        return sum;
+    }
+
+    @Override
+    public Object getUnTask() {
+        String login = this.getLogin();
         ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
         HistoryService historyService = defaultProcessEngine.getHistoryService();
         HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-        List<HistoricProcessInstance> unfinishedTaskList = historicProcessInstanceQuery.startedBy(userId).unfinished().list();
+        List<HistoricProcessInstance> unfinishedList = historicProcessInstanceQuery.startedBy(login).unfinished().list();
+        List<TaskEntity> unfinishedTaskList=new ArrayList<>();
+        if(null!=unfinishedList && unfinishedList.size()>0){
+            for(int i=0;i<unfinishedList.size();i++){
+                HistoricProcessInstance historicProcessInstance = unfinishedList.get(i);
+                String superProcessInstanceId = historicProcessInstance.getId();
+                TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
+                unfinishedTaskList.add(taskEntity);
+            }
+        }
+
         return unfinishedTaskList;
     }
 
     @Override
     public Object getFinishTask() {
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
-        }
-        String nbr = entity.getUserNbr();
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String userId = sysUserEntity.getUserId()+"";
-
+        String login = this.getLogin();
         ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
         HistoryService historyService = defaultProcessEngine.getHistoryService();
         HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-        List<HistoricProcessInstance> finishedTaskList = historicProcessInstanceQuery.startedBy(userId).finished().list();
-
+        List<HistoricProcessInstance> finishedList = historicProcessInstanceQuery.startedBy(login).finished().list();
+        List<TaskEntity> finishedTaskList=new ArrayList<>();
+        if(null!=finishedList && finishedList.size()>0){
+            for(int i=0;i<finishedList.size();i++){
+                HistoricProcessInstance historicProcessInstance = finishedList.get(i);
+                String superProcessInstanceId = historicProcessInstance.getId();
+                TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
+                finishedTaskList.add(taskEntity);
+            }
+        }
         return finishedTaskList;
     }
-    public Map<String, Object>  setFlag(String identity,String flag,String ofcId) {
-        Map<String, Object> variables = new HashMap<>();
-        if("10000006".equals(identity)){
-            variables.put("flag3", "end");
-            variables.put("assignee2", ofcId);
-        }else if("10000005".equals(identity)){
-            variables.put("flag4", "end");
-            variables.put("assignee3", ofcId);
-        }else if("10000004".equals(identity)){
-            variables.put("flag5", "end");
-            variables.put("assignee4", ofcId);
-        }else if("10000003".equals(identity)){
-            variables.put("flag6", "end");
-            variables.put("assignee5", ofcId);
-        }else if("10000002".equals(identity)){
-            variables.put("flag7", "end");
-            variables.put("assignee6", ofcId);
 
+    /**
+     * 流程走向定义
+     * @param identity
+     * @param flag
+     * @param ofcId
+     * @param procInstId
+     * @return
+     */
+    public Map<String, Object>  setFlag(String identity,String flag,String ofcId,String procInstId) {
+        String identi = sysUserMapper.queryStarter(procInstId);
+        int no=0;
+        if("10000007".equals(identi)){
+            no=2;
+        }else if("10000006".equals(identi)){
+            no=1;
+        } else if("10000005".equals(identi)){
+            no=0;
+        }else if("10000004".equals(identi)){
+            no=-1;
+        }else if("10000003".equals(identi)){
+            no=-2;
+        }else if("10000002".equals(identi)){
+            no=-3;
         }
+
+        int flagNo=0;
+        int assiNo=0;
+        Map<String, Object> variables = new HashMap<>();
+        if("10000006".equals(identity) ){
+            flagNo=no;
+            assiNo=no+1;
+        }else if("10000005".equals(identity)){
+            flagNo=no+1;
+            assiNo=no+2;
+        }else if("10000004".equals(identity)){
+            flagNo=no+2;
+            assiNo=no+3;
+        }else if("10000003".equals(identity)){
+            flagNo=no+3;
+            assiNo=no+4;
+        }else if("10000002".equals(identity)){
+            flagNo=no+4;
+            assiNo=no+5;
+        } else if("10000001".equals(identity)){
+            flagNo=no+5;
+            assiNo=no+6;
+        }
+
+        variables.put("flag"+flagNo, flag);
+        variables.put("assignee"+assiNo, ofcId);
+
         return variables;
     }
 
@@ -244,5 +326,25 @@ public class WarnTaskServiceImpl implements WarnTaskService {
             }
         }
     }
+
+
+    public List<Map<String,Object>> queryTasks(){
+        return actReProcdefMapper.queryTasks();
+    }
+
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(){
+        SysUserEntity entity = TokenUtils.getToken();
+        if(null==entity){
+            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+        }
+        String loginNm = entity.getLoginNm();
+        return loginNm;
+    }
+
+
 
 }

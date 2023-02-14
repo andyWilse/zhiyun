@@ -134,4 +134,15 @@
         WHERE USER_ID = #{userId}
     </update>
 
+    <select id="queryStarter" resultType="java.lang.String">
+        select
+            u.IDENTITY as identity
+        from act_hi_identitylink h
+        left join rm_sys_user_info u on h.USER_ID_=u.USER_NBR
+        where h.TYPE_='starter'
+        <if test="procInstId != null and procInstId != ''">
+            and h.PROC_INST_ID_ = #{procInstId}
+        </if>
+    </select>
+
 </mapper>
