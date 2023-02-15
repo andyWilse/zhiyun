@@ -1,7 +1,7 @@
 package com.religion.zhiyun.task.controller;
 
 import com.religion.zhiyun.task.entity.TaskEntity;
-import com.religion.zhiyun.task.service.WarnTaskService;
+import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +13,10 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/eventTask")
-public class WarnTaskController {
+public class TaskReportController {
 
     @Autowired
-    private WarnTaskService warnTaskService;
+    private TaskReportService warnTaskService;
 
 
     @RequestMapping("/deploy")
