@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.task.dao.ActReProcdefMapper">
+
+    <select id="queryTasks" resultType="map">
+        select  id.USER_ID_ as userId,
+                DATE_FORMAT(pr.START_TIME_,'%Y-%m-%d %H:%i:%s') as startTm,
+                DATE_FORMAT(pr.END_TIME_,'%Y-%m-%d %H:%i:%s') as endTm,
+                pro.NAME_ as nm,
+                case (select ac.ACT_ID_ from act_hi_actinst ac
+                where ac.PROC_INST_ID_=g.PROC_INST_ID_ and ac.START_TIME_=g.START_TIME_)
+                when 'taskEnd' then '流程已结束'
+                else '流程进行中'
+                end as currStat,
+                (select ac.ASSIGNEE_ from act_hi_actinst ac
+                where ac.PROC_INST_ID_=g.PROC_INST_ID_ and ac.START_TIME_=g.START_TIME_) as curHandler
+        from act_hi_procinst pr
+        left join act_re_procdef pro on pro.ID_=pr.PROC_DEF_ID_
+        left join act_hi_identitylink id on id.PROC_INST_ID_=pr.PROC_INST_ID_ and id.TYPE_='starter'
+        left join (select max(act.START_TIME_) as START_TIME_ ,act.PROC_INST_ID_
+        from act_hi_actinst act group by  act.PROC_INST_ID_) g on id.PROC_INST_ID_=g.PROC_INST_ID_
+    </select>
+
+</mapper>

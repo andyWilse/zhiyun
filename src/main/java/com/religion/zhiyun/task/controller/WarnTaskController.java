@@ -1,11 +1,14 @@
 package com.religion.zhiyun.task.controller;
 
+import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.WarnTaskService;
+import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,23 +28,42 @@ public class WarnTaskController {
 
     @RequestMapping("/launch")
     @ResponseBody
-    public Object launch(){
-        warnTaskService.launch();
-        return null;
+    public Object launch(@RequestBody String taskJson){
+        TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
+        Object launch = warnTaskService.launch(taskEntity);
+        return "节点执行人："+launch;
     }
 
     @RequestMapping("/report")
     @ResponseBody
-    public Object report(){
-        warnTaskService.report();
-        return null;
+    public Object report(@RequestParam String procInstId){
+        Object report = warnTaskService.report(procInstId);
+        return report;
     }
 
-    @RequestMapping("/approve")
+    @RequestMapping("/handle")
     @ResponseBody
-    public Object approve(){
-        warnTaskService.approve();
-        return null;
+    public Object handle(@RequestParam String procInstId,@RequestParam String handleResults){
+        Object approve = warnTaskService.handle(procInstId, handleResults);
+        return approve;
+    }
+
+    @RequestMapping("/getTasking")
+    public RespPageBean getTasking(@RequestParam Map<String, Object> map) {
+        String taskName = (String) map.get("taskName");
+        String taskContent = (String) map.get("taskContent");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return warnTaskService.getTasking(page,size,taskName,taskContent);
+    }
+
+    @RequestMapping("/getTaskStatistics")
+    public String getTaskStatistics() {
+        return warnTaskService.getTaskNum();
     }
 
     @RequestMapping("/unFinish")
@@ -54,6 +76,12 @@ public class WarnTaskController {
     @ResponseBody
     public Object getFinishTask(){
         return warnTaskService.getFinishTask();
+    }
+
+    @RequestMapping("/que")
+    @ResponseBody
+    public Object queryTasks(){
+        return warnTaskService.queryTasks();
     }
 
 }

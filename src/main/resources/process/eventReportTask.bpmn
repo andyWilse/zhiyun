@@ -3,7 +3,7 @@
   <process id="reportTaskKey" name="任务上报" isExecutable="true">
     <documentation>层层上报，直至处理</documentation>
     <startEvent id="taskStart" name="上报流程开始"></startEvent>
-    <userTask id="taskUser1" name="任务节点1" activiti:assignee="${assignee1}">
+    <userTask id="taskUser1" name="任务节点1" >
       <extensionElements>
         <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
       </extensionElements>

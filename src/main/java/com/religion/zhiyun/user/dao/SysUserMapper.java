@@ -62,5 +62,11 @@ public interface SysUserMapper {
      */
     void delete(int userId);
 
+    /**
+     * 查询发起人
+     * @param procInstId
+     * @return
+     */
+    String queryStarter(@Param("procInstId") String procInstId);
 
 }

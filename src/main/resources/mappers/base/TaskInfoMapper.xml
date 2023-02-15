@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.task.dao.TaskInfoMapper">
+
+    <insert id="addTask">
+        insert into rm_task_info(
+            TASK_NAME,
+            TASK_CONTENT,
+            END_TIME,
+            REL_VENUES_ID,
+            EMERGENCY_LEVEL,
+            TASK_PICTURE,
+            TASK_VIDEO,
+            LAUNCH_PERSON,
+            HANDLE_PERSON,
+            HANDLE_RESULTS,
+            HANDLE_TIME,
+            TASK_TYPE,
+            PROC_INST_ID
+        )
+        values (
+            #{taskName},
+            #{taskContent},
+            #{endTime},
+            #{relVenuesId},
+            #{emergencyLevel},
+            #{taskPicture},
+            #{taskVideo},
+            #{launchPerson},
+            #{handlePerson},
+            #{handleResults},
+            #{handleTime},
+            #{taskType},
+            #{procInstId}
+        )
+    </insert>
+
+    <update id="updateTask" >
+        update rm_task_info t
+            set t.HANDLE_PERSON=#{handlePerson},t.HANDLE_RESULTS=#{handleResults},t.HANDLE_TIME=#{handleTime}
+        where PROC_INST_ID=#{procInstId}
+    </update>
+
+    <sql id="taskColumn">
+        TASK_NAME as taskName,
+        TASK_CONTENT as taskContent,
+        END_TIME as endTime,
+        REL_VENUES_ID as relVenuesId,
+        EMERGENCY_LEVEL as emergencyLevel,
+        TASK_PICTURE as taskPicture,
+        TASK_VIDEO as taskVideo,
+        LAUNCH_PERSON as launchPerson,
+        HANDLE_PERSON as handlePerson,
+        HANDLE_RESULTS as handleResults,
+        HANDLE_TIME as handleTime,
+        TASK_TYPE as taskType,
+        PROC_INST_ID as procInstId
+    </sql>
+
+    <select id="queryTasks" resultType="com.religion.zhiyun.task.entity.TaskEntity">
+        select
+            ta.TASK_NAME as taskName,
+            ta.TASK_CONTENT as taskContent,
+            ta.END_TIME as endTime,
+            ve.VENUES_ADDRES as venuesAddres,
+            case ta.EMERGENCY_LEVEL
+            when '01' then '紧急'
+            when '02' then '普通'
+            else ta.EMERGENCY_LEVEL
+            end as emergencyLevel
+
+        from rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join act_ru_task ac on ta.PROC_INST_ID=ac.PROC_INST_ID_
+        where ac.assignee_=#{loginNm}
+
+        <if test="taskName != null and taskName != ''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{taskName},'%')
+        </if>
+        <if test="taskContent != null and taskContent != ''">
+            and ta.TASK_CONTENT LIKE CONCAT('%',#{taskContent},'%')
+        </if>
+        order by ta.END_TIME desc
+
+    </select>
+
+    <select id="getTaskNum" resultType="map">
+        select
+            ifnull(sta.startSum+sta.reportSum+sta.handleSum,0) as total,
+            ifnull(sta.startSum,0) as startSum,
+            ifnull(sta.reportSum+sta.handleSum,0) as executeNum
+        from
+        (select
+                SUM(CASE WHEN d.TYPE_ = 'starter' THEN 1 ELSE 0 END) AS startSum,
+                SUM(CASE WHEN d.TYPE_ = 'participant' THEN 1 ELSE 0 END) AS reportSum,
+                (select count(t.TASK_ID) from rm_task_info t where t.HANDLE_PERSON=d.user_id_) as handleSum
+            from act_hi_identitylink d
+            where user_id_ =#{loginNm}
+        ) sta
+    </select>
+    <select id="queryByInstId" resultType="com.religion.zhiyun.task.entity.TaskEntity">
+        select
+            ta.TASK_NAME as taskName,
+            ta.TASK_CONTENT as taskContent,
+            ta.END_TIME as endTime,
+            ve.VENUES_ADDRES as venuesAddres,
+            case ta.EMERGENCY_LEVEL
+            when '01' then '紧急'
+            when '02' then '普通'
+            else ta.EMERGENCY_LEVEL
+            end as emergencyLevel,
+            ta.HANDLE_TIME as handleTime,
+            ta.HANDLE_RESULTS as handleResults
+
+        from rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        where ta.PROC_INST_ID=#{procInstId}
+
+    </select>
+
+</mapper>
