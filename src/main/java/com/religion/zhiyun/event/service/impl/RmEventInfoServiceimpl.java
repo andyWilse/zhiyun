@@ -170,7 +170,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         event.setDeviceName(deviceName);
         event.setDeviceType(deviceType);
         event.setWarnTime(at);
-        event.setEventType("00");//默认传来的都是火警
+        event.setEventType("01");//默认传来的都是火警
         event.setOId(oid);
         event.setRawData(rawData);
         event.setExt(ext);
