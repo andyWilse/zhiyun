@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.dao;
 
+import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -30,5 +31,10 @@ public interface TaskInfoMapper {
 
     /** 根据任务id查询 **/
     TaskEntity queryByInstId(String procInstId);
+
+    /*** 获取流程部署信息  **/
+    List<ProcdefEntity> getProcdef(@Param("page") Integer page,
+                                   @Param("size") Integer size,
+                                   @Param("taskName") String taskName);
 
 }

@@ -6,7 +6,7 @@ import com.religion.zhiyun.utils.RespPageBean;
 import java.util.List;
 import java.util.Map;
 
-public interface WarnTaskService {
+public interface TaskReportService {
     /** 流程部署。部署一次就可以了。**/
     public Object deployment();
 

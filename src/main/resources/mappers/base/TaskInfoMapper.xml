@@ -17,7 +17,10 @@
             HANDLE_RESULTS,
             HANDLE_TIME,
             TASK_TYPE,
-            PROC_INST_ID
+            PROC_INST_ID,
+            FLOW_TYPE,
+            PART_NUM,
+            RESPONSIBLE_PERSON
         )
         values (
             #{taskName},
@@ -32,7 +35,11 @@
             #{handleResults},
             #{handleTime},
             #{taskType},
-            #{procInstId}
+            #{procInstId},
+            #{flowType},
+            #{partNum},
+            #{responsiblePerson}
+
         )
     </insert>
 
@@ -82,6 +89,7 @@
             and ta.TASK_CONTENT LIKE CONCAT('%',#{taskContent},'%')
         </if>
         order by ta.END_TIME desc
+        limit #{page},#{size}
 
     </select>
 
@@ -111,12 +119,30 @@
             else ta.EMERGENCY_LEVEL
             end as emergencyLevel,
             ta.HANDLE_TIME as handleTime,
-            ta.HANDLE_RESULTS as handleResults
+            ta.HANDLE_RESULTS as handleResults,
+            ta.PROC_INST_ID as procInstId
 
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         where ta.PROC_INST_ID=#{procInstId}
 
     </select>
+
+    <select id="getProcdef" resultType="com.religion.zhiyun.task.entity.ProcdefEntity">
+        select
+            pro.NAME_ as name,
+            pro.DESCRIPTION_ as description,
+            pro.KEY_  as taskKey,
+            pro.VERSION_ as version,
+            pro.RESOURCE_NAME_ as resourceName
+        from act_re_procdef pro
+        where 1=1
+        <if test="taskName != null and taskName != ''">
+            and pro.NAME_ LIKE CONCAT('%',#{taskName},'%')
+        </if>
+        order by pro.KEY_ ,pro.VERSION_ desc
+        limit #{page},#{size}
+    </select>
+
 
 </mapper>

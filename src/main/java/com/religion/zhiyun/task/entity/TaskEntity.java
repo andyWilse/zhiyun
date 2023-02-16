@@ -59,6 +59,15 @@ public class TaskEntity {
     @Column(name = "PROC_INST_ID")
     private String procInstId;//'关联任务'
 
+    @Column(name = "PART_NUM")
+    private String partNum;//'参与人数'
+
+    @Column(name = "RESPONSIBLE_PERSON")
+    private String responsiblePerson;//'负责人'
+
+    @Column(name = "FLOW_TYPE")
+    private String flowType;//'流程类型'
+
     private String venuesAddres;
 
 

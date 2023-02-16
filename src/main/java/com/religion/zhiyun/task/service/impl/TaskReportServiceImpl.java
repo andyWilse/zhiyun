@@ -5,7 +5,7 @@ import com.religion.zhiyun.task.config.TestCommand;
 import com.religion.zhiyun.task.dao.ActReProcdefMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.TaskEntity;
-import com.religion.zhiyun.task.service.WarnTaskService;
+import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -31,7 +31,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-public class WarnTaskServiceImpl implements WarnTaskService {
+public class TaskReportServiceImpl implements TaskReportService {
     @Autowired
     private RepositoryService repositoryService;
     @Autowired
@@ -50,24 +50,26 @@ public class WarnTaskServiceImpl implements WarnTaskService {
     public Object deployment() {
         //第一步
         DeploymentBuilder builder=  repositoryService.createDeployment();
-        builder.addClasspathResource(TaskParamsEnum.ZY_REPORT_TASK_PATH.getCode());
+        builder.addClasspathResource(TaskParamsEnum.ZY_REPORT_TASK_KEY.getFilePath());
         String id = builder.deploy().getId();
         repositoryService.setDeploymentKey(id,TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode());
-        log.info(TaskParamsEnum.ZY_REPORT_TASK_PATH.getName()+"流程id："+id+",部署成功");
+        log.info(TaskParamsEnum.ZY_REPORT_TASK_KEY.getFilePath()+"流程id："+id+",部署成功");
         return id;
     }
 
     @Override
     @Transactional
     public Object launch(TaskEntity taskEntity) {
-        String loginNm ="";
+        String ofcId ="";
         try {
-            loginNm = this.getLogin();
+            String loginNm = this.getLogin();
+            //String loginNm ="ab";
             Authentication.setAuthenticatedUserId(loginNm);
-
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            ofcId = sysUserEntity.getOfcId();
             //inputUser就是在bpmn中Assignee配置的参数
             Map<String, Object> variables = new HashMap<>();
-            variables.put("assignee2", loginNm);
+            variables.put("assignee2", ofcId);
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
@@ -82,8 +84,9 @@ public class WarnTaskServiceImpl implements WarnTaskService {
             taskService.complete(tmp.getId(),variables);
 
             taskEntity.setLaunchPerson(loginNm);
-            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_PATH.getName());
+            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
             taskEntity.setProcInstId(tmp.getProcessInstanceId());
+            taskEntity.setFlowType("01");
             //保存任务信息
             taskInfoMapper.addTask(taskEntity);
 
@@ -93,18 +96,17 @@ public class WarnTaskServiceImpl implements WarnTaskService {
             throw new RuntimeException("未知错误，请联系管理员！") ;
         }
 
-        return loginNm;
+        return ofcId;
     }
 
     @Override
     @Transactional
     public Object report(String procInstId) {
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
-        }
-        String loginNm = entity.getLoginNm();
-        String identity = entity.getIdentity();
+        String loginNm = this.getLogin();
+        //String loginNm ="ab1";
+        SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+        String ofcId = sysUserEntity.getOfcId();
+        String identity = sysUserEntity.getIdentity();
 
         //根据角色信息获取自己的待办 act_ru_task
         //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
@@ -112,7 +114,7 @@ public class WarnTaskServiceImpl implements WarnTaskService {
         List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
         if(!ObjectUtils.isEmpty(T)) {
             for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "go",loginNm,procInstId);
+                Map<String, Object> variables = this.setFlag(identity, "go",ofcId,procInstId);
                 variables.put("isSuccess", true);
                 //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
                 taskService.setVariableLocal(item.getId(),"isSuccess",false);
@@ -129,12 +131,11 @@ public class WarnTaskServiceImpl implements WarnTaskService {
     @Override
     @Transactional
     public Object handle(String procInstId,String handleResults) {
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
-        }
-        String loginNm = entity.getLoginNm();
-        String identity = entity.getIdentity();
+        String loginNm = this.getLogin();
+        //String loginNm ="ab2";
+        SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+        String ofcId = sysUserEntity.getOfcId();
+        String identity = sysUserEntity.getIdentity();
 
         //根据角色信息获取自己的待办
         //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
@@ -142,7 +143,7 @@ public class WarnTaskServiceImpl implements WarnTaskService {
         List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
         if(!ObjectUtils.isEmpty(T)) {
             for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "end",loginNm,procInstId);
+                Map<String, Object> variables = this.setFlag(identity, "end",ofcId,procInstId);
                 variables.put("isSuccess", true);
 
                 //设置本地参数。在myListener1监听中获取。
