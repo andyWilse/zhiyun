@@ -77,4 +77,11 @@ public interface RmEventInfoMapper {
      */
     List<Map<String,Object>> getEvents(String eventState,String eventType);
 
+
+    /**
+     * 接收烟感器传输的数据
+     * @param eventEntity
+     */
+    void addEventByNB(EventEntity eventEntity);
+
 }

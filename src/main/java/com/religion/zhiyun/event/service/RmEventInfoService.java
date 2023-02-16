@@ -37,4 +37,10 @@ public interface RmEventInfoService {
      * @return
      */
     RespPageBean getEvents();
+
+    /**
+     * 接收烟感器传输的数据
+     * @param eventEntity
+     */
+    void addEventByNB(String eventEntity);
 }

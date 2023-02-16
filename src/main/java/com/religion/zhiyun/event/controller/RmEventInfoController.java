@@ -100,6 +100,17 @@ public class RmEventInfoController {
     }
 
 
+    /**
+     * 接受NB烟感器的数据转化为实体
+     * @param eventJson
+     * @return
+     */
+    @PostMapping("/addEventByNB")
+    @ResponseBody
+    public String addEventByNB(@RequestBody String eventJson) {
+        rmEventInfoService.addEventByNB(eventJson);
+        return "添加成功！";
+    }
 
 
 

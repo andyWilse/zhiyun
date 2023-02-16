@@ -6,10 +6,20 @@
     <sql id="eventColumn">
         EVENT_ID as eventId,
         ACCESS_NUMBER as accessNumber,
+        DEVICE_NAME as deviceName,
+        DEVICE_TYPE as deviceType,
         WARN_TIME as warnTime,
         REL_VENUES_ID as relVenuesId,
         RESPONSIBLE_PERSON as responsiblePerson,
         EVENT_TYPE as eventType,
+        OID as oid,
+        RAWDATA as rawData,
+        EXT as ext,
+        STREAM_ID as stream_Id,
+        EVENT_DATA as eventData,
+        STREAM_UNIT as streamUnit,
+        EVENT_LEVEL as eventLevel,
+        LOCATION as location,
         EVENT_STATE as eventState,
         HANDLE_RESULTS as handleTesults,
         HANDLE_TIME as handleTime
@@ -30,6 +40,13 @@
     <insert id="addEvent">
         insert into rm_event_info values (#{eventId},#{accessNumber},#{warnTime},#{relVenuesId},#{responsiblePerson},
         #{eventType},#{eventState},#{handleTesults},#{handleTime})
+    </insert>
+    <insert id="addEventByNB">
+         insert into rm_event_info
+         values (#{eventId},#{accessNumber},#{deviceName},#{deviceType},#{warnTime},#{relVenuesId},
+         #{responsiblePerson},#{eventType},#{oid},#{rawData},#{ext},#{stream_Id},#{eventData},
+         #{streamUnit},#{eventLevel},#{location},#{eventState},#{handleTesults},#{handleTime})
+
     </insert>
     <update id="updateEvent">
         update rm_event_info
@@ -111,6 +128,7 @@
         select
             EVENT_ID as eventId,
             ACCESS_NUMBER as accessNumber,
+            DEVICE_NAME as deviceName,
             WARN_TIME as warnTime,
             v.VENUES_ADDRES as venuesAddres,
             e.RESPONSIBLE_PERSON as responsiblePerson,
@@ -121,6 +139,8 @@
                 when '04' then '人流聚集'
                 else '其他'
             end as eventType,
+            EVENT_DATA as eventData,
+            LOCATION as location,
             case EVENT_STATE
                 when '00' then '待查实'
                 when '01' then '已完成'
