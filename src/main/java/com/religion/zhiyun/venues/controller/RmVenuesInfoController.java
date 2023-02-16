@@ -51,8 +51,8 @@ public class RmVenuesInfoController {
     }
 
     @RequestMapping("/queryAll")
-    public String getByResponsiblePerson() {
-        List<VenuesEntity> list = rmVenuesInfoService.queryAll();
+    public String getMapVenues(@RequestParam String search) {
+        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
     }
 
@@ -102,5 +102,7 @@ public class RmVenuesInfoController {
         Integer size = Integer.valueOf(sizes);
         return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
     }
+
+    //添加经纬度
 
 }

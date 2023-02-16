@@ -35,7 +35,7 @@ public class DataApplicationTests {
         /*List<UserLogin> userLogins = userLoginMapper.queryAll();
         userLogins.forEach(e-> System.out.println(e));*/
 
-        List<VenuesEntity> userLogins = rmVenuesInfoMapper.queryAll();
+        List<VenuesEntity> userLogins = rmVenuesInfoMapper.queryAll("");
         userLogins.forEach(e-> System.out.println(e));
     }
 

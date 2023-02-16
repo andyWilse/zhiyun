@@ -13,7 +13,7 @@ public interface RmVenuesInfoService {
     int delete(int venuesId);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
 
-    List<VenuesEntity> queryAll();
+    List<VenuesEntity> queryAll(String search);
 
     List<VenuesEntity> querySectAll(String religiousSect);
     List<VenuesEntity> getByVenuesFaculty(String venuesName,String responsiblePerson);
