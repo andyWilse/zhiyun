@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.group.dao.RmGroupInfoMapper">
+    <sql id="column">
+            GROUP_ID as groupId,
+            GROUP_CD as groupCD,
+            GROUP_NAME as groupName,
+            GROUP_PHONE as groupPhone,
+            GROUP_ADDRESS as groupAddress,
+            CREATOR as creator,
+            CREATE_TIME as createTime,
+            LAST_MODIFIER as lastModifier,
+            LAST_MODIFY_TIME as lastModifyTime
+    </sql>
+
+    <select id="getGroupByPage" resultType="com.religion.zhiyun.group.entity.GroupEntity">
+        select <include refid="column"/>
+        from rm_group_info
+        where 1=1
+        <if test="groupName !=null and groupName!=''">
+            AND  GROUP_NAME LIKE CONCAT('%',#{groupName},'%')
+        </if>
+        order by GROUP_ID desc
+        limit #{page},#{size}
+
+    </select>
+    <select id="getTotal" resultType="java.lang.Long">
+        select COUNT(*) FROM rm_group_info
+    </select>
+</mapper>
