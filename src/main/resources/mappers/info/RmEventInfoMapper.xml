@@ -12,12 +12,8 @@
         REL_VENUES_ID as relVenuesId,
         RESPONSIBLE_PERSON as responsiblePerson,
         EVENT_TYPE as eventType,
-        OID as oId,
         RAWDATA as rawData,
-        EXT as ext,
-        STREAM_ID as stream_Id,
         EVENT_DATA as eventData,
-        STREAM_UNIT as streamUnit,
         EVENT_LEVEL as eventLevel,
         LOCATION as location,
         EVENT_STATE as eventState,
@@ -44,8 +40,7 @@
     <insert id="addEventByNB">
          insert into rm_event_info
          values (#{eventId},#{accessNumber},#{deviceName},#{deviceType},#{warnTime},#{relVenuesId},
-         #{responsiblePerson},#{eventType},#{oId},#{rawData},#{ext},#{stream_Id},#{eventData},
-         #{streamUnit},#{eventLevel},#{location},#{eventState},#{handleTesults},#{handleTime})
+         #{responsiblePerson},#{eventType},#{rawData},#{eventData},#{eventLevel},#{location},#{eventState},#{handleTesults},#{handleTime})
 
     </insert>
     <update id="updateEvent">

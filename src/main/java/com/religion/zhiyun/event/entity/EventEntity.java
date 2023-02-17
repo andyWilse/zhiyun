@@ -42,23 +42,13 @@ public class EventEntity implements Serializable {
     @Column(name = "EVENT_TYPE")
     private String eventType;//事件类型  00-火灾预警；01-人脸识别；02-任务预警；03-人流聚集
 
-    @Column(name = "OID")
-    private String oId;//对象id
-
     @Column(name = "RAWDATA")
     private String rawData;//原始数据
 
-    @Column(name = "EXT")
-    private String ext;//扩展信息
-
-    @Column(name = "STREAM_ID")
-    private String stream_Id;//数据流标识
 
     @Column(name = "EVENT_DATA")
     private String eventData;//消息内容
 
-    @Column(name = "STREAM_UNIT")
-    private String streamUnit;//数据单位
 
     @Column(name = "EVENT_LEVEL")
     private String eventLevel;//事件级别

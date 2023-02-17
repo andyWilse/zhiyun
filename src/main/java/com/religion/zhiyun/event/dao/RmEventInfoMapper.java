@@ -79,9 +79,8 @@ public interface RmEventInfoMapper {
 
 
     /**
-     * 接收烟感器传输的数据
+     * 接收烟感器、燃气探测传输的数据
      * @param eventEntity
      */
     void addEventByNB(EventEntity eventEntity);
-
 }

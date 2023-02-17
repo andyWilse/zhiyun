@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -151,32 +152,24 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     @Override
     public void addEventByNB(String eventEntity) {
         Map<String, Object> map = JsonUtils.jsonToMap(eventEntity);
+        EventEntity event=new EventEntity();
         String deviceType= (String) map.get("deviceType");//设备类型
-        String deviceId= (String) map.get("deviceId");//设备唯一标示
+        String deviceId=(String) map.get("deviceId");
         String deviceName= (String) map.get("deviceName");//设备名字
         String at= (String) map.get("at");//事发时间
         String type= (String) map.get("type");//事件类型   "alarm": 告警；"clean": 告警清除；"reset": 设备重置；"dat": 数据上报
-        String streamId= (String) map.get("streamId");//设备流标识
         String data= (String) map.get("data");//消息内容
-        String streamUnit= (String) map.get("streamUnit");//数据单位
         String level= (String) map.get("level");//消息  事件=0,次要=1,重要=2,严重=3, 不填为严重。（火警默认严重
         String location= (String) map.get("location");//位置
-        String oid= (String) map.get("oid");//对象id
         String rawData= (String) map.get("rawData");//原始数据
-        String ext= (String) map.get("ext");//扩展信息
 
-        EventEntity event=new EventEntity();
-        event.setAccessNumber(deviceId);
         event.setDeviceName(deviceName);
+        event.setAccessNumber(deviceId);
         event.setDeviceType(deviceType);
         event.setWarnTime(at);
         event.setEventType("01");//默认传来的都是火警
-        event.setOId(oid);
         event.setRawData(rawData);
-        event.setExt(ext);
-        event.setStream_Id(streamId);
         event.setEventData(data);
-        event.setStreamUnit(streamUnit);
         event.setEventLevel(level);
         event.setLocation(location);
         event.setEventState("00");
@@ -187,4 +180,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         event.setHandleTime(format);
         rmEventInfoMapper.addEventByNB(event);
     }
+
+
+
+
+
 }
