@@ -67,4 +67,10 @@ public  class VenuesEntity implements Serializable {
     @Column(name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;//最后修改时间
 
+    @Column(name = "LONGITUDE")
+    private String longitude;//经度
+
+    @Column(name = "LATITUDE")
+    private String Latitude;//纬度
+
 }

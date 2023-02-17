@@ -61,9 +61,10 @@ public class TaskReportServiceImpl implements TaskReportService {
     @Transactional
     public Object launch(TaskEntity taskEntity) {
         String ofcId ="";
+        String procInstId="";
         try {
-            String loginNm = this.getLogin();
-            //String loginNm ="ab";
+            //String loginNm = this.getLogin();
+            String loginNm ="ab";
             Authentication.setAuthenticatedUserId(loginNm);
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
             ofcId = sysUserEntity.getOfcId();
@@ -80,12 +81,13 @@ public class TaskReportServiceImpl implements TaskReportService {
             //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
             TaskQuery taskQuery = taskService.createTaskQuery();
             Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+            procInstId=tmp.getProcessInstanceId();
             //taskService.setAssignee("assignee2",userNbr);
             taskService.complete(tmp.getId(),variables);
 
             taskEntity.setLaunchPerson(loginNm);
             taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
-            taskEntity.setProcInstId(tmp.getProcessInstanceId());
+            taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("01");
             //保存任务信息
             taskInfoMapper.addTask(taskEntity);
@@ -96,14 +98,14 @@ public class TaskReportServiceImpl implements TaskReportService {
             throw new RuntimeException("未知错误，请联系管理员！") ;
         }
 
-        return ofcId;
+        return "流程id(唯一标识)procInstId:"+procInstId;
     }
 
     @Override
     @Transactional
     public Object report(String procInstId) {
-        String loginNm = this.getLogin();
-        //String loginNm ="ab1";
+       // String loginNm = this.getLogin();
+        String loginNm ="ab1";
         SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
         String ofcId = sysUserEntity.getOfcId();
         String identity = sysUserEntity.getIdentity();
@@ -131,8 +133,8 @@ public class TaskReportServiceImpl implements TaskReportService {
     @Override
     @Transactional
     public Object handle(String procInstId,String handleResults) {
-        String loginNm = this.getLogin();
-        //String loginNm ="ab2";
+        //String loginNm = this.getLogin();
+        String loginNm ="ab2";
         SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
         String ofcId = sysUserEntity.getOfcId();
         String identity = sysUserEntity.getIdentity();

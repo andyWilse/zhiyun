@@ -73,8 +73,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public List<VenuesEntity> queryAll() {
-        return rmVenuesInfoMapper.queryAll();
+    public List<VenuesEntity> queryAll(String search) {
+        return rmVenuesInfoMapper.queryAll(search);
     }
 
     @Override

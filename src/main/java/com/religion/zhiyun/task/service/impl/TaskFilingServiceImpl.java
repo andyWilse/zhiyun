@@ -70,7 +70,7 @@ public class TaskFilingServiceImpl implements TaskFilingService {
         taskInfoMapper.addTask(taskEntity);
         log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
 
-        return ganShi;
+        return "流程id(唯一标识)procInstId:"+tmp.getProcessInstanceId();
     }
 
     @Override

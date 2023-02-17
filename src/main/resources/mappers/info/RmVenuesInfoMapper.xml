@@ -18,8 +18,9 @@
         CREATOR as creator,
         CREATE_TIME as createTime,
         LAST_MODIFIER as lastModifier,
-        LAST_MODIFY_TIME as lastModifyTime
-
+        LAST_MODIFY_TIME as lastModifyTime,
+        LONGITUDE as longitude,
+        latitude as Latitude
     </sql>
 
     <sql id="twoColumn">
@@ -65,6 +66,12 @@
         select
         <include refid="venuesColumn"/>
         from RM_VENUES_INFO
+        <if test="search!=null and search!=''">
+            where
+            RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
+            or VENUES_ADDRES LIKE concat('%',#{search},'%')
+            or VENUES_NAME LIKE concat('%',#{search},'%')
+        </if>
     </select>
 
     <insert id="add" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
@@ -133,7 +140,9 @@
     </select>
 
     <select id="querySectAll" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
-        select <include refid="venuesColumn"/> from RM_VENUES_INFO
+        select
+            <include refid="venuesColumn"/>
+        from RM_VENUES_INFO
         <where>
             <if test="religiousSect!=null and religiousSect!=''">
                 RELIGIOUS_SECT=#{religiousSect}
@@ -202,5 +211,14 @@
         order by LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
+
+    <update id="updateLngLat">
+        UPDATE
+            RM_VENUES_INFO
+        set
+            LONGITUDE=#{longitude},
+            LATITUDE= #{Latitude}
+        WHERE VENUES_ID = #{venuesId}
+    </update>
 
 </mapper>

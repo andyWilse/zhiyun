@@ -78,7 +78,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
 
 
 
-        return JsonUtils.listTOJson(userList);
+        return "流程id(唯一标识)procInstId:"+tmp.getProcessInstanceId();
     }
 
     @Override

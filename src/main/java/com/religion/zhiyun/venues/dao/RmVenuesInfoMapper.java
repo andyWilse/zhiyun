@@ -4,6 +4,7 @@ import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
 @Repository
 public interface RmVenuesInfoMapper {
     //查询
-    public List<VenuesEntity> queryAll();
+    public List<VenuesEntity> queryAll(@Param("search") String search);
 
     /**
      * 新增
@@ -85,5 +86,13 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     Long getTotal();
+
+    /**
+     * 更新经纬度
+     * @param longitude
+     * @param Latitude
+     * @param venuesId
+     */
+    void updateLngLat(@Param("longitude") String longitude,@Param("Latitude") String Latitude,@Param("venuesId") Integer venuesId);
 
 }
