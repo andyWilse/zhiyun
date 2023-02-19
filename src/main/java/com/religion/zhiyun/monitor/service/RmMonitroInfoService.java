@@ -1,7 +1,7 @@
 package com.religion.zhiyun.monitor.service;
 
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.util.List;
 import java.util.Map;

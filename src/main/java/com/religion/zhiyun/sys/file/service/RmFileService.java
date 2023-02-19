@@ -1,7 +1,7 @@
 package com.religion.zhiyun.sys.file.service;
 
 import com.religion.zhiyun.sys.file.entity.FileEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import javax.servlet.http.HttpServletRequest;
 

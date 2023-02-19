@@ -4,7 +4,7 @@ package com.religion.zhiyun.monitor.controller;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

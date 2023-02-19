@@ -3,7 +3,7 @@ package com.religion.zhiyun.group.service.impl;
 import com.religion.zhiyun.group.dao.RmGroupInfoMapper;
 import com.religion.zhiyun.group.entity.GroupEntity;
 import com.religion.zhiyun.group.service.RmGroupInfoService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

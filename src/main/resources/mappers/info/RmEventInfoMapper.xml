@@ -34,13 +34,58 @@
     </sql>
 
     <insert id="addEvent">
-        insert into rm_event_info values (#{eventId},#{accessNumber},#{warnTime},#{relVenuesId},#{responsiblePerson},
-        #{eventType},#{eventState},#{handleTesults},#{handleTime})
+        insert into rm_event_info (
+            EVENT_ID,
+            ACCESS_NUMBER,
+            WARN_TIME,
+            REL_VENUES_ID,
+            RESPONSIBLE_PERSON,
+            EVENT_TYPE,
+            EVENT_STATE,
+            HANDLE_RESULTS,
+            HANDLE_TIME
+        ) values (
+            #{eventId},
+            #{accessNumber},
+            #{warnTime},
+            #{relVenuesId},
+            #{responsiblePerson},
+            #{eventType},
+            #{eventState},
+            #{handleTesults},
+            #{handleTime}
+        )
     </insert>
     <insert id="addEventByNB">
-         insert into rm_event_info
-         values (#{eventId},#{accessNumber},#{deviceName},#{deviceType},#{warnTime},#{relVenuesId},
-         #{responsiblePerson},#{eventType},#{rawData},#{eventData},#{eventLevel},#{location},#{eventState},#{handleTesults},#{handleTime})
+        insert into rm_event_info(
+            DEVICE_NAME,
+            ACCESS_NUMBER,
+            DEVICE_TYPE,
+            WARN_TIME,
+            EVENT_TYPE,
+            RAWDATA,
+            EVENT_DATA,
+            EVENT_LEVEL,
+            LOCATION,
+            EVENT_STATE,
+            HANDLE_RESULTS,
+            HANDLE_TIME,
+            REL_VENUES_ID
+        ) values (
+            #{deviceName},
+            #{accessNumber},
+            #{deviceType},
+            #{warnTime},
+            #{eventType},
+            #{rawData},
+            #{eventData},
+            #{eventLevel},
+            #{location},
+            #{eventState},
+            #{handleTesults},
+            #{handleTime},
+            #{relVenuesId}
+        )
 
     </insert>
     <update id="updateEvent">
@@ -102,8 +147,10 @@
             v.VENUES_NAME as venuesName,
             e.event_level as eventLevel,
             case event_level
-            when '01' then '警告'
-            when '02' then '查看'
+            when '0' then '事件'
+            when '1' then '次要'
+            when '2' then '重要'
+            when '3' then '严重'
             else '其他'
             end as eventLevelNm,
             m.MONITOR_URL as monitorUrl
@@ -117,6 +164,8 @@
             </if>
         </where>
         ORDER BY WARN_TIME DESC
+        limit #{page},#{size}
+
     </select>
 
     <select id="getEventsByPage" resultType="com.religion.zhiyun.event.entity.EventEntity">

@@ -95,7 +95,7 @@
 
     <select id="getTaskNum" resultType="map">
         select
-            ifnull(sta.startSum+sta.reportSum+sta.handleSum,0) as total,
+            ifnull(sta.startSum+sta.reportSum+sta.handleSum,0) as allSum,
             ifnull(sta.startSum,0) as startSum,
             ifnull(sta.reportSum+sta.handleSum,0) as executeNum
         from

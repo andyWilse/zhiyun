@@ -2,7 +2,7 @@ package com.religion.zhiyun.user.controller;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

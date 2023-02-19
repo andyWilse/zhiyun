@@ -52,7 +52,9 @@ public interface RmEventInfoMapper {
      * @param eventType
      * @return
      */
-    List<Map<String,Object>> getByType(@Param("eventType") String eventType);
+    List<Map<String,Object>> getByType(@Param("page") Integer page,
+                                       @Param("size") Integer size,
+                                       @Param("eventType") String eventType);
 
     List<Map<String,Object>> getAllNum();
 

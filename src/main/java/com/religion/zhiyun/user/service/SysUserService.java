@@ -1,8 +1,7 @@
 package com.religion.zhiyun.user.service;
 
-import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.apache.ibatis.annotations.Param;
 
 import java.io.IOException;

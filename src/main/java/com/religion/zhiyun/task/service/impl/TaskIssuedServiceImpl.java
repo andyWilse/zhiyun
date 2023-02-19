@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.TaskEntity;
@@ -7,6 +8,7 @@ import com.religion.zhiyun.task.service.TaskIssuedService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.TokenUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngines;
@@ -35,88 +37,108 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
     TaskInfoMapper taskInfoMapper;
 
     @Override
-    public Object deployment() {
+    public AppResponse deployment() {
         return null;
     }
 
     @Override
     @Transactional
-    public Object launch(TaskEntity taskEntity) {
-        //String loginNm = this.getLogin();
-        String loginNm ="ab3";
+    public AppResponse launch(TaskEntity taskEntity) {
+        String processInstanceId = null;
+        Task tmp = null;
+        long code=0l;
+        String message="";
+        try {
+            //String loginNm = this.getLogin();
+            String loginNm ="ab3";
 
-        Authentication.setAuthenticatedUserId(loginNm);
-        Map<String, Object> variables = new HashMap<>();
+            Authentication.setAuthenticatedUserId(loginNm);
+            Map<String, Object> variables = new HashMap<>();
 
-        List<String> userList = new ArrayList();
-        userList.add("ab1");
-        userList.add("ab2");
-        variables.put("handleList",userList );
+            List<String> userList = new ArrayList();
+            userList.add("ab1");
+            userList.add("ab2");
+            variables.put("handleList",userList );
 
-        /**start**/
-        //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
-        ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-        RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
-        ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode(),variables);
-        String processInstanceId = processInstance.getProcessInstanceId();
-        /**end**/
+            /**start**/
+            //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
+            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+            RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
+            ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode(),variables);
+            processInstanceId = processInstance.getProcessInstanceId();
+            /**end**/
 
-        //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
-        TaskQuery taskQuery = taskService.createTaskQuery();
-        Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
-        //taskService.setAssignee("assignee2",userNbr);
-        taskService.complete(tmp.getId(),variables);
+            //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
+            TaskQuery taskQuery = taskService.createTaskQuery();
+            tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+            //taskService.setAssignee("assignee2",userNbr);
+            taskService.complete(tmp.getId(),variables);
 
-        taskEntity.setLaunchPerson(loginNm);
-        taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
-        taskEntity.setProcInstId(tmp.getProcessInstanceId());
-        taskEntity.setFlowType("02");
-        //保存任务信息
-        taskInfoMapper.addTask(taskEntity);
-
+            taskEntity.setLaunchPerson(loginNm);
+            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
+            taskEntity.setProcInstId(tmp.getProcessInstanceId());
+            taskEntity.setFlowType("02");
+            //保存任务信息
+            taskInfoMapper.addTask(taskEntity);
+            code= ResultCode.SUCCESS.getCode();
+            message="下达流程下达成功！流程id(唯一标识)procInstId:"+ tmp.getProcessInstanceId();
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="下达流程下达失败！";
+            e.printStackTrace();
+        }
         log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
-
-
-
-        return "流程id(唯一标识)procInstId:"+tmp.getProcessInstanceId();
+        String procInstId = "流程id(唯一标识)procInstId:" + tmp.getProcessInstanceId();
+        return new AppResponse(code,message);
     }
 
     @Override
     @Transactional
-    public Object handle(String procInstId) {
-        //String loginNm = this.getLogin();
-        String loginNm ="ab";
-        //处理待办
-        List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
-        if(!ObjectUtils.isEmpty(T)) {
-            for (Task item : T) {
-                if (item.getAssignee().equals(loginNm)) {
-                    Map<String, Object> variables = new HashMap<>();
-                    variables.put("nrOfCompletedInstances", 1);
-                    variables.put("isSuccess", true);
+    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture) {
+        long code=0l;
+        String message="";
+        try {
+            //String loginNm = this.getLogin();
+            String loginNm ="ab";
+            //处理待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    if (item.getAssignee().equals(loginNm)) {
+                        Map<String, Object> variables = new HashMap<>();
+                        variables.put("nrOfCompletedInstances", 1);
+                        variables.put("isSuccess", true);
 
-                    //设置本地参数。在myListener1监听中获取。
-                    taskService.setVariableLocal(item.getId(), "isSuccess", true);
-                    //增加审批备注
-                    taskService.addComment(item.getId(), item.getProcessInstanceId(), "已处理");
-                    //完成此次审批。如果下节点为endEvent。结束流程
-                    taskService.complete(item.getId(), variables);
+                        //设置本地参数。在myListener1监听中获取。
+                        taskService.setVariableLocal(item.getId(), "isSuccess", true);
+                        //增加审批备注
+                        taskService.addComment(item.getId(), item.getProcessInstanceId(), "已处理");
+                        //完成此次审批。如果下节点为endEvent。结束流程
+                        taskService.complete(item.getId(), variables);
 
-                    log.info("任务id：" + procInstId + " 已处理，流程结束！");
+                        log.info("任务id：" + procInstId + " 已处理，流程结束！");
+                    }
                 }
             }
+            //更新处理结果
+            TaskEntity taskEntity=new TaskEntity();
+            taskEntity.setHandlePerson(loginNm);
+            SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+            taskEntity.setHandleTime(new Date());
+            taskEntity.setHandleResults(handleResults);
+            taskEntity.setProcInstId(procInstId);
+            taskInfoMapper.updateTask(taskEntity);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="下达流程处理成功！";
+        } catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            message="下达流程处理失败！";
+            e.printStackTrace();
         }
-        //更新处理结果
-        TaskEntity taskEntity=new TaskEntity();
-        taskEntity.setHandlePerson(loginNm);
-        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-        taskEntity.setHandleTime(new Date());
-        taskEntity.setHandleResults("处理完成");
-        taskEntity.setProcInstId(procInstId);
-        taskInfoMapper.updateTask(taskEntity);
 
         log.info("任务id："+procInstId+" 已处理，数据更新！");
-        return null;
+        return new AppResponse(code,message);
     }
 
     /**

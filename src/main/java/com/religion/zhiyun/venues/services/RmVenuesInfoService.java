@@ -1,6 +1,6 @@
 package com.religion.zhiyun.venues.services;
 
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 
 import java.util.List;

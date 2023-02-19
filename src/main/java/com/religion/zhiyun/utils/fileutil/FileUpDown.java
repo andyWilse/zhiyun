@@ -19,13 +19,13 @@ public class FileUpDown {
     public static List<FileEntity> imagesUpload(HttpServletRequest request,String pathUpload){
 
         //获取文件在服务器的储存位置
-        String path = request.getSession().getServletContext().getRealPath("/upload");
+        /*String path = request.getSession().getServletContext().getRealPath("/upload");
         File filePath = new File(path);
         logger.info("文件的保存路径：" + path);
         if (!filePath.exists() && !filePath.isDirectory()) {
             logger.info("目录不存在，创建目录:" + filePath);
             filePath.mkdir();
-        }
+        }*/
 
         List<FileEntity> list=new ArrayList();
         MultipartHttpServletRequest mulReq = (MultipartHttpServletRequest) request;
@@ -34,7 +34,7 @@ public class FileUpDown {
         Iterator iterator = set.iterator();
         while (iterator.hasNext()){
             Object next = iterator.next();
-            FileEntity upload = upload(map.get(next), pathUpload);
+            FileEntity upload = upload(map.get(next), pathUpload,request);
             list.add(upload);
         }
 
@@ -45,7 +45,7 @@ public class FileUpDown {
      * 文件上传
      * @param picture
      */
-    public static FileEntity upload(MultipartFile picture,String pathUpload){
+    public static FileEntity upload(MultipartFile picture,String pathUpload,HttpServletRequest request){
         System.out.println(picture.getContentType());
         //获取原始文件名称(包含格式)
         String originalFileName = picture.getOriginalFilename();
@@ -69,13 +69,16 @@ public class FileUpDown {
         logger.info("文件的保存路径：" + pathUpload);
         if (!filePath.exists() && !filePath.isDirectory()) {
             logger.info("目录不存在，创建目录:" + filePath);
-            filePath.mkdir();
+            filePath.mkdirs();
         }
 
         File targetFile = new File(pathUpload, fileName);
         //将文件保存到服务器指定位置
         try {
             picture.transferTo(targetFile);
+            //协议 :// ip地址 ：端口号 / 文件目录(/images/2020/03/15/xxx.jpg)
+            //String url = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + "/images/" + dir+"/"  +fileName;
+            //logger.info("图片上传，访问URL：" + url);
             logger.info("上传成功");
             //文件在服务器的存储路径
             //保存文件信息

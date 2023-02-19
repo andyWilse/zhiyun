@@ -1,7 +1,7 @@
 package com.religion.zhiyun.userLogs.service;
 
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.util.List;
 

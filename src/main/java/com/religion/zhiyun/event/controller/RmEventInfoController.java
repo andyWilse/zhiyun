@@ -3,7 +3,10 @@ package com.religion.zhiyun.event.controller;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.OutInterfaceResponse;
+import com.religion.zhiyun.utils.response.RespPageBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,6 +14,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/event")
 public class RmEventInfoController {
@@ -19,11 +23,8 @@ public class RmEventInfoController {
 
     @PostMapping("/addEvent")
     @ResponseBody
-    public String addEvent(@RequestBody String eventJson) {
-        System.out.println(eventJson);
-        //EventEntity eventEntity = JsonUtils.jsonTOBean(eventJson, EventEntity.class);
-        rmEventInfoService.addEvent(eventJson);
-        return "添加成功！";
+    public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
+        return rmEventInfoService.addEvent(eventJson);
     }
 
     @PostMapping("/updateEvent")
@@ -69,13 +70,17 @@ public class RmEventInfoController {
 
     /**
      * 根据类型分类   （全部，人脸，火警。任务。人流）
-      * @param eventType
+      * @param map
      * @return
      */
-    @RequestMapping("/getEventByType/{eventType}")
-    public RespPageBean getEventByType(@PathVariable String eventType) {
-
-        return rmEventInfoService.getByType(eventType);
+    @RequestMapping("/getEventByType")
+    public AppResponse getEventByType(@RequestParam Map<String, Object> map) {
+        String eventType = (String)map.get("eventType");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+        return rmEventInfoService.getByType(page,size,eventType);
     }
 
     /**
@@ -107,11 +112,15 @@ public class RmEventInfoController {
      */
     @PostMapping("/addEventByNB")
     @ResponseBody
-    public String addEventByNB(@RequestBody String eventJson) {
-        rmEventInfoService.addEventByNB(eventJson);
-        return "添加成功！";
+    public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
+        return rmEventInfoService.addEventByNB(eventJson);
     }
 
+    @RequestMapping("/alarmNotify")
+    public RespPageBean getAlarmNotify(){
+
+        return null;
+    }
 
 
 

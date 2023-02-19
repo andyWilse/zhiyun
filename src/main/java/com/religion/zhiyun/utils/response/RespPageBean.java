@@ -1,4 +1,4 @@
-package com.religion.zhiyun.utils;
+package com.religion.zhiyun.utils.response;
 
 import lombok.Getter;
 import lombok.Setter;

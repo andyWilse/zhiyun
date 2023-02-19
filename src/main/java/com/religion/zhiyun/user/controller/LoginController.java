@@ -5,7 +5,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.LoginService;
 import com.religion.zhiyun.user.service.impl.LoginServiceImpl;
 import com.religion.zhiyun.utils.Tool.HttpClient;
-import com.religion.zhiyun.utils.config.ResultCode;
+import com.religion.zhiyun.utils.response.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;

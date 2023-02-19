@@ -1,7 +1,7 @@
 package com.religion.zhiyun.news.service;
 
 import com.religion.zhiyun.news.entity.NewsEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.io.IOException;
 import java.util.Map;

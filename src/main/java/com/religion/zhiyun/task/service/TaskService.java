@@ -1,9 +1,6 @@
 package com.religion.zhiyun.task.service;
 
-import com.religion.zhiyun.task.entity.ProcdefEntity;
-import com.religion.zhiyun.utils.RespPageBean;
-
-import java.util.List;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 public interface TaskService {
     /** 流程部署。部署一次就可以了。**/

@@ -5,7 +5,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
 import com.religion.zhiyun.userLogs.service.RmUserLogsInfoService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.base.HttpServletRequestReader;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.springframework.beans.factory.annotation.Autowired;

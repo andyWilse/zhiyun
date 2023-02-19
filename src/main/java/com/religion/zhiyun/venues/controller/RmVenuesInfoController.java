@@ -3,8 +3,7 @@ package com.religion.zhiyun.venues.controller;
 
 import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;

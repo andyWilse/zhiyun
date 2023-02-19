@@ -1,4 +1,4 @@
-package com.religion.zhiyun.utils.config;
+package com.religion.zhiyun.utils.response;
 
 /**
  * API 统一返回状态码

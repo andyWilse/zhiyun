@@ -5,7 +5,7 @@ import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

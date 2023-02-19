@@ -2,7 +2,7 @@ package com.religion.zhiyun.news.controller;
 
 import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

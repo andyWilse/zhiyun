@@ -4,8 +4,7 @@ import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
-import com.religion.zhiyun.utils.RespPageBean;
-import com.religion.zhiyun.venues.entity.VenuesEntity;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

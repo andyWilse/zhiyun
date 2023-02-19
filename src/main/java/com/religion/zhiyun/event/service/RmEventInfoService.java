@@ -1,14 +1,16 @@
 package com.religion.zhiyun.event.service;
 
 import com.religion.zhiyun.event.entity.EventEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.OutInterfaceResponse;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.util.List;
 import java.util.Map;
 
 public interface RmEventInfoService {
 
-    void addEvent(String eventEntity);
+    OutInterfaceResponse addEvent(String eventEntity);
 
     List<EventEntity> allEvent();
 
@@ -20,7 +22,8 @@ public interface RmEventInfoService {
 
     EventEntity getByEventId(String eventId);
 
-    RespPageBean getByType(String eventType);
+    AppResponse getByType(Integer page, Integer size, String eventType);
+
     List<Map<String,Object>> getAllNum();
 
     /**
@@ -42,7 +45,7 @@ public interface RmEventInfoService {
      * 接收烟感器、燃气探测传输的数据
      * @param eventEntity
      */
-    void addEventByNB(String eventEntity);
+    OutInterfaceResponse addEventByNB(String eventEntity);
 
 
 }

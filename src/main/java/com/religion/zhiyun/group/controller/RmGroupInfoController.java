@@ -2,7 +2,7 @@ package com.religion.zhiyun.group.controller;
 
 
 import com.religion.zhiyun.group.service.RmGroupInfoService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

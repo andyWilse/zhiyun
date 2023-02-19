@@ -3,16 +3,14 @@ package com.religion.zhiyun.sys.file.service.impl;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.file.service.RmFileService;
-import com.religion.zhiyun.utils.RespPageBean;
-import com.religion.zhiyun.utils.config.ResultCode;
+import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.fileutil.FileToBase;
 import com.religion.zhiyun.utils.fileutil.FileUpDown;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.thymeleaf.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,8 +46,8 @@ public class RmFileServiceImple implements RmFileService {
                     fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
                     Timestamp timestamp = new Timestamp(new Date().getTime());
                     fileEntity.setCreateTime(timestamp);
-                    String nbr = request.getHeader("login-name");
-                    fileEntity.setCreator(nbr);
+                    //String nbr = request.getHeader("login-name");
+                    fileEntity.setCreator("admin");
                     rmFileMapper.add(fileEntity);
                     if(i==fileEntities.size()-1){
                         refpath+=fileEntity.getFileId()+"";

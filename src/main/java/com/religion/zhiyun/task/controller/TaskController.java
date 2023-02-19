@@ -2,7 +2,7 @@ package com.religion.zhiyun.task.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.task.service.TaskService;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

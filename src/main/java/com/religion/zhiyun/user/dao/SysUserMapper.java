@@ -1,7 +1,6 @@
 package com.religion.zhiyun.user.dao;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.RespPageBean;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

@@ -3,7 +3,8 @@ package com.religion.zhiyun.task.controller;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -36,16 +37,26 @@ public class TaskReportController {
 
     @RequestMapping("/report")
     @ResponseBody
-    public Object report(@RequestParam String procInstId){
-        Object report = warnTaskService.report(procInstId);
+    public AppResponse report(@RequestParam Map<String, Object> map){
+        String procInstId = (String)map.get("procInstId");
+        String handleResults = (String)map.get("handleResults");
+        String feedBack = (String)map.get("feedBack");
+        String picture = (String)map.get("picture");
+
+        AppResponse report = warnTaskService.report(procInstId, handleResults, feedBack, picture);
         return report;
     }
 
     @RequestMapping("/handle")
     @ResponseBody
-    public Object handle(@RequestParam String procInstId,@RequestParam String handleResults){
-        Object approve = warnTaskService.handle(procInstId, handleResults);
-        return approve;
+    public AppResponse handle(@RequestParam Map<String, Object> map){
+        String procInstId = (String)map.get("procInstId");
+        String handleResults = (String)map.get("handleResults");
+        String feedBack = (String)map.get("feedBack");
+        String picture = (String)map.get("picture");
+
+        AppResponse handle = warnTaskService.handle(procInstId, handleResults, feedBack, picture);
+        return handle;
     }
 
     @RequestMapping("/getTasking")
@@ -62,19 +73,19 @@ public class TaskReportController {
     }
 
     @RequestMapping("/getTaskStatistics")
-    public String getTaskStatistics() {
+    public AppResponse getTaskStatistics() {
         return warnTaskService.getTaskNum();
     }
 
     @RequestMapping("/unFinish")
     @ResponseBody
-    public Object getUnTask(){
+    public AppResponse getUnTask(){
         return warnTaskService.getUnTask();
     }
 
     @RequestMapping("/finish")
     @ResponseBody
-    public Object getFinishTask(){
+    public AppResponse getFinishTask(){
         return warnTaskService.getFinishTask();
     }
 

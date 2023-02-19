@@ -1,7 +1,7 @@
 package com.religion.zhiyun.group.service;
 
 
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 public interface RmGroupInfoService {
 

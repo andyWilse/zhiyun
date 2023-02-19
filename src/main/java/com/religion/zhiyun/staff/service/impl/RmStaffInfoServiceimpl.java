@@ -6,15 +6,12 @@ import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;

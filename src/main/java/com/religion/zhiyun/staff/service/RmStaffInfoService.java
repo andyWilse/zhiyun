@@ -1,7 +1,7 @@
 package com.religion.zhiyun.staff.service;
 
 import com.religion.zhiyun.staff.entity.StaffEntity;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.io.IOException;
 import java.util.List;

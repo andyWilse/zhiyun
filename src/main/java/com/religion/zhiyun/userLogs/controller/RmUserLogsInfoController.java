@@ -4,7 +4,7 @@ package com.religion.zhiyun.userLogs.controller;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
 import com.religion.zhiyun.userLogs.service.RmUserLogsInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

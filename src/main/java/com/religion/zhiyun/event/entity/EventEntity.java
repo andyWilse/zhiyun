@@ -51,7 +51,7 @@ public class EventEntity implements Serializable {
 
 
     @Column(name = "EVENT_LEVEL")
-    private String eventLevel;//事件级别
+    private String eventLevel;//事件级别:事件=0,次要=1,重要=2,严重=3, 不填为严重。（火警默认严重
 
     @Column(name = "LOCATION")
     private String location;//设备位置

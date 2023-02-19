@@ -1,17 +1,13 @@
 package com.religion.zhiyun.staff.controller;
 
-import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 

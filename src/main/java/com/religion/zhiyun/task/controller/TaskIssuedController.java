@@ -6,6 +6,8 @@ import com.religion.zhiyun.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/issued")
 public class TaskIssuedController {
@@ -29,8 +31,13 @@ public class TaskIssuedController {
 
     @RequestMapping("/handle")
     @ResponseBody
-    public Object handle(@RequestParam String procInstId){
-        Object report = taskIssuedService.handle(procInstId);
+    public Object handle(@RequestParam Map<String, Object> map){
+        String procInstId = (String)map.get("procInstId");
+        String handleResults = (String)map.get("handleResults");
+        String feedBack = (String)map.get("feedBack");
+        String picture = (String)map.get("picture");
+
+        Object report = taskIssuedService.handle(procInstId,handleResults,feedBack,picture);
         return report;
     }
 

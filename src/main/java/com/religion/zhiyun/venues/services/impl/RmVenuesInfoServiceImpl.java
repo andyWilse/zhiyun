@@ -1,7 +1,7 @@
 package com.religion.zhiyun.venues.services.impl;
 
 import com.religion.zhiyun.sys.login.api.ResultCode;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.VenuesEntity;

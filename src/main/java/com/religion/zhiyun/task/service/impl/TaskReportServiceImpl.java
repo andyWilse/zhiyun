@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
+import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.config.TestCommand;
 import com.religion.zhiyun.task.dao.ActReProcdefMapper;
@@ -9,7 +10,8 @@ import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.RespPageBean;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.*;
@@ -103,72 +105,93 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     @Transactional
-    public Object report(String procInstId) {
-       // String loginNm = this.getLogin();
-        String loginNm ="ab1";
-        SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-        String ofcId = sysUserEntity.getOfcId();
-        String identity = sysUserEntity.getIdentity();
+    public AppResponse report(String procInstId, String handleResults, String feedBack, String picture) {
+        String loginNm = null;
+        long code=0l;
+        String message="";
+        try {
+            // String loginNm = this.getLogin();
+            loginNm = "ab1";
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            String ofcId = sysUserEntity.getOfcId();
+            String identity = sysUserEntity.getIdentity();
 
-        //根据角色信息获取自己的待办 act_ru_task
-        //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
-        //处理自己的待办
-        List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
-        if(!ObjectUtils.isEmpty(T)) {
-            for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "go",ofcId,procInstId);
-                variables.put("isSuccess", true);
-                //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
-                taskService.setVariableLocal(item.getId(),"isSuccess",false);
-                //增加审批备注
-                taskService.addComment(item.getId(),item.getProcessInstanceId(),"上报");
-                //完成此次审批。由下节点审批
-                taskService.complete(item.getId(), variables);
+            //根据角色信息获取自己的待办 act_ru_task
+            //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+            //处理自己的待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    Map<String, Object> variables = this.setFlag(identity, "go",ofcId,procInstId);
+                    variables.put("isSuccess", true);
+                    //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
+                    taskService.setVariableLocal(item.getId(),"isSuccess",false);
+                    //增加审批备注
+                    taskService.addComment(item.getId(),item.getProcessInstanceId(),"上报");
+                    //完成此次审批。由下节点审批
+                    taskService.complete(item.getId(), variables);
+                }
             }
+            log.info("任务id："+procInstId+" 上报");
+            code= ResultCode.SUCCESS.getCode();
+            message="上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="上报流程上报失败！";
+            e.printStackTrace();
         }
-        log.info("任务id："+procInstId+" 上报");
-        return loginNm;
+        return new AppResponse(code,message);
     }
 
     @Override
     @Transactional
-    public Object handle(String procInstId,String handleResults) {
-        //String loginNm = this.getLogin();
-        String loginNm ="ab2";
-        SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-        String ofcId = sysUserEntity.getOfcId();
-        String identity = sysUserEntity.getIdentity();
+    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture) {
+        String loginNm = null;
+        long code=0l;
+        String message="";
+        try {
+            //String loginNm = this.getLogin();
+            loginNm = "ab2";
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            String ofcId = sysUserEntity.getOfcId();
+            String identity = sysUserEntity.getIdentity();
 
-        //根据角色信息获取自己的待办
-        //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
-        //处理待办
-        List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
-        if(!ObjectUtils.isEmpty(T)) {
-            for (Task item : T) {
-                Map<String, Object> variables = this.setFlag(identity, "end",ofcId,procInstId);
-                variables.put("isSuccess", true);
+            //根据角色信息获取自己的待办
+            //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+            //处理待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    Map<String, Object> variables = this.setFlag(identity, "end",ofcId,procInstId);
+                    variables.put("isSuccess", true);
 
-                //设置本地参数。在myListener1监听中获取。
-                taskService.setVariableLocal(item.getId(),"isSuccess",true);
-                //增加审批备注
-                taskService.addComment(item.getId(),item.getProcessInstanceId(),handleResults);
-                //完成此次审批。如果下节点为endEvent。结束流程
-                taskService.complete(item.getId(), variables);
+                    //设置本地参数。在myListener1监听中获取。
+                    taskService.setVariableLocal(item.getId(),"isSuccess",true);
+                    //增加审批备注
+                    taskService.addComment(item.getId(),item.getProcessInstanceId(),handleResults);
+                    //完成此次审批。如果下节点为endEvent。结束流程
+                    taskService.complete(item.getId(), variables);
 
-                log.info("任务id："+procInstId+" 已处理，流程结束！");
+                    log.info("任务id："+procInstId+" 已处理，流程结束！");
+                }
             }
+            //更新处理结果
+            TaskEntity taskEntity=new TaskEntity();
+            taskEntity.setHandlePerson(loginNm);
+            SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+            taskEntity.setHandleTime(new Date());
+            taskEntity.setHandleResults(handleResults);
+            taskEntity.setProcInstId(procInstId);
+            taskInfoMapper.updateTask(taskEntity);
+            code= ResultCode.SUCCESS.getCode();
+            message="上报流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="上报流程处理失败！";
+            e.printStackTrace();
         }
-        //更新处理结果
-        TaskEntity taskEntity=new TaskEntity();
-        taskEntity.setHandlePerson(loginNm);
-        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-        taskEntity.setHandleTime(new Date());
-        taskEntity.setHandleResults(handleResults);
-        taskEntity.setProcInstId(procInstId);
-        taskInfoMapper.updateTask(taskEntity);
-
         log.info("任务id："+procInstId+" 已处理，数据更新！");
-        return loginNm;
+        return new AppResponse(code,message);
     }
 
     @Override
@@ -184,50 +207,91 @@ public class TaskReportServiceImpl implements TaskReportService {
     }
 
     @Override
-    public String getTaskNum() {
-        String login = this.getLogin();
-        Map<String, Object> map = taskInfoMapper.getTaskNum(login);
-        String sum = JsonUtils.objectTOJSONString(map);
-        return sum;
+    public AppResponse getTaskNum() {
+        AppResponse res=new AppResponse();
+        Map<String, Object> map = null;
+        long code=0l;
+        String message="";
+        try {
+            //String login = this.getLogin();
+            String login ="ab";
+            map = taskInfoMapper.getTaskNum(login);
+            code= ResultCode.SUCCESS.getCode();
+            message="任务数量统计成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="任务数量统计失败！";
+            e.printStackTrace();
+        }
+        Object[] objects = map.entrySet().toArray();
+        res.setCode(code);
+        res.setMessage(message);
+        res.setResult(objects);
+
+        return res;
     }
 
     @Override
-    public Object getUnTask() {
-        String login = this.getLogin();
-        ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-        HistoryService historyService = defaultProcessEngine.getHistoryService();
-        HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-        List<HistoricProcessInstance> unfinishedList = historicProcessInstanceQuery.startedBy(login).unfinished().list();
-        List<TaskEntity> unfinishedTaskList=new ArrayList<>();
-        if(null!=unfinishedList && unfinishedList.size()>0){
-            for(int i=0;i<unfinishedList.size();i++){
-                HistoricProcessInstance historicProcessInstance = unfinishedList.get(i);
-                String superProcessInstanceId = historicProcessInstance.getId();
-                TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
-                unfinishedTaskList.add(taskEntity);
+    public AppResponse getUnTask() {
+        List<TaskEntity> unfinishedTaskList= null;
+        long code=0l;
+        String message="";
+        try {
+            //String login = this.getLogin();
+            String login ="ab";
+            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+            HistoryService historyService = defaultProcessEngine.getHistoryService();
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+            List<HistoricProcessInstance> unfinishedList = historicProcessInstanceQuery.startedBy(login).unfinished().list();
+            unfinishedTaskList = new ArrayList<>();
+            if(null!=unfinishedList && unfinishedList.size()>0){
+                for(int i=0;i<unfinishedList.size();i++){
+                    HistoricProcessInstance historicProcessInstance = unfinishedList.get(i);
+                    String superProcessInstanceId = historicProcessInstance.getId();
+                    TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
+                    unfinishedTaskList.add(taskEntity);
+                }
             }
+            code= ResultCode.SUCCESS.getCode();
+            message="查找未完成任务成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="查找未完成任务失败！";
+            e.printStackTrace();
         }
 
-        return unfinishedTaskList;
+        return new AppResponse(code,message,unfinishedTaskList.toArray());
     }
 
     @Override
-    public Object getFinishTask() {
-        String login = this.getLogin();
-        ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-        HistoryService historyService = defaultProcessEngine.getHistoryService();
-        HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-        List<HistoricProcessInstance> finishedList = historicProcessInstanceQuery.startedBy(login).finished().list();
-        List<TaskEntity> finishedTaskList=new ArrayList<>();
-        if(null!=finishedList && finishedList.size()>0){
-            for(int i=0;i<finishedList.size();i++){
-                HistoricProcessInstance historicProcessInstance = finishedList.get(i);
-                String superProcessInstanceId = historicProcessInstance.getId();
-                TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
-                finishedTaskList.add(taskEntity);
+    public AppResponse getFinishTask() {
+        List<TaskEntity> finishedTaskList= null;
+        long code=0l;
+        String message="";
+        try {
+            //String login = this.getLogin();
+            String login ="ab";
+            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+            HistoryService historyService = defaultProcessEngine.getHistoryService();
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+            List<HistoricProcessInstance> finishedList = historicProcessInstanceQuery.startedBy(login).finished().list();
+            finishedTaskList = new ArrayList<>();
+            if(null!=finishedList && finishedList.size()>0){
+                for(int i=0;i<finishedList.size();i++){
+                    HistoricProcessInstance historicProcessInstance = finishedList.get(i);
+                    String superProcessInstanceId = historicProcessInstance.getId();
+                    TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
+                    finishedTaskList.add(taskEntity);
+                }
             }
+            code= ResultCode.SUCCESS.getCode();
+            message="查找已完成任务成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="查找已完成任务失败！";
+            e.printStackTrace();
         }
-        return finishedTaskList;
+        return new AppResponse(code,message,finishedTaskList.toArray());
     }
 
     /**
