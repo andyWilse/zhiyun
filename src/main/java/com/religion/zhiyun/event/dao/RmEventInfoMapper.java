@@ -2,11 +2,13 @@ package com.religion.zhiyun.event.dao;
 
 
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +19,7 @@ public interface RmEventInfoMapper {
      * 新增
      * @param eventEntity
      */
-    void addEvent(EventEntity eventEntity);
+    int addEvent(EventEntity eventEntity);
 
     //查询
     List<EventEntity> allEvent();
@@ -85,4 +87,37 @@ public interface RmEventInfoMapper {
      * @param eventEntity
      */
     void addEventByNB(EventEntity eventEntity);
+
+    /**
+     * 预警通知（浙里办）
+     * @param page
+     * @param size
+     * @param eventState
+     * @return
+     */
+    List<Map<String, Object>> getEventsByState(Integer page, Integer size,
+                                               @Param("eventStates") String[] eventState,
+                                               String login);
+
+    /**
+     * 总条数（浙里办）
+     * @return
+     */
+    Long getTotalByState(@Param("eventStates") String[] eventState,String login);
+
+
+    /**
+     *更新事件表状态
+     * @param eventId
+     * @return
+     */
+    void updateEventState(String eventId, Date ymdHms,String eventState);
+
+    /**
+     * 获取事件
+     * @param eventId
+     * @return
+     */
+    EventEntity getEventById(@Param("eventId") String eventId);
+
 }

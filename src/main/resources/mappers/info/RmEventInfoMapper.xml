@@ -33,9 +33,8 @@
         rm_staff_info.STAFF_TELPHONE as staffTelphone
     </sql>
 
-    <insert id="addEvent">
+    <insert id="addEvent" useGeneratedKeys="true" keyProperty="eventId">
         insert into rm_event_info (
-            EVENT_ID,
             ACCESS_NUMBER,
             WARN_TIME,
             REL_VENUES_ID,
@@ -45,7 +44,6 @@
             HANDLE_RESULTS,
             HANDLE_TIME
         ) values (
-            #{eventId},
             #{accessNumber},
             #{warnTime},
             #{relVenuesId},
@@ -238,6 +236,81 @@
         </if>
         <if test="eventType != null and eventType != ''">
             AND  ev.EVENT_TYPE =#{eventType}
+        </if>
+    </select>
+
+    <select id="getEventsByState" resultType="map">
+        select
+                EVENT_ID as eventId,
+                m.ACCESS_NUMBER as accessNumber,
+                DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
+                v.VENUES_ADDRES as venuesAddres,
+                e.RESPONSIBLE_PERSON as responsiblePerson,
+                EVENT_TYPE as eventType,
+                case EVENT_TYPE
+                when '01' then '火灾预警'
+                when '02' then '人脸识别'
+                when '03' then '任务预警'
+                when '04' then '人流聚集'
+                else '其他'
+                end as eventTypeNm,
+                EVENT_STATE as eventState,
+                case EVENT_STATE
+                when '00' then '待查实'
+                when '01' then '已完成'
+                when '02' then '误报'
+                else '其他'
+                end as eventStateNm,
+                HANDLE_RESULTS as handleTesults,
+                DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
+                v.PICTURES_PATH as picturesPath,
+                v.VENUES_NAME as venuesName,
+                e.event_level as eventLevel,
+                case event_level
+                when '0' then '事件'
+                when '1' then '次要'
+                when '2' then '重要'
+                when '3' then '严重'
+                else '其他'
+                end as eventLevelNm,
+                m.MONITOR_URL as monitorUrl
+
+        from RM_EVENT_INFO e
+        left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
+        left join rm_monitor_manage_info m on e.ACCESS_NUMBER=m.ACCESS_NUMBER
+        left join RM_EVENT_NOTIFIED_INFO noti on noti.ref_event_id=e.EVENT_ID
+        where e.EVENT_STATE in
+        <foreach collection="eventStates" item="eventState" index="index" open="(" close=")" separator=",">
+            #{eventState}
+        </foreach>
+        <if test="login != null and login != ''">
+            AND  (
+                noti.NOTIFIED_USER =#{login} or NOTIFIED_STAFF =#{login}
+            )
+        </if>
+        ORDER BY WARN_TIME DESC
+        limit #{page},#{size}
+
+    </select>
+
+    <select id="getTotalByState" resultType="java.lang.Long">
+        select count(EVENT_ID)
+        from RM_EVENT_INFO
+        where EVENT_STATE in
+        <foreach collection="eventStates" item="eventState" index="index" open="(" close=")" separator=",">
+            #{eventState}
+        </foreach>
+    </select>
+
+    <update id="updateEventState">
+        update rm_event_info set EVENT_STATE=#{eventState},HANDLE_TIME=#{ymdHms} where EVENT_ID=#{eventId}
+    </update>
+
+    <select id="getEventById" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        select <include refid="eventColumn"/>
+        from rm_event_info
+        <if test="eventId != null and eventId != ''">
+            where  EVENT_ID =#{eventId}
         </if>
     </select>
 

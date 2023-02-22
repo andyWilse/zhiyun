@@ -10,10 +10,6 @@ import java.util.Map;
 public interface SysUserService {
     /**
      * 用户分页查询
-     * @param page
-     * @param size
-     * @param identity
-     * @param loginNm
      * @return
      * @throws IOException
      */
@@ -45,4 +41,7 @@ public interface SysUserService {
 
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
+
+    //根据用户名
+    SysUserEntity queryByName(@Param("userNm") String userNm);
 }

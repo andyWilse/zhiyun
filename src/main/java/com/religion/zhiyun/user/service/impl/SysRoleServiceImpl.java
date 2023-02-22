@@ -17,4 +17,9 @@ public class SysRoleServiceImpl implements SysRoleService {
     public List<RoleEntity> queryRoles() {
         return sysRoleMapper.queryRoles();
     }
+
+    @Override
+    public List<RoleEntity> selectRoleByUserId(int userId) {
+        return null;
+    }
 }

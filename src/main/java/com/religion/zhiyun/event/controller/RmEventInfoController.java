@@ -116,13 +116,37 @@ public class RmEventInfoController {
         return rmEventInfoService.addEventByNB(eventJson);
     }
 
-    @RequestMapping("/alarmNotify")
-    public RespPageBean getAlarmNotify(){
-
-        return null;
+    //根据登录人不同，通知不同
+    @RequestMapping("/zlb/getEventsByState")
+    public AppResponse getEventsByState(@RequestParam Map<String, Object> map) {
+        String eventState = (String)map.get("eventState");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+        return rmEventInfoService.getEventsByState(page,size,eventState);
     }
 
+    //解除误报
+    @RequestMapping("/zlb/dismiss")
+    public AppResponse dismissEvents(@RequestParam Map<String, Object> map) {
+        String eventId = (String)map.get("eventId");
+        return rmEventInfoService.dismissEvent(eventId);
+    }
 
+    //拨打119
+    @RequestMapping("/zlb/callFire")
+    public AppResponse callFire(@RequestParam Map<String, Object> map) {
+        String eventId = (String)map.get("eventId");
+        return rmEventInfoService.callFire(eventId);
+    }
+
+    //拨打119
+    @RequestMapping("/zlb/reportOne")
+    public AppResponse reportOne(@RequestParam Map<String, Object> map) {
+        String eventId = (String)map.get("eventId");
+        return rmEventInfoService.reportOne(eventId);
+    }
 
 
     }

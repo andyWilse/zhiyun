@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
@@ -68,4 +69,33 @@ public interface SysUserMapper {
      */
     String queryStarter(@Param("procInstId") String procInstId);
 
+    /**
+     * 获取场所内用户
+     * @param relVenuesId
+     * @return
+     */
+    List<Map<String,Object>> getUserByVenues(@Param("relVenuesId") Integer relVenuesId);
+
+    /**
+     * 获取三人驻堂的成员
+     * @param relVenuesId
+     * @return
+     */
+    List<Map<String,Object>> getSanByVenues(@Param("relVenuesId") Integer relVenuesId);
+
+    /**
+     * 街
+     * @param loginNm
+     * @param identity
+     * @return
+     */
+    public List<SysUserEntity> getJie(@Param("loginNm") String loginNm,@Param("identity") String identity);
+
+    /**
+     * 区
+     * @param loginNm
+     * @param identity
+     * @return
+     */
+    public List<SysUserEntity> getQu(@Param("loginNm") String loginNm,@Param("identity") String identity);
 }

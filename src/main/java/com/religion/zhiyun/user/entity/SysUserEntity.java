@@ -58,9 +58,41 @@ public class SysUserEntity {
     @Column(comment = "时间",name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;
 
+
+    @Column(comment = "省",defaultValue="" ,name = "PROVINCE")
+    private String province;
+
+
+    @Column(comment = "市",defaultValue="" ,name = "CITY")
+    private String city;
+
+    @Column(comment = "区",defaultValue="" ,name = "AREA")
+    private String area;
+
+    @Column(comment = "街道",defaultValue="" ,name = "TOWN")
+    private String town;
+
+    @Column(comment = "关联场所(主键id)",defaultValue="" ,name = "REL_VENUES_ID")
+    private String relVenuesId;
+
     @Column(comment = "",name = "WEAK_PW_IND")
     private String weakPwInd;
 
+    @Column(comment = "是否有效：0-否；1-是",defaultValue="" ,name = "VALID_IND")
+    private String validInd;
+
     private String uId;
+
+    private String salt;
+    /**
+     * 密码盐.
+     *
+     * @return
+     */
+    public String getCredentialsSalt() {
+        return this.loginNm + this.salt;
+    }
+
+
 
 }

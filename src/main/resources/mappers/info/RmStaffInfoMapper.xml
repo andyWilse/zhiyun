@@ -133,4 +133,15 @@
         select max(STAFF_CD) as staffCd from RM_STAFF_INFO
     </select>
 
+    <select id="getStaffByVenuesId" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+        select
+            STAFF_CD as staffCd,
+            STAFF_CN_NM as staffName
+        from RM_STAFF_INFO
+        where STAFF_STATUS='01'
+        <if test="relVenuesId != null and relVenuesId != ''">
+            AND  REL_VENUES_ID = #{relVenuesId}
+        </if>
+    </select>
+
 </mapper>

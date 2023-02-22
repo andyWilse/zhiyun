@@ -47,5 +47,34 @@ public interface RmEventInfoService {
      */
     OutInterfaceResponse addEventByNB(String eventEntity);
 
+    /**
+     * 预警通知（浙里办）
+     * @param page
+     * @param size
+     * @param eventState
+     * @return
+     */
+    AppResponse getEventsByState(Integer page, Integer size, String eventState);
+
+    /**
+     * 解除误报
+     * @param eventId
+     * @return
+     */
+    AppResponse dismissEvent(String eventId);
+
+    /**
+     * 拨打119
+     * @param eventId
+     * @return
+     */
+    AppResponse callFire(String eventId);
+
+    /**
+     * 一键上报
+     * @param eventId
+     * @return
+     */
+    AppResponse reportOne(String eventId);
 
 }

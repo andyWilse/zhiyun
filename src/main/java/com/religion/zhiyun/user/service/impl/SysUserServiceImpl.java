@@ -177,6 +177,11 @@ public class SysUserServiceImpl implements SysUserService {
         return sysUserMapper.queryByNbr(userNbr);
     }
 
+    @Override
+    public SysUserEntity queryByName(String userNm) {
+        return sysUserMapper.queryByName(userNm);
+    }
+
     /**
      * 日志信息封存
      * @param response

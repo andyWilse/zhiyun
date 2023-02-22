@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.event.dao.EventNotifiedMapper">
+
+    <insert id="addNotified" >
+        insert into RM_EVENT_NOTIFIED_INFO (
+            NOTIFIED_USER,
+            NOTIFIED_STAFF,
+            NOTIFIED_FLAG,
+            NOTIFIED_TIME,
+            REPORT_TIME,
+            REF_EVENT_ID
+        ) values (
+            #{notifiedUser},
+            #{notifiedStaff},
+            #{notifiedFlag},
+            #{notifiedTime},
+            #{reportTime},
+            #{refEventId}
+        )
+    </insert>
+
+    <update id="updateNotifiedFlag">
+        update RM_EVENT_NOTIFIED_INFO set NOTIFIED_FLAG=#{notifiedFlag},REPORT_TIME=#{ymdHms} where REF_EVENT_ID=#{eventId}
+    </update>
+
+</mapper>

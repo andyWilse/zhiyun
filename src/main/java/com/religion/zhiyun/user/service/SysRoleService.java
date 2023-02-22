@@ -10,4 +10,6 @@ public interface SysRoleService {
      * @return
      */
     List<RoleEntity> queryRoles();
+
+    List<RoleEntity> selectRoleByUserId(int userId);
 }

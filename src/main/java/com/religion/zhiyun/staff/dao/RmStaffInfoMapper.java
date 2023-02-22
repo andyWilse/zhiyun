@@ -57,4 +57,7 @@ public interface RmStaffInfoMapper {
      *
      */
     Long getMaxStaffCd();
+
+    List<StaffEntity> getStaffByVenuesId(@Param("relVenuesId") Integer relVenuesId);
+
 }

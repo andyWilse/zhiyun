@@ -120,7 +120,9 @@
             end as emergencyLevel,
             ta.HANDLE_TIME as handleTime,
             ta.HANDLE_RESULTS as handleResults,
-            ta.PROC_INST_ID as procInstId
+            ta.PROC_INST_ID as procInstId,
+            ta.FLOW_TYPE as flowType,
+            ta.TASK_TYPE as taskType
 
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID

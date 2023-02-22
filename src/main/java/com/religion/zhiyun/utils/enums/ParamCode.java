@@ -28,7 +28,18 @@ public enum ParamCode {
     //事件状态
     EVENT_STATE_00("00", "待查实"),
     EVENT_STATE_01("01", "已完成"),
-    EVENT_STATE_02("02", "误报"),
+    EVENT_STATE_02("02", "一键上报"),
+    EVENT_STATE_03("03", "拨打119"),
+    EVENT_STATE_04("04", "误报解除"),
+
+    //预警通知
+    NOTIFIED_FLAG_00("00", "未通知"),
+    NOTIFIED_FLAG_01("01", "已通知"),
+    NOTIFIED_FLAG_02("02", "一键上报"),
+    NOTIFIED_FLAG_03("03", "拨打119"),
+    NOTIFIED_FLAG_04("04", "误报解除"),
+
+
     ;
 
     private String code;

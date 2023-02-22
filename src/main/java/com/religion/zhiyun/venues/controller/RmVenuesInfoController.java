@@ -104,4 +104,17 @@ public class RmVenuesInfoController {
 
     //添加经纬度
 
+
+    @RequestMapping("/getVenueNames")
+    public String queryByName(@RequestParam String search) {
+        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
+        return JsonUtils.objectTOJSONString(list);
+    }
+
+    @RequestMapping("/getVenueAddress")
+    public String getVenueAddress(@RequestParam String search) {
+        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
+        return JsonUtils.objectTOJSONString(list);
+    }
+
 }

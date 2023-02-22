@@ -15,7 +15,8 @@
         IDENTITY as identity,
         USER_NBR as userNbr,
         OFC_ID as ofcId,
-        CREATE_TIME as createTime
+        CREATE_TIME as createTime,
+        VALID_IND as validInd
     </sql>
 
     <select id="queryAll" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -45,7 +46,12 @@
                  WEAK_PW_IND,
                  IDENTITY,
                  CREATE_TIME,
-                 LAST_MODIFY_TIME
+                 LAST_MODIFY_TIME,
+                 PROVINCE,
+                 CITY,
+                 AREA,
+                 TOWN,
+                 REL_VENUES_ID
              )
              VALUES
             (
@@ -68,14 +74,20 @@
                  #{weakPwInd},
                  #{identity},
                  #{createTime},
-                 #{lastModifyTime}
+                 #{lastModifyTime},
+                 #{province},
+                 #{city},
+                 #{area},
+                 #{town},
+                 #{relVenuesId}
              );
     </insert>
 
     <select id="queryByName" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             <include refid="userColumn"/>
-        from RM_SYS_USER_INFO where LOGIN_NM = #{loginNm}
+        from RM_SYS_USER_INFO
+        where LOGIN_NM = #{loginNm} or USER_NM= #{loginNm}
     </select>
 
     <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -142,6 +154,79 @@
         where h.TYPE_='starter'
         <if test="procInstId != null and procInstId != ''">
             and h.PROC_INST_ID_ = #{procInstId}
+        </if>
+    </select>
+
+    <select id="getUserByVenues" resultType="java.util.Map">
+        select  zuyuan.USER_NBR as zuyuan,
+                zuzh.USER_NBR as zuzh,
+                jiegan.USER_NBR as jiegan,
+                jiewei.USER_NBR as jiewei,
+                qugan.USER_NBR as qugan,
+                quwei.USER_NBR as quwei,
+                admin.USER_NBR as admin
+        from rm_sys_user_info zuyuan
+        left join rm_sys_user_info zuzh on zuyuan.OFC_ID=zuzh.USER_NBR
+        left join rm_sys_user_info jiegan on zuzh.OFC_ID=jiegan.USER_NBR
+        left join rm_sys_user_info jiewei on jiegan.OFC_ID=jiewei.USER_NBR
+        left join rm_sys_user_info qugan on jiewei.OFC_ID=qugan.USER_NBR
+        left join rm_sys_user_info quwei on qugan.OFC_ID=quwei.USER_NBR
+        left join rm_sys_user_info admin on quwei.OFC_ID=admin.USER_NBR
+        where VALID_IND='1'
+        <if test="relVenuesId != null and relVenuesId != ''">
+            and (
+                zuyuan.REL_VENUES_ID=#{relVenuesId}
+                or zuzh.REL_VENUES_ID=#{relVenuesId}
+                or jiegan.REL_VENUES_ID=#{relVenuesId}
+                or jiewei.REL_VENUES_ID=#{relVenuesId}
+                or qugan.REL_VENUES_ID=#{relVenuesId}
+                or quwei.REL_VENUES_ID=#{relVenuesId}
+                or admin.REL_VENUES_ID=#{relVenuesId}
+            )
+        </if>
+    </select>
+
+    <select id="getSanByVenues" resultType="java.util.Map">
+        select  zuyuan.USER_NBR as zuyuan,
+                zuzh.USER_NBR as zuzh
+        from rm_sys_user_info zuyuan
+        left join rm_sys_user_info zuzh on zuyuan.OFC_ID=zuzh.USER_NBR
+        where VALID_IND='1'
+        <if test="relVenuesId != null and relVenuesId != ''">
+        and (
+            zuyuan.REL_VENUES_ID=#{relVenuesId}
+            or zuzh.REL_VENUES_ID=#{relVenuesId}
+        )
+        </if>
+    </select>
+
+    <select id="getJie" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+            jie.USER_NM as userNm,
+            jie.LOGIN_NM as loginNm
+        FROM  RM_SYS_USER_INFO zu
+        LEFT JOIN RM_SYS_USER_INFO jie on zu.town=jie.town and jie.IDENTITY  in ('10000004','10000005')
+        WHERE jie.VALID_IND='1'
+        <if test="loginNm != null and loginNm != ''">
+            and zu.LOGIN_NM = #{loginNm}
+        </if>
+        <if test="identity != null and identity != ''">
+            and zu.IDENTITY = #{identity}
+        </if>
+    </select>
+
+    <select id="getQu" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+            qu.USER_NM as userNm,
+            qu.LOGIN_NM as loginNm
+        FROM  RM_SYS_USER_INFO jie
+        LEFT JOIN RM_SYS_USER_INFO qu on qu.area=jie.area and qu.IDENTITY  in ('10000002','10000003')
+        WHERE qu.VALID_IND='1'
+        <if test="loginNm != null and loginNm != ''">
+            and jie.LOGIN_NM = #{loginNm}
+        </if>
+        <if test="identity != null and identity != ''">
+            and jie.IDENTITY = #{identity}
         </if>
     </select>
 
