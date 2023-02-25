@@ -54,10 +54,36 @@ public interface RmStaffInfoMapper {
     Long getTotal();
 
     /**
-     *
+     *获取编号
      */
     Long getMaxStaffCd();
 
+    /**
+     * 根据场所获取职员信息
+     * @param relVenuesId
+     * @return
+     */
     List<StaffEntity> getStaffByVenuesId(@Param("relVenuesId") Integer relVenuesId);
+
+    /**
+     * 根据条件获取职员信息
+     * @param staffTelphone
+     * @return
+     */
+    StaffEntity getByTel(@Param("staffTelphone") String staffTelphone);
+
+    /**
+     * 密码修改
+     * @param passwords
+     * @param passwordsOrigin
+     * @param staffId
+     * @param lastModifier
+     * @param lastModifyTime
+     */
+    void updatePassword(@Param("passwords") String passwords,
+                        @Param("passwordsOrigin") String passwordsOrigin,
+                        @Param("staffId") int staffId,
+                        @Param("lastModifier") String lastModifier,
+                        @Param("lastModifyTime") String lastModifyTime);
 
 }

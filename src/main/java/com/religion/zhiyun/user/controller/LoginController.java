@@ -2,8 +2,8 @@ package com.religion.zhiyun.user.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.user.service.LoginService;
-import com.religion.zhiyun.user.service.impl.LoginServiceImpl;
+import com.religion.zhiyun.user.service.SysLoginService;
+import com.religion.zhiyun.user.service.impl.SysLoginServiceImpl;
 import com.religion.zhiyun.utils.Tool.HttpClient;
 import com.religion.zhiyun.utils.response.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import java.util.Map;
 public class LoginController {
 
     @Autowired
-    private LoginService loginService;
+    private SysLoginService loginService;
 
     @PostMapping("/in")
     public Map<String,Object> login(@RequestBody Map map) {
@@ -27,7 +27,7 @@ public class LoginController {
         if(userinfo!=null){
             if(userinfo.getPasswords().equals(DigestUtils.md5DigestAsHex(map.get("password").toString().getBytes()))){
                 result.put("userNbr",userinfo.getUserNbr());
-                result.put("token", LoginServiceImpl.token(userinfo));
+                result.put("token", SysLoginServiceImpl.token(userinfo));
                 result.put("msg","success");
                 result.put("code", ResultCode.SUCCESS.code());
             }else {

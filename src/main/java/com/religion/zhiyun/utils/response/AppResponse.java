@@ -1,7 +1,9 @@
 package com.religion.zhiyun.utils.response;
 
+import com.religion.zhiyun.user.shiro.LoginInfo;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.shiro.authc.UsernamePasswordToken;
 
 @Getter
 @Setter
@@ -10,6 +12,10 @@ public class AppResponse {
     private String message;
     private Long total;
     private Object[] result;
+    private String direct;
+    private LoginInfo data;
+    private UsernamePasswordToken token;
+
 
     public AppResponse(){
         super();
@@ -23,6 +29,7 @@ public class AppResponse {
         this.message=message;
         this.result=result;
     }
+
     public AppResponse(long code,String message,Long total,Object[]  result){
         this.code=code;
         this.message=message;
@@ -30,4 +37,16 @@ public class AppResponse {
         this.result=result;
     }
 
+    public AppResponse(long code,String message,String direct){
+        this.code=code;
+        this.message=message;
+        this.direct=direct;
+    }
+    public AppResponse(long code, String message, LoginInfo data, String direct, UsernamePasswordToken token){
+        this.code=code;
+        this.message=message;
+        this.data=data;
+        this.direct=direct;
+        this.token=token;
+    }
 }

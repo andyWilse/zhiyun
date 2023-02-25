@@ -15,6 +15,9 @@ public interface RmVenuesInfoMapper {
     //查询
     public List<VenuesEntity> queryAll(@Param("search") String search);
 
+    //查询
+    public List<Map<String,Object>> queryVenues(@Param("search") String search);
+
     /**
      * 新增
      * @param venuesEntity
@@ -85,7 +88,9 @@ public interface RmVenuesInfoMapper {
      * 总条数
      * @return
      */
-    Long getTotal();
+    Long getTotal(@Param("venuesName") String venuesName,
+                  @Param("responsiblePerson") String responsiblePerson,
+                  @Param("religiousSect") String religiousSect);
 
     /**
      * 更新经纬度

@@ -96,6 +96,12 @@
         from RM_SYS_USER_INFO where USER_NBR = #{userNbr}
     </select>
 
+    <select id="queryByTel" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+        <include refid="userColumn"/>
+        from RM_SYS_USER_INFO where  USER_MOBILE= #{userMobile}
+    </select>
+
     <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
         <include refid="userColumn"/>
@@ -150,7 +156,7 @@
         select
             u.IDENTITY as identity
         from act_hi_identitylink h
-        left join rm_sys_user_info u on h.USER_ID_=u.USER_NBR
+        left join rm_sys_user_info u on h.USER_ID_=u.LOGIN_NM
         where h.TYPE_='starter'
         <if test="procInstId != null and procInstId != ''">
             and h.PROC_INST_ID_ = #{procInstId}
@@ -227,6 +233,100 @@
         </if>
         <if test="identity != null and identity != ''">
             and jie.IDENTITY = #{identity}
+        </if>
+    </select>
+
+    <select id="getYuanNum" resultType="int">
+        select
+            count(u.USER_ID)
+        from RM_SYS_USER_INFO u
+        where u.IDENTITY='10000007'
+        and u.VALID_IND='1'
+        and u.REL_VENUES_ID=#{relVenuesId}
+    </select>
+
+    <update id="updatePassword">
+        update RM_SYS_USER_INFO
+        set
+            PASSWORDS = #{passwords},
+            WEAK_PW_IND=#{weakPwInd},
+            LAST_MODIFY_TIME = #{lastModifyTime}
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <select id="getZuZhang" resultType="map">
+        SELECT zz.LOGIN_NM as loginNm,zz.USER_NM as userNm
+        FROM rm_sys_user_info zy,rm_sys_user_info zz
+        where zy.REL_VENUES_ID=zz.REL_VENUES_ID
+        and zz.VALID_IND='1'
+        and zz.IDENTITY='10000006'
+        and zy.IDENTITY='10000007'
+        <if test="userMobile != null and userMobile != ''">
+            and zy.USER_MOBILE=#{userMobile}
+        </if>
+        <if test="loginNm != null and loginNm != ''">
+            and zy.LOGIN_NM=#{loginNm}
+        </if>
+
+    </select>
+
+    <select id="getJieGan" resultType="map">
+        SELECT jg.LOGIN_NM as loginNm,jg.USER_NM as userNm
+        FROM rm_sys_user_info zz,rm_sys_user_info jg
+        where zz.town=jg.town
+        and jg.VALID_IND='1'
+        and jg.IDENTITY='10000005'
+        and zz.IDENTITY='10000006'
+        <if test="userMobile != null and userMobile != ''">
+            and zz.USER_MOBILE=#{userMobile}
+        </if>
+        <if test="loginNm != null and loginNm != ''">
+            and zz.LOGIN_NM=#{loginNm}
+        </if>
+    </select>
+
+    <select id="getJieWei" resultType="map">
+        SELECT jw.LOGIN_NM as loginNm,jw.USER_NM as userNm
+        FROM rm_sys_user_info jw,rm_sys_user_info jg
+        where jw.town=jg.town
+        and jw.VALID_IND='1'
+        and jw.IDENTITY='10000004'
+        and jg.IDENTITY='10000005'
+        <if test="userMobile != null and userMobile != ''">
+            and jg.USER_MOBILE=#{userMobile}
+        </if>
+        <if test="loginNm != null and loginNm != ''">
+            and jg.LOGIN_NM=#{loginNm}
+        </if>
+    </select>
+
+    <select id="getQuGan" resultType="map">
+        SELECT qg.LOGIN_NM as loginNm,qg.USER_NM as userNm
+        FROM rm_sys_user_info jw,rm_sys_user_info qg
+        where qg.area=jw.area
+        and qg.VALID_IND='1'
+        and qg.IDENTITY='10000003'
+        and jw.IDENTITY='10000004'
+        <if test="userMobile != null and userMobile != ''">
+            and jw.USER_MOBILE=#{userMobile}
+        </if>
+        <if test="loginNm != null and loginNm != ''">
+            and jw.LOGIN_NM=#{loginNm}
+        </if>
+    </select>
+
+    <select id="getQuWei" resultType="map">
+        SELECT qw.LOGIN_NM as loginNm,qw.USER_NM  as userNm
+        FROM rm_sys_user_info qw,rm_sys_user_info qg
+        where qg.area=qw.area
+        and qw.VALID_IND='1'
+        and qw.IDENTITY='10000002'
+        and qg.IDENTITY='10000003'
+        <if test="userMobile != null and userMobile != ''">
+            and qg.USER_MOBILE=#{userMobile}
+        </if>
+        <if test="loginNm != null and loginNm != ''">
+            and qg.LOGIN_NM=#{loginNm}
         </if>
     </select>
 

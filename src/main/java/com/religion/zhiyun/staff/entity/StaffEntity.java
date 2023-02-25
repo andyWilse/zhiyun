@@ -122,4 +122,10 @@ public class StaffEntity implements Serializable {
     @Column(name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;//最后修改时间
 
+    @Column(name = "PASSWORDS")
+    private String passwords;//加密密码
+
+    @Column(name = "PASSWORDS_ORIGIN")
+    private String passwordsOrigin;//密码
+
 }

@@ -394,6 +394,81 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         return new AppResponse(code,message);
     }
 
+    @Override
+    public AppResponse getEventsMonth(int num,String type) {
+        long code= ResultCode.FAILED.getCode();
+        String message="";
+        List<Map<String, Object>> eventsMonth=null;
+        try {
+            eventsMonth = rmEventInfoMapper.getEventsMonth(num,type);
+            code= ResultCode.SUCCESS.getCode();
+            message="月统计事件成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="月统计事件失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsMonth.toArray());
+    }
+
+    @Override
+    public AppResponse getEventsDay(int num,String type) {
+        long code= ResultCode.FAILED.getCode();
+        String message="";
+        List<Map<String, Object>> eventsDay=null;
+        try {
+            eventsDay = rmEventInfoMapper.getEventsDay(num,type);
+            code= ResultCode.SUCCESS.getCode();
+            message="天统计事件成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="天统计事件失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsDay.toArray());
+    }
+
+    @Override
+    public AppResponse getEventsWeek(int num, int dayNum,String type) {
+        long code= ResultCode.FAILED.getCode();
+        String message="";
+        List<Map<String, Object>> eventsWeek=null;
+        try {
+            eventsWeek = rmEventInfoMapper.getEventsWeek(num, dayNum,type);
+            code= ResultCode.SUCCESS.getCode();
+            message="周统计事件成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="周统计事件失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsWeek.toArray());
+    }
+
+    @Override
+    public AppResponse getEventsGather(int num,String dateType) {
+        long code= ResultCode.FAILED.getCode();
+        String message="统计事件汇总获取失败！";
+        List<Map<String, Object>> eventsGather=null;
+        try {
+            if("month".equals(dateType)){
+                eventsGather = rmEventInfoMapper.getEventsMonthGather(num);
+            }else if("week".equals(dateType)){
+                //int dayNum=7*(num+1)-1;
+                eventsGather = rmEventInfoMapper.getEventsWeekGather(num);
+            }else if("day".equals(dateType)){
+                eventsGather = rmEventInfoMapper.getEventsDayGather(num);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="统计事件汇总获取成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="统计事件汇总获取失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsGather.toArray());
+    }
+
     /**
      * 预警通知保存
      * @param eventType

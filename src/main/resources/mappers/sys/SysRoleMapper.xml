@@ -14,4 +14,18 @@
         select ROLE_NM as roleNm from RM_SYS_ROLE where ROLE_ID=#{roleId}
     </select>
 
+    <select id="selectRoleByUserId" resultType="com.religion.zhiyun.user.entity.RoleEntity">
+        select
+            ro.ROLE_ID as roleId,
+            ro.ROLE_NM as roleNm
+        FROM rm_sys_role  ro
+        LEFT JOIN rm_sys_user_role_rel rel on ro.ROLE_ID=rel.ROLE_ID
+        where ro.VALID_IND='1'
+        <if test="userId != null and userId != ''">
+            and rel.USER_ID=#{userId}
+        </if>
+
+
+    </select>
+
 </mapper>

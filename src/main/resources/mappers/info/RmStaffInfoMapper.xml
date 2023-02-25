@@ -144,4 +144,22 @@
         </if>
     </select>
 
+    <select id="getByTel" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+        select
+            <include refid="staffColumn"/>
+        from rm_staff_info
+        where STAFF_TELPHONE=#{staffTelphone}
+    </select>
+
+
+    <update id="updatePassword">
+        update rm_staff_info
+        set
+            PASSWORDS = #{passwords},
+            PASSWORDS_ORIGIN = #{passwordsOrigin},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME= #{lastModifyTime}
+        WHERE STAFF_ID = #{staffId}
+    </update>
+
 </mapper>

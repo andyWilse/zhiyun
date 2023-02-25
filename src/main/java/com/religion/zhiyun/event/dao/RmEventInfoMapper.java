@@ -120,4 +120,64 @@ public interface RmEventInfoMapper {
      */
     EventEntity getEventById(@Param("eventId") String eventId);
 
+    /**
+     * 月
+     * @param month
+     * @return
+     */
+    List<Map<String,Object>> getEventsByMonth(@Param("month") String month);
+
+    /**
+     * 日
+     * @param day
+     * @return
+     */
+    List<Map<String,Object>> getEventsByDay(@Param("day") String day);
+
+    /**
+     * 月（10个月，传-9）
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getEventsMonth(@Param("num") int num,@Param("eventType") String eventType);
+
+    /**
+     * 日(10天，传-10)
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getEventsDay(@Param("num") int num,@Param("eventType") String eventType);
+
+    /**
+     * 周
+     * @param num（10周，传-10）
+     * @param dayNum（=7*(num+1)-1）
+     * @return
+     */
+    List<Map<String,Object>> getEventsWeek(@Param("num") int num,@Param("dayNum") int dayNum,@Param("eventType") String eventType);
+
+
+    /**
+     * 月（10个月，传-9）
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getEventsMonthGather(@Param("num") int num);
+
+    /**
+     * 日(10天，传-10)
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getEventsDayGather(@Param("num") int num);
+
+    /**
+     * 周
+     * @param num（10周，传-10）
+     * @param （=7*(num+1)-1）
+     * @return
+     */
+    List<Map<String,Object>> getEventsWeekGather(@Param("num") int num);
+
+
 }

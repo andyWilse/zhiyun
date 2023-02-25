@@ -20,6 +20,6 @@ public class SysRoleServiceImpl implements SysRoleService {
 
     @Override
     public List<RoleEntity> selectRoleByUserId(int userId) {
-        return null;
+        return sysRoleMapper.selectRoleByUserId(userId);
     }
 }

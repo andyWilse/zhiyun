@@ -9,9 +9,13 @@ import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.userLogs.dao.RmUserLogsInfoMapper;
 import com.religion.zhiyun.userLogs.entity.LogsEntity;
+import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.base.HttpServletRequestReader;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.shiro.crypto.hash.Hash;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -78,9 +82,21 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public RespPageBean add(SysUserEntity sysUserEntity) {
         long code= ResultCode.SUCCESS.getCode();
+        String message="";
         Timestamp timestamp = null;
         try {
             timestamp = new Timestamp(new Date().getTime());
+            //组长添加必须满足3个组员
+            String identity = sysUserEntity.getIdentity();
+            if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
+                String relVenuesId = sysUserEntity.getRelVenuesId();
+                //查询组员数量
+                int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+                if(yuanNum!=3){
+                    message="该场所内三人驻堂组员数量不足，不能添加组长！";
+                    throw new RuntimeException(message);
+                }
+            }
             sysUserEntity.setCreateTime(timestamp);
             sysUserEntity.setLastModifyTime(timestamp);
             Long maxCustCd = sysUserMapper.getMaxUserNbr();
@@ -88,8 +104,13 @@ public class SysUserServiceImpl implements SysUserService {
             sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
             //密码加密
             String passwords = sysUserEntity.getPasswords();
+            String loginNm = sysUserEntity.getLoginNm();
             sysUserEntity.setWeakPwInd(passwords);
+            //MD5加密
             String pass =DigestUtils.md5Hex(passwords);
+            //salt加密
+            Hash hash = this.passwordSalt(loginNm,passwords,identity);
+            //String pass=String.valueOf(hash);
             sysUserEntity.setPasswords(pass);
             //新增用户
             sysUserMapper.add(sysUserEntity);
@@ -107,7 +128,7 @@ public class SysUserServiceImpl implements SysUserService {
             code=ResultCode.FAILED.getCode();
             e.printStackTrace();
         }
-        return new RespPageBean(code);
+        return new RespPageBean(code,message);
     }
 
     @Override
@@ -182,6 +203,11 @@ public class SysUserServiceImpl implements SysUserService {
         return sysUserMapper.queryByName(userNm);
     }
 
+    @Override
+    public SysUserEntity queryByTel(String userMobile) {
+        return null;
+    }
+
     /**
      * 日志信息封存
      * @param response
@@ -206,4 +232,21 @@ public class SysUserServiceImpl implements SysUserService {
         logsEntity.setFkDate(timestamp);
         rmUserLogsInfoMapper.addlogs(logsEntity);
     }
+
+    /**
+     * 密码加密
+     * @param userName
+     * @param password
+     * @return
+     */
+    public Hash passwordSalt(String userName,String password,String identity) {
+        //String saltOrigin=null;
+        Object salt=ByteSource.Util.bytes(userName+identity);
+        String hashAlgorithmName = "MD5";//加密方式
+        char[]  credential=(char[])(password != null ? password.toCharArray() : null);//密码
+        int hashIterations = 1024;//加密1024次
+        Hash result = new SimpleHash(hashAlgorithmName,credential,salt,hashIterations);
+        return result;
+    }
+
 }

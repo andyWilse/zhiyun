@@ -1,7 +1,9 @@
 package com.religion.zhiyun.venues.services;
 
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -31,4 +33,10 @@ public interface RmVenuesInfoService {
      */
     RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect);
 
+    /**
+     * 场所下拉
+     * @param search
+     * @return
+     */
+    public AppResponse queryVenues(String search);
 }

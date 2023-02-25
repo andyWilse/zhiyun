@@ -90,7 +90,7 @@ public class SysUserEntity {
      * @return
      */
     public String getCredentialsSalt() {
-        return this.loginNm + this.salt;
+        return this.loginNm + this.identity;
     }
 
 

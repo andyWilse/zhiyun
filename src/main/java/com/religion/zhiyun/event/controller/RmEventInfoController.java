@@ -141,12 +141,38 @@ public class RmEventInfoController {
         return rmEventInfoService.callFire(eventId);
     }
 
-    //拨打119
+    //一键上报
     @RequestMapping("/zlb/reportOne")
     public AppResponse reportOne(@RequestParam Map<String, Object> map) {
         String eventId = (String)map.get("eventId");
         return rmEventInfoService.reportOne(eventId);
     }
+
+    //折线图（月）
+    @RequestMapping("/zxt/month")
+    public AppResponse getEventsMonth(@RequestParam String eventType) {
+        return rmEventInfoService.getEventsMonth(-9,eventType);
+    }
+
+    //折线图（日）
+    @RequestMapping("/zxt/day")
+    public AppResponse getEventsDay(@RequestParam String eventType) {
+        return rmEventInfoService.getEventsDay(-10,eventType);
+    }
+
+    //折线图（周）
+    @RequestMapping("/zxt/week")
+    public AppResponse getEventsWeek(@RequestParam String eventType) {
+        return rmEventInfoService.getEventsWeek(-10,7*(-9)-1,eventType);
+    }
+
+    //折线图（总图）
+    @RequestMapping("/zxt/eventGather")
+    public AppResponse getEventsGather(@RequestParam String dateType) {
+        return rmEventInfoService.getEventsGather(-10,dateType);
+    }
+
+
 
 
     }

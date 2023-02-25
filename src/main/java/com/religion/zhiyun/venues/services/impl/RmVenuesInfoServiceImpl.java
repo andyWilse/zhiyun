@@ -1,6 +1,7 @@
 package com.religion.zhiyun.venues.services.impl;
 
 import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
@@ -106,10 +107,28 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         Object[] objects = dataList.toArray();
         /*VenuesEntity[] date = new VenuesEntity[dataList.size()];
         VenuesEntity[] datas = dataList.toArray(date);*/
-        Long total=rmVenuesInfoMapper.getTotal();
+        Long total=rmVenuesInfoMapper.getTotal(venuesName,responsiblePerson,religiousSect);
         RespPageBean bean = new RespPageBean();
         bean.setDatas(objects);
         bean.setTotal(total);
         return bean;
+    }
+
+    @Override
+    public AppResponse queryVenues(String search) {
+        long code=0l;
+        String message="";
+        List<Map<String, Object>> venuesList =null;
+        try {
+            venuesList = rmVenuesInfoMapper.queryVenues(search);
+            code= ResultCode.SUCCESS.getCode();
+            message="场所下拉数据获取成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="场所下拉数据获取失败！";
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message,venuesList.toArray());
     }
 }

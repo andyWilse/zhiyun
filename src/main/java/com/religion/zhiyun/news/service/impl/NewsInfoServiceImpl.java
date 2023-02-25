@@ -5,6 +5,7 @@ import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,8 +90,9 @@ public class NewsInfoServiceImpl implements NewsInfoService {
                 for(int i=0;i< dataList.size();i++){
                     NewsEntity newsEntity = dataList.get(i);
                     Timestamp createTime = newsEntity.getCreateTime();
-                    String strn = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createTime);
-                    newsEntity.setReleaseTime(strn);
+                    newsEntity.setReleaseYear(TimeTool.getCurrentYear(createTime));
+                    newsEntity.setReleaseMonth(TimeTool.getCurrentMonth(createTime));
+                    newsEntity.setReleaseDay(TimeTool.getCurrentDay(createTime));
                 }
                 objects = dataList.toArray();
             }

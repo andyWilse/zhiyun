@@ -74,6 +74,18 @@
         </if>
     </select>
 
+    <select id="queryVenues" resultType="map">
+        select
+            VENUES_ID as venuesId ,
+            VENUES_NAME as venuesName
+        from RM_VENUES_INFO
+        <if test="search!=null and search!=''">
+            where RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
+                    or VENUES_ADDRES LIKE concat('%',#{search},'%')
+                    or VENUES_NAME LIKE concat('%',#{search},'%')
+        </if>
+    </select>
+
     <insert id="add" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
         insert into RM_VENUES_INFO(
             VENUES_ID,
@@ -174,7 +186,18 @@
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(VENUES_ID) from RM_VENUES_INFO where VENUES_STATUS!='02'
+        select count(VENUES_ID)
+        from RM_VENUES_INFO
+        where VENUES_STATUS!='02'
+        <if test="venuesName != null and venuesName != ''">
+            AND  VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
+        </if>
+        <if test="responsiblePerson != null and responsiblePerson != ''">
+            AND  RESPONSIBLE_PERSON LIKE CONCAT('%',#{responsiblePerson},'%')
+        </if>
+        <if test="religiousSect != null and religiousSect != ''">
+            AND  RELIGIOUS_SECT = #{religiousSect}
+        </if>
     </select>
 
     <select id="getVenuesByPage" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">

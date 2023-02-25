@@ -3,6 +3,7 @@ package com.religion.zhiyun.venues.controller;
 
 import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
@@ -53,6 +54,12 @@ public class RmVenuesInfoController {
     public String getMapVenues(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
+    }
+
+    //app下拉使用
+    @RequestMapping("/getVenues")
+    public AppResponse getVenuesList(@RequestParam String search) {
+        return rmVenuesInfoService.queryVenues(search);
     }
 
     //根据教派类别查询

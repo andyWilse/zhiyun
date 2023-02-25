@@ -21,6 +21,9 @@ public interface SysUserMapper {
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
 
+    //根据电话查询
+    SysUserEntity queryByTel(@Param("userMobile") String userMobile);
+
     //根据用户id查询数据
     SysUserEntity queryByUserId(@Param("userId") String userId);
 
@@ -98,4 +101,64 @@ public interface SysUserMapper {
      * @return
      */
     public List<SysUserEntity> getQu(@Param("loginNm") String loginNm,@Param("identity") String identity);
+
+
+    /**
+     * 获取场所内组员数量
+     * @return
+     */
+    int getYuanNum(@Param("relVenuesId") String relVenuesId);
+
+    /**
+     * 密码修改
+     * @param passwords
+     * @param weakPwInd
+     * @param lastModifyTime
+     */
+    void updatePassword(@Param("passwords") String passwords,
+                        @Param("weakPwInd") String weakPwInd,
+                        @Param("userId") int userId,
+                        @Param("lastModifyTime") String lastModifyTime);
+
+    /**
+     * 区委
+     * @param userMobile
+     * @param loginNm
+     * @return
+     */
+    List<Map<String,Object>> getQuWei(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+    /**
+     * 区干
+     * @param userMobile
+     * @param loginNm
+     * @return
+     */
+    List<Map<String,Object>> getQuGan(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+    /**
+     * 街委
+     * @param userMobile
+     * @param loginNm
+     * @return
+     */
+    List<Map<String,Object>> getJieWei(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+    /**
+     * 街干
+     * @param userMobile
+     * @param loginNm
+     * @return
+     */
+    List<Map<String,Object>> getJieGan(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+    /**
+     * 组长
+     * @param userMobile
+     * @param loginNm
+     * @return
+     */
+    List<Map<String,Object>> getZuZhang(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+
 }

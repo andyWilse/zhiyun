@@ -56,6 +56,8 @@ public class NewsEntity {
     @Column(name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;//最后修改时间
 
-    private String releaseTime;//发布日期
+    private String releaseYear;//发布日期(年)
+    private String releaseMonth;//发布日期(月)
+    private String releaseDay;//发布日期(日)
 
 }

@@ -37,4 +37,7 @@ public interface TaskInfoMapper {
                                    @Param("size") Integer size,
                                    @Param("taskName") String taskName);
 
+    /**根据手机号及身份，获取上级信息**/
+
+
 }

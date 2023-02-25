@@ -4,6 +4,7 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
@@ -76,5 +77,35 @@ public interface RmEventInfoService {
      * @return
      */
     AppResponse reportOne(String eventId);
+
+
+    /**
+     * 月（10个月，传-9）
+     * @param num
+     * @return
+     */
+    AppResponse getEventsMonth(@Param("num") int num,String type);
+
+    /**
+     * 日(10天，传-10)
+     * @param num
+     * @return
+     */
+    AppResponse getEventsDay(@Param("num") int num,String type);
+
+    /**
+     * 周
+     * @param num（10周，传-10）
+     * @param dayNum（=7*(num+1)-1）
+     * @return
+     */
+    AppResponse getEventsWeek(@Param("num") int num,@Param("dayNum") int dayNum,String type);
+
+    /**
+     * 总计
+     * @param dateType（周：week,月：month,日：day）
+     * @return
+     */
+    AppResponse getEventsGather(int num,String dateType);
 
 }

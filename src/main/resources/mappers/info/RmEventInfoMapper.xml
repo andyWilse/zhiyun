@@ -123,6 +123,7 @@
             m.ACCESS_NUMBER as accessNumber,
             DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
             v.VENUES_ADDRES as venuesAddres,
+            v.VENUES_NAME as venuesName,
             e.RESPONSIBLE_PERSON as responsiblePerson,
             EVENT_TYPE as eventType,
             case EVENT_TYPE
@@ -209,10 +210,10 @@
         /*SELECT EVENT_TYPE '类型', COUNT(1) '数量' FROM rm_event_info GROUP BY EVENT_TYPE*/
         SELECT
             COUNT(EVENT_ID) AS total,
-            SUM(CASE WHEN EVENT_TYPE = 00 THEN 1 ELSE 0 END) AS fire,
-            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS face,
-            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS task,
-            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS crowd
+            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
         FROM rm_event_info
         where EVENT_STATE='00'
     </select>
@@ -314,4 +315,180 @@
         </if>
     </select>
 
+    <select id="getEventsByMonth" resultType="map">
+        select
+            count(EVENT_ID) count,
+            DATE_FORMAT(WARN_TIME,'%Y%m') months
+        from rm_event_info
+        where DATE_FORMAT(WARN_TIME,'%Y%m') &gt; #{month}
+        group by months
+        order by months
+    </select>
+
+    <select id="getEventsByDay" resultType="map">
+        select
+            count(EVENT_ID) count,
+            DATE_FORMAT(WARN_TIME,'%Y%m%d') days
+        from rm_event_info
+        where DATE_FORMAT(WARN_TIME,'%Y%m%d') &gt; #{day}
+        group by days
+        order by days;
+    </select>
+
+
+    <select id="getEventsMonth" resultType="map">
+        SELECT tm.tmDate as date,IFNULL(ev.sum,0) as count
+        FROM (
+            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            FROM num a where a.i &gt; #{num} and type='month'
+        ) tm
+        LEFT JOIN (
+            select DATE_FORMAT(WARN_TIME,'%Y-%m') evDate,count(EVENT_ID) sum
+            from rm_event_info
+            where EVENT_TYPE=#{eventType}
+                and  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*sum day)
+            group by evDate
+        ) ev on tm.tmDate= ev.evDate
+        ORDER BY tm.tmDate
+    </select>
+
+    <select id="getEventsDay" resultType="map">
+        SELECT DATE_FORMAT(tm.tmDate,'%Y-%m-%d') as date,IFNULL(ev.sum,0)  as count
+        FROM(
+            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{num} and type='day'
+        ) tm
+        LEFT JOIN(
+            select DATE_FORMAT(WARN_TIME,'%Y-%m-%d') evDate,count(EVENT_ID) as sum
+            from rm_event_info
+            where EVENT_TYPE=#{eventType}
+                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval sum day)
+            group by evDate
+        ) ev on tm.tmDate= ev.evDate
+        ORDER BY tm.tmDate
+    </select>
+
+    <select id="getEventsWeek" resultType="map">
+        SELECT (@rownum := @rownum + 1) AS date,
+                IFNULL(zh.sum,0)  as count
+        FROM(
+            SELECT i AS tmDate FROM num a where a.i > #{num} and type='day'
+        ) tm
+        LEFT JOIN
+        (
+        SELECT ors.weeks,ors.sum
+        from (
+            (
+                select  WEEK(WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
+                        count( e.EVENT_ID) as sum
+                from rm_event_info  e
+                where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (sum+1)*7 day)
+                and EVENT_TYPE=#{eventType}
+                GROUP BY weeks
+                ORDER BY weeks
+            )union all(
+                select
+                    (WEEK(WARN_TIME,3) -(select WEEK(HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                    count( e.EVENT_ID) as sum
+                from rm_event_info  e
+                where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval #{dayNum} day)from dual)
+                and EVENT_TYPE=#{eventType}
+                GROUP BY weeks
+                ORDER BY weeks desc
+            )
+        ) ors
+        )zh on tm.tmDate=zh.weeks
+        join (SELECT
+        @rownum := 0) AS rn
+        order by tm.tmDate
+    </select>
+
+
+    <select id="getEventsMonthGather" resultType="map">
+        SELECT  tm.tmDate as date,
+                IFNULL(ev.fire,0) as fire,
+                IFNULL(ev.face,0) as face,
+                IFNULL(ev.crowd,0) as crowd
+        FROM (
+            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            FROM num a where a.i &gt; #{num} and type='month'
+        ) tm
+        LEFT JOIN (
+            select  DATE_FORMAT(WARN_TIME,'%Y-%m') evDate,
+                    SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                    SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                    SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                    SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+            from rm_event_info
+            where DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            group by evDate
+        ) ev on tm.tmDate= ev.evDate
+        ORDER BY tm.tmDate
+    </select>
+
+    <select id="getEventsDayGather" resultType="map">
+        SELECT  DATE_FORMAT(tm.tmDate,'%Y-%m-%d') as date,
+                IFNULL(ev.fire,0) as fire,
+                IFNULL(ev.face,0) as face,
+                IFNULL(ev.crowd,0) as crowd
+        FROM(
+            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{num} and type='day'
+        ) tm
+        LEFT JOIN(
+            select  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') evDate,
+                    SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                    SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                    SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                    SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+            from rm_event_info
+            where DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+            group by evDate
+        ) ev on tm.tmDate= ev.evDate
+        ORDER BY tm.tmDate
+    </select>
+
+    <select id="getEventsWeekGather" resultType="map">
+        SELECT (@rownum := @rownum + 1) AS date,
+                IFNULL(zh.fire,0) as fire,
+                IFNULL(zh.face,0) as face,
+                IFNULL(zh.crowd,0) as crowd
+        FROM(
+            SELECT i AS tmDate FROM num a where a.i > #{num} and type='day'
+        ) tm
+        LEFT JOIN
+        (
+            SELECT  ors.weeks,
+                    IFNULL(ors.fire,0) as fire,
+                    IFNULL(ors.face,0) as face,
+                    IFNULL(ors.crowd,0) as crowd
+            from (
+                (
+                    select  WEEK(WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
+                            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+                    from rm_event_info  e
+                    where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    GROUP BY weeks
+                    ORDER BY weeks
+                )union all(
+                    select (WEEK(WARN_TIME,3) -(select WEEK(HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+                    from rm_event_info  e
+                    where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    GROUP BY weeks
+                    ORDER BY weeks desc
+                )
+            ) ors
+        )zh on tm.tmDate=zh.weeks
+        join (SELECT @rownum := 0) AS rn
+        order by tm.tmDate
+    </select>
 </mapper>
