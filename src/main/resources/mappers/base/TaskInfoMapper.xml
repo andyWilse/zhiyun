@@ -126,8 +126,11 @@
 
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        where ta.PROC_INST_ID=#{procInstId}
-
+        where ta.PROC_INST_ID in
+        <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
+            #{procInstId}
+        </foreach>
+        limit #{page},#{size}
     </select>
 
     <select id="getProcdef" resultType="com.religion.zhiyun.task.entity.ProcdefEntity">

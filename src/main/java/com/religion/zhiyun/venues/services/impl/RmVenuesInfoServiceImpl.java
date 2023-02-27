@@ -14,6 +14,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -130,5 +131,56 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         }
 
         return new AppResponse(code,message,venuesList.toArray());
+    }
+
+    @Override
+    public AppResponse getMapVenuesDetail(String venuesId) {
+        long code=ResultCode.FAILED.getCode();
+        String message="获取地图场所详情失败！";
+        VenuesEntity venuesDetail =new VenuesEntity();
+        List<VenuesEntity> venuesList =new ArrayList<>();
+        try {
+            venuesDetail = rmVenuesInfoMapper.getVenueByID(venuesId);
+            if(null!=venuesDetail){
+                venuesList.add(venuesDetail);
+            }else{
+                code= ResultCode.FAILED.getCode();
+                message="获取地图场所详情失败！！";
+                throw  new RuntimeException(message);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="获取地图场所详情成功！";
+        } catch (RuntimeException r ){
+            r.printStackTrace();
+        } catch(Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="获取地图场所详情失败！！";
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message,venuesList.toArray());
+    }
+
+    @Override
+    public AppResponse getMapVenues(String search, String religiousSect) {
+        long code= 0;
+        String message= null;
+        List<Map<String, Object>> mapVenues = null;
+        try {
+            code = ResultCode.FAILED.getCode();
+            message = "获取地图场所信息失败！";
+            mapVenues = rmVenuesInfoMapper.getMapVenues(search, religiousSect);
+            if(mapVenues!=null && mapVenues.size()>0){
+                code= ResultCode.SUCCESS.getCode();
+                message="获取地图场所信息成功！";
+            }
+        } catch (RuntimeException r ){
+            r.printStackTrace();
+        } catch (Exception e) {
+            code = ResultCode.FAILED.getCode();
+            message = "获取地图场所信息失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,mapVenues.toArray());
     }
 }

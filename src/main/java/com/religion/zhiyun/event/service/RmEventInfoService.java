@@ -40,7 +40,7 @@ public interface RmEventInfoService {
      * 手机端（预警查询）
      * @return
      */
-    RespPageBean getEvents();
+    RespPageBean getUndoEvents(Integer page, Integer size);
 
     /**
      * 接收烟感器、燃气探测传输的数据

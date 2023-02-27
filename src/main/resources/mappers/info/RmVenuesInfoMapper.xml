@@ -244,4 +244,21 @@
         WHERE VENUES_ID = #{venuesId}
     </update>
 
+    <select id="getMapVenues" resultType="map">
+        select
+            ve.VENUES_ID as venuesId ,
+            ve.LONGITUDE as longitude,
+            ve.LATITUDE as Latitude
+        from RM_VENUES_INFO ve
+        where VENUES_STATUS='01'
+        <if test="search!=null and search!=''">
+            and RELIGIOUS_SECT = #{religiousSect}
+        </if>
+        <if test="search!=null and search!=''">
+            and (RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
+            or VENUES_ADDRES LIKE concat('%',#{search},'%')
+            or VENUES_NAME LIKE concat('%',#{search},'%') )
+        </if>
+    </select>
+
 </mapper>

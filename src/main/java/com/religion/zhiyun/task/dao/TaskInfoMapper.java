@@ -30,7 +30,9 @@ public interface TaskInfoMapper {
     Map<String,Object> getTaskNum(String loginNm);
 
     /** 根据任务id查询 **/
-    TaskEntity queryByInstId(String procInstId);
+    List<TaskEntity> queryByInstId(@Param("page") Integer page,
+                             @Param("size") Integer size,
+                             List<String> idList);
 
     /*** 获取流程部署信息  **/
     List<ProcdefEntity> getProcdef(@Param("page") Integer page,

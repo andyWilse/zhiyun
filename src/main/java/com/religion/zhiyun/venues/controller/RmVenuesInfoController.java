@@ -51,7 +51,7 @@ public class RmVenuesInfoController {
     }
 
     @RequestMapping("/queryAll")
-    public String getMapVenues(@RequestParam String search) {
+    public String queryMapVenues(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
     }
@@ -66,13 +66,6 @@ public class RmVenuesInfoController {
     @RequestMapping("/querySectAll")
     public String querySectAll(String religiousSect) {
         List<VenuesEntity> list = rmVenuesInfoService.querySectAll(religiousSect);
-        return JsonUtils.objectTOJSONString(list);
-    }
-
-
-    @RequestMapping("/getByVenuesFaculty")//有问题
-    String getByVenuesFaculty(String venuesName,String responsiblePerson){
-        List<VenuesEntity> list = rmVenuesInfoService.getByVenuesFaculty(venuesName, responsiblePerson);
         return JsonUtils.objectTOJSONString(list);
     }
 
@@ -109,9 +102,6 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
     }
 
-    //添加经纬度
-
-
     @RequestMapping("/getVenueNames")
     public String queryByName(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
@@ -122,6 +112,19 @@ public class RmVenuesInfoController {
     public String getVenueAddress(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
+    }
+
+    //地图(app用)
+    @RequestMapping("/map/getVenues")
+    public AppResponse getMapVenues(@RequestParam String search,@RequestParam String religiousSect) {
+        return rmVenuesInfoService.getMapVenues(search,religiousSect);
+    }
+
+    //地图场所详情（app用)
+    @RequestMapping("/map/venuesDetail")
+    public AppResponse getMapVenuesDetail(@RequestParam String venuesId) {
+        AppResponse appResponse = rmVenuesInfoService.getMapVenuesDetail(venuesId);
+        return appResponse;
     }
 
 }

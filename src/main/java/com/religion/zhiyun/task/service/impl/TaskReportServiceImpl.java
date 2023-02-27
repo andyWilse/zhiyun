@@ -230,6 +230,9 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent) {
+        if(page!=null&&size!=null){
+            page=(page-1)*size;
+        }
         SysUserEntity entity = TokenUtils.getToken();
         if(null==entity){
             throw new RuntimeException("登录人信息丢失，请登陆后重试！");
@@ -266,26 +269,33 @@ public class TaskReportServiceImpl implements TaskReportService {
     }
 
     @Override
-    public AppResponse getUnTask() {
-        List<TaskEntity> unfinishedTaskList= null;
-        long code=0l;
-        String message="";
+    public AppResponse getUnTask(Integer page, Integer size) {
+        long code= ResultCode.FAILED.getCode();
+        String message="查找未完成任务失败！";
+
+        if(page!=null&&size!=null){
+            page=(page-1)*size;
+        }
+        List<TaskEntity> unfinishedTaskList=new ArrayList<>();
+        Long totals=0l;
         try {
             //String login = this.getLogin();
-            String login ="ab";
+            String login ="zuzhang1";
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
             HistoryService historyService = defaultProcessEngine.getHistoryService();
             HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
             List<HistoricProcessInstance> unfinishedList = historicProcessInstanceQuery.startedBy(login).unfinished().list();
-            unfinishedTaskList = new ArrayList<>();
+            List<String> idList= new ArrayList<>();
             if(null!=unfinishedList && unfinishedList.size()>0){
                 for(int i=0;i<unfinishedList.size();i++){
                     HistoricProcessInstance historicProcessInstance = unfinishedList.get(i);
                     String superProcessInstanceId = historicProcessInstance.getId();
-                    TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
-                    unfinishedTaskList.add(taskEntity);
+                    idList.add(superProcessInstanceId);
                 }
             }
+            int total = idList.size();
+            totals=new Long(total);
+            unfinishedTaskList= taskInfoMapper.queryByInstId(page,size,idList);
             code= ResultCode.SUCCESS.getCode();
             message="查找未完成任务成功！";
         } catch (Exception e) {
@@ -294,30 +304,37 @@ public class TaskReportServiceImpl implements TaskReportService {
             e.printStackTrace();
         }
 
-        return new AppResponse(code,message,unfinishedTaskList.toArray());
+        return new AppResponse(code,message,totals,unfinishedTaskList.toArray());
     }
 
     @Override
-    public AppResponse getFinishTask() {
-        List<TaskEntity> finishedTaskList= null;
-        long code=0l;
-        String message="";
+    public AppResponse getFinishTask(Integer page, Integer size) {
+        long code= ResultCode.FAILED.getCode();
+        String message="查找已完成任务失败！";
+        if(page!=null&&size!=null){
+            page=(page-1)*size;
+        }
+        List<TaskEntity> finishedTaskList= new ArrayList<>();
+        Long totals=0l;
         try {
             //String login = this.getLogin();
-            String login ="ab";
+            String login ="jiewei1";
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
             HistoryService historyService = defaultProcessEngine.getHistoryService();
             HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
             List<HistoricProcessInstance> finishedList = historicProcessInstanceQuery.startedBy(login).finished().list();
-            finishedTaskList = new ArrayList<>();
+            List<String> idList= new ArrayList<>();
+
             if(null!=finishedList && finishedList.size()>0){
                 for(int i=0;i<finishedList.size();i++){
                     HistoricProcessInstance historicProcessInstance = finishedList.get(i);
                     String superProcessInstanceId = historicProcessInstance.getId();
-                    TaskEntity taskEntity = taskInfoMapper.queryByInstId(superProcessInstanceId);
-                    finishedTaskList.add(taskEntity);
+                    idList.add(superProcessInstanceId);
                 }
             }
+            int total = idList.size();
+            totals=new Long(total);
+            finishedTaskList = taskInfoMapper.queryByInstId(page,size,idList);
             code= ResultCode.SUCCESS.getCode();
             message="查找已完成任务成功！";
         } catch (Exception e) {
@@ -325,14 +342,14 @@ public class TaskReportServiceImpl implements TaskReportService {
             message="查找已完成任务失败！";
             e.printStackTrace();
         }
-        return new AppResponse(code,message,finishedTaskList.toArray());
+        return new AppResponse(code,message,totals,finishedTaskList.toArray());
     }
 
     /**
      * 流程走向定义
      * @param identity
      * @param flag
-     * @param variable
+     * @param userList
      * @param procInstId
      * @return
      */
@@ -378,10 +395,8 @@ public class TaskReportServiceImpl implements TaskReportService {
         Map<String, Object> variables = new HashMap<>();
         variables.put("flag"+flagNo, flag);
         variables.put("handleList"+assiNo, userList);
-
         return variables;
     }
-
 
     public void getNode(String actId,String key,Task task) {
         String taskId = "";
@@ -402,8 +417,6 @@ public class TaskReportServiceImpl implements TaskReportService {
                     tagNode = userTask.getId();
                     break;
                 }
-
-
             }
         }*/
         //跳转

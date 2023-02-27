@@ -39,4 +39,19 @@ public interface RmVenuesInfoService {
      * @return
      */
     public AppResponse queryVenues(String search);
+
+    /**
+     * 获取地图详情
+     * @param venuesId
+     * @return
+     */
+    AppResponse getMapVenuesDetail(String venuesId);
+
+    /**
+     * 获取地图
+     * @param search
+     * @param religiousSect
+     * @return
+     */
+    AppResponse getMapVenues(String search,String religiousSect);
 }

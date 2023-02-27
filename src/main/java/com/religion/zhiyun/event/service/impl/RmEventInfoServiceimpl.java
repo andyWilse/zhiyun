@@ -203,23 +203,30 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    public RespPageBean getEvents() {
-        long code= ResultCode.SUCCESS.getCode();
+    public RespPageBean getUndoEvents(Integer page, Integer size) {
+        long code= ResultCode.FAILED.getCode();
+        String result="未完成预警查询失败！";
         List<Map<String, Object>> events = null;
+        Long undoEventsTotal=0l;
         try {
-            events = rmEventInfoMapper.getEvents(ParamCode.EVENT_STATE_00.getCode(),"");
+            events = rmEventInfoMapper.getUndoEvents(page,size,ParamCode.EVENT_STATE_00.getCode(),"");
             for(int i=0;i<events.size();i++){
                 Map<String, Object> map = events.get(0);
                 String path = (String) map.get("path");
                 String[] split = path.split(",");
                 map.put("path",split[0]);
             }
+
+            undoEventsTotal = rmEventInfoMapper.getUndoEventsTotal(ParamCode.EVENT_STATE_00.getCode(), "");
+            code=ResultCode.SUCCESS.getCode();
+            result="未完成预警查询成功！";
         } catch (Exception e) {
             code=ResultCode.FAILED.getCode();
+            result="未完成预警查询失败！";
             e.printStackTrace();
         }
 
-        return new RespPageBean(code,events);
+        return new RespPageBean(code,result,undoEventsTotal,events);
     }
 
     @Override

@@ -71,17 +71,25 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     }
 
     @Override
-    public RespPageBean getVenuesMonitor(String venuesName,String accessNumber) {
-        long code= ResultCode.SUCCESS.getCode();
+    public RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName,String accessNumber) {
+        long code= ResultCode.FAILED.getCode();
+        String message="监控场所查询失败";
         List<Map<String, Object>> map=null;
+        Long total =0l;
         try {
-            map = rmMonitroInfoMapper.getVenuesMonitor(venuesName,accessNumber);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            map = rmMonitroInfoMapper.getVenuesMonitor(page,size,venuesName,accessNumber);
+            total = rmMonitroInfoMapper.getVenuesMonitorTotal(venuesName, accessNumber);
+            code= ResultCode.SUCCESS.getCode();
+            message="监控场所查询成功";
         } catch (Exception e) {
             code=ResultCode.FAILED.getCode();
+            message="监控场所查询失败";
             e.printStackTrace();
         }
-
-        return new RespPageBean(code,map);
+        return new RespPageBean(code,message,total,map);
     }
 
     @Override

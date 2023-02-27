@@ -45,7 +45,14 @@ public interface RmMonitroInfoMapper {
     String getMonitorURLByAccessNum(String accessNum);
 
     /** 监控  **/
-    List<Map<String,Object>> getVenuesMonitor(String venuesName,String accessNumber);
+    List<Map<String,Object>> getVenuesMonitor(@Param("page") Integer page, @Param("size") Integer size,
+                                              String venuesName,String accessNumber);
+
+    /**
+     * 总条数
+     * @return
+     */
+    Long getVenuesMonitorTotal(String venuesName,String accessNumber);
 
     List<Map<String,Object>> getMonitors(String venuesName, String accessNumber, String state);
 

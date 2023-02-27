@@ -52,9 +52,14 @@ public class RmEventInfoController {
      * @return
      */
     @RequestMapping(value = "/undoEvents")
-    public RespPageBean allEventBytime() {
+    public RespPageBean getUndoEvents(@RequestParam Map<String,Object> map) {
         //List<EventEntity> list = rmEventInfoService.allEventByState();
-        return rmEventInfoService.getEvents();
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return rmEventInfoService.getUndoEvents(page,size);
     }
 
     /**

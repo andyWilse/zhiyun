@@ -79,14 +79,24 @@ public class TaskReportController {
 
     @RequestMapping("/unFinish")
     @ResponseBody
-    public AppResponse getUnTask(){
-        return warnTaskService.getUnTask();
+    public AppResponse getUnTask(@RequestParam Map<String, Object> map){
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return warnTaskService.getUnTask(page,size);
     }
 
     @RequestMapping("/finish")
     @ResponseBody
-    public AppResponse getFinishTask(){
-        return warnTaskService.getFinishTask();
+    public AppResponse getFinishTask(@RequestParam Map<String, Object> map){
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
+
+        return warnTaskService.getFinishTask(page,size);
     }
 
     @RequestMapping("/que")

@@ -218,7 +218,7 @@
         where EVENT_STATE='00'
     </select>
 
-    <select id="getEvents" resultType="map">
+    <select id="getUndoEvents" resultType="map">
         select
             ev.WARN_TIME as warnTime,
             case ev.EVENT_TYPE
@@ -231,6 +231,20 @@
             ve.PICTURES_PATH as  path
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where 1=1
+        <if test="eventState != null and eventState != ''">
+            AND  ev.EVENT_STATE=#{eventState}
+        </if>
+        <if test="eventType != null and eventType != ''">
+            AND  ev.EVENT_TYPE =#{eventType}
+        </if>
+        limit #{page},#{size}
+    </select>
+
+    <select id="getUndoEventsTotal" resultType="java.lang.Long">
+        select
+            count(ev.EVENT_ID)
+        from RM_EVENT_INFO ev
         where 1=1
         <if test="eventState != null and eventState != ''">
             AND  ev.EVENT_STATE=#{eventState}
@@ -346,7 +360,7 @@
             select DATE_FORMAT(WARN_TIME,'%Y-%m') evDate,count(EVENT_ID) sum
             from rm_event_info
             where EVENT_TYPE=#{eventType}
-                and  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*sum day)
+                and  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num}  day)
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -361,7 +375,7 @@
             select DATE_FORMAT(WARN_TIME,'%Y-%m-%d') evDate,count(EVENT_ID) as sum
             from rm_event_info
             where EVENT_TYPE=#{eventType}
-                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval sum day)
+                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{num}  day)
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -382,7 +396,7 @@
                         count( e.EVENT_ID) as sum
                 from rm_event_info  e
                 where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
-                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (sum+1)*7 day)
+                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num} +1)*7 day)
                 and EVENT_TYPE=#{eventType}
                 GROUP BY weeks
                 ORDER BY weeks
@@ -392,7 +406,7 @@
                     count( e.EVENT_ID) as sum
                 from rm_event_info  e
                 where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
-                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval #{dayNum} day)from dual)
+                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval (#{num} +1)*7 day)from dual)
                 and EVENT_TYPE=#{eventType}
                 GROUP BY weeks
                 ORDER BY weeks desc

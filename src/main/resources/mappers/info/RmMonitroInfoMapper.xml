@@ -140,6 +140,21 @@
         <if test="venuesName != null and venuesName != ''">
             AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
         </if>
+        limit #{page},#{size}
+    </select>
+
+    <select id="getVenuesMonitorTotal" resultType="java.lang.Long">
+        select
+            count(ve.VENUES_ID)
+        from RM_VENUES_INFO ve
+        left join rm_monitor_manage_info m on ve.VENUES_ID=m.rel_venues_id
+        where ve.VENUES_STATUS!='02'
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  m.ACCESS_NUMBER =#{accessNumber}
+        </if>
+        <if test="venuesName != null and venuesName != ''">
+            AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
+        </if>
     </select>
 
 

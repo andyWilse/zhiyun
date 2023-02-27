@@ -72,7 +72,6 @@ public class RmMonitroInfoController {
         String accessNumber = (String)map.get("accessNumber");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
-
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
@@ -89,8 +88,12 @@ public class RmMonitroInfoController {
     public RespPageBean getVenuesMonitor(@RequestParam Map<String, Object> map) {
         String venuesName = (String) map.get("venuesName");
         String accessNumber = (String) map.get("accessNumber");
+        String pages = (String) map.get("page");
+        String sizes = (String)map.get("size");
+        Integer page = Integer.valueOf(pages);
+        Integer size = Integer.valueOf(sizes);
 
-        return rmMonitroInfoService.getVenuesMonitor(venuesName,accessNumber);
+        return rmMonitroInfoService.getVenuesMonitor(page,size,venuesName,accessNumber);
     }
 
     @RequestMapping("/getMonitors")

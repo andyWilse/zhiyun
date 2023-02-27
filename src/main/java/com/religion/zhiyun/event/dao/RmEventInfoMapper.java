@@ -79,8 +79,15 @@ public interface RmEventInfoMapper {
      * 手机端（预警查询）
      * @return
      */
-    List<Map<String,Object>> getEvents(String eventState,String eventType);
+    List<Map<String,Object>> getUndoEvents(@Param("page") Integer page, @Param("size") Integer size,
+            String eventState,String eventType);
 
+
+    /**
+     * 总条数,手机端（预警查询）
+     * @return
+     */
+    Long getUndoEventsTotal(String eventState,String eventType);
 
     /**
      * 接收烟感器、燃气探测传输的数据

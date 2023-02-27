@@ -27,10 +27,10 @@ public interface TaskReportService {
     public AppResponse getTaskNum();
 
     /** 查询用户未完成的历史记录**/
-    public AppResponse getUnTask();
+    public AppResponse getUnTask(Integer page, Integer size);
 
     /** 查询完成的历史记录 **/
-    public AppResponse getFinishTask();
+    public AppResponse getFinishTask(Integer page, Integer size);
 
     /**查询任务**/
     List<Map<String,Object>> queryTasks();

@@ -48,4 +48,11 @@ public class RespPageBean {
         this.resultMap=resultMap;
     }
 
+    public RespPageBean(long code,String result,Long total,List<Map<String, Object>> resultMap){
+        this.code=code;
+        this.result=result;
+        this.total=total;
+        this.resultMap=resultMap;
+    }
+
 }
