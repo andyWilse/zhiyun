@@ -6,6 +6,7 @@ import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     private RmStaffInfoMapper staffInfoMapper;
     @Autowired
     private RmFileMapper rmFileMapper;
-    
+
 
     @Override
     public RespPageBean add(StaffEntity staffEntity) {
@@ -120,5 +122,32 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     @Override
     public Long getMaxStaffCd() {
         return staffInfoMapper.getMaxStaffCd();
+    }
+
+    @Override
+    public AppResponse getStaffById(String StaffId) {
+        long code = ResultCode.FAILED.getCode();
+        String message="获取教职人员详情失败！";
+        StaffEntity staffEntity = new StaffEntity();
+        List<StaffEntity> list=new ArrayList<>();
+        try {
+            staffEntity = staffInfoMapper.getStaffById(StaffId);
+            if (staffEntity!=null){
+                list.add(staffEntity);
+            }else {
+                code=ResultCode.FAILED.getCode();
+                message="获取教职人员详情失败！";
+                throw new RuntimeException(message);
+            }
+            code=ResultCode.SUCCESS.getCode();
+            message="获取教职人员详情成功！";
+        }catch (RuntimeException r ){
+            r.printStackTrace();
+        } catch(Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="获取教职人员详情失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,list.toArray());
     }
 }

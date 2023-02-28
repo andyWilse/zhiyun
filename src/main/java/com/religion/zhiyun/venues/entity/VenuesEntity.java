@@ -73,4 +73,7 @@ public  class VenuesEntity implements Serializable {
     @Column(name = "LATITUDE")
     private String Latitude;//纬度
 
+    @Column(name = "GROUP_MEMBERS")
+    private String groupMembers;
+
 }

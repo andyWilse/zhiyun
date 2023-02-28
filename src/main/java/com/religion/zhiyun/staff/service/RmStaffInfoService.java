@@ -1,6 +1,7 @@
 package com.religion.zhiyun.staff.service;
 
 import com.religion.zhiyun.staff.entity.StaffEntity;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.io.IOException;
@@ -28,5 +29,7 @@ public interface RmStaffInfoService {
     RespPageBean getStaffByPage(Integer page, Integer size, String staffName, String staffPost, String religiousSect) throws IOException;
 
     Long getMaxStaffCd();
+
+    AppResponse getStaffById(String StaffId);
 
 }
