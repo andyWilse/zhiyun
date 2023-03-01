@@ -4,7 +4,7 @@ import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;

@@ -6,8 +6,8 @@ import org.apache.shiro.util.ByteSource;
 
 public class saltTest {
     public static void main(String[] args) {
-        String name="dudu";
-        String salts="区委员";
+        String name="zuyuan3";
+        String salts="10000007";
 
         ByteSource admin = ByteSource.Util.bytes(name+salts);
         String hashAlgorithmName = "MD5";//加密方式

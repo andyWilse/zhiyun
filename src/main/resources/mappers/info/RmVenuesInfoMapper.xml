@@ -217,7 +217,8 @@
             CREATOR as creator,
             CREATE_TIME as createTime,
             LAST_MODIFIER as lastModifier,
-            LAST_MODIFY_TIME as lastModifyTime
+            LAST_MODIFY_TIME as lastModifyTime,
+            ve.RELIGIOUS_SECT as dictCd
 
         from RM_VENUES_INFO ve
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -251,6 +252,8 @@
             ve.LATITUDE as Latitude
         from RM_VENUES_INFO ve
         where VENUES_STATUS='01'
+        and ve.LONGITUDE is not null
+        and ve.LATITUDE is not null
         <if test="search!=null and search!=''">
             and RELIGIOUS_SECT = #{religiousSect}
         </if>

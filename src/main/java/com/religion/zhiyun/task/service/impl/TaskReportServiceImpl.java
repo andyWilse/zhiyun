@@ -1,6 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.config.TestCommand;
 import com.religion.zhiyun.task.dao.ActReProcdefMapper;
@@ -9,7 +9,6 @@ import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -230,7 +229,9 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent) {
-        if(page!=null&&size!=null){
+        if(page<1){
+            page=1;
+        } else if(page!=null&&size!=null){
             page=(page-1)*size;
         }
         SysUserEntity entity = TokenUtils.getToken();

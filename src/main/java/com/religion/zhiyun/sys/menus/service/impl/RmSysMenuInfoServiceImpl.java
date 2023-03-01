@@ -1,16 +1,18 @@
 package com.religion.zhiyun.sys.menus.service.impl;
 
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.menus.dao.MenuInfoMapper;
 import com.religion.zhiyun.sys.menus.dao.RolePesnMapper;
 import com.religion.zhiyun.sys.menus.entity.MenuEntity;
 import com.religion.zhiyun.sys.menus.entity.MenuList;
 import com.religion.zhiyun.sys.menus.entity.MenuRespons;
-import com.religion.zhiyun.sys.menus.entity.PesnEntity;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
+import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,27 +54,91 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     }
 
     @Override
-    public MenuList findTreeMenus() {
+    public RespPageBean findTreeMenus() {
 
-        MenuList  list=new MenuList();
-        //select选择框选项
-        List<MenuEntity> allParents = rmSysMenuInfoMapper.findMenus("");
-        list.setTypeOption(allParents.toArray());
+        List<Map<String, Object>> menusTree = null;
+        long code = ResultCode.FAILED.getCode();
+        String message= "菜单获取失败";
+        try {
+            MenuList  list=new MenuList();
+            menusTree = new ArrayList<>();
+            Map<String, Object> map=new HashMap<>();
+            //获取一级菜单
+            List<Map<String, Object>> oneTree = rmSysMenuInfoMapper.findOneTree();
 
-        return list;
+            if(null!=oneTree && oneTree.size()>0){
+                for (int i=0;i<oneTree.size();i++){
+                    Map<String, Object> oneTreeMap = oneTree.get(i);
+                    String type = (String) oneTreeMap.get("type");
+                    int id = (int) oneTreeMap.get("id");
+                    //根据一级菜单获取二级菜单
+                    if(type.equals("01")){
+                        List<Map<String, Object>> twoTree = rmSysMenuInfoMapper.findTwoTree(id);
+                        if(null!=twoTree && twoTree.size()>0) {
+                            for (int j = 0; j < twoTree.size(); j++) {
+                                Map<String, Object> twoTreeMap = twoTree.get(j);
+                                String twoTreeType = (String) twoTreeMap.get("type");
+                                int twoTreeId = (int) twoTreeMap.get("id");
+                                //根据二级菜单获取按钮
+                                if(twoTreeType.equals("03")){
+                                    List<Map<String, Object>> buttonTree = rmSysMenuInfoMapper.findButtonTree(twoTreeId);
+                                    twoTreeMap.put("children",buttonTree.toArray());
+                                }
+                            }
+                        }
+                        oneTreeMap.put("children",twoTree.toArray());
+                    }
+
+                }
+            }
+            map.put("id","1");
+            map.put("name","全部菜单");
+            map.put("children",oneTree.toArray());
+            menusTree.add(map);
+            System.out.println(menusTree.toArray());
+            //select选择框选项
+            List<MenuEntity> allParents = rmSysMenuInfoMapper.findMenus("");
+            list.setTypeOption(allParents.toArray());
+            System.out.println(allParents.toArray());
+            code = ResultCode.SUCCESS.getCode();
+            message= "菜单获取成功";
+        } catch (Exception e) {
+            code = ResultCode.FAILED.getCode();
+            message= "菜单获取失败";
+            e.printStackTrace();
+        }
+
+        return new RespPageBean(code,message,menusTree.toArray());
     }
 
     @Override
-    public void saveRoleMenus(Map<String, String> map) {
-        String roleId = map.get("roleId");
-        String menus = map.get("menus");
-        String[] split = menus.split(",");
-        if(null!=split && split.length>0){
-            rolePesnMapper.delete(roleId);
-            for (String pmsnCd : split) {
-                rolePesnMapper.add(pmsnCd,roleId);
+    //@Transactional
+    public RespPageBean saveRoleMenus(Map<String, String> map) {
+        long code= 0;
+        String message= null;
+        try {
+            code = ResultCode.FAILED.getCode();
+            message = "权限修改失败";
+
+            String roleId = map.get("roleId");
+            String menus = map.get("menus");
+            String[] split = menus.split(",");
+            //删除原数据
+            long delete = rolePesnMapper.delete(roleId);
+            //新增数据
+            if(null!=split && split.length>0){
+                for (String pmsnCd : split) {
+                    rolePesnMapper.add(pmsnCd,roleId);
+                }
             }
+            code = ResultCode.FAILED.getCode();
+            message = "权限修改成功";
+        } catch (Exception e) {
+            code = ResultCode.FAILED.getCode();
+            message = "权限修改失败";
+            e.printStackTrace();
         }
+        return new RespPageBean(code,message);
     }
 
     @Override

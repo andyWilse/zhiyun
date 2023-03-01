@@ -23,7 +23,7 @@ public class MenuEntity implements Serializable {
     private String pmsnCd;//
 
     @Column(name = "PARENT_ID")
-    private String parentId;//
+    private int parentId;//
 
     @Column(name = "MENU_PRT_IDS")
     private String menuPrtIds;//

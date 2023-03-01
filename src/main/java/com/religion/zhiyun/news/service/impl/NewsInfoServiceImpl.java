@@ -3,7 +3,7 @@ package com.religion.zhiyun.news.service.impl;
 import com.religion.zhiyun.news.dao.RmNewsInfoMapper;
 import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

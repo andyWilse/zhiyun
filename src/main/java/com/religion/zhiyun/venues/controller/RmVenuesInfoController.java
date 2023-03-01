@@ -1,7 +1,7 @@
 package com.religion.zhiyun.venues.controller;
 
 
-import com.religion.zhiyun.sys.login.api.CommonResult;
+import com.religion.zhiyun.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -14,10 +14,12 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+//@RequiresPermissions ("venues:all")
 @RestController
 @RequestMapping("/venues")
-@CrossOrigin
+//@CrossOrigin
+//@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
+
 public class RmVenuesInfoController {
 
     @Autowired
@@ -89,7 +91,6 @@ public class RmVenuesInfoController {
         VenuesEntity byResponsiblePerson = rmVenuesInfoService.getByResponsiblePerson(responsiblePerson);
         return JsonUtils.objectTOJSONString(byResponsiblePerson);
     }
-
     @GetMapping("/find")
     public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map){
         String venuesName = (String)map.get("venuesName");

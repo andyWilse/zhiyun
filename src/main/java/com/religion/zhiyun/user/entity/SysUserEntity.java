@@ -6,6 +6,7 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.*;
 
 import lombok.*;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ import javax.persistence.Id;
 @Setter
 @Entity
 @Table(name = "RM_SYS_USER_INFO")
-public class SysUserEntity {
+public class SysUserEntity implements Serializable {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name = "USER_ID")

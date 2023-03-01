@@ -73,4 +73,6 @@ public  class VenuesEntity implements Serializable {
     @Column(name = "LATITUDE")
     private String Latitude;//纬度
 
+    private String dictCd;
+
 }
