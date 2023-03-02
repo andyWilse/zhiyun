@@ -63,6 +63,9 @@ public interface RmVenuesInfoMapper {
     //根据id获取该教堂
     VenuesEntity getVenueByID(String venuesId);
 
+    //根据id获取该教堂
+    Map<String,Object> getVenuesByID(String venuesId);
+
     /**
      * 获取各教堂数量
      * @return
@@ -101,7 +104,35 @@ public interface RmVenuesInfoMapper {
      */
     void updateLngLat(@Param("longitude") String longitude,@Param("Latitude") String Latitude,@Param("venuesId") Integer venuesId);
 
-
     //查询
     public List<Map<String,Object>> getMapVenues(@Param("search") String search,@Param("religiousSect") String religiousSect);
+
+    /**
+     * 获取备案信息
+     * @param relVenuesId
+     * @return
+     */
+    public List<Map<String,Object>> getFiling(@Param("relVenuesId") String relVenuesId);
+
+    /**
+     * 获取三人驻堂信息
+     * @param relVenuesId
+     * @return
+     */
+    public List<Map<String,Object>> getUsers(@Param("relVenuesId") String relVenuesId);
+
+    /**
+     * 获取监管干部
+     * @param relVenuesId
+     * @return
+     */
+    public List<Map<String,Object>> getGanUsers(@Param("relVenuesId") String relVenuesId);
+
+    /**
+     * 获取教职人员
+     * @param relVenuesId
+     * @return
+     */
+    public List<Map<String,Object>> getStaffs(@Param("relVenuesId") String relVenuesId);
+
 }

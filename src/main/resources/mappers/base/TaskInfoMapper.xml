@@ -149,4 +149,45 @@
         limit #{page},#{size}
     </select>
 
+    <insert id="addFill">
+        insert into rm_filing_info(
+            TASK_NAME,
+            TASK_CONTENT,
+            REL_VENUES_ID,
+            TASK_PICTURE,
+            TASK_VIDEO,
+            LAUNCH_PERSON,
+            LAUNCH_TIME,
+            HANDLE_PERSON,
+            HANDLE_RESULTS,
+            HANDLE_TIME,
+            PROC_INST_ID,
+            PART_NUM,
+            RESPONSIBLE_PERSON,
+            TASK_TIME
+        )
+        values (
+            #{taskName},
+            #{taskContent},
+            #{relVenuesId},
+            #{taskPicture},
+            #{taskVideo},
+            #{launchPerson},
+            #{launchTime},
+            #{handlePerson},
+            #{handleResults},
+            #{handleTime},
+            #{procInstId},
+            #{partNum},
+            #{responsiblePerson},
+            #{taskTime}
+        )
+    </insert>
+
+    <update id="updateFill" >
+        update rm_filing_info t
+        set t.HANDLE_PERSON=#{handlePerson},t.HANDLE_RESULTS=#{handleResults},t.HANDLE_TIME=#{handleTime}
+        where t.PROC_INST_ID=#{procInstId}
+    </update>
+
 </mapper>

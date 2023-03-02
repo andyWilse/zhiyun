@@ -5,6 +5,7 @@ import com.religion.zhiyun.sys.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,8 +123,8 @@ public class RmVenuesInfoController {
 
     //地图场所详情（app用)
     @RequestMapping("/map/venuesDetail")
-    public AppResponse getMapVenuesDetail(@RequestParam String venuesId) {
-        AppResponse appResponse = rmVenuesInfoService.getMapVenuesDetail(venuesId);
+    public AppDetailRes getMapVenuesDetail(@RequestParam String venuesId) {
+        AppDetailRes appResponse = rmVenuesInfoService.getMapVenuesDetail(venuesId);
         return appResponse;
     }
 

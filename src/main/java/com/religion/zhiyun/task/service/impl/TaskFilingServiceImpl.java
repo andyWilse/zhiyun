@@ -2,6 +2,7 @@ package com.religion.zhiyun.task.service.impl;
 
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.FilingEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskFilingService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
@@ -70,6 +71,11 @@ public class TaskFilingServiceImpl implements TaskFilingService {
         taskInfoMapper.addTask(taskEntity);
         log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
 
+        //保存备案信息
+        if("03".equals(taskEntity.getFlowType())){
+            taskInfoMapper.addFill(taskEntity);
+        }
+
         return "流程id(唯一标识)procInstId:"+tmp.getProcessInstanceId();
     }
 
@@ -110,6 +116,8 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             rmVenuesInfoMapper.update(venues);
             log.info("场所更新成功！");
         }else if("03".equals(flowType)){
+            //保存备案信息
+            taskInfoMapper.updateFill(taskEntity);
             log.info("活动备案成功！");
         }
 

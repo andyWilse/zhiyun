@@ -15,6 +15,7 @@ import com.religion.zhiyun.user.shiro.LoginInfo;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.sms.SendVerifyCode;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -89,30 +90,28 @@ public class SysLoginServiceImpl implements SysLoginService {
             }else if(null!=sysUser){
                 username=sysUser.getLoginNm();
                 direct="监管人员";
-                /*if(password.equals(sysUser.getWeakPwInd())){
+                if(password.equals(sysUser.getWeakPwInd())){
                     code=ResultCode.SUCCESS.getCode();
                     message="登录成功！";
                 }else{
-                    code=ResultCode.FAILED.getCode();
                     message="用户名或密码错误，登录失败！";
                     throw new RuntimeException();
-                }*/
+                }
             }else if(null!=staff){
                 direct="神职人员";
-                /*if(password.equals(staff.getPasswordsOrigin())){
+                if(password.equals(staff.getPasswordsOrigin())){
                     code=ResultCode.SUCCESS.getCode();
                     message="登录成功！";
                 }else{
-                    code=ResultCode.FAILED.getCode();
                     message="用户名或密码错误，登录失败！";
                     throw new RuntimeException();
-                }*/
+                }
             }
             //登录
-            Subject subject = SecurityUtils.getSubject();
+            /*Subject subject = SecurityUtils.getSubject();
             token = new UsernamePasswordToken(username, password);
             subject.login(token);
-            loginInfo = this.getLoginInfo(username);
+            loginInfo = this.getLoginInfo(username);*/
             //return new AppResponse(code,message,loginInfo,direct);// 将用户的角色和权限发送到前台
         } catch (IncorrectCredentialsException e) {
             code=ResultCode.FAILED.getCode();
@@ -143,7 +142,6 @@ public class SysLoginServiceImpl implements SysLoginService {
             //验证验证码
             Map<String,Object> map= (Map<String, Object>) appRedisCacheManager.get("verifyCode" + userName);
             if(null==map || map.size()<=0){
-                code=ResultCode.FAILED.getCode();
                 message="验证码已过期，请重新发送！";
                 throw new RuntimeException(message);
             }
@@ -151,7 +149,6 @@ public class SysLoginServiceImpl implements SysLoginService {
             Object createTime = map.get("createTime");
             Object yanZhenMa = map.get("yanZhenMa");
             if(!userName.equals(username)){
-                code=ResultCode.FAILED.getCode();
                 message="手机号不正确，请使用验证码发送的手机号登录！";
                 throw new RuntimeException(message);
             }
@@ -160,15 +157,12 @@ public class SysLoginServiceImpl implements SysLoginService {
             System.out.println(yanZhenMa);
             System.out.println("传入的验证码是："+verifyCodes);
             if(null==verifyCodes || "".equals(verifyCodes)){
-                code=ResultCode.FAILED.getCode();
                 message="验证码不能为空，请填写验证码！";
                 throw new RuntimeException(message);
             }else if(null==yanZhenMa || "".equals(yanZhenMa)){
-                code=ResultCode.FAILED.getCode();
                 message="验证码已过期，请重新发送！";
                 throw new RuntimeException(message);
             }else if(!yanZhenMa.equals(verifyCodes)){
-                code=ResultCode.FAILED.getCode();
                 message="验证码不正确，请重新填写！";
                 throw new RuntimeException(message);
             }else if(yanZhenMa.equals(verifyCodes)){
@@ -176,6 +170,11 @@ public class SysLoginServiceImpl implements SysLoginService {
             }
             code=ResultCode.SUCCESS.getCode();
             message="验证码验证成功！";
+        }catch (RuntimeException re) {
+            if(message.isEmpty()){
+                message="验证码处理失败";
+            }
+            re.printStackTrace();
         } catch (Exception e) {
             code=ResultCode.FAILED.getCode();
             message="验证码处理失败！";
@@ -219,11 +218,9 @@ public class SysLoginServiceImpl implements SysLoginService {
             SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
             StaffEntity staff = rmStaffInfoMapper.getByTel(username);//神职人员
             if(null!=sysUser && null!=staff){
-                code=ResultCode.FAILED.getCode();
                 message="用户身份重复，请联系管理员！";
                 throw new RuntimeException(message);
             }else if(null==sysUser && null==staff){
-                code=ResultCode.FAILED.getCode();
                 message="该手机号未在系统添加使用，请添加后登录！";
                 throw new RuntimeException(message);
             }else if(null!=sysUser){
@@ -249,8 +246,9 @@ public class SysLoginServiceImpl implements SysLoginService {
 
             code=ResultCode.SUCCESS.getCode();
             message="密码修改成功！";
+        }catch (RuntimeException re) {
+            re.printStackTrace();
         } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
             message="密码修改失败！";
             e.printStackTrace();
         }
@@ -267,7 +265,7 @@ public class SysLoginServiceImpl implements SysLoginService {
         String verifyCode = String.valueOf(new Random().nextInt(999999));
         String contents="【云监控中心】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
         //发送
-       // SendVerifyCode.sendVerifyCode(contents, "18514260203");
+        SendVerifyCode.sendVerifyCode(contents, username);
         //封装参数
         JSONObject json = new JSONObject();
         json.put("username",username);

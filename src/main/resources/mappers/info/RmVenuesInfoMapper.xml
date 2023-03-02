@@ -261,4 +261,72 @@
         </if>
     </select>
 
+    <select id="getVenuesByID" resultType="map">
+        select
+            VENUES_ID as venuesId ,
+            VENUES_NAME as venuesName,
+            RELIGIOUS_SECT as religiousSect,
+            REGISTER_NBR as registerNbr,
+            VENUES_PHONE as venuesPhone,
+            ORGANIZATION as organization,
+            VENUES_ADDRES as venuesAddres,
+            PICTURES_PATH as picturesPath,
+            RESPONSIBLE_PERSON  as responsiblePerson,
+            LIAISON_MAN as liaisonMan,
+            BRIEF_INTRODUCTION as briefIntroduction,
+            LONGITUDE as longitude,
+            latitude as Latitude
+        from RM_VENUES_INFO
+        where VENUES_ID=#{venuesId}
+    </select>
+
+    <select id="getFiling" resultType="map">
+        SELECT
+            TASK_NAME as filingNm
+        FROM rm_filing_info
+        where FILING_STATUS='02'
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and REL_VENUES_ID = #{relVenuesId}
+        </if>
+    </select>
+
+    <select id="getUsers" resultType="map">
+        SELECT
+            IDENTITY as type,
+            USER_NM as name,
+            USER_MOBILE as phone
+        FROM rm_sys_user_info
+        where VALID_IND='1'
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and REL_VENUES_ID = #{relVenuesId}
+        </if>
+    </select>
+
+    <select id="getGanUsers" resultType="map">
+        select
+            distinct g.IDENTITY as IDENTITY,g.USER_NM,g.USER_MOBILE
+        from rm_sys_user_info  g
+        left join rm_sys_user_info u on g.area=u.area
+        where g.VALID_IND='1'
+        and g.IDENTITY in ('10000002','10000003','10000004','10000005')
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and u.REL_VENUES_ID = #{relVenuesId}
+        </if>
+        order by g.IDENTITY
+    </select>
+
+    <select id="getStaffs" resultType="map">
+        select
+            s.STAFF_ID as id,
+            s.STAFF_CN_NM name,
+            s.STAFF_TELPHONE as phone
+        from rm_staff_info s
+        where 1=1
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and REL_VENUES_ID = #{relVenuesId}
+        </if>
+    </select>
+
+
+
 </mapper>

@@ -39,7 +39,11 @@ public interface TaskInfoMapper {
                                    @Param("size") Integer size,
                                    @Param("taskName") String taskName);
 
-    /**根据手机号及身份，获取上级信息**/
+    /**保存备案信息**/
+    void addFill(TaskEntity taskEntity);
+
+    /**更新备案信息**/
+    void updateFill(TaskEntity taskEntity);
 
 
 }

@@ -84,7 +84,7 @@ public class FileUpDown {
             //保存文件信息
             FileEntity vo=new FileEntity();
             vo.setFileName(fileName);
-            vo.setFilePath(pathUpload);
+            vo.setFilePath(pathUpload+"\\");
             return vo;
         } catch (IOException e) {
             logger.info("上传失败");

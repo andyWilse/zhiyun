@@ -2,6 +2,7 @@ package com.religion.zhiyun.venues.services;
 
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Param;
 
@@ -45,7 +46,7 @@ public interface RmVenuesInfoService {
      * @param venuesId
      * @return
      */
-    AppResponse getMapVenuesDetail(String venuesId);
+    AppDetailRes getMapVenuesDetail(String venuesId);
 
     /**
      * 获取地图

@@ -14,4 +14,12 @@ public interface RmFileMapper {
 
     List<FileEntity> queryPath(@Param("fileIds") String[] fileIds);
 
+    /**
+     * 获取图片地址
+     * @param fileIds
+     * @return
+     */
+    List<String> getPath(@Param("fileIds") String[] fileIds);
+
+
 }
