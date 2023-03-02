@@ -153,7 +153,7 @@
         from rm_staff_info
         where STAFF_TELPHONE=#{staffTelphone}
     </select>
-    <select id="getStaffById" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+    <select id="getStaffByName" resultType="java.util.Map">
         select
         STAFF_ID as staffId,
         STAFF_CD as staffCd,
@@ -170,7 +170,7 @@
         GROUP_POST as groupPost,
         RELIGIOUS_VENUES as religiousVenues,
         VENUES_POST as venuesPost,
-        BIRTHDAY as birthday,
+        DATE_FORMAT(BIRTHDAY,'%Y-%m-%d %H:%i:%s') as birthday,
         POLITICAL as political,
         MAILING_ADDRESS as mailingAddress,
         REGISTERED_RESIDENCE as registeredResidence,
@@ -186,15 +186,32 @@
         REL_VENUES_ID as relVenuesId,
         POSTTION as posttion,
         CERTIFICATE_UNIT as certificateUnit,
-        CERTIFICATE_TIME as certificateTime,
-        CERTIFICATE_NUMBER as certificateNumber,
-        CREATOR as creator,
-        CREATE_TIME as createTime,
-        LAST_MODIFIER as lastModifier,
-        LAST_MODIFY_TIME as lastModifyTime
+        DATE_FORMAT(CERTIFICATE_TIME,'%Y-%m-%d %H:%i:%s') as certificateTime,
+        CERTIFICATE_NUMBER as certificateNumber
         from rm_staff_info s
         left join RM_SYS_DICT d on s.RELIGIOUS_SECT=d.DICT_CD
-        where STAFF_ID=#{StaffId}
+        where STAFF_CN_NM=#{StaffName}
+    </select>
+    <select id="getVenuesByStaffName" resultType="java.util.Map">
+		select VENUES_ID as id,
+		VENUES_NAME as name,
+		d.DICT_CN_DESC as type,
+		ORGANIZATION as address,
+		RESPONSIBLE_PERSON as person
+		from rm_venues_info v
+		left join RM_SYS_DICT d on v.RELIGIOUS_SECT=d.DICT_CD
+		WHERE RESPONSIBLE_PERSON=#{StaffName}
+    </select>
+    <select id="getFiling" resultType="java.util.Map">
+        SELECT
+        FILING_ID as id,
+        TASK_NAME as filingNm
+        FROM rm_filing_info
+        where FILING_STATUS='02'
+        <if test="StaffName!=null and StaffName!=''">
+            and RESPONSIBLE_PERSON = #{StaffName}
+        </if>
+
     </select>
 
 

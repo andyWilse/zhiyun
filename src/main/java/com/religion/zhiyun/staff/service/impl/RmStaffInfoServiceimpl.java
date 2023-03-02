@@ -10,14 +10,13 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RmStaffInfoServiceimpl implements RmStaffInfoService {
@@ -125,29 +124,48 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public AppResponse getStaffById(String StaffId) {
+    public AppDetailRes getStaffByName(String StaffName) {
         long code = ResultCode.FAILED.getCode();
         String message="获取教职人员详情失败！";
-        StaffEntity staffEntity = new StaffEntity();
-        List<StaffEntity> list=new ArrayList<>();
+        Map<String,Object> staffMap=new HashMap<>();
         try {
-            staffEntity = staffInfoMapper.getStaffById(StaffId);
-            if (staffEntity!=null){
-                list.add(staffEntity);
-            }else {
-                code=ResultCode.FAILED.getCode();
-                message="获取教职人员详情失败！";
-                throw new RuntimeException(message);
+            staffMap = staffInfoMapper.getStaffByName(StaffName);
+            if (null!=staffMap&&staffMap.size()>0){
+                //获取图片地址
+                String picture= (String) staffMap.get("staffPicture");
+                Object[] file ={};
+                if(!picture.isEmpty()){
+                    //查询地图地址
+                    String[] split = picture.split(",");
+                    List<Map<String,Object>> imgMap=rmFileMapper.getPath(split);
+                    if(null!=imgMap && imgMap.size()>0){
+                        file = imgMap.toArray();
+                    }
+                }
+                staffMap.put("images",file);
+
+
+                //关联场所
+                List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByStaffName(StaffName);
+                staffMap.put("venuesList",venuesList.toArray());
+
+                //关联活动
+                List<Map<String, Object>> filing = staffInfoMapper.getFiling(StaffName);
+                staffMap.put("filing",filing.toArray());
+
+            }else{
+                message="获取人员信息详情失败！！";
+                throw  new RuntimeException(message);
             }
-            code=ResultCode.SUCCESS.getCode();
-            message="获取教职人员详情成功！";
+            code= ResultCode.SUCCESS.getCode();
+            message="获取人员信息详情成功！";
         }catch (RuntimeException r ){
             r.printStackTrace();
         } catch(Exception e) {
-            code= ResultCode.FAILED.getCode();
-            message="获取教职人员详情失败！";
+            message="获取人员信息详情失败！！";
             e.printStackTrace();
         }
-        return new AppResponse(code,message,list.toArray());
+
+        return new AppDetailRes(code,message,staffMap);
     }
 }

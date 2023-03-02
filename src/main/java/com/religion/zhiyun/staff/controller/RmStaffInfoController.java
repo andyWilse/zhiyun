@@ -5,6 +5,7 @@ import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -58,10 +59,13 @@ public class RmStaffInfoController {
         return rmStaffInfoService.getStaffByPage(page,size,staffName,staffPost,religiousSect);
     }
 
-    @RequestMapping("/getStaffById")
-    public AppResponse getStaffById(@RequestParam String StaffId){
-        AppResponse staffById = rmStaffInfoService.getStaffById(StaffId);
-        return staffById;
+    /*
+    根据教职人员id查询教职人员信息
+     */
+    @RequestMapping("/getStaffByName")
+    public AppDetailRes getStaffByName(@RequestParam String StaffName){
+        AppDetailRes staffList = rmStaffInfoService.getStaffByName(StaffName);
+        return staffList;
     }
 
 }
