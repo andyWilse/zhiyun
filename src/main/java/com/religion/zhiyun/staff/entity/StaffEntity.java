@@ -50,6 +50,9 @@ public class StaffEntity implements Serializable {
     @Column(name = "RELIGIOUS_GROUP")
     private String religiousGroup;//所在团体
 
+    @Column(name = "GROUP_POST")
+    private String groupPost;//所在团体任职情况
+
     @Column(name = "RELIGIOUS_VENUES")
     private String religiousVenues;//所在场所
 

@@ -3,7 +3,9 @@ package com.religion.zhiyun.staff.controller;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +56,12 @@ public class RmStaffInfoController {
         Integer size = Integer.valueOf(sizes);
 
         return rmStaffInfoService.getStaffByPage(page,size,staffName,staffPost,religiousSect);
+    }
+
+    @RequestMapping("/getStaffById")
+    public AppResponse getStaffById(@RequestParam String StaffId){
+        AppResponse staffById = rmStaffInfoService.getStaffById(StaffId);
+        return staffById;
     }
 
 }

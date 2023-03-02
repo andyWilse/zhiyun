@@ -14,6 +14,7 @@
         NATION as nation,
         NATIVE_PLACE as nativePlace,
         RELIGIOUS_GROUP as religiousGroup,
+        GROUP_POST as groupPost,
         RELIGIOUS_VENUES as religiousVenues,
         VENUES_POST as venuesPost,
         BIRTHDAY as birthday,
@@ -88,7 +89,8 @@
         RELIGIOUS_TYPE as religiousType,
         NATION as nation,
         NATIVE_PLACE as nativePlace,
-        RELIGIOUS_GROUP as religiousGroup,
+        gr.GROUP_NAME as religiousGroup,
+        GROUP_POST as groupPost,
         RELIGIOUS_VENUES as religiousVenues,
         VENUES_POST as venuesPost,
         BIRTHDAY as birthday,
@@ -109,11 +111,12 @@
         CERTIFICATE_UNIT as certificateUnit,
         CERTIFICATE_TIME as certificateTime,
         CERTIFICATE_NUMBER as certificateNumber,
-        CREATOR as creator,
-        CREATE_TIME as createTime,
-        LAST_MODIFIER as lastModifier,
-        LAST_MODIFY_TIME as lastModifyTime
+        ve.CREATOR as creator,
+        ve.CREATE_TIME as createTime,
+        ve.LAST_MODIFIER as lastModifier,
+        ve.LAST_MODIFY_TIME as lastModifyTime
         from RM_STAFF_INFO ve
+        left join RM_GROUP_INFO gr on ve.RELIGIOUS_GROUP=gr.GROUP_CD
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         where STAFF_STATUS!='02'
         <if test="staffName != null and staffName != ''">
@@ -125,7 +128,7 @@
         <if test="religiousSect != null and religiousSect != ''">
             AND  RELIGIOUS_SECT = #{religiousSect}
         </if>
-        order by LAST_MODIFY_TIME desc
+        order by ve.LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
 
@@ -149,6 +152,49 @@
             <include refid="staffColumn"/>
         from rm_staff_info
         where STAFF_TELPHONE=#{staffTelphone}
+    </select>
+    <select id="getStaffById" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+        select
+        STAFF_ID as staffId,
+        STAFF_CD as staffCd,
+        STAFF_CN_NM as staffName,
+        case CERT_TYPE_CD
+        when '301000000010' then '身份证' end as certTypeCd,
+        CERT_NBR as certNbr,
+        SEX as sex,
+        d.DICT_CN_DESC as religiousSect,
+        RELIGIOUS_TYPE as religiousType,
+        NATION as nation,
+        NATIVE_PLACE as nativePlace,
+        RELIGIOUS_GROUP as religiousGroup,
+        GROUP_POST as groupPost,
+        RELIGIOUS_VENUES as religiousVenues,
+        VENUES_POST as venuesPost,
+        BIRTHDAY as birthday,
+        POLITICAL as political,
+        MAILING_ADDRESS as mailingAddress,
+        REGISTERED_RESIDENCE as registeredResidence,
+        STAFF_PICTURE as staffPicture,
+        STAFF_TELPHONE as staffTelphone,
+        SOCIETY_CULTURE as societyCulture,
+        SOCIETY_SCHOOL as societySchool,
+        RELIGIOUS_CULTURE as religiousCulture,
+        RELIGIOUS_SCHOOL as religiousSchool,
+        COMPANY as company,
+        STAFF_STATUS as staffStatus,
+        STAFF_POST as staffPost,
+        REL_VENUES_ID as relVenuesId,
+        POSTTION as posttion,
+        CERTIFICATE_UNIT as certificateUnit,
+        CERTIFICATE_TIME as certificateTime,
+        CERTIFICATE_NUMBER as certificateNumber,
+        CREATOR as creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+        from rm_staff_info s
+        left join RM_SYS_DICT d on s.RELIGIOUS_SECT=d.DICT_CD
+        where STAFF_ID=#{StaffId}
     </select>
 
 
