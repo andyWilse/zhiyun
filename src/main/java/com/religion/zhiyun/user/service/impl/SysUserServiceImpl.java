@@ -1,6 +1,6 @@
 package com.religion.zhiyun.user.service.impl;
 
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.dao.SysRoleMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.dao.SysUserRoleRelMapper;

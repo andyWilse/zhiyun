@@ -44,5 +44,41 @@
         </foreach>
     </select>
 
+    <select id="findOneTree" resultType="map">
+        select
+            MENU_ID as id ,
+            MENU_NM as name,
+            RESOURCE_TYPE as type
+        from RM_SYS_MENU_INFO
+        where RESOURCE_TYPE  in ('01','02')
+        order by SORT_LVL
+    </select>
+
+    <select id="findTwoTree" resultType="map">
+        select
+            MENU_ID as id ,
+            MENU_NM as name,
+            RESOURCE_TYPE as type
+        from RM_SYS_MENU_INFO
+        where RESOURCE_TYPE  in ('03','04')
+        <if test="_parameter != null and _parameter != ''">
+            and PARENT_ID = #{parentId}
+        </if>
+        order by SORT_LVL
+    </select>
+
+    <select id="findButtonTree" resultType="map">
+        select
+            MENU_ID as id ,
+            MENU_NM as name,
+            RESOURCE_TYPE as type
+        from RM_SYS_MENU_INFO
+        where RESOURCE_TYPE  ='05'
+        <if test="_parameter != null and _parameter != ''">
+            and PARENT_ID = #{parentId}
+        </if>
+        order by SORT_LVL
+    </select>
+
 
 </mapper>

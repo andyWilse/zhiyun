@@ -86,4 +86,6 @@ public interface RmStaffInfoMapper {
                         @Param("lastModifier") String lastModifier,
                         @Param("lastModifyTime") String lastModifyTime);
 
+    StaffEntity getStaffById(String StaffId);
+
 }

@@ -1,6 +1,6 @@
 package com.religion.zhiyun.utils.response;
 
-import com.religion.zhiyun.user.shiro.LoginInfo;
+import com.religion.zhiyun.login.entity.LoginInfo;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.shiro.authc.UsernamePasswordToken;

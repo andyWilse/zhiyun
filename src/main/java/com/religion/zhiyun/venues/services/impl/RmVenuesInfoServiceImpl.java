@@ -4,6 +4,8 @@ import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.login.api.ResultCode;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
@@ -29,8 +31,27 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
 
     @Override
     public RespPageBean add(VenuesEntity venuesEntity) {
-        long code= ResultCode.SUCCESS.getCode();
+        long code= ResultCode.FAILED.getCode();
+        String message="场所信息保存失败！";
         try{
+            //获取经纬度
+            String venuesAddres = venuesEntity.getVenuesAddres();
+            if(null!=venuesAddres && ""!=venuesAddres){
+                String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
+                String[] split = coordinate.split(",");
+                String lng=split[0];
+                String lat=split[1];
+                if("1".equals(lng) || "1".equals(lat) ){
+                    message="无法获取经纬度，请重新填写详细地址！";
+                    throw new RuntimeException(message);
+                }
+                venuesEntity.setLongitude(lng);
+                venuesEntity.setLatitude(lat);
+            }else{
+                message="场所地址信息丢失！";
+                throw new RuntimeException(message);
+            }
+
             Timestamp timestamp = new Timestamp(new Date().getTime());
             venuesEntity.setCreateTime(timestamp);
             venuesEntity.setLastModifyTime(timestamp);
@@ -40,11 +61,18 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             venuesEntity.setLastModifier(nbr);
             venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
             rmVenuesInfoMapper.add(venuesEntity);
-        }catch (Exception e){
-            code=ResultCode.FAILED.getCode();
+
+            code=ResultCode.SUCCESS.getCode();
+            message="新增场所信息成功！";
+
+        }catch (RuntimeException e){
             e.printStackTrace();
         }
-        RespPageBean bean=new RespPageBean(code);
+        catch (Exception e){
+            message="新增场所失败,请联系管理员！";
+            e.printStackTrace();
+        }
+        RespPageBean bean=new RespPageBean(code,message);
         return bean;
     }
 

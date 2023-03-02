@@ -6,8 +6,8 @@
     <insert id="add" parameterType="string">
         INSERT INTO
             RM_SYS_ROLE_PESN
-            (PMSN_CD,ROLE_ID)
-            values(#{pmsnCd},#{roleId})
+            (PMSN_CD,ROLE_ID,VALID_IND)
+            values(#{pmsnCd},#{roleId},'1')
     </insert>
 
     <select id="getMenuByRole" resultType="String">
@@ -18,12 +18,10 @@
         <if test="roleId != null and roleId != ''">
             AND  ROLE_ID = #{roleId}
         </if>
-
     </select>
 
-    <delete id="delete" parameterType="string">
-        delete  from RM_SYS_ROLE_PESN where ROLE_ID = #{roleId}
-
+    <delete id="delete" flushCache="true">
+        delete from RM_SYS_ROLE_PESN where ROLE_ID =#{roleId}
     </delete>
 
 </mapper>

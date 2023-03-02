@@ -1,12 +1,11 @@
 package com.religion.zhiyun.task.service.impl;
 
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskIssuedService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import lombok.extern.slf4j.Slf4j;

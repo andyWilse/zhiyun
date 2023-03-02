@@ -3,7 +3,7 @@ package com.religion.zhiyun.user.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.staff.entity.StaffEntity;
-import com.religion.zhiyun.sys.login.api.ResultCode;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.RoleEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
@@ -11,7 +11,7 @@ import com.religion.zhiyun.user.service.SysLoginService;
 
 import com.religion.zhiyun.user.service.SysRoleService;
 import com.religion.zhiyun.user.service.SysUserService;
-import com.religion.zhiyun.user.shiro.LoginInfo;
+import com.religion.zhiyun.login.entity.LoginInfo;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -34,8 +34,6 @@ import com.auth0.jwt.JWT;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static io.micrometer.core.instrument.config.NamingConvention.identity;
 
 /*
 extends ServiceImpl<UserLoginMapper, UserLogin> implements UserService
@@ -125,7 +123,6 @@ public class SysLoginServiceImpl implements SysLoginService {
         } catch (RuntimeException e) {
             code=ResultCode.FAILED.getCode();
             message=message;
-            e.printStackTrace();
         }catch (Exception e) {
             code=ResultCode.FAILED.getCode();
             message="登陆失败！";

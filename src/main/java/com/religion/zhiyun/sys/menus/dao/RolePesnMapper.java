@@ -11,8 +11,9 @@ import java.util.List;
 @Repository
 @Mapper
 public interface RolePesnMapper {
+
     //删除
-    long delete(@Param("roleId")String roleId);
+    long delete(@Param("roleId") String roleId);
 
     //保存
     long add(@Param("pmsnCd") String pmsnCd, @Param("roleId")String roleId);
