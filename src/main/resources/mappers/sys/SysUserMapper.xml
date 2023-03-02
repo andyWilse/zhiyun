@@ -197,7 +197,7 @@
                 zuzh.USER_NBR as zuzh
         from rm_sys_user_info zuyuan
         left join rm_sys_user_info zuzh on zuyuan.OFC_ID=zuzh.USER_NBR
-        where VALID_IND='1'
+        where zuyuan.VALID_IND='1' and zuzh.VALID_IND='1'
         <if test="relVenuesId != null and relVenuesId != ''">
         and (
             zuyuan.REL_VENUES_ID=#{relVenuesId}

@@ -20,7 +20,7 @@
         LAST_MODIFIER as lastModifier,
         LAST_MODIFY_TIME as lastModifyTime,
         LONGITUDE as longitude,
-        latitude as Latitude
+        LATITUDE as Latitude
     </sql>
 
     <sql id="twoColumn">
@@ -103,7 +103,10 @@
             CREATOR,
             CREATE_TIME,
             LAST_MODIFIER,
-            LAST_MODIFY_TIME
+            LAST_MODIFY_TIME,
+            LONGITUDE,
+            LATITUDE
+
         )values (
                     #{venuesId},
                     #{venuesName},
@@ -120,7 +123,9 @@
                     #{creator},
                     #{createTime},
                     #{lastModifier},
-                    #{lastModifyTime}
+                    #{lastModifyTime},
+                    #{longitude},
+                    #{Latitude}
                 )
     </insert>
 

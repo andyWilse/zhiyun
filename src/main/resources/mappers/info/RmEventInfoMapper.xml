@@ -505,4 +505,28 @@
         join (SELECT @rownum := 0) AS rn
         order by tm.tmDate
     </select>
+
+
+    <select id="queryEvent" parameterType="com.religion.zhiyun.event.entity.EventEntity" resultType="map" >
+        select
+            e.EVENT_ID as id
+        from rm_event_info e
+        where e.EVENT_STATE='00'
+        <if test="accessNumber!=null and accessNumber!=''">
+            and e.ACCESS_NUMBER=#{accessNumber}
+        </if>
+        <if test="eventType!=null and eventType!=''">
+            and e.EVENT_TYPE=#{eventType}
+        </if>
+        <if test="responsiblePerson!=null and responsiblePerson!=''">
+            and e.RESPONSIBLE_PERSON=#{responsiblePerson}
+        </if>
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and e.REL_VENUES_ID=#{relVenuesId}
+        </if>
+        <if test="location!=null and location!=''">
+            and e.LOCATION=#{location}
+        </if>
+
+    </select>
 </mapper>
