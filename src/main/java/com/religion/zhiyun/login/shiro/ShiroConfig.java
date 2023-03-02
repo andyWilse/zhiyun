@@ -59,8 +59,10 @@ public class ShiroConfig
         bean.setLoginUrl("/api/ajaxLogin");
         Map<String ,String> filterMap = new LinkedHashMap<>();
 
-        filterMap.put("/venues/find","authc");
-        filterMap.put("/user/update","authc");
+        //filterMap.put("/venues/find","authc");
+        //filterMap.put("/user/update","authc");
+
+        filterMap.put("/**", "anon");
         bean.setFilterChainDefinitionMap(filterMap);
         Map<String , Filter> f = new LinkedHashMap<>();
         f.put("f",new CorsFilter());

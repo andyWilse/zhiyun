@@ -23,7 +23,9 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
 
     @Override
     public void addMonitro(MonitroEntity monitroEntity) {
-        rmMonitroInfoMapper.addMonitro(monitroEntity);
+        if(!monitroEntity.getMonitorUrl().isEmpty() && !monitroEntity.getAccessNumber().isEmpty()){
+            rmMonitroInfoMapper.addMonitro(monitroEntity);
+        }
     }
 
     @Override

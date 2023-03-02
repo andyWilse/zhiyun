@@ -187,4 +187,10 @@ public interface RmEventInfoMapper {
     List<Map<String,Object>> getEventsWeekGather(@Param("num") int num);
 
 
+    /**
+     * 修改
+     * @param eventEntity
+     */
+    List<Map<String,Object>> queryEvent(EventEntity eventEntity);
+
 }

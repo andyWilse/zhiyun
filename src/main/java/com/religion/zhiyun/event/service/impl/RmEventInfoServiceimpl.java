@@ -81,18 +81,20 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             String infoSource= (String) map.get("infoSource");
 
             //新增设备
-            MonitroEntity moni=new MonitroEntity();
-            moni.setMonitorUrl(videoUrl);
-            moni.setAccessNumber(cameraId);
-            moni.setVenuesAddres(locationName);
-            moni.setCreator("AI告警");
-            moni.setCreateTime(timeStamp);
-            moni.setLastModifier("AI告警");
-            moni.setLastModifyTime(timeStamp);
-            moni.setRelVenuesId(10010);
-            moni.setState("01");
-            moni.setFunctionType(infoSource);
-            rmMonitroInfoMapper.addMonitro(moni);
+            if(!videoUrl.isEmpty() && !cameraId.isEmpty()){
+                MonitroEntity moni=new MonitroEntity();
+                moni.setMonitorUrl(videoUrl);
+                moni.setAccessNumber(cameraId);
+                moni.setVenuesAddres(locationName);
+                moni.setCreator("AI告警");
+                moni.setCreateTime(timeStamp);
+                moni.setLastModifier("AI告警");
+                moni.setLastModifyTime(timeStamp);
+                moni.setRelVenuesId(10010);
+                moni.setState("01");
+                moni.setFunctionType(infoSource);
+                rmMonitroInfoMapper.addMonitro(moni);
+            }
 
             //新增预警
             EventEntity event=new EventEntity();
@@ -107,14 +109,21 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             event.setRelVenuesId(10010);
             event.setHandleTesults(alarmLevelName);
             event.setHandleTime(timeStamp);
-
-            //新增通知
-            //String notifiedParty = this.getNotifiedParty(event.getEventType(), event.getRelVenuesId());
-            //event.setResponsiblePerson(notifiedParty);
-            int eventId = rmEventInfoMapper.addEvent(event);
+            //查询数据库数据是否存在，不存在新增；存在，修改
+            List<Map<String,Object>> list = rmEventInfoMapper.queryEvent(event);
+            int eventId =0;
+            if(list.size()>0){
+                //更新
+                eventId = (int) list.get(0).get("id");
+                rmEventInfoMapper.updateEvent(event);
+            }else{
+                //新增
+                //String notifiedParty = this.getNotifiedParty(event.getEventType(), event.getRelVenuesId());
+                //event.setResponsiblePerson(notifiedParty);
+                eventId = rmEventInfoMapper.addEvent(event);
+            }
             //新增通知
             this.addNotifiedParty(event.getEventType(), event.getRelVenuesId(),eventId);
-
 
             code=ResultCode.SUCCESS.getCode();
             message="AI告警,数据处理成功！";
