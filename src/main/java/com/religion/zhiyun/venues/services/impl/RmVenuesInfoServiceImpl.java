@@ -1,9 +1,6 @@
 package com.religion.zhiyun.venues.services.impl;
 
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
-import com.religion.zhiyun.sys.file.entity.FileEntity;
-import com.religion.zhiyun.sys.login.api.ResultCode;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -175,16 +172,17 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             if(null!=venuesMap && venuesMap.size()>0){
                 //获取图片地址
                 String picturesPath= (String) venuesMap.get("picturesPath");
+                Object[] file ={};
                 if(!picturesPath.isEmpty()){
                     //查询地图地址
                     String[] split = picturesPath.split(",");
-                    Object[] file ={};
-                    List<String> fileEntities = rmFileMapper.getPath(split);
-                    if(null!=fileEntities && fileEntities.size()>0){
-                        file = fileEntities.toArray();
+                    List<Map<String,Object>> imgMap=rmFileMapper.getPath(split);
+                    if(null!=imgMap && imgMap.size()>0){
+                        file = imgMap.toArray();
                     }
-                    venuesMap.put("images",file);
                 }
+                venuesMap.put("images",file);
+
                 //关联活动
                 //String relVenuesId= (String) venuesMap.get("relVenuesId");
                 List<Map<String, Object>> joinActivity = rmVenuesInfoMapper.getFiling(venuesId);

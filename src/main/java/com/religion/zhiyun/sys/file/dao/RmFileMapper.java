@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Mapper
@@ -19,7 +20,7 @@ public interface RmFileMapper {
      * @param fileIds
      * @return
      */
-    List<String> getPath(@Param("fileIds") String[] fileIds);
+    List<Map<String,Object>> getPath(@Param("fileIds") String[] fileIds);
 
 
 }

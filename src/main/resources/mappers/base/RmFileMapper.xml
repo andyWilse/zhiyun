@@ -38,7 +38,7 @@
         </foreach>
     </select>
 
-    <select id="getPath" resultType="String">
+    <select id="getPath" resultType="map">
         select CONCAT(FILE_PATH,FILE_NAME) as filePath
         from RM_FILE_INFO
         where FILE_ID in
