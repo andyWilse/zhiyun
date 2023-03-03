@@ -1,5 +1,6 @@
 package com.religion.zhiyun.event.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
@@ -20,6 +21,8 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.sms.SendMassage;
+import com.religion.zhiyun.utils.sms.SendVerifyCode;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.ProcessEngine;
@@ -243,6 +246,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         //log.info("接受NB烟感器的数据:"+eventEntity);
         long code=0l;
         String message="";
+        String eventInfo="";
         try {
             Map<String, Object> map = JsonUtils.jsonToMap(eventEntity);
             EventEntity event = new EventEntity();
@@ -274,7 +278,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             String format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
             event.setHandleTime(format);
             rmEventInfoMapper.addEventByNB(event);
-
+            String relVenuesId = String.valueOf(event.getRelVenuesId());
+            String location1 = event.getLocation();
+            eventInfo = this.sendRemindInfo(relVenuesId,location1);
             code=ResultCode.SUCCESS.getCode();
             message="NB烟感器数据处理成功！";
         }catch (Exception e){
@@ -283,8 +289,27 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             e.printStackTrace();
         }
 
-        return new OutInterfaceResponse(code,message);
+        return new OutInterfaceResponse(code,message,eventInfo);
     }
+
+    //根据事件场所查询关联人的电话
+    public  String sendRemindInfo(String venuesId,String location1){
+        //根据场所id查询关联人
+        List<SysUserEntity> mobile = rmEventInfoMapper.getMobile(location1);
+        String s="";
+        String contents="【云监控中心】您好！位于"+venuesId+"疑似发生火灾，请您立刻前去处理！！";
+        for (int i=0;i<mobile.size();i++){
+            //获取关联人电话
+            String userMobile = mobile.get(i).getUserMobile();
+            System.out.println(userMobile);
+            //发送短信
+            s = SendMassage.sendSms(contents, userMobile);
+            System.out.println("已发送"+(i+1)+"条短信");
+
+        }
+        return s;
+    }
+
 
     @Override
     public AppResponse getEventsByState(Integer page, Integer size, String eventState) {
@@ -484,6 +509,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         return new AppResponse(code,message,eventsGather.toArray());
     }
 
+
     /**
      * 预警通知保存
      * @param eventType
@@ -574,5 +600,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
 
         return "流程id(唯一标识)procInstId:"+procInstId;
     }
+
+
 
 }

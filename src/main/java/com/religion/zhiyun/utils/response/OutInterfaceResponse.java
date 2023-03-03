@@ -8,6 +8,8 @@ import lombok.Setter;
 public class OutInterfaceResponse {
     private long code;
     private String message;
+    private String direct;
+
 
     public OutInterfaceResponse(){
         super();
@@ -16,5 +18,11 @@ public class OutInterfaceResponse {
     public OutInterfaceResponse(long code,String message){
         this.code=code;
         this.message=message;
+    }
+
+    public OutInterfaceResponse(long code,String message,String direct) {
+        this.code = code;
+        this.message = message;
+        this.direct = direct;
     }
 }
