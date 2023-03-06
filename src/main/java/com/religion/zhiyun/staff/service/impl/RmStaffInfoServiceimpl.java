@@ -124,34 +124,35 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public AppDetailRes getStaffByName(String StaffName) {
+    public AppDetailRes getManagerById(String ManagerId) {
         long code = ResultCode.FAILED.getCode();
-        String message="获取教职人员详情失败！";
-        Map<String,Object> staffMap=new HashMap<>();
+        String message="获取负责人详情失败！";
+        Map<String,Object> managerMap=new HashMap<>();
         try {
-            staffMap = staffInfoMapper.getStaffByName(StaffName);
-            if (null!=staffMap&&staffMap.size()>0){
+            managerMap = staffInfoMapper.getManagerById(ManagerId);
+            if (null!=managerMap&&managerMap.size()>0){
                 //获取图片地址
-                String picture= (String) staffMap.get("staffPicture");
-                Object[] file ={};
-                if(!picture.isEmpty()){
+                Object imapath = managerMap.get("imapath");
+                System.out.println(imapath);
+                String file ="";
+                if(imapath!=null){
                     //查询地图地址
-                    String[] split = picture.split(",");
-                    List<Map<String,Object>> imgMap=rmFileMapper.getPath(split);
-                    if(null!=imgMap && imgMap.size()>0){
-                        file = imgMap.toArray();
+                    String ima = imapath.toString();
+                    String s = rmFileMapper.getimaPath(ima);
+                    if(null!=s){
+                        file = s;
                     }
                 }
-                staffMap.put("images",file);
+                managerMap.put("images",file);
 
 
                 //关联场所
-                List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByStaffName(StaffName);
-                staffMap.put("venuesList",venuesList.toArray());
+                List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByManagerId(ManagerId);
+                managerMap.put("venuesList",venuesList.toArray());
 
                 //关联活动
-                List<Map<String, Object>> filing = staffInfoMapper.getFiling(StaffName);
-                staffMap.put("filing",filing.toArray());
+                List<Map<String, Object>> filing = staffInfoMapper.getFilingByManagerId(ManagerId);
+                managerMap.put("filing",filing.toArray());
 
             }else{
                 message="获取人员信息详情失败！！";
@@ -166,6 +167,6 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
             e.printStackTrace();
         }
 
-        return new AppDetailRes(code,message,staffMap);
+        return new AppDetailRes(code,message,managerMap);
     }
 }

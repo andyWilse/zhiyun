@@ -62,9 +62,9 @@ public class RmStaffInfoController {
     /*
     根据教职人员id查询教职人员信息
      */
-    @RequestMapping("/getStaffByName")
-    public AppDetailRes getStaffByName(@RequestParam String StaffName){
-        AppDetailRes staffList = rmStaffInfoService.getStaffByName(StaffName);
+    @RequestMapping("/getManagerById")
+    public AppDetailRes getManagerById(@RequestParam String ManagerId){
+        AppDetailRes staffList = rmStaffInfoService.getManagerById(ManagerId);
         return staffList;
     }
 

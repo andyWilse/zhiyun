@@ -22,5 +22,13 @@ public interface RmFileMapper {
      */
     List<Map<String,Object>> getPath(@Param("fileIds") String[] fileIds);
 
+    /**
+     * 获取单个图片地址
+     * @param fileId
+     * @return
+     */
+    String getimaPath(@Param("fileId") String fileId);
 
+
+    List<Map<String,Object>> getPathByStaffId(@Param("fileIds") String fileIds);
 }

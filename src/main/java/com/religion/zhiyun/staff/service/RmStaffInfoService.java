@@ -31,6 +31,6 @@ public interface RmStaffInfoService {
 
     Long getMaxStaffCd();
 
-    AppDetailRes getStaffByName(String StaffName);
+    AppDetailRes getManagerById(String ManagerId);
 
 }

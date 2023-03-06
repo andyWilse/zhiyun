@@ -89,15 +89,15 @@ public interface RmStaffInfoMapper {
                         @Param("lastModifyTime") String lastModifyTime);
 
     /*
-    根据名字获取教职人员画像
+    根据id获取负责人画像
      */
-    Map<String,Object> getStaffByName(@Param("StaffName")String StaffName);
+        Map<String,Object> getManagerById(@Param("ManagerId")String ManagerId);
 
     /*
-    根据名字获取关联场所
+    根据ID获取关联场所
      */
-    List<Map<String,Object>> getVenuesByStaffName(@Param("StaffName")String StaffName);
+    List<Map<String,Object>> getVenuesByManagerId(@Param("ManagerId")String ManagerId);
 
     //hu活动备案
-    List<Map<String,Object>> getFiling(@Param("StaffName") String StaffName);
+    List<Map<String,Object>> getFilingByManagerId(@Param("ManagerId") String ManagerId);
 }
