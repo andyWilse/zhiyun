@@ -279,7 +279,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             event.setHandleTime(format);
             rmEventInfoMapper.addEventByNB(event);
             String relVenuesId = String.valueOf(event.getRelVenuesId());
-            String location1 = event.getLocation();
+
+            //发送短信通知
+            String location1 = event.getLocation();//地址
             eventInfo = this.sendRemindInfo(relVenuesId,location1);
             code=ResultCode.SUCCESS.getCode();
             message="NB烟感器数据处理成功！";
@@ -295,13 +297,13 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     //根据事件场所查询关联人的电话
     public  String sendRemindInfo(String venuesId,String location1){
         //根据场所id查询关联人
-        List<SysUserEntity> mobile = rmEventInfoMapper.getMobile(location1);
+        List<SysUserEntity> mobile = rmEventInfoMapper.getMobile(venuesId);
         String s="";
-        String contents="【云监控中心】您好！位于"+venuesId+"疑似发生火灾，请您立刻前去处理！！";
+        String contents="【云监控中心】您好！位于"+location1+"疑似发生火灾，请您立刻前去处理！！";
         for (int i=0;i<mobile.size();i++){
             //获取关联人电话
             String userMobile = mobile.get(i).getUserMobile();
-            System.out.println(userMobile);
+            //System.out.println(userMobile);
             //发送短信
             s = SendMassage.sendSms(contents, userMobile);
             System.out.println("已发送"+(i+1)+"条短信");
