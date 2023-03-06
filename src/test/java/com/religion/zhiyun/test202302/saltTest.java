@@ -6,8 +6,8 @@ import org.apache.shiro.util.ByteSource;
 
 public class saltTest {
     public static void main(String[] args) {
-        String name="zuyuan3";
-        String salts="10000007";
+        String name="zuzhang1";
+        String salts="10000006";
 
         ByteSource admin = ByteSource.Util.bytes(name+salts);
         String hashAlgorithmName = "MD5";//加密方式
@@ -17,7 +17,11 @@ public class saltTest {
         Object salt=ByteSource.Util.bytes(name+salts);
         int hashIterations = 1024;//加密1024次
         Hash result = new SimpleHash(hashAlgorithmName,crdentials,salt,hashIterations);
-        System.out.println(result);
+
+        String aa= String.valueOf(result);
+        String passwords ="bd0ee48d106fc1f2d6ccc54c89d827c0";
+        byte[] bytes1 = passwords.getBytes();
+        System.out.println(aa.equals(passwords));
 
         String pa=String.valueOf(result);
         System.out.println("pa:"+pa);

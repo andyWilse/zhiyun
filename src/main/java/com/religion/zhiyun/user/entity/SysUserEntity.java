@@ -59,10 +59,8 @@ public class SysUserEntity implements Serializable {
     @Column(comment = "时间",name = "LAST_MODIFY_TIME")
     private Timestamp lastModifyTime;
 
-
     @Column(comment = "省",defaultValue="" ,name = "PROVINCE")
     private String province;
-
 
     @Column(comment = "市",defaultValue="" ,name = "CITY")
     private String city;

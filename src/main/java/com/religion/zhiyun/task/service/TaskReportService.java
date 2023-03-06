@@ -12,25 +12,25 @@ public interface TaskReportService {
     public Object deployment();
 
     /** 提交申请(发起) **/
-    public Object launch(TaskEntity taskEntity);
+    public Object launch(TaskEntity taskEntity,String token);
 
     /** 提交申请(上报) **/
-    public AppResponse report(String procInstId, String handleResults, String feedBack, String picture);
+    public AppResponse report(String procInstId, String handleResults, String feedBack, String picture,String token);
 
     /** 流程结束 **/
-    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture);
+    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token);
 
     /** 获取未完成任务 **/
-    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent);
+    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent,String token);
 
     /** 统计任务数量 **/
-    public AppResponse getTaskNum();
+    public AppResponse getTaskNum(String token);
 
     /** 查询用户未完成的历史记录**/
-    public AppResponse getUnTask(Integer page, Integer size);
+    public AppResponse getUnTask(Integer page, Integer size,String token);
 
     /** 查询完成的历史记录 **/
-    public AppResponse getFinishTask(Integer page, Integer size);
+    public AppResponse getFinishTask(Integer page, Integer size,String token);
 
     /**查询任务**/
     List<Map<String,Object>> queryTasks();

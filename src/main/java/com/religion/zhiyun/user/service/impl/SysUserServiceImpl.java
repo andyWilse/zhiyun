@@ -106,11 +106,8 @@ public class SysUserServiceImpl implements SysUserService {
             String passwords = sysUserEntity.getPasswords();
             String loginNm = sysUserEntity.getLoginNm();
             sysUserEntity.setWeakPwInd(passwords);
-            //MD5加密
-            String pass =DigestUtils.md5Hex(passwords);
-            //salt加密
-            Hash hash = this.passwordSalt(loginNm,passwords,identity);
-            //String pass=String.valueOf(hash);
+            //MD5加密,salt加密
+            String pass = this.passwordSalt(loginNm,passwords,identity);
             sysUserEntity.setPasswords(pass);
             //新增用户
             sysUserMapper.add(sysUserEntity);
@@ -239,14 +236,14 @@ public class SysUserServiceImpl implements SysUserService {
      * @param password
      * @return
      */
-    public Hash passwordSalt(String userName,String password,String identity) {
+    public String passwordSalt(String userName,String password,String identity) {
         //String saltOrigin=null;
         Object salt=ByteSource.Util.bytes(userName+identity);
         String hashAlgorithmName = "MD5";//加密方式
         char[]  credential=(char[])(password != null ? password.toCharArray() : null);//密码
         int hashIterations = 1024;//加密1024次
         Hash result = new SimpleHash(hashAlgorithmName,credential,salt,hashIterations);
-        return result;
+        return String.valueOf(result);
     }
 
 }

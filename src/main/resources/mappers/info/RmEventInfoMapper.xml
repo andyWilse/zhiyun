@@ -238,7 +238,9 @@
         <if test="eventType != null and eventType != ''">
             AND  ev.EVENT_TYPE =#{eventType}
         </if>
+        ORDER BY ev.EVENT_TYPE
         limit #{page},#{size}
+
     </select>
 
     <select id="getUndoEventsTotal" resultType="java.lang.Long">

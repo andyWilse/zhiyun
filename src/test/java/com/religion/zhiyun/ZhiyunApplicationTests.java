@@ -24,7 +24,7 @@ class ZhiyunApplicationTests {
         String s = DigestUtils.md5Hex(str);*/
 
         TaskEntity e=new TaskEntity();
-        e.setEndTime("2023-02-14 11:15:21");
+        //e.setEndTime("2023-02-14 11:15:21");
         e.setEmergencyLevel("01");
         //e.setHandlePerson("");
         //e.setHandleResults("");

@@ -3,6 +3,7 @@ package com.religion.zhiyun.sys.menus.controller;
 import com.religion.zhiyun.sys.menus.entity.MenuList;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ public class RmSysMenuInfoController {
     }
 
     @GetMapping("/find")
+    @RequiresPermissions("menu:find")
     public MenuList getMenuByPage(){
         return rmSysMenuInfoService.findAll();
     }

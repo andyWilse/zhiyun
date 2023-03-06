@@ -1,4 +1,4 @@
-package com.religion.zhiyun.user.service;
+package com.religion.zhiyun.login.service;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;

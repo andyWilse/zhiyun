@@ -18,12 +18,15 @@ import org.activiti.bpmn.model.*;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -42,6 +45,8 @@ public class TaskReportServiceImpl implements TaskReportService {
     private SysUserMapper sysUserMapper;
     @Autowired
     private ActReProcdefMapper actReProcdefMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     ManagementService managementService;
@@ -61,20 +66,16 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     @Transactional
-    public AppResponse launch(TaskEntity taskEntity) {
+    public AppResponse launch(TaskEntity taskEntity,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="上报任务发起失败";
         String procInstId="";
-        //String loginNm = this.getLogin();
-        String userMobile ="1112";
-
         try {
-            Map<String, Object> nextHandler = this.getNextHandler(userMobile, message);
+            String loginNm = this.getLogin(token);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
-                message="下节点处理人信息丢失！";
-                throw new RuntimeException(message);
+                throw new RuntimeException("下节点处理人信息丢失！");
             }
-            String loginNm = (String) nextHandler.get("loginNm");
             List<String> userList = (List<String>) nextHandler.get("userList");
             Map<String, Object> variables = new HashMap<>();
             variables.put("handleList2",userList );
@@ -95,6 +96,7 @@ public class TaskReportServiceImpl implements TaskReportService {
 
             //保存任务信息
             taskEntity.setLaunchPerson(loginNm);
+            taskEntity.setLaunchTime(new Date());
             taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
             taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("01");
@@ -106,7 +108,8 @@ public class TaskReportServiceImpl implements TaskReportService {
 
         } catch (RuntimeException e) {
             code=ResultCode.FAILED.getCode();
-            throw new RuntimeException(message) ;
+            message=e.getMessage();
+            //throw new RuntimeException(message) ;
         }catch (Exception e){
             code=ResultCode.FAILED.getCode();
             message="未知错误，请联系管理员！";
@@ -117,21 +120,18 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     @Transactional
-    public AppResponse report(String procInstId, String handleResults, String feedBack, String picture) {
+    public AppResponse report(String procInstId, String handleResults, String feedBack, String picture,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="上报任务上报失败！";
-        String userMobile ="1112";
-        userMobile ="1108";
-        userMobile ="1105";
-       // userMobile ="1103";
-        //userMobile ="1101";
+        String loginNm ="";
         try {
-            Map<String, Object> nextHandler = this.getNextHandler(userMobile, message);
+            loginNm = this.getLogin(token);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";
                 throw new RuntimeException(message);
             }
-            String loginNm = (String) nextHandler.get("loginNm");
+            //String loginNm = (String) nextHandler.get("loginNm");
             String identity = (String) nextHandler.get("identity");
             List<String> userList = (List<String>) nextHandler.get("userList");
 
@@ -157,7 +157,10 @@ public class TaskReportServiceImpl implements TaskReportService {
             log.info("任务id："+procInstId+" 上报");
             code= ResultCode.SUCCESS.getCode();
             message="上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
-        } catch (Exception e) {
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message);
+        }catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="上报流程上报失败！";
             e.printStackTrace();
@@ -167,20 +170,18 @@ public class TaskReportServiceImpl implements TaskReportService {
 
     @Override
     @Transactional
-    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture) {
-        //String loginNm = this.getLogin();
+    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="任务处理";
-        String userMobile ="1107";
-        userMobile ="1101";
-        userMobile ="1103";
+        String loginNm ="";
         try {
-            Map<String, Object> nextHandler = this.getNextHandler(userMobile, message);
+            loginNm = this.getLogin(token);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";
                 throw new RuntimeException(message);
             }
-            String loginNm = (String) nextHandler.get("loginNm");
+            //String loginNm = (String) nextHandler.get("loginNm");
             String identity = (String) nextHandler.get("identity");
             List<String> userList = (List<String>) nextHandler.get("userList");
 
@@ -218,6 +219,9 @@ public class TaskReportServiceImpl implements TaskReportService {
 
             code= ResultCode.SUCCESS.getCode();
             message="上报流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
         } catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="上报流程处理失败！";
@@ -228,34 +232,45 @@ public class TaskReportServiceImpl implements TaskReportService {
     }
 
     @Override
-    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent) {
-        if(page<1){
-            page=1;
-        } else if(page!=null&&size!=null){
-            page=(page-1)*size;
+    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent,String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取未处理任务";
+        List<TaskEntity> taskEntities = null;
+        try {
+            if(page<1){
+                page=1;
+            } else if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            String loginNm = this.getLogin(token);
+            taskEntities = taskInfoMapper.queryTasks(page, size, taskName, taskContent,loginNm);
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取未处理任务成功";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
-        }
-        String loginNm = entity.getLoginNm();
-        List<TaskEntity> taskEntities = taskInfoMapper.queryTasks(page, size, taskName, taskContent,loginNm);
 
-        return new RespPageBean(200l,taskEntities.toArray());
+        return new RespPageBean(code,message,taskEntities.toArray());
     }
 
     @Override
-    public AppResponse getTaskNum() {
+    public AppResponse getTaskNum(String token) {
         AppResponse res=new AppResponse();
         Map<String, Object> map = null;
-        long code=0l;
-        String message="";
+        long code=ResultCode.FAILED.getCode();
+        String message="任务数量统计";
         try {
-            //String login = this.getLogin();
-            String login ="ab";
+            String login = this.getLogin(token);
             map = taskInfoMapper.getTaskNum(login);
+
             code= ResultCode.SUCCESS.getCode();
             message="任务数量统计成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
         } catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="任务数量统计失败！";
@@ -270,35 +285,51 @@ public class TaskReportServiceImpl implements TaskReportService {
     }
 
     @Override
-    public AppResponse getUnTask(Integer page, Integer size) {
+    public AppResponse getUnTask(Integer page, Integer size,String token) {
         long code= ResultCode.FAILED.getCode();
-        String message="查找未完成任务失败！";
-
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
-        }
-        List<TaskEntity> unfinishedTaskList=new ArrayList<>();
+        String message="查找未完成任务！";
+        List<Map<String,Object>> unfinishedTaskList=new ArrayList<>();
         Long totals=0l;
         try {
-            //String login = this.getLogin();
-            String login ="zuzhang1";
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            String loginNm = this.getLogin(token);
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
             HistoryService historyService = defaultProcessEngine.getHistoryService();
-            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-            List<HistoricProcessInstance> unfinishedList = historicProcessInstanceQuery.startedBy(login).unfinished().list();
+
             List<String> idList= new ArrayList<>();
-            if(null!=unfinishedList && unfinishedList.size()>0){
-                for(int i=0;i<unfinishedList.size();i++){
-                    HistoricProcessInstance historicProcessInstance = unfinishedList.get(i);
+            //发起人
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+            List<HistoricProcessInstance> unfinishedListStart = historicProcessInstanceQuery.startedBy(loginNm).unfinished().list();
+            if(null!=unfinishedListStart && unfinishedListStart.size()>0){
+                for(int i=0;i<unfinishedListStart.size();i++){
+                    HistoricProcessInstance historicProcessInstance = unfinishedListStart.get(i);
                     String superProcessInstanceId = historicProcessInstance.getId();
                     idList.add(superProcessInstanceId);
                 }
             }
+            //处理人
+            HistoricTaskInstanceQuery historicTaskInstanceQuery = historyService.createHistoricTaskInstanceQuery();
+            List<HistoricTaskInstance> unfinishedList  =historicTaskInstanceQuery.taskAssignee(loginNm).unfinished().list();
+            if(null!=unfinishedList && unfinishedList.size()>0){
+                for(int i=0;i<unfinishedList.size();i++){
+                    HistoricTaskInstance historicTaskInstance = unfinishedList.get(i);
+                    String superProcessInstanceId = historicTaskInstance.getProcessInstanceId();
+                    idList.add(superProcessInstanceId);
+                }
+            }
+            //封装
             int total = idList.size();
             totals=new Long(total);
-            unfinishedTaskList= taskInfoMapper.queryByInstId(page,size,idList);
+            if(null!=idList && idList.size()>0){
+                unfinishedTaskList= taskInfoMapper.queryByInstId(page,size,idList);
+            }
             code= ResultCode.SUCCESS.getCode();
             message="查找未完成任务成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+           // throw new RuntimeException(message) ;
         } catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="查找未完成任务失败！";
@@ -309,36 +340,56 @@ public class TaskReportServiceImpl implements TaskReportService {
     }
 
     @Override
-    public AppResponse getFinishTask(Integer page, Integer size) {
+    public AppResponse getFinishTask(Integer page, Integer size,String token) {
         long code= ResultCode.FAILED.getCode();
-        String message="查找已完成任务失败！";
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
-        }
-        List<TaskEntity> finishedTaskList= new ArrayList<>();
+        String message="查找已完成任务！";
+        List<Map<String,Object>> finishedTaskList= new ArrayList<>();
         Long totals=0l;
         try {
-            //String login = this.getLogin();
-            String login ="jiewei1";
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            String loginNm = this.getLogin(token);
+           /* SysUserEntity sysUserEntity = sysUserMapper.queryByTel(mobil);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户信息丢失");
+            }
+            String loginNm = sysUserEntity.getLoginNm();*/
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
             HistoryService historyService = defaultProcessEngine.getHistoryService();
-            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-            List<HistoricProcessInstance> finishedList = historicProcessInstanceQuery.startedBy(login).finished().list();
             List<String> idList= new ArrayList<>();
-
-            if(null!=finishedList && finishedList.size()>0){
-                for(int i=0;i<finishedList.size();i++){
-                    HistoricProcessInstance historicProcessInstance = finishedList.get(i);
+            //发起人
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+            List<HistoricProcessInstance> finishedListStart = historicProcessInstanceQuery.startedBy(loginNm).finished().list();
+            if(null!=finishedListStart && finishedListStart.size()>0){
+                for(int i=0;i<finishedListStart.size();i++){
+                    HistoricProcessInstance historicProcessInstance = finishedListStart.get(i);
                     String superProcessInstanceId = historicProcessInstance.getId();
                     idList.add(superProcessInstanceId);
                 }
             }
+            //处理人
+            HistoricTaskInstanceQuery historicTaskInstanceQuery = historyService.createHistoricTaskInstanceQuery();
+            List<HistoricTaskInstance> finishedList  =historicTaskInstanceQuery.taskAssignee(loginNm).finished().list();
+            if(null!=finishedList && finishedList.size()>0){
+                for(int i=0;i<finishedList.size();i++){
+                    HistoricTaskInstance historicTaskInstance = finishedList.get(i);
+                    String superProcessInstanceId = historicTaskInstance.getProcessInstanceId();
+                    idList.add(superProcessInstanceId);
+                }
+            }
+            //封装
             int total = idList.size();
             totals=new Long(total);
-            finishedTaskList = taskInfoMapper.queryByInstId(page,size,idList);
+            if(null!=idList && idList.size()>0){
+                finishedTaskList = taskInfoMapper.queryByInstId(page,size,idList);
+            }
             code= ResultCode.SUCCESS.getCode();
             message="查找已完成任务成功！";
-        } catch (Exception e) {
+        } catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
+        }catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="查找已完成任务失败！";
             e.printStackTrace();
@@ -451,36 +502,37 @@ public class TaskReportServiceImpl implements TaskReportService {
      * 获取登录人
      * @return
      */
-    public String getLogin(){
-        SysUserEntity entity = TokenUtils.getToken();
-        if(null==entity){
-            throw new RuntimeException("登录人信息丢失，请登陆后重试！");
+    public String getLogin(String token){
+        //SysUserEntity entity = TokenUtils.getToken();
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
         }
-        String loginNm = entity.getLoginNm();
+        //String loginNm = entity.getLoginNm();
         return loginNm;
     }
 
     /**
      * 获取下节点处理人
-     * @param userMobile
+     * @param loginNm
      * @param message
      * @return
      */
-    public Map<String, Object> getNextHandler(String userMobile,String message){
+    public Map<String, Object> getNextHandler(String loginNm,String message){
         List<Map<String, Object>> mapList=null;
         Map<String, Object> maps=new HashMap<>();
 
         /**根据手机号，获取信息**/
-        SysUserEntity user = sysUserMapper.queryByTel(userMobile);
+        SysUserEntity user = sysUserMapper.queryByName(loginNm);
         if(null==user){
             message="用户信息失效，请重新登录！";
             throw new RuntimeException(message);
         }
         String identity = user.getIdentity();
-        String loginNm = user.getLoginNm();
+        String userMobile = user.getUserMobile();
         Authentication.setAuthenticatedUserId(loginNm);
 
-        maps.put("loginNm",loginNm);
+        //maps.put("loginNm",loginNm);
 
         /**根据身份证，获取信息**/
         if(RoleEnums.ZU_YUAN.getCode().equals(identity)){

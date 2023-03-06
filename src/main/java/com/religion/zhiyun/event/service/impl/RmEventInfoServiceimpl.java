@@ -16,6 +16,7 @@ import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -369,7 +370,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity event = rmEventInfoMapper.getEventById(eventId);
             if(null!=event){
                 taskEntity.setTaskType(event.getEventType());
-                taskEntity.setEndTime(event.getWarnTime());
+                taskEntity.setEndTime(TimeTool.strToDate(event.getWarnTime()));
                 taskEntity.setTaskName("预警事件");
                 taskEntity.setTaskContent("预警事件,请处理");
                 taskEntity.setRelVenuesId(event.getRelVenuesId()+"");
@@ -560,6 +561,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             taskService.complete(tmp.getId(),variables);
 
             taskEntity.setLaunchPerson(loginNm);
+            taskEntity.setLaunchTime(new Date());
             taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
             taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("01");

@@ -2,8 +2,8 @@ package com.religion.zhiyun.user.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.user.service.SysLoginService;
-import com.religion.zhiyun.user.service.impl.SysLoginServiceImpl;
+import com.religion.zhiyun.login.service.SysLoginService;
+import com.religion.zhiyun.login.service.impl.SysLoginServiceImpl;
 import com.religion.zhiyun.utils.Tool.HttpClient;
 import com.religion.zhiyun.utils.response.ResultCode;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
@@ -67,10 +68,10 @@ public interface RmStaffInfoMapper {
 
     /**
      * 根据条件获取职员信息
-     * @param staffTelphone
+     * @param username
      * @return
      */
-    StaffEntity getByTel(@Param("staffTelphone") String staffTelphone);
+    List<Map<String,Object>> getByTel(@Param("username") String username);
 
     /**
      * 密码修改

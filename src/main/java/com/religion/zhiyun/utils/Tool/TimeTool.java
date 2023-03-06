@@ -1,6 +1,7 @@
 package com.religion.zhiyun.utils.Tool;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,5 +39,12 @@ public class TimeTool {
         SimpleDateFormat format=new SimpleDateFormat(day);
         String formatDay= format.format(date);
         return formatDay;
+    }
+
+    //转换为date
+    public static Date strToDate(String date) throws ParseException {
+        SimpleDateFormat format=new SimpleDateFormat(day);
+        Date strToDate = format.parse(date);
+        return strToDate;
     }
 }

@@ -147,11 +147,18 @@
         </if>
     </select>
 
-    <select id="getByTel" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+    <select id="getByTel" resultType="map">
         select
-            <include refid="staffColumn"/>
-        from rm_staff_info
-        where STAFF_TELPHONE=#{staffTelphone}
+            MANAGER_CN_NM as name,
+            MANAGER_TYPE_CD as type,
+            PASSWORDS as passwords,
+            VALID_IND as flag,
+            MANAGER_ID as id
+        from rm_venues_manager_info
+        where 1=1
+        <if test="username != null and username != ''">
+            AND  MANAGER_MOBILE=#{username}
+        </if>
     </select>
     <select id="getStaffById" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
         select
@@ -197,15 +204,14 @@
         where STAFF_ID=#{StaffId}
     </select>
 
-
     <update id="updatePassword">
-        update rm_staff_info
+        update rm_venues_manager_info
         set
             PASSWORDS = #{passwords},
             PASSWORDS_ORIGIN = #{passwordsOrigin},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
-        WHERE STAFF_ID = #{staffId}
+        WHERE MANAGER_ID = #{staffId}
     </update>
 
 </mapper>

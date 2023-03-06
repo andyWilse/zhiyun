@@ -259,7 +259,7 @@
         where VENUES_STATUS='01'
         and ve.LONGITUDE is not null
         and ve.LATITUDE is not null
-        <if test="search!=null and search!=''">
+        <if test="religiousSect!=null and religiousSect!=''">
             and RELIGIOUS_SECT = #{religiousSect}
         </if>
         <if test="search!=null and search!=''">

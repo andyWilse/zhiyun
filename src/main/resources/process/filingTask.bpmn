@@ -4,10 +4,13 @@
     <documentation>教职人员端，活动备案、场所更新</documentation>
     <startEvent id="taskStart" name="流程开始"></startEvent>
     <userTask id="userTask1" name="任务1" ></userTask>
-    <userTask id="userTask2" name="任务2" activiti:assignee="${assignee}">
+    <userTask id="userTask2" name="任务2" activiti:assignee="${handle}">
         <extensionElements>
             <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
-        </extensionElements>
+          </extensionElements>
+          <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${handleList}" activiti:elementVariable="handle">
+            <completionCondition>${nrOfCompletedInstances&gt;0}</completionCondition>
+          </multiInstanceLoopCharacteristics>
     </userTask>
     <endEvent id="taskEnd" name="流程结束"></endEvent>
     <sequenceFlow id="flow1" name="节点1" sourceRef="taskStart" targetRef="userTask1"></sequenceFlow>

@@ -3,6 +3,7 @@ package com.religion.zhiyun.task.controller;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskFilingService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,17 +16,19 @@ public class TaskFilingController {
 
     @RequestMapping("/launch")
     @ResponseBody
-    public String launch(@RequestBody String taskJson){
+    public AppResponse launch(@RequestBody String taskJson, @RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        String launch = (String) taskFilingService.launch(taskEntity);
-        return "节点执行人："+launch;
+        AppResponse launch =  taskFilingService.launch(taskEntity,token);
+        return launch;
     }
 
     @RequestMapping("/handle")
     @ResponseBody
-    public String handle(@RequestBody String taskJson){
+    public AppResponse handle(@RequestBody String taskJson,@RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        String report = (String) taskFilingService.handle(taskEntity);
+        AppResponse report = taskFilingService.handle(taskEntity,token);
         return report;
     }
+
+
 }

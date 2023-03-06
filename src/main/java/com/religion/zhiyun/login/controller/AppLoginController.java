@@ -1,6 +1,6 @@
-package com.religion.zhiyun.user.controller;
+package com.religion.zhiyun.login.controller;
 
-import com.religion.zhiyun.user.service.SysLoginService;
+import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

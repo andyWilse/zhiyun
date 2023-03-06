@@ -30,7 +30,7 @@ public interface TaskInfoMapper {
     Map<String,Object> getTaskNum(String loginNm);
 
     /** 根据任务id查询 **/
-    List<TaskEntity> queryByInstId(@Param("page") Integer page,
+    List<Map<String,Object>> queryByInstId(@Param("page") Integer page,
                              @Param("size") Integer size,
                              List<String> idList);
 
@@ -45,5 +45,11 @@ public interface TaskInfoMapper {
     /**更新备案信息**/
     void updateFill(TaskEntity taskEntity);
 
+    /**获取下达范围**/
+    List<String> getIssuedUsers(@Param("loginNm") String loginNm,@Param("province") String province,@Param("city") String city,
+                          @Param("area") String area,@Param("town") String town,@Param("relVenuesId") String relVenuesId,
+                          @Param("identityArr") String[] identityArr);
 
+    /**获取街道干事**/
+    List<String> getJieGanUsers(@Param("relVenuesId") String relVenuesId);
 }

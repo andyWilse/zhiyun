@@ -3,6 +3,7 @@ package com.religion.zhiyun.task.controller;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskIssuedService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,21 +24,21 @@ public class TaskIssuedController {
 
     @RequestMapping("/launch")
     @ResponseBody
-    public Object launch(@RequestBody String taskJson){
+    public AppResponse launch(@RequestBody String taskJson, @RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        Object launch = taskIssuedService.launch(taskEntity);
-        return "节点执行人："+launch;
+        AppResponse launch = taskIssuedService.launch(taskEntity,token);
+        return launch;
     }
 
     @RequestMapping("/handle")
     @ResponseBody
-    public Object handle(@RequestParam Map<String, Object> map){
+    public AppResponse handle(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String handleResults = (String)map.get("handleResults");
         String feedBack = (String)map.get("feedBack");
         String picture = (String)map.get("picture");
 
-        Object report = taskIssuedService.handle(procInstId,handleResults,feedBack,picture);
+        AppResponse report = taskIssuedService.handle(procInstId,handleResults,feedBack,picture,token);
         return report;
     }
 

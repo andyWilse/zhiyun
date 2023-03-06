@@ -19,8 +19,7 @@
             TASK_TYPE,
             PROC_INST_ID,
             FLOW_TYPE,
-            PART_NUM,
-            RESPONSIBLE_PERSON
+            LAUNCH_TIME
         )
         values (
             #{taskName},
@@ -37,9 +36,7 @@
             #{taskType},
             #{procInstId},
             #{flowType},
-            #{partNum},
-            #{responsiblePerson}
-
+            #{launchTime}
         )
     </insert>
 
@@ -95,19 +92,13 @@
 
     <select id="getTaskNum" resultType="map">
         select
-            ifnull(sta.startSum+sta.reportSum+sta.handleSum,0) as allSum,
-            ifnull(sta.startSum,0) as startSum,
-            ifnull(sta.reportSum+sta.handleSum,0) as executeNum
-        from
-        (select
-                SUM(CASE WHEN d.TYPE_ = 'starter' THEN 1 ELSE 0 END) AS startSum,
-                SUM(CASE WHEN d.TYPE_ = 'participant' THEN 1 ELSE 0 END) AS reportSum,
-                (select count(t.TASK_ID) from rm_task_info t where t.HANDLE_PERSON=d.user_id_) as handleSum
-            from act_hi_identitylink d
-            where user_id_ =#{loginNm}
-        ) sta
+            count(USER_ID_) as allSum,
+            ifnull(SUM(CASE WHEN d.TYPE_ = 'starter' THEN 1 ELSE 0 END),0) AS startSum,
+            ifnull(SUM(CASE WHEN d.TYPE_ = 'participant' THEN 1 ELSE 0 END),0) AS executeNum
+        from act_hi_identitylink d
+        where user_id_ =#{loginNm}
     </select>
-    <select id="queryByInstId" resultType="com.religion.zhiyun.task.entity.TaskEntity">
+    <select id="queryByInstId" resultType="map">
         select
             ta.TASK_NAME as taskName,
             ta.TASK_CONTENT as taskContent,
@@ -118,6 +109,9 @@
             when '02' then '普通'
             else ta.EMERGENCY_LEVEL
             end as emergencyLevel,
+            ta.EMERGENCY_LEVEL as emergencyLevelCode,
+            ta.LAUNCH_PERSON as launchPerson,
+            ta.LAUNCH_TIME as launchTime,
             ta.HANDLE_TIME as handleTime,
             ta.HANDLE_RESULTS as handleResults,
             ta.PROC_INST_ID as procInstId,
@@ -130,7 +124,9 @@
         <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
             #{procInstId}
         </foreach>
+        order by ta.END_TIME
         limit #{page},#{size}
+
     </select>
 
     <select id="getProcdef" resultType="com.religion.zhiyun.task.entity.ProcdefEntity">
@@ -186,8 +182,53 @@
 
     <update id="updateFill" >
         update rm_filing_info t
-        set t.HANDLE_PERSON=#{handlePerson},t.HANDLE_RESULTS=#{handleResults},t.HANDLE_TIME=#{handleTime}
+        set t.HANDLE_PERSON=#{handlePerson},
+            t.HANDLE_RESULTS=#{handleResults},
+            t.HANDLE_TIME=#{handleTime},
+            t.FILING_STATUS='02'
         where t.PROC_INST_ID=#{procInstId}
     </update>
 
+    <select id="getIssuedUsers" resultType="String">
+        select
+            f.LOGIN_NM AS loginNm
+        FROM rm_sys_user_info f
+        left join rm_sys_user_info u on u.province=f.province
+        where f.VALID_IND='1'
+        and u.LOGIN_NM=#{loginNm}
+        and f.IDENTITY  not in
+        <foreach collection="identityArr" item="identity" index="index" open="(" close=")" separator=",">
+            #{identity}
+        </foreach>
+        <if test="province != null and province != ''">
+            and f.province=#{province}
+        </if>
+        <if test="city != null and city != ''">
+            and f.city=#{city}
+        </if>
+        <if test="area != null and area != ''">
+            and f.area=#{area}
+        </if>
+        <if test="town != null and town != ''">
+            and f.town=#{town}
+        </if>
+        <if test="relVenuesId != null and relVenuesId != ''">
+            and f.REL_VENUES_ID=#{relVenuesId}
+        </if>
+
+        order by f.IDENTITY
+    </select>
+
+    <select id="getJieGanUsers" resultType="String">
+        select
+            g.LOGIN_NM AS loginNm
+        from rm_sys_user_info  g
+        left join rm_sys_user_info u on g.area=u.area
+        where g.VALID_IND='1'
+        and g.IDENTITY ='10000005'
+        <if test="relVenuesId!=null and relVenuesId!=''">
+            and u.REL_VENUES_ID = #{relVenuesId}
+        </if>
+        order by g.loginNm
+    </select>
 </mapper>

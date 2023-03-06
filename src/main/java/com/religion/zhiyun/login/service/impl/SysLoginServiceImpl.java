@@ -1,4 +1,4 @@
-package com.religion.zhiyun.user.service.impl;
+package com.religion.zhiyun.login.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
@@ -7,7 +7,7 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.RoleEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.user.service.SysLoginService;
+import com.religion.zhiyun.login.service.SysLoginService;
 
 import com.religion.zhiyun.user.service.SysRoleService;
 import com.religion.zhiyun.user.service.SysUserService;
@@ -17,16 +17,15 @@ import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.SendVerifyCode;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.JWT;
@@ -56,6 +55,8 @@ public class SysLoginServiceImpl implements SysLoginService {
     private SysUserService sysUserService;
     @Resource
     private RmStaffInfoMapper rmStaffInfoMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public SysUserEntity queryByName(String username) {
@@ -72,39 +73,48 @@ public class SysLoginServiceImpl implements SysLoginService {
         String message="";
         String direct="";
         LoginInfo loginInfo =null;
-        UsernamePasswordToken token=null;
+        String token="";
+        String passWordSys="";
+        String identity="";
+        String validInd="";
         try {
             //查询
             SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
-            StaffEntity staff = rmStaffInfoMapper.getByTel(username);//神职人员
-            if(null!=sysUser && null!=staff){
-                code=ResultCode.FAILED.getCode();
-                message="用户身份重复，请联系管理员！";
-                throw new RuntimeException();
-            }else if(null==sysUser && null==staff){
-                code=ResultCode.FAILED.getCode();
-                message="该手机号未在系统添加使用，请添加后登录！";
-                throw new RuntimeException();
-            }else if(null!=sysUser){
+            List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
+            if(null!=sysUser && null!=manager){
+                throw new RuntimeException("用户身份重复，请联系管理员！");
+            }else if(null==sysUser && null==manager){
+                throw new RuntimeException("该手机号未在系统添加使用，请添加后登录！");
+            }else if(null!=sysUser){//01-监管人员
                 username=sysUser.getLoginNm();
-                direct="监管人员";
-                if(password.equals(sysUser.getWeakPwInd())){
-                    code=ResultCode.SUCCESS.getCode();
-                    message="登录成功！";
-                }else{
-                    message="用户名或密码错误，登录失败！";
-                    throw new RuntimeException();
-                }
-            }else if(null!=staff){
-                direct="神职人员";
-                if(password.equals(staff.getPasswordsOrigin())){
-                    code=ResultCode.SUCCESS.getCode();
-                    message="登录成功！";
-                }else{
-                    message="用户名或密码错误，登录失败！";
-                    throw new RuntimeException();
-                }
+                passWordSys=sysUser.getPasswords();
+                identity=sysUser.getIdentity();
+                validInd=sysUser.getValidInd();
+                direct="01";
+            }else if(null!=manager && manager.size()>0){//02-神职人员
+                Map<String, Object> managerMap = manager.get(0);
+                username= (String) managerMap.get("name");
+                passWordSys= (String) managerMap.get("passwords");
+                identity=(String) managerMap.get("type");
+                validInd=(String) managerMap.get("flag");
+                direct="02";
             }
+
+            if("0".equals(validInd) || "02".equals(validInd)){
+                throw new RuntimeException("用户已被冻结，请联系管理员!");
+            }
+            Hash hash = this.transSalt(username, password, identity);
+            String pass=String.valueOf(hash);
+            if(!passWordSys.equals(pass)){
+                throw new RuntimeException("密码错误!");
+            }
+            //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
+            token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
+            stringRedisTemplate.opsForValue().set(token,username,1800, TimeUnit.SECONDS);
+
+            code=ResultCode.SUCCESS.getCode();
+            message="登录成功！";
+
             //登录
             /*Subject subject = SecurityUtils.getSubject();
             token = new UsernamePasswordToken(username, password);
@@ -122,7 +132,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             message="该用户不存在！";
         } catch (RuntimeException e) {
             code=ResultCode.FAILED.getCode();
-            message=message;
+            message=e.getMessage();
         }catch (Exception e) {
             code=ResultCode.FAILED.getCode();
             message="登陆失败！";
@@ -203,42 +213,44 @@ public class SysLoginServiceImpl implements SysLoginService {
         long code = ResultCode.FAILED.getCode();
         String message = "";
         try {
+
+            //查询
+            String identity="";
+            int id=0;
+            SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
+            List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//神职人员
+
+            String loginNm="";
+            if(null!=sysUser && null!=manager){
+                message="用户身份重复，请联系管理员！";
+                throw new RuntimeException(message);
+            }else if(null==sysUser && 0==manager.size()){
+                message="该手机号未在系统添加使用，请添加后登录！";
+                throw new RuntimeException(message);
+            }else if(null!=sysUser){
+                loginNm=sysUser.getLoginNm();
+                identity=sysUser.getIdentity();
+                id=sysUser.getUserId();
+            }else if(null!=manager && manager.size()>0){
+                Map<String, Object> managerMap = manager.get(0);
+                loginNm= (String) managerMap.get("name");
+                identity= (String) managerMap.get("type");
+                id= (int) managerMap.get("id");
+            }
             //验证码验证
             AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
             //验证码不正确
             if(ResultCode.FAILED.getCode()==appResponse.getCode()){
                 return appResponse;
             }
-            //查询
-            String identity="";
-            int id=0;
-            SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
-            StaffEntity staff = rmStaffInfoMapper.getByTel(username);//神职人员
-            if(null!=sysUser && null!=staff){
-                message="用户身份重复，请联系管理员！";
-                throw new RuntimeException(message);
-            }else if(null==sysUser && null==staff){
-                message="该手机号未在系统添加使用，请添加后登录！";
-                throw new RuntimeException(message);
-            }else if(null!=sysUser){
-                username=sysUser.getLoginNm();
-                identity=sysUser.getIdentity();
-                id=sysUser.getUserId();
-            }else if(null!=staff){
-                identity=staff.getStaffCd();
-                id=staff.getStaffId();
-            }
-
-            //MD5加密
-            String pass = DigestUtils.md5Hex(password);
             //salt加密
-            Hash hash = this.passwordSalt(username,password,identity);
-            //String pass=String.valueOf(hash);
+            Hash hash = this.transSalt(loginNm,password,identity);
+            String pass=String.valueOf(hash);
             //修改密码
             if(null!=sysUser){//修改监管人员
                 userMapper.updatePassword(pass,password,id,TimeTool.getYmdHms());
-            }else if(null!=staff){//修改神职人员
-                rmStaffInfoMapper.updatePassword(pass,password,id, username,TimeTool.getYmdHms());
+            }else if(null!=manager){//修改神职人员
+                rmStaffInfoMapper.updatePassword(pass,password,id, loginNm,TimeTool.getYmdHms());
             }
 
             code=ResultCode.SUCCESS.getCode();
@@ -296,7 +308,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             token = JWT.create()
                     .withHeader(header)
                     .withClaim("username",userinfo.getLoginNm())
-                    .withClaim("password",userinfo.getPasswords())
+                    //.withClaim("password",userinfo.getPasswords())
                     .withClaim("userNbr",userinfo.getUserNbr())
                     .withClaim("identity",userinfo.getIdentity())
                     .withClaim("ofcId", userinfo.getOfcId())
@@ -337,18 +349,18 @@ public class SysLoginServiceImpl implements SysLoginService {
     }
 
     /**
-     * 密码加密
-     * @param userName
+     * 密码加盐
+     * @param name
+     * @param salts
      * @param password
      * @return
      */
-    public Hash passwordSalt(String userName,String password,String identity) {
-        //String saltOrigin=null;
-        Object salt= ByteSource.Util.bytes(userName+identity);
+    public Hash transSalt(String name,String password, String salts){
         String hashAlgorithmName = "MD5";//加密方式
-        char[]  credential=(char[])(password != null ? password.toCharArray() : null);//密码
+        char[]  crdentials=(char[])(password != null ? password.toCharArray() : null);
+        Object salt=ByteSource.Util.bytes(name+salts);
         int hashIterations = 1024;//加密1024次
-        Hash result = new SimpleHash(hashAlgorithmName,credential,salt,hashIterations);
+        Hash result = new SimpleHash(hashAlgorithmName,crdentials,salt,hashIterations);
         return result;
     }
 }

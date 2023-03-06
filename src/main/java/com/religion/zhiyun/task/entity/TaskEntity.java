@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
@@ -15,7 +16,7 @@ import java.util.Date;
 @Setter
 @Entity
 @Table(name = "RM_TASK_INFO")
-public class TaskEntity {
+public class TaskEntity implements Serializable {
     @Id
     @Column(name = "TASK_ID")
     private int taskId;//主键ID
@@ -27,7 +28,7 @@ public class TaskEntity {
     private String taskContent;//'任务内容'
 
     @Column(name = "END_TIME")
-    private String endTime;//'截至时间'
+    private Date endTime;//'截至时间'
 
     @Column(name = "REL_VENUES_ID")
     private String relVenuesId;//'地址(关联场所主键ID）'
@@ -44,11 +45,14 @@ public class TaskEntity {
     @Column(name = "LAUNCH_PERSON")
     private String launchPerson;//'发起人'
 
-    @Column(name = "HANDLE_PERSON")
-    private String handlePerson;//'处理人'
+    @Column(name = "LAUNCH_TIME")
+    private Date launchTime;//'发起时间'
 
     @Column(name = "HANDLE_RESULTS")
     private String handleResults;//'处理结果'
+
+    @Column(name = "HANDLE_PERSON")
+    private String handlePerson;//'处理人'
 
     @Column(name = "HANDLE_TIME")
     private Date handleTime;//'处理时间'
@@ -56,21 +60,24 @@ public class TaskEntity {
     @Column(name = "TASK_TYPE")
     private String taskType;//'任务'
 
+    @Column(name = "FLOW_TYPE")
+    private String flowType;//'流程类型'(03-备案；04-更新)
+
     @Column(name = "PROC_INST_ID")
     private String procInstId;//'关联任务'
 
-    @Column(name = "PART_NUM")
+
     private String partNum;//'参与人数'
 
-    @Column(name = "RESPONSIBLE_PERSON")
     private String responsiblePerson;//'负责人'
-
-    @Column(name = "FLOW_TYPE")
-    private String flowType;//'流程类型'(03-备案；04-更新)
 
     private String venuesAddres;
 
     private Date taskTime;//'活动时间'
-    private Date launchTime;//'活动时间'
+
+    private String province;
+    private String city;
+    private String area;
+    private String town;
 
 }

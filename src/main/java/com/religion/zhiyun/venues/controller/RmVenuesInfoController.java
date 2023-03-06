@@ -8,6 +8,8 @@ import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/venues")
 //@CrossOrigin
-//@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
+@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
 
 public class RmVenuesInfoController {
 
@@ -92,6 +94,8 @@ public class RmVenuesInfoController {
         VenuesEntity byResponsiblePerson = rmVenuesInfoService.getByResponsiblePerson(responsiblePerson);
         return JsonUtils.objectTOJSONString(byResponsiblePerson);
     }
+
+    @RequiresPermissions("venues:get")
     @GetMapping("/find")
     public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map){
         String venuesName = (String)map.get("venuesName");

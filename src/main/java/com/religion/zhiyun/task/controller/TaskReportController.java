@@ -6,6 +6,7 @@ import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,38 +30,39 @@ public class TaskReportController {
 
     @RequestMapping("/launch")
     @ResponseBody
-    public Object launch(@RequestBody String taskJson){
+    public Object launch(@RequestBody String taskJson,@RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        Object launch = warnTaskService.launch(taskEntity);
+        Object launch = warnTaskService.launch(taskEntity,token);
         return "节点执行人："+launch;
     }
 
     @RequestMapping("/report")
     @ResponseBody
-    public AppResponse report(@RequestParam Map<String, Object> map){
+    public AppResponse report(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String handleResults = (String)map.get("handleResults");
         String feedBack = (String)map.get("feedBack");
         String picture = (String)map.get("picture");
 
-        AppResponse report = warnTaskService.report(procInstId, handleResults, feedBack, picture);
+        AppResponse report = warnTaskService.report(procInstId, handleResults, feedBack, picture,token);
         return report;
     }
 
     @RequestMapping("/handle")
     @ResponseBody
-    public AppResponse handle(@RequestParam Map<String, Object> map){
+    public AppResponse handle(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String handleResults = (String)map.get("handleResults");
         String feedBack = (String)map.get("feedBack");
         String picture = (String)map.get("picture");
 
-        AppResponse handle = warnTaskService.handle(procInstId, handleResults, feedBack, picture);
+        AppResponse handle = warnTaskService.handle(procInstId, handleResults, feedBack, picture,token);
         return handle;
     }
 
+    @RequiresPermissions("task:tasking")
     @RequestMapping("/getTasking")
-    public RespPageBean getTasking(@RequestParam Map<String, Object> map) {
+    public RespPageBean getTasking(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String taskName = (String) map.get("taskName");
         String taskContent = (String) map.get("taskContent");
         String pages = (String) map.get("page");
@@ -69,34 +71,34 @@ public class TaskReportController {
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return warnTaskService.getTasking(page,size,taskName,taskContent);
+        return warnTaskService.getTasking(page,size,taskName,taskContent,token);
     }
 
     @RequestMapping("/getTaskStatistics")
-    public AppResponse getTaskStatistics() {
-        return warnTaskService.getTaskNum();
+    public AppResponse getTaskStatistics(@RequestHeader("token")String token) {
+        return warnTaskService.getTaskNum(token);
     }
 
     @RequestMapping("/unFinish")
     @ResponseBody
-    public AppResponse getUnTask(@RequestParam Map<String, Object> map){
+    public AppResponse getUnTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return warnTaskService.getUnTask(page,size);
+        return warnTaskService.getUnTask(page,size,token);
     }
 
     @RequestMapping("/finish")
     @ResponseBody
-    public AppResponse getFinishTask(@RequestParam Map<String, Object> map){
+    public AppResponse getFinishTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return warnTaskService.getFinishTask(page,size);
+        return warnTaskService.getFinishTask(page,size,token);
     }
 
     @RequestMapping("/que")

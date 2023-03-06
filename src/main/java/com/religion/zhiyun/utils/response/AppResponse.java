@@ -14,7 +14,7 @@ public class AppResponse {
     private Object[] result;
     private String direct;
     private LoginInfo data;
-    private UsernamePasswordToken token;
+    private String token;
 
 
     public AppResponse(){
@@ -42,7 +42,7 @@ public class AppResponse {
         this.message=message;
         this.direct=direct;
     }
-    public AppResponse(long code, String message, LoginInfo data, String direct, UsernamePasswordToken token){
+    public AppResponse(long code, String message, LoginInfo data, String direct, String token){
         this.code=code;
         this.message=message;
         this.data=data;
