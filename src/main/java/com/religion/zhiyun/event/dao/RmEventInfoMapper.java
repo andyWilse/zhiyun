@@ -2,6 +2,7 @@ package com.religion.zhiyun.event.dao;
 
 
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -192,5 +193,7 @@ public interface RmEventInfoMapper {
      * @param eventEntity
      */
     List<Map<String,Object>> queryEvent(EventEntity eventEntity);
+
+    List<SysUserEntity> getMobile(@Param("venuesId")String venuesId);
 
 }

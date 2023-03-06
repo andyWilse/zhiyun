@@ -4,6 +4,7 @@ import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -87,6 +88,16 @@ public interface RmStaffInfoMapper {
                         @Param("lastModifier") String lastModifier,
                         @Param("lastModifyTime") String lastModifyTime);
 
-    StaffEntity getStaffById(String StaffId);
+    /*
+    根据id获取负责人画像
+     */
+        Map<String,Object> getManagerById(@Param("ManagerId")String ManagerId);
 
+    /*
+    根据ID获取关联场所
+     */
+    List<Map<String,Object>> getVenuesByManagerId(@Param("ManagerId")String ManagerId);
+
+    //hu活动备案
+    List<Map<String,Object>> getFilingByManagerId(@Param("ManagerId") String ManagerId);
 }

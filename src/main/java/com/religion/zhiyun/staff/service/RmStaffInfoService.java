@@ -3,6 +3,7 @@ package com.religion.zhiyun.staff.service;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +31,6 @@ public interface RmStaffInfoService {
 
     Long getMaxStaffCd();
 
-    AppResponse getStaffById(String StaffId);
+    AppDetailRes getManagerById(String ManagerId);
 
 }

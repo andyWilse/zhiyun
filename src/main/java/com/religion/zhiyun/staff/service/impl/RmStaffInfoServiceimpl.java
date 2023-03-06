@@ -10,14 +10,13 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RmStaffInfoServiceimpl implements RmStaffInfoService {
@@ -125,29 +124,49 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public AppResponse getStaffById(String StaffId) {
+    public AppDetailRes getManagerById(String ManagerId) {
         long code = ResultCode.FAILED.getCode();
-        String message="获取教职人员详情失败！";
-        StaffEntity staffEntity = new StaffEntity();
-        List<StaffEntity> list=new ArrayList<>();
+        String message="获取负责人详情失败！";
+        Map<String,Object> managerMap=new HashMap<>();
         try {
-            staffEntity = staffInfoMapper.getStaffById(StaffId);
-            if (staffEntity!=null){
-                list.add(staffEntity);
-            }else {
-                code=ResultCode.FAILED.getCode();
-                message="获取教职人员详情失败！";
-                throw new RuntimeException(message);
+            managerMap = staffInfoMapper.getManagerById(ManagerId);
+            if (null!=managerMap&&managerMap.size()>0){
+                //获取图片地址
+                Object imapath = managerMap.get("imapath");
+                System.out.println(imapath);
+                String file ="";
+                if(imapath!=null){
+                    //查询地图地址
+                    String ima = imapath.toString();
+                    String s = rmFileMapper.getimaPath(ima);
+                    if(null!=s){
+                        file = s;
+                    }
+                }
+                managerMap.put("images",file);
+
+
+                //关联场所
+                List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByManagerId(ManagerId);
+                managerMap.put("venuesList",venuesList.toArray());
+
+                //关联活动
+                List<Map<String, Object>> filing = staffInfoMapper.getFilingByManagerId(ManagerId);
+                managerMap.put("filing",filing.toArray());
+
+            }else{
+                message="获取人员信息详情失败！！";
+                throw  new RuntimeException(message);
             }
-            code=ResultCode.SUCCESS.getCode();
-            message="获取教职人员详情成功！";
+            code= ResultCode.SUCCESS.getCode();
+            message="获取人员信息详情成功！";
         }catch (RuntimeException r ){
             r.printStackTrace();
         } catch(Exception e) {
-            code= ResultCode.FAILED.getCode();
-            message="获取教职人员详情失败！";
+            message="获取人员信息详情失败！！";
             e.printStackTrace();
         }
-        return new AppResponse(code,message,list.toArray());
+
+        return new AppDetailRes(code,message,managerMap);
     }
 }

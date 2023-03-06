@@ -531,4 +531,10 @@
         </if>
 
     </select>
+    <select id="getMobile" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        SELECT
+        us.USER_MOBILE as userMobile
+        from rm_sys_user_info us
+        WHERE REL_VENUES_ID=#{venuesId}
+    </select>
 </mapper>
