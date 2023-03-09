@@ -157,7 +157,6 @@
         </if>
     </select>
 
-
     <select id="getMonitors" resultType="map">
         select
             VENUES_NAME as venuesName,
@@ -191,6 +190,21 @@
         </if>
         <if test="state != null and state != ''">
             AND  m.STATE =#{state}
+        </if>
+    </select>
+
+    <select id="getMonitorsList" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        SELECT
+            MONITOR_ID as monitorId,
+            ACCESS_NUMBER as accessNumber,
+            FUNCTION_TYPE as functionType,
+            REL_VENUES_ID as relVenuesId,
+            STATE,
+            MONITOR_URL as monitorUrl
+        FROM rm_monitor_manage_info m
+        WHERE 1=1
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  m.ACCESS_NUMBER =#{accessNumber}
         </if>
     </select>
 

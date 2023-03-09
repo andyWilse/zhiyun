@@ -91,27 +91,8 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
             page=(page-1)*size;
         }
         List<StaffEntity> dataList=staffInfoMapper.getStaffByPage(page,size,staffName,staffPost,religiousSect);
-        /*if(null!=dataList && dataList.size()>0){
-            for(int j=0;j<dataList.size();j++){
-                String picturesPath = dataList.get(j).getStaffPicture();
-                String[] split = picturesPath.split(",");
-                List<FileEntity> fileEntities = rmFileMapper.queryPath(split);
-                if(null!=fileEntities && fileEntities.size()>0) {
-                    String[] path=new String[fileEntities.size()];
-                    for (int i = 0; i < fileEntities.size(); i++) {
-                        FileEntity fileEntity = fileEntities.get(i);
-                        String image = FileToBase.getImage(fileEntity.getFilePath(), fileEntity.getFileName());
-                        path[i]=image;
-                    }
-                    dataList.get(j).setStaffPicture(Arrays.toString(path));
-                }
-            }
-        }*/
-
         Object[] objects = dataList.toArray();
-        /*VenuesEntity[] date = new VenuesEntity[dataList.size()];
-        VenuesEntity[] datas = dataList.toArray(date);*/
-        Long total=staffInfoMapper.getTotal();
+        Long total=staffInfoMapper.getTotal(staffName,staffPost,religiousSect);
         RespPageBean respPageBean = new RespPageBean();
         respPageBean.setDatas(objects);
         respPageBean.setTotal(total);

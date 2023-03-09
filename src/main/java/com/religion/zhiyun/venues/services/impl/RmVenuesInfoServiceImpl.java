@@ -2,16 +2,23 @@ package com.religion.zhiyun.venues.services.impl;
 
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.user.dao.SysUserMapper;
+import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.record.dao.OperateRecordMapper;
+import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
+import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -25,12 +32,37 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     private RmVenuesInfoMapper rmVenuesInfoMapper;
     @Autowired
     private RmFileMapper rmFileMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private VenuesManagerMapper venuesManagerMapper;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+    @Autowired
+    private OperateRecordMapper userLogsInfoMapper;
+
 
     @Override
-    public RespPageBean add(VenuesEntity venuesEntity) {
+    @Transactional
+    public RespPageBean add(VenuesEntity venuesEntity,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="场所信息保存失败！";
         try{
+            //校验场所名称不能重复
+            List<Map<String, Object>> venuesByNm = rmVenuesInfoMapper.getVenuesByNm(venuesEntity.getVenuesName());
+            if(venuesByNm.size()>0){
+                throw new RuntimeException("场所名称已存在，请重新填写");
+            }
+            //场所人员校验(负责人)
+            List<Map<String, Object>> managerByNm = venuesManagerMapper.getManagerByNm(venuesEntity.getResponsiblePerson());
+            if(managerByNm.size()<1){
+                code= ResultCode.VALIDATE_FAILED.getCode();
+                throw new RuntimeException("负责人在系统不存在，请先添加负责人！");
+            }else{
+                Integer managerId = (Integer) managerByNm.get(0).get("managerId");
+                venuesEntity.setResponsiblePerson(String.valueOf(managerId.intValue()));
+            }
+
             //获取经纬度
             String venuesAddres = venuesEntity.getVenuesAddres();
             if(null!=venuesAddres && ""!=venuesAddres){
@@ -39,12 +71,14 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 String lng=split[0];
                 String lat=split[1];
                 if("1".equals(lng) || "1".equals(lat) ){
+                    code= ResultCode.FAILED.getCode();
                     message="无法获取经纬度，请重新填写详细地址！";
                     throw new RuntimeException(message);
                 }
                 venuesEntity.setLongitude(lng);
                 venuesEntity.setLatitude(lat);
             }else{
+                code= ResultCode.FAILED.getCode();
                 message="场所地址信息丢失！";
                 throw new RuntimeException(message);
             }
@@ -52,20 +86,28 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             Timestamp timestamp = new Timestamp(new Date().getTime());
             venuesEntity.setCreateTime(timestamp);
             venuesEntity.setLastModifyTime(timestamp);
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-            String nbr = request.getHeader("login-name");
-            venuesEntity.setCreator(nbr);
-            venuesEntity.setLastModifier(nbr);
+            String loginNm = this.getLogin(token);
+            venuesEntity.setCreator(loginNm);
+            venuesEntity.setLastModifier(loginNm);
             venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
-            rmVenuesInfoMapper.add(venuesEntity);
+            int venuesId = rmVenuesInfoMapper.add(venuesEntity);
+
+            //增加日志信息
+            RecordEntity en=new RecordEntity();
+            en.setOperateContent("新增场所");
+            en.setOperator(loginNm);
+            en.setOperateDetail("新增场所:名称（"+venuesEntity.getVenuesName()+"），地址（"+venuesEntity.getVenuesAddres()+"）");
+            en.setOperateTime( new Date());
+            en.setOperateRef(String.valueOf(venuesEntity.getVenuesId()));
+            en.setOperateType("01");
+            userLogsInfoMapper.add(en);
 
             code=ResultCode.SUCCESS.getCode();
             message="新增场所信息成功！";
-
-        }catch (RuntimeException e){
-            e.printStackTrace();
-        }
-        catch (Exception e){
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e){
             message="新增场所失败,请联系管理员！";
             e.printStackTrace();
         }
@@ -103,8 +145,25 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public List<VenuesEntity> queryAll(String search) {
-        return rmVenuesInfoMapper.queryAll(search);
+    public RespPageBean querySelect(String search,String town) {
+        long code=ResultCode.FAILED.getCode();
+        String message="场所信息获取(下拉框)";
+        List<VenuesEntity>  dataList=new ArrayList<>();
+        try {
+            dataList=rmVenuesInfoMapper.querySelect(search,town);
+            if(null==dataList || dataList.size()<1){
+                throw new RuntimeException("该区域无相关场所，请先添加场所信息！");
+            }
+            code=ResultCode.SUCCESS.getCode();
+            message="场所信息获取成功(下拉框)";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }
+        return new RespPageBean(code,message,dataList.toArray());
     }
 
     @Override
@@ -128,32 +187,63 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect) {
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
+    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect,String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="PC场所信息获取";
+        Long total=0l;
+        List<VenuesEntity>  dataList=new ArrayList<>();
+        String[] relVenuesArr={};
+        try {
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            String login = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+            String area="";
+            String town ="";
+            String relVenuesId="";
+            if(null!=sysUserEntity){
+                relVenuesId = sysUserEntity.getRelVenuesId();
+                town = sysUserEntity.getTown();
+                area = sysUserEntity.getArea();
+            }else{
+                throw new RuntimeException("用户已过期，请重新登录！");
+            }
+            VenuesEntity ve=new VenuesEntity();
+            ve.setResponsiblePerson(responsiblePerson);
+            ve.setVenuesName(venuesName);
+            ve.setReligiousSect(religiousSect);
+            ve.setArea(area);
+            ve.setTown(town);
+            ve.setVenuesAddres(relVenuesId);
+            if(null!=relVenuesId && !relVenuesId.isEmpty()){
+                relVenuesArr=relVenuesId.split(",");
+            }
+            dataList=rmVenuesInfoMapper.getVenuesByPage(page,size,ve,relVenuesArr);
+            total=rmVenuesInfoMapper.getTotal(ve,relVenuesArr);
+            code= ResultCode.SUCCESS.getCode();
+            message="PC场所信息获取成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+        }catch (Exception e) {
+            message="PC场所信息获取失败！";
+            e.printStackTrace();
         }
-        List<VenuesEntity> dataList=rmVenuesInfoMapper.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
-        Object[] objects = dataList.toArray();
-        /*VenuesEntity[] date = new VenuesEntity[dataList.size()];
-        VenuesEntity[] datas = dataList.toArray(date);*/
-        Long total=rmVenuesInfoMapper.getTotal(venuesName,responsiblePerson,religiousSect);
-        RespPageBean bean = new RespPageBean();
-        bean.setDatas(objects);
-        bean.setTotal(total);
-        return bean;
+        return new RespPageBean(code,message,total,dataList.toArray());
     }
 
     @Override
     public AppResponse queryVenues(String search) {
-        long code=0l;
-        String message="";
+        long code=ResultCode.FAILED.getCode();
+        String message="app场所下拉";
         List<Map<String, Object>> venuesList =null;
         try {
             venuesList = rmVenuesInfoMapper.queryVenues(search);
             code= ResultCode.SUCCESS.getCode();
             message="场所下拉数据获取成功！";
+        } catch (RuntimeException r){
+            message=r.getMessage();
         } catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
             message="场所下拉数据获取失败！";
             e.printStackTrace();
         }
@@ -273,5 +363,16 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             e.printStackTrace();
         }
         return new AppResponse(code,message,mapVenues.toArray());
+    }
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(String token){
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
+        }
+        return loginNm;
     }
 }

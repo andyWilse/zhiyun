@@ -1,9 +1,11 @@
 package com.religion.zhiyun.task.service.impl;
 
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.service.TaskService;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
@@ -23,24 +25,36 @@ public class TaskServiceImpl implements TaskService {
     private TaskInfoMapper taskInfoMapper;
 
     @Override
-    public String deployment(String taskKey) {
-        //第一步
-        DeploymentBuilder builder=  repositoryService.createDeployment();
-        String filePath="";
-        if(taskKey.equals(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode())){//上报
-            filePath=TaskParamsEnum.ZY_REPORT_TASK_KEY.getFilePath();
-        }else if(taskKey.equals(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode())){//下达
-            filePath=TaskParamsEnum.ZY_ISSUED_TASK_KEY.getFilePath();
-        }else if(taskKey.equals(TaskParamsEnum.ZY_FILING_TASK_KEY.getCode())){//活动备案、场所更新
-            filePath=TaskParamsEnum.ZY_FILING_TASK_KEY.getFilePath();
-        }
-        builder.addClasspathResource(filePath);
-        String id = builder.deploy().getId();
+    public AppResponse deployment(String taskKey) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "流程部署";
 
-        repositoryService.setDeploymentKey(id,taskKey);
-        String message="流程id："+id+",部署成功";
-        log.info(message);
-        return message;
+        try {
+            //第一步
+            DeploymentBuilder builder=  repositoryService.createDeployment();
+            String filePath="";
+            if(taskKey.equals(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode())){//上报
+                filePath=TaskParamsEnum.ZY_REPORT_TASK_KEY.getFilePath();
+            }else if(taskKey.equals(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode())){//下达
+                filePath=TaskParamsEnum.ZY_ISSUED_TASK_KEY.getFilePath();
+            }else if(taskKey.equals(TaskParamsEnum.ZY_FILING_TASK_KEY.getCode())){//活动备案、场所更新
+                filePath=TaskParamsEnum.ZY_FILING_TASK_KEY.getFilePath();
+            }else{
+                throw new RuntimeException("流程key值在系统不存在，请确认后重新填写");
+            }
+            builder.addClasspathResource(filePath);
+            String id = builder.deploy().getId();
+
+            repositoryService.setDeploymentKey(id,taskKey);
+            message = "流程id："+id+",部署成功";
+            log.info(message);
+            code= ResultCode.SUCCESS.getCode();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
     }
 
     @Override

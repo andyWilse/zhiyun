@@ -14,7 +14,7 @@ public interface SysUserService {
      * @return
      * @throws IOException
      */
-    RespPageBean getUsersByPage(Map<String, Object> map) throws IOException;
+    RespPageBean getUsersByPage(Map<String, Object> map);
 
     /**
      * 新增

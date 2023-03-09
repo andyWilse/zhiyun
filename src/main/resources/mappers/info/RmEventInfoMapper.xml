@@ -122,8 +122,8 @@
             EVENT_ID as eventId,
             m.ACCESS_NUMBER as accessNumber,
             DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
-            v.VENUES_ADDRES as venuesAddres,
-            v.VENUES_NAME as venuesName,
+            ve.VENUES_ADDRES as venuesAddres,
+            ve.VENUES_NAME as venuesName,
             e.RESPONSIBLE_PERSON as responsiblePerson,
             EVENT_TYPE as eventType,
             case EVENT_TYPE
@@ -142,8 +142,8 @@
             end as eventStateNm,
             HANDLE_RESULTS as handleTesults,
             DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
-            v.PICTURES_PATH as picturesPath,
-            v.VENUES_NAME as venuesName,
+            ve.PICTURES_PATH as picturesPath,
+            ve.VENUES_NAME as venuesName,
             e.event_level as eventLevel,
             case event_level
             when '0' then '事件'
@@ -155,55 +155,97 @@
             m.MONITOR_URL as monitorUrl
 
         from RM_EVENT_INFO e
-        left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
+        left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
         left join rm_monitor_manage_info m on e.ACCESS_NUMBER=m.ACCESS_NUMBER
-        <where>
-            <if test="eventType!=null and eventType!=''">
-                e.EVENT_TYPE=#{eventType}
-            </if>
-        </where>
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and e.EVENT_TYPE=#{vo.searchOne}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
         ORDER BY WARN_TIME DESC
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
 
     </select>
 
     <select id="getEventsByPage" resultType="com.religion.zhiyun.event.entity.EventEntity">
         select
-            EVENT_ID as eventId,
-            ACCESS_NUMBER as accessNumber,
-            DEVICE_NAME as deviceName,
-            WARN_TIME as warnTime,
-            v.VENUES_ADDRES as venuesAddres,
+            e.EVENT_ID as eventId,
+            e.ACCESS_NUMBER as accessNumber,
+            e.DEVICE_NAME as deviceName,
+            e.WARN_TIME as warnTime,
+            ve.VENUES_ADDRES as venuesAddres,
             e.RESPONSIBLE_PERSON as responsiblePerson,
-            case EVENT_TYPE
+            case e.EVENT_TYPE
                 when '01' then '火灾预警'
                 when '02' then '人脸识别'
                 when '03' then '任务预警'
                 when '04' then '人流聚集'
                 else '其他'
             end as eventType,
-            EVENT_DATA as eventData,
-            LOCATION as location,
-            case EVENT_STATE
+            e.EVENT_DATA as eventData,
+            e.LOCATION as location,
+            case e.EVENT_STATE
                 when '00' then '待查实'
                 when '01' then '已完成'
                 when '02' then '误报'
                 else '其他'
             end as eventState,
-            HANDLE_RESULTS as handleTesults,
-            HANDLE_TIME as handleTime
+            e.HANDLE_RESULTS as handleTesults,
+            e.HANDLE_TIME as handleTime
         from RM_EVENT_INFO e
-        left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
-        where 1=1
-        <if test="accessNumber != null and accessNumber != ''">
-            AND  ACCESS_NUMBER LIKE CONCAT('%',#{accessNumber},'%')
+        left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
+        where ve.VENUES_STATUS!='02'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  e.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
         order by HANDLE_TIME desc
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(EVENT_ID) from RM_EVENT_INFO
+        select
+            count(e.EVENT_ID)
+        from RM_EVENT_INFO e
+        left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  e.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
     </select>
 
     <select id="getAllNum" resultType="java.util.Map">
@@ -509,9 +551,9 @@
     </select>
 
 
-    <select id="queryEvent" parameterType="com.religion.zhiyun.event.entity.EventEntity" resultType="map" >
+    <select id="queryEvent" parameterType="com.religion.zhiyun.event.entity.EventEntity" resultType="com.religion.zhiyun.event.entity.EventEntity" >
         select
-            e.EVENT_ID as id
+            <include refid="eventColumn"/>
         from rm_event_info e
         where e.EVENT_STATE='00'
         <if test="accessNumber!=null and accessNumber!=''">
@@ -529,8 +571,8 @@
         <if test="location!=null and location!=''">
             and e.LOCATION=#{location}
         </if>
-
     </select>
+
     <select id="getMobile" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         SELECT
         us.USER_MOBILE as userMobile

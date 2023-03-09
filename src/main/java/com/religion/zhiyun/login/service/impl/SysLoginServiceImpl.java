@@ -81,9 +81,9 @@ public class SysLoginServiceImpl implements SysLoginService {
             //查询
             SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
-            if(null!=sysUser && null!=manager){
+            if(null!=sysUser && null!=manager && manager.size()>0){
                 throw new RuntimeException("用户身份重复，请联系管理员！");
-            }else if(null==sysUser && null==manager){
+            }else if(null==sysUser && 0==manager.size()){
                 throw new RuntimeException("该手机号未在系统添加使用，请添加后登录！");
             }else if(null!=sysUser){//01-监管人员
                 username=sysUser.getLoginNm();
@@ -93,7 +93,7 @@ public class SysLoginServiceImpl implements SysLoginService {
                 direct="01";
             }else if(null!=manager && manager.size()>0){//02-神职人员
                 Map<String, Object> managerMap = manager.get(0);
-                username= (String) managerMap.get("name");
+                //username= (String) managerMap.get("name");
                 passWordSys= (String) managerMap.get("passwords");
                 identity=(String) managerMap.get("type");
                 validInd=(String) managerMap.get("flag");
@@ -159,10 +159,7 @@ public class SysLoginServiceImpl implements SysLoginService {
                 message="手机号不正确，请使用验证码发送的手机号登录！";
                 throw new RuntimeException(message);
             }
-
-            System.out.println("memPhone:"+userName);
-            System.out.println(yanZhenMa);
-            System.out.println("传入的验证码是："+verifyCodes);
+            System.out.println("memPhone:"+userName+",传入的验证码是："+verifyCodes);
             if(null==verifyCodes || "".equals(verifyCodes)){
                 message="验证码不能为空，请填写验证码！";
                 throw new RuntimeException(message);
@@ -219,38 +216,35 @@ public class SysLoginServiceImpl implements SysLoginService {
             int id=0;
             SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//神职人员
-
-            String loginNm="";
-            if(null!=sysUser && null!=manager){
+            //String loginNm="";
+            if(null!=sysUser && manager.size()>0){
                 message="用户身份重复，请联系管理员！";
                 throw new RuntimeException(message);
             }else if(null==sysUser && 0==manager.size()){
                 message="该手机号未在系统添加使用，请添加后登录！";
                 throw new RuntimeException(message);
             }else if(null!=sysUser){
-                loginNm=sysUser.getLoginNm();
                 identity=sysUser.getIdentity();
                 id=sysUser.getUserId();
-            }else if(null!=manager && manager.size()>0){
+            }else if(manager.size()>0){
                 Map<String, Object> managerMap = manager.get(0);
-                loginNm= (String) managerMap.get("name");
                 identity= (String) managerMap.get("type");
                 id= (int) managerMap.get("id");
             }
             //验证码验证
-            AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
+            /*AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
             //验证码不正确
             if(ResultCode.FAILED.getCode()==appResponse.getCode()){
                 return appResponse;
-            }
+            }*/
             //salt加密
-            Hash hash = this.transSalt(loginNm,password,identity);
+            Hash hash = this.transSalt(username,password,identity);
             String pass=String.valueOf(hash);
             //修改密码
             if(null!=sysUser){//修改监管人员
                 userMapper.updatePassword(pass,password,id,TimeTool.getYmdHms());
             }else if(null!=manager){//修改神职人员
-                rmStaffInfoMapper.updatePassword(pass,password,id, loginNm,TimeTool.getYmdHms());
+                rmStaffInfoMapper.updatePassword(pass,password,id,username,TimeTool.getYmdHms());
             }
 
             code=ResultCode.SUCCESS.getCode();

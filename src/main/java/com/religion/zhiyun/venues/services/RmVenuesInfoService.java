@@ -11,12 +11,18 @@ import java.util.Map;
 
 public interface RmVenuesInfoService {
 
-    RespPageBean add(VenuesEntity venuesEntity);
+    RespPageBean add(VenuesEntity venuesEntity,String token);
     RespPageBean update(VenuesEntity venuesEntity);
     int delete(int venuesId);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
 
-    List<VenuesEntity> queryAll(String search);
+    /**
+     * 下拉框查询
+     * @param search
+     * @param town
+     * @return
+     */
+    RespPageBean querySelect(String search,String town);
 
     List<VenuesEntity> querySectAll(String religiousSect);
     List<VenuesEntity> getByVenuesFaculty(String venuesName,String responsiblePerson);
@@ -32,7 +38,7 @@ public interface RmVenuesInfoService {
      * @param religiousSect
      * @return
      */
-    RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect);
+    RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect,String token);
 
     /**
      * 场所下拉

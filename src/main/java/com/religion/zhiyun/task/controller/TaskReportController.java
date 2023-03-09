@@ -30,10 +30,10 @@ public class TaskReportController {
 
     @RequestMapping("/launch")
     @ResponseBody
-    public Object launch(@RequestBody String taskJson,@RequestHeader("token")String token){
+    public AppResponse launch(@RequestBody String taskJson,@RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        Object launch = warnTaskService.launch(taskEntity,token);
-        return "节点执行人："+launch;
+        AppResponse launch = warnTaskService.launch(taskEntity,token);
+        return launch;
     }
 
     @RequestMapping("/report")

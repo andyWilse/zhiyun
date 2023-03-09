@@ -7,6 +7,9 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 教职人员端的场景更新、活动备案，默认普通状态，只推给街镇干事审核
+ */
 @RestController
 @RequestMapping("/filing")
 public class TaskFilingController {

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.venues.dao.VenuesManagerMapper">
+
+    <sql id="VenuesManagerColumn">
+        MANAGER_ID as managerId,
+        MANAGER_CN_NM as  managerCnNm,
+        MANAGER_EN_NM as  managerEnNm,
+        MANAGER_EMAIL as  managerEmail,
+        MANAGER_MOBILE as managerMobile ,
+        MANAGER_TEL as  managerTel,
+        MANAGER_TYPE_CD as  managerTypeCd,
+        MANAGER_PHOTO_PATH as  managerPhotoPath,
+        VALID_IND as  validInd,
+        PASSWORDS as  passwords,
+        PASSWORDS_ORIGIN as  passwordsOrigin,
+        CREATOR as  creator,
+        CREATE_TIME as createTime,
+        LAST_MODIFIER as  lastModifier,
+        LAST_MODIFY_TIME as lastModifyTime
+    </sql>
+
+    <insert id="add">
+    insert into rm_venues_manager_info(
+        MANAGER_CN_NM,
+        MANAGER_EN_NM,
+        MANAGER_EMAIL,
+        MANAGER_MOBILE,
+        MANAGER_TEL,
+        MANAGER_TYPE_CD,
+        MANAGER_PHOTO_PATH,
+        VALID_IND,
+        PASSWORDS,
+        PASSWORDS_ORIGIN,
+        CREATOR,
+        CREATE_TIME,
+        LAST_MODIFIER,
+        LAST_MODIFY_TIME
+    ) values (
+        #{managerCnNm},
+        #{managerEnNm},
+        #{managerEmail},
+        #{managerMobile},
+        #{managerTel},
+        #{managerTypeCd},
+        #{managerPhotoPath},
+        #{validInd},
+        #{passwords},
+        #{passwordsOrigin},
+        #{creator},
+        #{createTime},
+        #{lastModifier},
+        #{lastModifyTime}
+    )
+    </insert>
+
+    <update id="update">
+        update RM_VENUES_MANAGER_INFO
+            set MANAGER_EMAIL=#{managerEmail},
+                MANAGER_MOBILE=#{managerMobile},
+                MANAGER_PHOTO_PATH=#{managerPhotoPath},
+                PASSWORDS=#{passwords},
+                PASSWORDS_ORIGIN=#{passwordsOrigin},
+                LAST_MODIFIER=#{lastModifier},
+                LAST_MODIFY_TIME=#{lastModifyTime}
+        where MANAGER_ID=#{managerId}
+    </update>
+
+    <update id="delete" >
+        update RM_VENUES_MANAGER_INFO set VALID_IND='0' where MANAGER_ID = #{managerId}
+    </update>
+
+    <select id="query" resultType="com.religion.zhiyun.venues.entity.VenuesManagerEntity">
+        select
+            <include refid="VenuesManagerColumn"/>
+        from RM_VENUES_MANAGER_INFO
+    </select>
+
+    <select id="getManagerByNm" resultType="map">
+        select
+            MANAGER_ID as managerId,
+            MANAGER_CN_NM as  managerCnNm
+        from RM_VENUES_MANAGER_INFO
+        where VALID_IND='1'
+        <if test="name!=null and name!=''">
+            and ( MANAGER_CN_NM = #{name} or MANAGER_MOBILE = #{name} )
+        </if>
+    </select>
+
+</mapper>

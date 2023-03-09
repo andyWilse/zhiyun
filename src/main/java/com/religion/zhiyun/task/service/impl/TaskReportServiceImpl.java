@@ -68,7 +68,7 @@ public class TaskReportServiceImpl implements TaskReportService {
     @Transactional
     public AppResponse launch(TaskEntity taskEntity,String token) {
         long code=ResultCode.FAILED.getCode();
-        String message="上报任务发起失败";
+        String message="上报任务发起";
         String procInstId="";
         try {
             String loginNm = this.getLogin(token);

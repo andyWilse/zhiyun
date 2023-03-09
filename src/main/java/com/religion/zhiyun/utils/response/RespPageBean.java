@@ -43,6 +43,13 @@ public class RespPageBean {
         this.resultArr=resultArr;
     }
 
+    public RespPageBean(long code,String result,Long total,Object[] resultArr){
+        this.code=code;
+        this.result=result;
+        this.total=total;
+        this.resultArr=resultArr;
+    }
+
     public RespPageBean(long code,List<Map<String, Object>> resultMap){
         this.code=code;
         this.resultMap=resultMap;

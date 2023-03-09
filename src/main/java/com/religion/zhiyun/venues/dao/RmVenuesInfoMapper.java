@@ -12,8 +12,13 @@ import java.util.Map;
 @Mapper
 @Repository
 public interface RmVenuesInfoMapper {
-    //查询
-    public List<VenuesEntity> queryAll(@Param("search") String search);
+    /**
+     * pc下拉框获取
+     * @param search
+     * @param town
+     * @return
+     */
+    public List<VenuesEntity> querySelect(@Param("search") String search,@Param("town") String town);
 
     //查询
     public List<Map<String,Object>> queryVenues(@Param("search") String search);
@@ -22,7 +27,7 @@ public interface RmVenuesInfoMapper {
      * 新增
      * @param venuesEntity
      */
-    void add(VenuesEntity venuesEntity);
+    int add(VenuesEntity venuesEntity);
 
     /**
      * 修改
@@ -74,27 +79,19 @@ public interface RmVenuesInfoMapper {
 
     /**
      * 分页查询
-     * @param page
-     * @param size
-     * @param venuesName
-     * @param responsiblePerson
-     * @param religiousSect
+     * @param
      * @return
      */
-    List<VenuesEntity> getVenuesByPage(@Param("page") Integer page,
-                                    @Param("size") Integer size,
-                                    @Param("venuesName") String venuesName,
-                                    @Param("responsiblePerson") String responsiblePerson,
-                                    @Param("religiousSect") String religiousSect
-    );
+    List<VenuesEntity> getVenuesByPage(@Param("page")Integer page,
+                                       @Param("size") Integer size,
+                                       @Param("venue")VenuesEntity venue ,
+                                       @Param("relVenuesArr")String[] relVenuesArr);
 
     /**
      * 总条数
      * @return
      */
-    Long getTotal(@Param("venuesName") String venuesName,
-                  @Param("responsiblePerson") String responsiblePerson,
-                  @Param("religiousSect") String religiousSect);
+    Long getTotal( @Param("venue")VenuesEntity venue , @Param("relVenuesArr")String[] relVenuesArr);
 
     /**
      * 更新经纬度
@@ -135,4 +132,10 @@ public interface RmVenuesInfoMapper {
      */
     public List<Map<String,Object>> getStaffs(@Param("relVenuesId") String relVenuesId);
 
+    /**
+     * 根据场所名获取信息
+     * @param venuesName
+     * @return
+     */
+    public List<Map<String,Object>> getVenuesByNm(@Param("venuesName") String venuesName);
 }

@@ -1,6 +1,7 @@
 package com.religion.zhiyun.sys.menus.controller;
 
 import com.religion.zhiyun.sys.menus.entity.MenuList;
+import com.religion.zhiyun.sys.menus.entity.RespPage;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -23,7 +24,7 @@ public class RmSysMenuInfoController {
 
     @GetMapping("/find")
     @RequiresPermissions("menu:find")
-    public MenuList getMenuByPage(){
+    public RespPage getMenuByPage(){
         return rmSysMenuInfoService.findAll();
     }
 
@@ -36,5 +37,15 @@ public class RmSysMenuInfoController {
     public MenuList getMenuByRole(@PathVariable String roleId){
         return rmSysMenuInfoService.getMenuByRole(roleId);
     }
+
+    @PostMapping("/userGrand")
+    public RespPageBean userGrand(@RequestBody Map<String,String> map){
+        return rmSysMenuInfoService.userGrand(map);
+    }
+    @GetMapping("/getByUser/{userId}")
+    public MenuList getMenuByUser(@PathVariable String userId){
+        return rmSysMenuInfoService.getMenuByUser(userId);
+    }
+
 
 }

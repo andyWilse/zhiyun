@@ -43,6 +43,10 @@ public class ShiroConfig {
         filterMap.put("/app/sendVerifyCode","anon");  //放行sendVerifyCode
         filterMap.put("/app/loginIn","anon");  //放行loginIn
         filterMap.put("/app/updatePassword","anon");  //放行updatePassword
+
+        filterMap.put("/event/addEvent","anon");  //放行AI预警
+        filterMap.put("/event/addEventByNB","anon");  //放行烟感预警
+
         //filterMap.put("/venues/find","perms[venues:get]");
 
         filterMap.put("/**","auth");    //拦截所有路径, 它自动会跑到 AuthFilter这个自定义的过滤器里面

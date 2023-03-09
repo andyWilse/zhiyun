@@ -79,13 +79,13 @@ public class RmEventInfoController {
      * @return
      */
     @RequestMapping("/getEventByType")
-    public AppResponse getEventByType(@RequestParam Map<String, Object> map) {
+    public AppResponse getEventByType(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventType = (String)map.get("eventType");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmEventInfoService.getByType(page,size,eventType);
+        return rmEventInfoService.getByType(page,size,eventType,token);
     }
 
     /**
@@ -99,14 +99,14 @@ public class RmEventInfoController {
     }
 
     @GetMapping("/findpage")
-    public RespPageBean getEventByPage(@RequestParam Map<String, Object> map){
+    public RespPageBean getEventByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
 
         String accessNumber = (String)map.get("accessNumber");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmEventInfoService.getEventsByPage(page,size,accessNumber);
+        return rmEventInfoService.getEventsByPage(page,size,accessNumber,token);
     }
 
 
@@ -148,9 +148,9 @@ public class RmEventInfoController {
 
     //一键上报
     @RequestMapping("/zlb/reportOne")
-    public AppResponse reportOne(@RequestParam Map<String, Object> map) {
+    public AppResponse reportOne(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventId = (String)map.get("eventId");
-        return rmEventInfoService.reportOne(eventId);
+        return rmEventInfoService.reportOne(eventId,token);
     }
 
     //折线图（月）

@@ -17,7 +17,8 @@ public class SysUserController {
     private SysUserService sysUserService;
 
     @GetMapping("/find")
-    public RespPageBean getUsersByPage(@RequestParam Map<String, Object> map) throws IOException {
+    public RespPageBean getUsersByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        map.put("token",token);
         return sysUserService.getUsersByPage(map);
     }
 

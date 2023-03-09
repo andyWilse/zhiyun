@@ -2,6 +2,7 @@ package com.religion.zhiyun.task.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.task.service.TaskService;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class TaskController {
 
     @ResponseBody
     @RequestMapping("/deploy")
-    public String deployment(@RequestBody JSONObject jsonObject){
+    public AppResponse deployment(@RequestBody JSONObject jsonObject){
         String taskKey = jsonObject.getString("taskKey");
         return taskService.deployment(taskKey);
     }

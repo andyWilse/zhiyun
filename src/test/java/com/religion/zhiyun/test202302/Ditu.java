@@ -19,7 +19,7 @@ class Ditu {
     @Test
 
     void contextLoads() throws FileNotFoundException, UnsupportedEncodingException {
-        List<VenuesEntity> venuesEntities = mVenuesInfoMapper.queryAll("");
+        List<VenuesEntity> venuesEntities = mVenuesInfoMapper.querySelect("","");
         for(int i=0;i<venuesEntities.size();i++){
             VenuesEntity venuesEntity = venuesEntities.get(i);
             String venuesAddres = venuesEntity.getVenuesAddres();

@@ -18,11 +18,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 //@RequiresPermissions ("venues:all")
+//@CrossOrigin
+//@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
 @RestController
 @RequestMapping("/venues")
-//@CrossOrigin
-@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
-
 public class RmVenuesInfoController {
 
     @Autowired
@@ -30,8 +29,8 @@ public class RmVenuesInfoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public RespPageBean add(@RequestBody VenuesEntity venuesEntity) {
-        return rmVenuesInfoService.add(venuesEntity);
+    public RespPageBean add(@RequestBody VenuesEntity venuesEntity,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.add(venuesEntity,token);
     }
 
     @PostMapping("/updateVenues")
@@ -55,15 +54,14 @@ public class RmVenuesInfoController {
         rmVenuesInfoService.delete(venuesId);
     }
 
-    @RequestMapping("/queryAll")
-    public String queryMapVenues(@RequestParam String search) {
-        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
-        return JsonUtils.objectTOJSONString(list);
+    @RequestMapping("/querySelect")
+    public RespPageBean querySelect(@RequestParam String search,@RequestParam String town) {
+        return rmVenuesInfoService.querySelect(search,town);
     }
 
     //app下拉使用
     @RequestMapping("/getVenues")
-    public AppResponse getVenuesList(@RequestParam String search) {
+    public AppResponse getVenuesList(@RequestParam String search,@RequestHeader("token")String token) {
         return rmVenuesInfoService.queryVenues(search);
     }
 
@@ -97,7 +95,7 @@ public class RmVenuesInfoController {
 
     @RequiresPermissions("venues:get")
     @GetMapping("/find")
-    public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map){
+    public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String venuesName = (String)map.get("venuesName");
         String responsiblePerson = (String)map.get("responsiblePerson");
         String religiousSect = (String)map.get("religiousSect");
@@ -105,10 +103,10 @@ public class RmVenuesInfoController {
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect);
+        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,token);
     }
 
-    @RequestMapping("/getVenueNames")
+    /*@RequestMapping("/getVenueNames")
     public String queryByName(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
@@ -118,7 +116,7 @@ public class RmVenuesInfoController {
     public String getVenueAddress(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
         return JsonUtils.objectTOJSONString(list);
-    }
+    }*/
 
     //地图(app用)
     @RequestMapping("/map/getVenues")

@@ -3,6 +3,7 @@ package com.religion.zhiyun.event.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -27,7 +28,7 @@ public class NotifiedEntity {
     private String notifiedFlag;//状态:00-未通知；01-已通知；02-一键上报；03-误报解除
 
     @Column(name = "NOTIFIED_TIME")
-    private String notifiedTime;//通知时间
+    private Date notifiedTime;//通知时间
 
     @Column(name = "REPORT_TIME")
     private String reportTime;//上报时间

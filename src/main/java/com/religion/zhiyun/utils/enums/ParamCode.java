@@ -39,6 +39,10 @@ public enum ParamCode {
     NOTIFIED_FLAG_03("03", "拨打119"),
     NOTIFIED_FLAG_04("04", "误报解除"),
 
+    //摄像设备状态
+    MONITOR_STATE_01("01", "在线"),
+    MONITOR_STATE_02("02", "报修"),
+
 
     ;
 

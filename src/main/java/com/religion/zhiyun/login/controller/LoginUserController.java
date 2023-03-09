@@ -45,7 +45,9 @@ public class LoginUserController {
     public LoginResp ajaxLogin(@RequestBody Map map) {
         try {
             String username = (String) map.get("username");
-            String password = (String) map.get("password");SysUserEntity user = sysUserService.queryByName(username);
+            String password = (String) map.get("password");
+
+            SysUserEntity user = sysUserService.queryByTel(username);
             if(user==null){
                 throw new RuntimeException("用户不存在!");
             }else if("0".equals(user.getValidInd())){

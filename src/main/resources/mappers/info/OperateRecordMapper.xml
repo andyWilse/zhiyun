@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.record.dao.OperateRecordMapper">
+
+    <sql id="recordColumn">
+        RECORD_ID as recordId,
+        OPERATOR as operator,
+        OPERATE_CONTENT as operateContent,
+        OPERATE_DETAIL as operateDetail,
+        OPERATE_TIME as operateTime,
+        OPERATE_REF as operateRef,
+        OPERATE_TYPE as operateType
+    </sql>
+
+    <insert id="add">
+        insert into RM_OPERATE_RECORD_INFO
+        (
+            OPERATOR,
+            OPERATE_CONTENT,
+            OPERATE_DETAIL,
+            OPERATE_TIME,
+            OPERATE_REF,
+            OPERATE_TYPE
+         )
+        values(
+            #{operator},
+            #{operateContent},
+            #{operateDetail},
+            #{operateTime},
+            #{operateRef},
+            #{operateType}
+        )
+    </insert>
+
+    <select id="findRecordByPage" resultType="com.religion.zhiyun.record.entity.RecordEntity">
+        select
+            OPERATOR as operator,
+            OPERATE_CONTENT as operateContent,
+            OPERATE_DETAIL as operateDetail,
+            DATE_FORMAT(OPERATE_TIME,'%Y-%m-%d %H:%i:%s') as operateTm
+        from RM_OPERATE_RECORD_INFO re
+        left join RM_VENUES_INFO ve on re.OPERATE_REF=ve.VENUES_ID
+        where ve.VENUES_STATUS!=02
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and re.OPERATOR=#{vo.searchOne}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        ORDER BY OPERATE_TIME DESC
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getTotal" resultType="java.lang.Long">
+        select count(RECORD_ID)
+        from RM_OPERATE_RECORD_INFO re
+        left join RM_VENUES_INFO ve on re.OPERATE_REF=ve.VENUES_ID
+        where ve.VENUES_STATUS!=02
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and re.OPERATOR=#{vo.searchOne}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

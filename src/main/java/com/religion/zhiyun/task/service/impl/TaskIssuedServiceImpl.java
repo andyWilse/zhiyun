@@ -68,23 +68,27 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
 
         try {
             //获取下达范围
-            if(!taskEntity.getProvince().isEmpty()){
+            if(null!=taskEntity.getProvince() && !taskEntity.getProvince().isEmpty()){
                 province=taskEntity.getProvince();
                 relVenuesIds=province;
+            }else{
+                throw new RuntimeException("省不能为空！");
             }
-            if(!taskEntity.getCity().isEmpty()){
+            if(null!=taskEntity.getCity() && !taskEntity.getCity().isEmpty()){
                 city=taskEntity.getCity();
                 relVenuesIds=city;
+            }else{
+                throw new RuntimeException("市不能为空！");
             }
-            if(!taskEntity.getArea().isEmpty()){
+            if(null!=taskEntity.getArea() && !taskEntity.getArea().isEmpty()){
                 area=taskEntity.getArea();
                 relVenuesIds=area;
             }
-            if(!taskEntity.getTown().isEmpty()){
+            if(null!=taskEntity.getTown() && !taskEntity.getTown().isEmpty()){
                 town=taskEntity.getTown();
                 relVenuesIds=town;
             }
-            if(!taskEntity.getRelVenuesId().isEmpty()){
+            if(null!=taskEntity.getRelVenuesId() && !taskEntity.getRelVenuesId().isEmpty()){
                 relVenuesId=taskEntity.getRelVenuesId();
                 relVenuesIds=relVenuesId;
             }

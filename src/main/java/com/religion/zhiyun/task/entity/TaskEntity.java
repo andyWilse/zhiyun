@@ -79,5 +79,6 @@ public class TaskEntity implements Serializable {
     private String city;
     private String area;
     private String town;
+    private String filingStatus;
 
 }

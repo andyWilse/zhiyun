@@ -16,7 +16,12 @@
         USER_NBR as userNbr,
         OFC_ID as ofcId,
         CREATE_TIME as createTime,
-        VALID_IND as validInd
+        VALID_IND as validInd,
+        REL_VENUES_ID as relVenuesId,
+        PROVINCE,
+        CITY,
+        AREA,
+        TOWN
     </sql>
 
     <select id="queryAll" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -87,7 +92,7 @@
         select
             <include refid="userColumn"/>
         from RM_SYS_USER_INFO
-        where LOGIN_NM = #{loginNm} or USER_NM= #{loginNm}
+        where LOGIN_NM = #{loginNm} or USER_NM= #{loginNm} or USER_MOBILE= #{loginNm}
     </select>
 
     <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -111,21 +116,49 @@
 
     <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-        <include refid="userColumn"/>
-        from RM_SYS_USER_INFO
+            <include refid="userColumn"/>
+        from RM_SYS_USER_INFO ve
         where VALID_IND='1'
-        <if test="loginNm != null and loginNm != ''">
-            AND  LOGIN_NM LIKE CONCAT('%',#{loginNm},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  LOGIN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
-        <if test="identity != null and identity != ''">
-            AND  IDENTITY = #{identity}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  IDENTITY = #{vo.searchTwo}
         </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            AND ve.REL_VENUES_ID =#{vo.venues}
+        </if>
+
         order by LAST_MODIFY_TIME desc
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_SYS_USER_INFO  where  VALID_IND='1'
+        select
+            count(USER_ID)
+        from RM_SYS_USER_INFO ve
+        where  VALID_IND='1'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  LOGIN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  IDENTITY = #{vo.searchTwo}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            AND ve.REL_VENUES_ID =#{vo.venues}
+        </if>
     </select>
 
     <select id="getMaxUserNbr" resultType="java.lang.Long">
@@ -193,16 +226,12 @@
     </select>
 
     <select id="getSanByVenues" resultType="java.util.Map">
-        select  zuyuan.USER_NBR as zuyuan,
-                zuzh.USER_NBR as zuzh
-        from rm_sys_user_info zuyuan
-        left join rm_sys_user_info zuzh on zuyuan.OFC_ID=zuzh.USER_NBR
-        where zuyuan.VALID_IND='1' and zuzh.VALID_IND='1'
+        select
+            zy.USER_NBR as userNbr
+        from rm_sys_user_info zy
+        where zy.VALID_IND='1'
         <if test="relVenuesId != null and relVenuesId != ''">
-        and (
-            zuyuan.REL_VENUES_ID=#{relVenuesId}
-            or zuzh.REL_VENUES_ID=#{relVenuesId}
-        )
+        and zy.REL_VENUES_ID=#{relVenuesId}
         </if>
     </select>
 

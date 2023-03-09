@@ -24,4 +24,22 @@
         delete from RM_SYS_ROLE_PESN where ROLE_ID =#{roleId}
     </delete>
 
+    <delete id="deleteUserGrand" flushCache="true">
+        delete from RM_SYS_USER_POST_REL where USER_ID =#{userId}
+    </delete>
+
+    <insert id="addUserGrand" parameterType="string">
+        INSERT INTO RM_SYS_USER_POST_REL (USER_ID,POST_CD) values(#{userId},#{postCd})
+    </insert>
+
+    <select id="getMenuByUser" resultType="String">
+        select
+            POST_CD
+        from RM_SYS_USER_POST_REL
+        where 1=1
+        <if test="userId != null and userId != ''">
+            AND  USER_ID = #{userId}
+        </if>
+    </select>
+
 </mapper>

@@ -23,7 +23,7 @@ public interface RmEventInfoService {
 
     EventEntity getByEventId(String eventId);
 
-    AppResponse getByType(Integer page, Integer size, String eventType);
+    AppResponse getByType(Integer page, Integer size, String eventType,String token);
 
     List<Map<String,Object>> getAllNum();
 
@@ -34,7 +34,7 @@ public interface RmEventInfoService {
      * @param accessNumber
      * @return
      */
-    RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber);
+    RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber,String token);
 
     /**
      * 手机端（预警查询）
@@ -76,7 +76,7 @@ public interface RmEventInfoService {
      * @param eventId
      * @return
      */
-    AppResponse reportOne(String eventId);
+    AppResponse reportOne(String eventId,String token);
 
 
     /**

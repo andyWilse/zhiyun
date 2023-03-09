@@ -1,5 +1,6 @@
 package com.religion.zhiyun.login.shiro;
 
+import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.user.entity.RoleEntity;
 import com.religion.zhiyun.user.entity.SysPermission;
 import com.religion.zhiyun.user.entity.SysUserEntity;
@@ -17,6 +18,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 public class AuthRealm extends AuthorizingRealm {
 
@@ -31,7 +33,8 @@ public class AuthRealm extends AuthorizingRealm {
 
     @Autowired
     private SysRoleService sysRoleService;
-
+    @Resource
+    private RmStaffInfoMapper rmStaffInfoMapper;
 
     //认证
     @Override
@@ -46,16 +49,20 @@ public class AuthRealm extends AuthorizingRealm {
             //查找的用户名为空，即为token失效
             throw new IncorrectCredentialsException("token失效，请重新登录");
         }
-
-        //User user = userServiceImpl.findByUsername(username);
-        SysUserEntity user = sysUserService.queryByName(username);
-        if(user==null){
-            throw new UnknownAccountException("用户不存在!");
-        }
-
         //此方法需要返回一个AuthenticationInfo类型的数据
         // 因此返回一个它的实现类SimpleAuthenticationInfo,将user以及获取到的token传入它可以实现自动认证
-        SimpleAuthenticationInfo simpleAuthenticationInfo=new SimpleAuthenticationInfo(user,accessToken,"");
+        SimpleAuthenticationInfo simpleAuthenticationInfo=null;
+        SysUserEntity user = sysUserService.queryByName(username);
+        List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
+        if(null!=user && null!=manager && manager.size()>0){
+            throw new RuntimeException("用户身份重复，请联系管理员！");
+        }else if(user==null && 0==manager.size()){
+            throw new UnknownAccountException("用户不存在!");
+        }else if(null!=user){
+            simpleAuthenticationInfo=new SimpleAuthenticationInfo(user,accessToken,"");
+        }else if(null!=manager && manager.size()>0){
+            simpleAuthenticationInfo=new SimpleAuthenticationInfo(manager.get(0),accessToken,"");
+        }
 
         return simpleAuthenticationInfo;
     }

@@ -56,5 +56,12 @@ public interface RmMonitroInfoMapper {
 
     List<Map<String,Object>> getMonitors(String venuesName, String accessNumber, String state);
 
+    /**
+     * 获取监控信息
+     * @param accessNumber
+     * @return
+     */
+    MonitroEntity getMonitorsList( @Param("accessNumber") String accessNumber);
+
 
 }

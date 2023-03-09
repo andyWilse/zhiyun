@@ -53,7 +53,9 @@ public interface RmStaffInfoMapper {
      * 获取总条数
      * @return
      */
-    Long getTotal();
+    Long getTotal( @Param("staffName") String staffName,
+                   @Param("staffPost") String staffPost,
+                   @Param("religiousSect") String religiousSect);
 
     /**
      *获取编号

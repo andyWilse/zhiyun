@@ -74,7 +74,18 @@
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_STAFF_INFO  where STAFF_STATUS!='02'
+        select count(STAFF_ID)
+        from RM_STAFF_INFO
+        where STAFF_STATUS!='02'
+        <if test="staffName != null and staffName != ''">
+            AND  STAFF_CN_NM LIKE CONCAT('%',#{staffName},'%')
+        </if>
+        <if test="staffPost != null and staffPost != ''">
+            AND  STAFF_POST = #{staffPost}
+        </if>
+        <if test="religiousSect != null and religiousSect != ''">
+            AND  RELIGIOUS_SECT = #{religiousSect}
+        </if>
     </select>
 
     <select id="getStaffByPage" resultType="com.religion.zhiyun.staff.entity.StaffEntity">

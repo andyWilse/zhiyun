@@ -1,6 +1,7 @@
 package com.religion.zhiyun.user.dao;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -28,15 +29,12 @@ public interface SysUserMapper {
     SysUserEntity queryByUserId(@Param("userId") String userId);
 
     /**
-     * 分页拆查询
-     * @param page
-     * @param size
-     * @param identity
-     * @param loginNm
+     * 分页查询
+     * @param vo
      * @return
      * @throws IOException
      */
-    List<SysUserEntity>  getUsersByPage(Integer page, Integer size, String identity, String loginNm) throws IOException;
+    List<SysUserEntity>  getUsersByPage(@Param("vo") ParamsVo vo) throws IOException;
 
     /**
      * 获取客户编号
@@ -45,7 +43,7 @@ public interface SysUserMapper {
     Long getMaxUserNbr();
 
     /**总条数**/
-    Long getTotal();
+    Long getTotal(@Param("vo") ParamsVo vo);
 
     /**
      * 新增

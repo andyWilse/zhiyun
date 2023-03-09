@@ -6,10 +6,12 @@ import com.religion.zhiyun.sys.menus.dao.RolePesnMapper;
 import com.religion.zhiyun.sys.menus.entity.MenuEntity;
 import com.religion.zhiyun.sys.menus.entity.MenuList;
 import com.religion.zhiyun.sys.menus.entity.MenuRespons;
+import com.religion.zhiyun.sys.menus.entity.RespPage;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,31 +28,41 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
 
 
     @Override
-    public MenuList findAll() {
-        MenuList  list=new MenuList();
-        String resourceType="01";
-        List<MenuEntity> allParents = rmSysMenuInfoMapper.findMenus(resourceType);
-        List<MenuRespons> childList=new ArrayList();
-        if(null!=allParents && allParents.size()>0){
-            for(int i=0;i<allParents.size();i++){
-                MenuRespons respons=new MenuRespons();
-                MenuEntity menuEntity = allParents.get(i);
-                String menuPrtIds = menuEntity.getMenuPrtIds();
-                List<MenuEntity> allChilds=new ArrayList<>();
-                if(null!=menuPrtIds && ""!=menuPrtIds){
-                    allChilds = rmSysMenuInfoMapper.findAllChilds(menuPrtIds.split(","));
+    public RespPage findAll() {
+        MenuList  list= null;
+        long code = ResultCode.FAILED.getCode();
+        String message= "菜单获取";
+        try {
+            list = new MenuList();
+            String resourceType="01";
+            List<MenuEntity> allParents = rmSysMenuInfoMapper.findMenus(resourceType);
+            List<MenuRespons> childList=new ArrayList();
+            if(null!=allParents && allParents.size()>0){
+                for(int i=0;i<allParents.size();i++){
+                    MenuRespons respons=new MenuRespons();
+                    MenuEntity menuEntity = allParents.get(i);
+                    String menuPrtIds = menuEntity.getMenuPrtIds();
+                    List<MenuEntity> allChilds=new ArrayList<>();
+                    if(null!=menuPrtIds && ""!=menuPrtIds){
+                        allChilds = rmSysMenuInfoMapper.findAllChilds(menuPrtIds.split(","));
+                    }
+                    respons.setMenuId(menuEntity.getMenuId());
+                    respons.setMenuNm(menuEntity.getMenuNm());
+                    respons.setChilds(allChilds.toArray());
+                    respons.setIconNm(menuEntity.getIconNm());
+                    childList.add(respons);
                 }
-                respons.setMenuId(menuEntity.getMenuId());
-                respons.setMenuNm(menuEntity.getMenuNm());
-                respons.setChilds(allChilds.toArray());
-                respons.setIconNm(menuEntity.getIconNm());
-                childList.add(respons);
             }
-        }
-        list.setChildren(childList.toArray());
-        list.setParent(rmSysMenuInfoMapper.findMenus("02").toArray());
+            list.setChildren(childList.toArray());
+            list.setParent(rmSysMenuInfoMapper.findMenus("02").toArray());
 
-        return list;
+            code = ResultCode.SUCCESS.getCode();
+            message= "菜单获取成功";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new RespPage(code,message,list);
     }
 
     @Override
@@ -112,13 +124,11 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     }
 
     @Override
-    //@Transactional
+    @Transactional
     public RespPageBean saveRoleMenus(Map<String, String> map) {
-        long code= 0;
-        String message= null;
+        long code= ResultCode.FAILED.getCode();
+        String message= "权限修改";
         try {
-            code = ResultCode.FAILED.getCode();
-            message = "权限修改失败";
 
             String roleId = map.get("roleId");
             String menus = map.get("menus");
@@ -131,10 +141,9 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
                     rolePesnMapper.add(pmsnCd,roleId);
                 }
             }
-            code = ResultCode.FAILED.getCode();
+            code = ResultCode.SUCCESS.getCode();
             message = "权限修改成功";
         } catch (Exception e) {
-            code = ResultCode.FAILED.getCode();
             message = "权限修改失败";
             e.printStackTrace();
         }
@@ -145,6 +154,42 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     public MenuList getMenuByRole(String roleId) {
         MenuList menu=new MenuList();
         List<String> menuByRole = rolePesnMapper.getMenuByRole(roleId);
+        if(null!=menuByRole && menuByRole.size()>0){
+            menu.setParent(menuByRole.toArray());
+        }
+        return menu;
+    }
+
+    @Override
+    @Transactional
+    public RespPageBean userGrand(Map<String, String> map) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "用户权限修改";
+        try {
+            String userId = map.get("userId");
+            String menus = map.get("menus");
+            String[] split = menus.split(",");
+            //删除原数据
+            long delete = rolePesnMapper.deleteUserGrand(userId);
+            //新增数据
+            if(null!=split && split.length>0){
+                for (String postCd : split) {
+                    rolePesnMapper.addUserGrand(postCd,userId);
+                }
+            }
+            code = ResultCode.SUCCESS.getCode();
+            message = "用户权限修改成功";
+        } catch (Exception e) {
+            message = "用户权限修改失败";
+            e.printStackTrace();
+        }
+        return new RespPageBean(code,message);
+    }
+
+    @Override
+    public MenuList getMenuByUser(String userId) {
+        MenuList menu=new MenuList();
+        List<String> menuByRole = rolePesnMapper.getMenuByUser(userId);
         if(null!=menuByRole && menuByRole.size()>0){
             menu.setParent(menuByRole.toArray());
         }

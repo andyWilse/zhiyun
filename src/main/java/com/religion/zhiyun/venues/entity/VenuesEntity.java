@@ -76,6 +76,15 @@ public  class VenuesEntity implements Serializable {
     @Column(name = "GROUP_MEMBERS")
     private String groupMembers;
 
+    @Column(name = "PROVINCE")
+    private String province;
+    @Column(name = "CITY")
+    private String city;
+    @Column(name = "AREA")
+    private String area;
+    @Column(name = "TOWN")
+    private String town;
+
     private String dictCd;
 
 }

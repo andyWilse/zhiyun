@@ -88,6 +88,7 @@ public class TaskFilingServiceImpl implements TaskFilingService {
 
             //保存备案信息
             if("03".equals(taskEntity.getFlowType())){
+                taskEntity.setFilingStatus("01");//申请中
                 taskInfoMapper.addFill(taskEntity);
             }
 
@@ -123,15 +124,18 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
                 for (Task item : T) {
-                    Map<String, Object> variables = new HashMap<>();
-                    variables.put("isSuccess", true);
-                    //设置本地参数。在myListener1监听中获取。
-                    taskService.setVariableLocal(item.getId(), "isSuccess", true);
-                    //增加审批备注
-                    taskService.addComment(item.getId(), item.getProcessInstanceId(), "已处理");
-                    //完成此次审批。如果下节点为endEvent。结束流程
-                    taskService.complete(item.getId(), variables);
-                    log.info("任务id：" + procInstId + " 已处理，流程结束！");
+                    if (item.getAssignee().equals(loginNm)) {
+                        Map<String, Object> variables = new HashMap<>();
+                        variables.put("nrOfCompletedInstances", 1);
+                        variables.put("isSuccess", true);
+                        //设置本地参数。在myListener1监听中获取。
+                        taskService.setVariableLocal(item.getId(), "isSuccess", true);
+                        //增加审批备注
+                        taskService.addComment(item.getId(), item.getProcessInstanceId(), "已处理");
+                        //完成此次审批。如果下节点为endEvent。结束流程
+                        taskService.complete(item.getId(), variables);
+                        log.info("任务id：" + procInstId + " 已处理，流程结束！");
+                    }
                 }
             }
             //流程更新处理结果

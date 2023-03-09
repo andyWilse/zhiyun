@@ -12,7 +12,7 @@ public interface TaskReportService {
     public Object deployment();
 
     /** 提交申请(发起) **/
-    public Object launch(TaskEntity taskEntity,String token);
+    public AppResponse launch(TaskEntity taskEntity,String token);
 
     /** 提交申请(上报) **/
     public AppResponse report(String procInstId, String handleResults, String feedBack, String picture,String token);

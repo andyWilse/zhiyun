@@ -4,6 +4,7 @@ package com.religion.zhiyun.event.dao;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -52,29 +53,24 @@ public interface RmEventInfoMapper {
 
     /**
      * 根据类型查看
-     * @param eventType
+     * @param vo
      * @return
      */
-    List<Map<String,Object>> getByType(@Param("page") Integer page,
-                                       @Param("size") Integer size,
-                                       @Param("eventType") String eventType);
+    List<Map<String,Object>> getByType(@Param("vo") ParamsVo vo);
 
     List<Map<String,Object>> getAllNum();
 
     /* 分页查询
-     * @param page
-     * @param size
-     * @param accessNumber
+     * @param vo
      * @return
      */
-    List<VenuesEntity> getEventsByPage(@Param("page") Integer page, @Param("size") Integer size,
-                                       @Param("accessNumber") String accessNumber);
+    List<EventEntity> getEventsByPage(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数
      * @return
      */
-    Long getTotal();
+    Long getTotal(@Param("vo") ParamsVo vo);
 
     /**
      * 手机端（预警查询）
@@ -192,7 +188,7 @@ public interface RmEventInfoMapper {
      * 修改
      * @param eventEntity
      */
-    List<Map<String,Object>> queryEvent(EventEntity eventEntity);
+    EventEntity queryEvent(EventEntity eventEntity);
 
     List<SysUserEntity> getMobile(@Param("venuesId")String venuesId);
 

@@ -160,7 +160,8 @@
             PROC_INST_ID,
             PART_NUM,
             RESPONSIBLE_PERSON,
-            TASK_TIME
+            TASK_TIME,
+            FILING_STATUS
         )
         values (
             #{taskName},
@@ -176,7 +177,8 @@
             #{procInstId},
             #{partNum},
             #{responsiblePerson},
-            #{taskTime}
+            #{taskTime},
+            #{filingStatus}
         )
     </insert>
 
@@ -221,14 +223,14 @@
 
     <select id="getJieGanUsers" resultType="String">
         select
-            g.LOGIN_NM AS loginNm
+           distinct g.LOGIN_NM AS loginNm
         from rm_sys_user_info  g
-        left join rm_sys_user_info u on g.area=u.area
+        left join rm_sys_user_info u on g.town=u.town
         where g.VALID_IND='1'
         and g.IDENTITY ='10000005'
         <if test="relVenuesId!=null and relVenuesId!=''">
             and u.REL_VENUES_ID = #{relVenuesId}
         </if>
-        order by g.loginNm
+        order by g.user_id
     </select>
 </mapper>
