@@ -111,11 +111,12 @@
 
     <select id="getVenuesMonitor" resultType="map">
         select
+            VENUES_ID as VenuesId,
             VENUES_NAME as venuesName,
             VENUES_ADDRES as venuesAddres,
             ORGANIZATION as organization,
             REGISTER_NBR as registerNbr,
-            RESPONSIBLE_PERSON  as responsiblePerson,
+            man.MANAGER_CN_NM  as responsiblePerson,
             sr.STAFF_TELPHONE as responsiblePersonPhone,
             LIAISON_MAN as liaisonMan,
             sl.STAFF_TELPHONE as liaisonManPhone,
@@ -123,6 +124,7 @@
             VENUES_PHONE as venuesPhone,
             PICTURES_PATH as picturesPath,
             m.MONITOR_URL as monitorUrl,
+            m.ACCESS_NUMBER as accessNumber,
             BRIEF_INTRODUCTION as briefIntroduction,
             ve.CREATOR as creator,
             ve.CREATE_TIME as createTime,
@@ -133,10 +135,9 @@
         left join rm_staff_info sl on ve.LIAISON_MAN=sl.STAFF_CN_NM
         left join rm_monitor_manage_info m on ve.VENUES_ID=m.rel_venues_id
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
+        left join rm_venues_manager_info man on ve.RESPONSIBLE_PERSON=man.MANAGER_ID
+
         where VENUES_STATUS!='02'
-        <if test="accessNumber != null and accessNumber != ''">
-            AND  m.ACCESS_NUMBER =#{accessNumber}
-        </if>
         <if test="venuesName != null and venuesName != ''">
             AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
         </if>
@@ -149,9 +150,6 @@
         from RM_VENUES_INFO ve
         left join rm_monitor_manage_info m on ve.VENUES_ID=m.rel_venues_id
         where ve.VENUES_STATUS!='02'
-        <if test="accessNumber != null and accessNumber != ''">
-            AND  m.ACCESS_NUMBER =#{accessNumber}
-        </if>
         <if test="venuesName != null and venuesName != ''">
             AND  ve.VENUES_NAME LIKE CONCAT('%',#{venuesName},'%')
         </if>
@@ -207,5 +205,6 @@
             AND  m.ACCESS_NUMBER =#{accessNumber}
         </if>
     </select>
+
 
 </mapper>

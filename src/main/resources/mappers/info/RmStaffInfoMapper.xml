@@ -177,7 +177,11 @@
         MANAGER_MOBILE as monile,
         MANAGER_PHOTO_PATH as imapath,
         d.DICT_CN_DESC as religiousSect
-
+        case MANAGER_TYPE_CD
+            when '01' then '负责人'
+            when '02' then '管理组成员'
+            when '03' then '紧急联系人'
+            end as managerType,
         from rm_venues_manager_info m
         left join rm_venues_info v on m.MANAGER_ID=v.RESPONSIBLE_PERSON
         left join rm_sys_dict d on d.DICT_CD=v.RELIGIOUS_SECT
@@ -189,6 +193,7 @@
 		VENUES_NAME as name,
 		d.DICT_CN_DESC as type,
 		ORGANIZATION as address,
+
 		m.MANAGER_CN_NM as person
 		from rm_venues_info v
 		left join RM_SYS_DICT d on v.RELIGIOUS_SECT=d.DICT_CD

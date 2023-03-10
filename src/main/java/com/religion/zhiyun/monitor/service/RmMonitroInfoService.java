@@ -30,7 +30,7 @@ public interface RmMonitroInfoService {
     String getMonitorURLByAccessNum(String accessNum);
 
     /** 监控  **/
-    RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName,String accessNumber);
+    RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName);
 
     RespPageBean getMonitors(String venuesName,String accessNumber,String state);
 

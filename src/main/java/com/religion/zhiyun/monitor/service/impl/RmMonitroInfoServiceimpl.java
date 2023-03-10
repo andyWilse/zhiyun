@@ -73,7 +73,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     }
 
     @Override
-    public RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName,String accessNumber) {
+    public RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName) {
         long code= ResultCode.FAILED.getCode();
         String message="监控场所查询失败";
         List<Map<String, Object>> map=null;
@@ -82,8 +82,8 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
-            map = rmMonitroInfoMapper.getVenuesMonitor(page,size,venuesName,accessNumber);
-            total = rmMonitroInfoMapper.getVenuesMonitorTotal(venuesName, accessNumber);
+            map = rmMonitroInfoMapper.getVenuesMonitor(page, size, venuesName);
+            total = rmMonitroInfoMapper.getVenuesMonitorTotal(venuesName);
             code= ResultCode.SUCCESS.getCode();
             message="监控场所查询成功";
         } catch (Exception e) {
