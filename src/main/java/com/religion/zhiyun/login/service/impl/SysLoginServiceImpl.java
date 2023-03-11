@@ -86,7 +86,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             }else if(null==sysUser && 0==manager.size()){
                 throw new RuntimeException("该手机号未在系统添加使用，请添加后登录！");
             }else if(null!=sysUser){//01-监管人员
-                username=sysUser.getLoginNm();
+                //username=sysUser.getLoginNm();
                 passWordSys=sysUser.getPasswords();
                 identity=sysUser.getIdentity();
                 validInd=sysUser.getValidInd();
@@ -110,7 +110,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             }
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
-            stringRedisTemplate.opsForValue().set(token,username,1800, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);
 
             code=ResultCode.SUCCESS.getCode();
             message="登录成功！";

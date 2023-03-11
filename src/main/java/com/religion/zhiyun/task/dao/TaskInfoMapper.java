@@ -52,4 +52,17 @@ public interface TaskInfoMapper {
 
     /**获取街道干事**/
     List<String> getJieGanUsers(@Param("relVenuesId") String relVenuesId);
+
+    /**获取历史备案信息**/
+    List<Map<String,Object>>  getFillHistory( @Param("search") String search,
+                                              @Param("login") String login,
+                                              @Param("page") Integer page,
+                                              @Param("size") Integer size);
+
+    /**获取历史备案信息**/
+    List<Map<String,Object>>  getFillHisDetail( @Param("filingId") String filingId);
+
+    /**获取维设备信息**/
+    List<Map<String,Object>>  getMonitorTask( @Param("taskId") String taskId);
+
 }

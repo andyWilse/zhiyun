@@ -25,8 +25,8 @@ public class TaskIssuedController {
     @RequestMapping("/launch")
     @ResponseBody
     public AppResponse launch(@RequestBody String taskJson, @RequestHeader("token")String token){
-        TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
-        AppResponse launch = taskIssuedService.launch(taskEntity,token);
+
+        AppResponse launch = taskIssuedService.launch(taskJson,token);
         return launch;
     }
 

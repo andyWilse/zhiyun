@@ -5,6 +5,7 @@ import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,14 +53,22 @@ public class RmEventInfoController {
      * @return
      */
     @RequestMapping(value = "/undoEvents")
-    public RespPageBean getUndoEvents(@RequestParam Map<String,Object> map) {
-        //List<EventEntity> list = rmEventInfoService.allEventByState();
+    public RespPageBean getUndoEvents(@RequestParam Map<String,Object> map,@RequestHeader("token")String token) {
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return rmEventInfoService.getUndoEvents(page,size);
+        return rmEventInfoService.getUndoEvents(page,size,token);
+    }
+
+    /**
+     * 未完成的事件详情展示
+     * @return
+     */
+    @RequestMapping(value = "/getEventDetail")
+    public PageResponse getUndoEventDetail(@RequestParam("eventId")String eventId) {
+        return rmEventInfoService.getUndoEventDetail(eventId);
     }
 
     /**
@@ -177,7 +186,4 @@ public class RmEventInfoController {
         return rmEventInfoService.getEventsGather(-10,dateType);
     }
 
-
-
-
-    }
+}

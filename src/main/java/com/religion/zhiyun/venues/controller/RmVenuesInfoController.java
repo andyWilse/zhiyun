@@ -4,6 +4,7 @@ package com.religion.zhiyun.venues.controller;
 import com.religion.zhiyun.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -79,11 +80,10 @@ public class RmVenuesInfoController {
         return JsonUtils.objectTOJSONString(venuesEntity);
     }
 
-    //教堂的数量展示
+    //统计场所数量（app首页）
     @RequestMapping("/getAllNum")
-    public String getAllNum(){
-        Map<String, Object> map = rmVenuesInfoService.getAllNum();
-        return JsonUtils.objectTOJSONString(map);
+    public PageResponse getAllNum(@RequestHeader("token")String token){
+        return rmVenuesInfoService.getAllNum(token);
     }
 
     //教堂的数量展示
@@ -93,7 +93,7 @@ public class RmVenuesInfoController {
         return JsonUtils.objectTOJSONString(byResponsiblePerson);
     }
 
-    @RequiresPermissions("venues:get")
+    //@RequiresPermissions("venues:get")
     @GetMapping("/find")
     public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String venuesName = (String)map.get("venuesName");
@@ -106,12 +106,12 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,token);
     }
 
-    /*@RequestMapping("/getVenueNames")
-    public String queryByName(@RequestParam String search) {
-        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
-        return JsonUtils.objectTOJSONString(list);
+    //场所更新（教职）
+    @RequestMapping("/getVenueJz")
+    public AppResponse queryVenuesJz(@RequestParam String search,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.queryVenuesJz(token,search);
     }
-
+/*
     @RequestMapping("/getVenueAddress")
     public String getVenueAddress(@RequestParam String search) {
         List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);

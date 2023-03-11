@@ -93,7 +93,7 @@ public interface RmStaffInfoMapper {
     /*
     根据id获取负责人画像
      */
-        Map<String,Object> getManagerById(@Param("ManagerId")String ManagerId);
+    Map<String,Object> getManagerById(@Param("ManagerId")String ManagerId);
 
     /*
     根据ID获取关联场所

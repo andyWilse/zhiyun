@@ -7,7 +7,10 @@ import java.util.List;
 
 public class test001 {
     public static void main(String[] args) {
-        List<SysUserEntity> dataList=new ArrayList<>();
-        System.out.println(dataList.toArray());
+        /*List<SysUserEntity> dataList=new ArrayList<>();
+        System.out.println(dataList.toArray());*/
+        Object a=null;
+        String b= (String) a;
+        System.out.println("ss"+b);
     }
 }

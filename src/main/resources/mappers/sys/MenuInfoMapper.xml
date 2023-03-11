@@ -80,5 +80,73 @@
         order by SORT_LVL
     </select>
 
+    <select id="findGrandMenus" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">
+        select
+        <include refid="menuColumn"/>
+        from  (select
+        distinct me.menu
+        from (
+        (select
+        POST_CD as menu,USER_ID as userId
+        from RM_SYS_USER_POST_REL)
+        UNION ALL
+        (select
+        pe.PMSN_CD as menu,rel.USER_ID as userId
+        from RM_SYS_ROLE_PESN pe
+        left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
+        ) me where me.userId =#{userId}
+        ) men
+        join RM_SYS_MENU_INFO f on men.menu=f.MENU_ID
+        where f.RESOURCE_TYPE in ('02','05')
+        order by f.MENU_ID,f.SORT_LVL
+    </select>
+
+    <select id="findGrandParent" resultType="map">
+        select
+            parentId,GROUP_CONCAT(menuId) as menuIds,menuNm,iconNm
+        from (
+            (select
+                fz.PARENT_ID as parentId,GROUP_CONCAT(distinct fz.MENU_ID) menuId,s.MENU_NM as menuNm,s.ICON_NM as iconNm
+            from
+            (select
+                distinct me.menu
+            from (
+            (select
+                POST_CD as menu,USER_ID as userId
+            from RM_SYS_USER_POST_REL)
+            UNION ALL
+            (select
+                pe.PMSN_CD as menu,rel.USER_ID as userId
+            from RM_SYS_ROLE_PESN pe
+            left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
+            ) me   where  me.userId =#{userId}
+            ) men
+            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='05'
+            join RM_SYS_MENU_INFO fz on f.PARENT_ID=fz.MENU_ID
+            join RM_SYS_MENU_INFO s on s.MENU_ID=fz.PARENT_ID
+            group by fz.PARENT_ID)
+        union all
+            (select
+                f.PARENT_ID as parentId,f.MENU_ID as menuId,s.MENU_NM as menuNm,s.ICON_NM as iconNm
+            from
+            (select
+                distinct me.menu
+            from (
+            (select
+            POST_CD as menu,USER_ID as userId
+            from RM_SYS_USER_POST_REL)
+            UNION ALL
+            (select
+                pe.PMSN_CD as menu,rel.USER_ID as userId
+            from RM_SYS_ROLE_PESN pe
+            left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
+            ) me   where me.userId =#{userId}
+            ) men
+            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='04'
+            join RM_SYS_MENU_INFO s on s.MENU_ID=f.PARENT_ID )
+        ) ch group by ch.parentId
+    </select>
+
+
 
 </mapper>

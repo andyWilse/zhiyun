@@ -104,6 +104,15 @@
     <select id="queryByTel" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
         <include refid="userColumn"/>
+        from RM_SYS_USER_INFO
+        where  USER_MOBILE= #{userMobile}
+        or LOGIN_NM LIKE CONCAT('%',#{userMobile},'%')
+        or USER_NM LIKE CONCAT('%',#{userMobile},'%')
+    </select>
+
+    <select id="queryTelNum" resultType="java.lang.Long">
+        select
+            COUNT(USER_ID)
         from RM_SYS_USER_INFO where  USER_MOBILE= #{userMobile}
     </select>
 
@@ -357,6 +366,17 @@
         <if test="loginNm != null and loginNm != ''">
             and qg.LOGIN_NM=#{loginNm}
         </if>
+    </select>
+
+    <select id="queryBySearch" resultType="map">
+        select
+            USER_ID as userId,
+            USER_NM as userNm,
+            USER_MOBILE as userMobile
+        from RM_SYS_USER_INFO
+        where  USER_MOBILE= #{search}
+        or LOGIN_NM LIKE CONCAT('%',#{search},'%')
+        or USER_NM LIKE CONCAT('%',#{search},'%')
     </select>
 
 </mapper>

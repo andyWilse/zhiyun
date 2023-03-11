@@ -536,15 +536,15 @@ public class TaskReportServiceImpl implements TaskReportService {
 
         /**根据身份证，获取信息**/
         if(RoleEnums.ZU_YUAN.getCode().equals(identity)){
-            mapList = sysUserMapper.getZuZhang(userMobile, loginNm);
+            mapList = sysUserMapper.getZuZhang(userMobile, "");
         }else if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
-            mapList = sysUserMapper.getJieGan(userMobile,loginNm);
+            mapList = sysUserMapper.getJieGan(userMobile,"");
         }else if(RoleEnums.JIE_GAN.getCode().equals(identity)){
-            mapList = sysUserMapper.getJieWei(userMobile,loginNm);
+            mapList = sysUserMapper.getJieWei(userMobile,"");
         }else if(RoleEnums.JIE_WEI.getCode().equals(identity)){
-            mapList = sysUserMapper.getQuGan(userMobile,loginNm);
+            mapList = sysUserMapper.getQuGan(userMobile,"");
         }else if(RoleEnums.QU_GAN.getCode().equals(identity)){
-            mapList = sysUserMapper.getQuWei(userMobile,loginNm);
+            mapList = sysUserMapper.getQuWei(userMobile,"");
         }
 
         //添加岗位人员信息

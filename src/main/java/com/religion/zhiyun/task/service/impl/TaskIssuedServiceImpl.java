@@ -7,6 +7,7 @@ import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskIssuedService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -51,7 +52,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
 
     @Override
     @Transactional
-    public AppResponse launch(TaskEntity taskEntity,String token) {
+    public AppResponse launch(String taskJson,String token) {
 
         long code=ResultCode.FAILED.getCode();
         String message="任务下达发起";
@@ -65,8 +66,18 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
         String town="";
         String relVenuesId="";
         String relVenuesIds="";
-
+        TaskEntity taskEntity =new TaskEntity();
         try {
+            System.out.println("任务下达taskJson："+taskJson);
+            if(null!=taskJson && !taskJson.isEmpty()){
+                taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
+            }else{
+                throw new RuntimeException("任务信息为空！");
+            }
+            if(null==taskEntity){
+                throw new RuntimeException("任务信息为空！");
+            }
+
             //获取下达范围
             if(null!=taskEntity.getProvince() && !taskEntity.getProvince().isEmpty()){
                 province=taskEntity.getProvince();

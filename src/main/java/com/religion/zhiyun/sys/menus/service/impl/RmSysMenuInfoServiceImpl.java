@@ -8,8 +8,13 @@ import com.religion.zhiyun.sys.menus.entity.MenuList;
 import com.religion.zhiyun.sys.menus.entity.MenuRespons;
 import com.religion.zhiyun.sys.menus.entity.RespPage;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
+import com.religion.zhiyun.user.dao.SysUserMapper;
+import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,36 +30,71 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     private MenuInfoMapper rmSysMenuInfoMapper;
     @Autowired
     private RolePesnMapper rolePesnMapper;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
+    public RmSysMenuInfoServiceImpl() {
+    }
 
     @Override
-    public RespPage findAll() {
-        MenuList  list= null;
+    public RespPage findAll(String token) {
+        MenuList  menuList = new MenuList();
         long code = ResultCode.FAILED.getCode();
         String message= "菜单获取";
         try {
-            list = new MenuList();
-            String resourceType="01";
-            List<MenuEntity> allParents = rmSysMenuInfoMapper.findMenus(resourceType);
-            List<MenuRespons> childList=new ArrayList();
-            if(null!=allParents && allParents.size()>0){
-                for(int i=0;i<allParents.size();i++){
-                    MenuRespons respons=new MenuRespons();
-                    MenuEntity menuEntity = allParents.get(i);
-                    String menuPrtIds = menuEntity.getMenuPrtIds();
-                    List<MenuEntity> allChilds=new ArrayList<>();
-                    if(null!=menuPrtIds && ""!=menuPrtIds){
-                        allChilds = rmSysMenuInfoMapper.findAllChilds(menuPrtIds.split(","));
+            //获取用户
+            String login = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByTel(login);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户信息丢失！");
+            }
+            int userId = sysUserEntity.getUserId();
+
+            //获取菜单
+            List<MenuEntity> parentMenus =new ArrayList<>();
+            List<MenuEntity> buttonMenus=new ArrayList();
+            List<MenuEntity> allMenus = rmSysMenuInfoMapper.findGrandMenus(String.valueOf(userId));
+            if(null!=allMenus && allMenus.size()>0){
+                for(int i=0;i<allMenus.size();i++){
+                    MenuEntity menuEntity = allMenus.get(i);
+                    String resourceType = menuEntity.getResourceType();
+                    //如果为‘02’
+                    if("02".equals(resourceType)){
+                        parentMenus.add(menuEntity);
+                    }else if("05".equals(resourceType)){
+                        buttonMenus.add(menuEntity);
                     }
-                    respons.setMenuId(menuEntity.getMenuId());
-                    respons.setMenuNm(menuEntity.getMenuNm());
-                    respons.setChilds(allChilds.toArray());
-                    respons.setIconNm(menuEntity.getIconNm());
-                    childList.add(respons);
                 }
             }
-            list.setChildren(childList.toArray());
-            list.setParent(rmSysMenuInfoMapper.findMenus("02").toArray());
+
+            //菜单
+            List<MenuRespons> childMenus=new ArrayList();
+            List<Map<String, Object>> grandParent = rmSysMenuInfoMapper.findGrandParent(String.valueOf(userId));
+            if(null!=grandParent && grandParent.size()>0){
+                for(int i=0;i<grandParent.size();i++){
+                    MenuRespons respons=new MenuRespons();
+                    Map<String, Object> map = grandParent.get(i);
+                    Integer parentId = (Integer) map.get("parentId");
+                    String menuIds = (String) map.get("menuIds");
+                    String menuNm = (String) map.get("menuNm");
+                    String iconNm = (String) map.get("iconNm");
+                    List<MenuEntity> allChilds=new ArrayList<>();
+                    if(null!=parentId && null!=menuIds && parentId!=0 && !menuIds.isEmpty()){
+                        allChilds = rmSysMenuInfoMapper.findAllChilds(menuIds.split(","));
+                    }
+                    respons.setMenuId(parentId);
+                    respons.setMenuNm(menuNm);
+                    respons.setIconNm(iconNm);
+                    respons.setChilds(allChilds.toArray());
+                    childMenus.add(respons);
+                }
+            }
+            //封装
+            menuList.setChildren(childMenus.toArray());
+            menuList.setParent(parentMenus.toArray());
+            menuList.setButton(buttonMenus.toArray());
 
             code = ResultCode.SUCCESS.getCode();
             message= "菜单获取成功";
@@ -62,9 +102,21 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
             e.printStackTrace();
         }
 
-        return new RespPage(code,message,list);
+        return new RespPage(code,message,menuList);
     }
 
+    public MenuRespons getRespon(){
+        MenuRespons respons=new MenuRespons();
+       /* respons.setMenuId(menuEntity.getMenuId());
+        respons.setMenuNm(menuEntity.getMenuNm());
+        *//*String menuPrtIds = menuEntity.getMenuPrtIds();
+        if(null!=menuPrtIds && ""!=menuPrtIds){
+            allChilds = rmSysMenuInfoMapper.findAllChilds(menuPrtIds.split(","));
+        }*//*
+        respons.setChilds(allChilds.toArray());
+        respons.setIconNm(menuEntity.getIconNm());*/
+        return respons;
+    }
     @Override
     public RespPageBean findTreeMenus() {
 
@@ -151,13 +203,20 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     }
 
     @Override
-    public MenuList getMenuByRole(String roleId) {
-        MenuList menu=new MenuList();
-        List<String> menuByRole = rolePesnMapper.getMenuByRole(roleId);
-        if(null!=menuByRole && menuByRole.size()>0){
-            menu.setParent(menuByRole.toArray());
+    public PageResponse getMenuByRole(String roleId) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "角色权限获取回显";
+        List<String> menuByRole=new ArrayList<>();
+
+        try {
+            menuByRole = rolePesnMapper.getMenuByRole(roleId);
+            code= ResultCode.SUCCESS.getCode();
+            message= "用户权限获取回显成功";
+        } catch (Exception e) {
+            message=e.getMessage();
+            e.printStackTrace();
         }
-        return menu;
+        return new PageResponse(code,message,menuByRole.toArray());
     }
 
     @Override
@@ -187,12 +246,60 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     }
 
     @Override
-    public MenuList getMenuByUser(String userId) {
-        MenuList menu=new MenuList();
-        List<String> menuByRole = rolePesnMapper.getMenuByUser(userId);
-        if(null!=menuByRole && menuByRole.size()>0){
-            menu.setParent(menuByRole.toArray());
+    public PageResponse getMenuByUser(String userId) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "用户权限获取回显";
+        List<String> menuByUser=new ArrayList<>();
+        try {
+            menuByUser = rolePesnMapper.getMenuByUser(userId);
+            code= ResultCode.SUCCESS.getCode();
+            message= "用户权限获取回显成功";
+        } catch (Exception e) {
+            message=e.getMessage();
+            e.printStackTrace();
         }
-        return menu;
+        return new PageResponse(code,message,menuByUser.toArray());
+    }
+
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(String token){
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
+        }
+        return loginNm;
+    }
+
+    /**
+     * 获取
+     * @return
+     */
+    public ParamsVo getAuth(String token){
+        String login = this.getLogin(token);
+        SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+        String area="";
+        String town ="";
+        String relVenuesId="";
+        String[] venuesArr={};
+        if(null!=sysUserEntity){
+            relVenuesId = sysUserEntity.getRelVenuesId();
+            town = sysUserEntity.getTown();
+            area = sysUserEntity.getArea();
+        }else{
+            throw new RuntimeException("用户已过期，请重新登录！");
+        }
+        ParamsVo vo=new ParamsVo();
+        vo.setArea(area);
+        vo.setTown(town);
+        vo.setVenues(relVenuesId);
+        if(null!=relVenuesId && !relVenuesId.isEmpty()){
+            venuesArr=relVenuesId.split(",");
+            vo.setVenuesArr(venuesArr);
+        }
+        return vo;
+
     }
 }

@@ -8,7 +8,7 @@ public interface TaskIssuedService {
     public AppResponse deployment();
 
     /** 提交申请(发起) **/
-    public AppResponse launch(TaskEntity taskEntity,String token);
+    public AppResponse launch(String taskJson,String token);
 
     /** 提交申请(处理) **/
     public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token);

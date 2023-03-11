@@ -2,6 +2,7 @@ package com.religion.zhiyun.user.service;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.apache.ibatis.annotations.Param;
 
@@ -48,6 +49,12 @@ public interface SysUserService {
 
     //根据电话查询
     SysUserEntity queryByTel(@Param("userMobile") String userMobile);
+
+    /**
+     * 获取登录用户信息
+     * @param token
+     */
+    PageResponse getUserInfo(String token);
 
 
 }

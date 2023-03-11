@@ -109,25 +109,21 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
         long code = ResultCode.FAILED.getCode();
         String message="获取负责人详情失败！";
         Map<String,Object> managerMap=new HashMap<>();
+        List<Map<String, Object>> pathsImg =new ArrayList<>();
         try {
             managerMap = staffInfoMapper.getManagerById(ManagerId);
+            //1.获取图片地址
             if (null!=managerMap&&managerMap.size()>0){
-                //获取图片地址
-                Object imapath = managerMap.get("imapath");
-                System.out.println(imapath);
-                String file ="";
-                if(imapath!=null){
+                String imaPath = (String) managerMap.get("imapath");
+                if(imaPath!=null && !imaPath.isEmpty()){
                     //查询地图地址
-                    String ima = imapath.toString();
-                    String s = rmFileMapper.getimaPath(ima);
-                    if(null!=s){
-                        file = s;
-                    }
+                    String[] split = imaPath.split(",");
+
+                    pathsImg = rmFileMapper.getPath(split);
                 }
-                managerMap.put("images",file);
+                managerMap.put("images",pathsImg.toArray());
 
-
-                //关联场所
+                //2.关联场所
                 List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByManagerId(ManagerId);
                 managerMap.put("venuesList",venuesList.toArray());
 

@@ -1,6 +1,7 @@
 package com.religion.zhiyun.monitor.service;
 
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.util.List;
@@ -14,7 +15,13 @@ public interface RmMonitroInfoService {
     void updateMonitro(MonitroEntity monitroEntity);
 
     void deleteMonitro(String monitroId);
-    List<Map<String,Object>> getAllNum();
+
+    /**
+     * 监控数量统计（app监控）
+     * @return
+     */
+    PageResponse getAllNum(String token);
+
     List<MonitroEntity> getMonitorByState(String state);
     List<MonitroEntity> getMonitorByVenuesId(String state);
 
@@ -29,9 +36,24 @@ public interface RmMonitroInfoService {
 
     String getMonitorURLByAccessNum(String accessNum);
 
-    /** 监控  **/
-    RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName);
+    /** 场所（监控）  **/
+    RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName,String token);
 
-    RespPageBean getMonitors(String venuesName,String accessNumber,String state);
+    /**
+     * 监控设备查询(app监控)
+     * @param map
+     * @param token
+     * @return
+     */
+    RespPageBean getMonitors(Map<String, Object> map,String token);
+
+    /**
+     * 监控详情查询
+     * @param search
+     * @param type（01-地图 02-教职端监控）
+     * @return
+     */
+    PageResponse getMoDetail(String search,String type);
+
 
 }

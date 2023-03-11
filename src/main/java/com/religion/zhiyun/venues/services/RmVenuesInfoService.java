@@ -1,6 +1,7 @@
 package com.religion.zhiyun.venues.services;
 
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -27,7 +28,12 @@ public interface RmVenuesInfoService {
     List<VenuesEntity> querySectAll(String religiousSect);
     List<VenuesEntity> getByVenuesFaculty(String venuesName,String responsiblePerson);
     VenuesEntity getVenueByID(String venuesId);
-    Map<String,Object> getAllNum();
+
+    /**
+     * 统计场所数量（app首页）
+     * @return
+     */
+    PageResponse getAllNum(String token);
 
     /**
      * 分页查询
@@ -61,4 +67,12 @@ public interface RmVenuesInfoService {
      * @return
      */
     AppResponse getMapVenues(String search,String religiousSect);
+
+    /**
+     * 场所更新用（教职端）
+     * @param token
+     * @param search
+     * @return
+     */
+    AppResponse queryVenuesJz(String token,String search);
 }

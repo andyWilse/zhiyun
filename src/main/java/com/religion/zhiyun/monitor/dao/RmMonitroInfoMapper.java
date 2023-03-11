@@ -1,6 +1,8 @@
 package com.religion.zhiyun.monitor.dao;
 
+import com.religion.zhiyun.monitor.entity.MoVenuesEntity;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -19,7 +21,12 @@ public interface RmMonitroInfoMapper {
 
     void deleteMonitro(String monitroId);
 
-    List<Map<String,Object>> getAllNum();
+    /**
+     * 监控数量统计
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> getAllNum(@Param("vo")ParamsVo vo );
 
     List<MonitroEntity> getMonitorByState(String state);
 
@@ -45,16 +52,34 @@ public interface RmMonitroInfoMapper {
     String getMonitorURLByAccessNum(String accessNum);
 
     /** 根据场所名字查看监控  **/
-    List<Map<String,Object>> getVenuesMonitor(@Param("page") Integer page, @Param("size") Integer size,
-                                              String venuesName);
+    List<Map<String,Object>> getVenuesMonitor(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数
      * @return
      */
-    Long getVenuesMonitorTotal(String venuesName);
+    Long getVenuesMonitorTotal(@Param("vo") ParamsVo vo);
 
-    List<Map<String,Object>> getMonitors(String venuesName, String accessNumber, String state);
+    /**
+     * 获取监控信息
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> getMonitors(@Param("vo") ParamsVo vo);
+
+    /**
+     * 获取监控信息
+     * @param vo
+     * @return
+     */
+    Long getMonitorsTotal(@Param("vo") ParamsVo vo);
+
+    /**
+     * 获取监控详情
+     * @param accessNumber
+     * @return
+     */
+    List<Map<String,Object>> getMoDetail(String accessNumber,String venuesId);
 
     /**
      * 获取监控信息

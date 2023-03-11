@@ -199,8 +199,20 @@
             SUM(CASE WHEN RELIGIOUS_SECT = '100100000004' THEN 1 ELSE 0 END) AS Catholicism,
             SUM(CASE WHEN RELIGIOUS_SECT = '100100000001' THEN 1 ELSE 0 END) AS Buddhism,
             SUM(CASE WHEN RELIGIOUS_SECT = '100100000002' THEN 1 ELSE 0 END) AS Taoism
-        FROM rm_venues_info
-        where VENUES_STATUS='01'
+        FROM rm_venues_info ve
+        where ve.VENUES_STATUS='01'
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
@@ -309,20 +321,30 @@
 
     <select id="getVenuesByID" resultType="map">
         select
-            VENUES_ID as venuesId ,
-            VENUES_NAME as venuesName,
-            RELIGIOUS_SECT as religiousSect,
-            REGISTER_NBR as registerNbr,
-            VENUES_PHONE as venuesPhone,
-            ORGANIZATION as organization,
-            VENUES_ADDRES as venuesAddres,
-            PICTURES_PATH as picturesPath,
-            RESPONSIBLE_PERSON  as responsiblePerson,
-            LIAISON_MAN as liaisonMan,
-            BRIEF_INTRODUCTION as briefIntroduction,
-            LONGITUDE as longitude,
-            latitude as Latitude
-        from RM_VENUES_INFO
+            ve.VENUES_ID as venuesId ,
+            ve.VENUES_NAME as venuesName,
+            ve.RELIGIOUS_SECT as religiousSect,
+            ve.REGISTER_NBR as registerNbr,
+            ve.VENUES_PHONE as venuesPhone,
+            ve.ORGANIZATION as organization,
+            ve.VENUES_ADDRES as venuesAddres,
+            ve.PICTURES_PATH as picturesPath,
+            ve.BRIEF_INTRODUCTION as briefIntroduction,
+            ve.LONGITUDE as longitude,
+            ve.latitude as Latitude,
+            ve.RESPONSIBLE_PERSON  as resId,
+            res.MANAGER_CN_NM as resNm,
+            res.MANAGER_MOBILE as resMo,
+            ve.LIAISON_MAN as liaId,
+            lia.MANAGER_CN_NM as liaNm,
+            lia.MANAGER_MOBILE as liaMo,
+            ve.GROUP_MEMBERS as groId,
+            gro.MANAGER_CN_NM as groNm,
+            gro.MANAGER_MOBILE as groMo
+        from RM_VENUES_INFO ve
+        left join rm_venues_manager_info res on res.MANAGER_ID=ve.RESPONSIBLE_PERSON and res.MANAGER_TYPE_CD='01'
+        left join rm_venues_manager_info gro on gro.MANAGER_ID=ve.GROUP_MEMBERS and gro.MANAGER_TYPE_CD='02'
+        left join rm_venues_manager_info lia on lia.MANAGER_ID=ve.LIAISON_MAN and lia.MANAGER_TYPE_CD='03'
         where VENUES_ID=#{venuesId}
     </select>
 
@@ -381,6 +403,31 @@
         <if test="venuesName!=null and venuesName!=''">
             and VENUES_NAME = #{venuesName}
         </if>
+    </select>
+
+    <select id="queryVenuesJz" resultType="map">
+        select
+        ve.VENUES_ID as venuesId ,
+        ve.VENUES_NAME as venuesName,
+        ve.REGISTER_NBR as registerNbr,
+        ve.PICTURES_PATH as picturesPath,
+        m.MANAGER_CN_NM as managerCnNm,
+        m.MANAGER_MOBILE as managerMobile
+        from RM_VENUES_INFO ve
+        left join rm_venues_manager_info m on ve.RESPONSIBLE_PERSON=m.MANAGER_ID
+        where m.MANAGER_MOBILE=#{login}
+        <if test="search!=null and search!=''">
+            and ( RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
+            or VENUES_ADDRES LIKE concat('%',#{search},'%')
+            or VENUES_NAME LIKE concat('%',#{search},'%'))
+        </if>
+    </select>
+
+    <select id="getStaffJz" resultType="java.lang.String">
+        select
+            GROUP_CONCAT(distinct s.STAFF_CN_NM) as names
+        from rm_staff_info s
+        where REL_VENUES_ID = #{relVenuesId}
     </select>
 
 </mapper>

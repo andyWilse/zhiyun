@@ -23,8 +23,10 @@ public interface RolePesnMapper {
 
     //删除
     long deleteUserGrand(@Param("userId") String userId);
+
     //保存
     long addUserGrand(@Param("postCd") String postCd, @Param("userId")String userId);
+
     //获取角色下所有菜单
     List<String> getMenuByUser(@Param("userId") String userId);
 }

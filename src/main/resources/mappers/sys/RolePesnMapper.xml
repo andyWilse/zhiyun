@@ -34,11 +34,20 @@
 
     <select id="getMenuByUser" resultType="String">
         select
-            POST_CD
-        from RM_SYS_USER_POST_REL
+            distinct me.menu
+        from (
+            (select
+                POST_CD as menu,USER_ID as userId
+            from RM_SYS_USER_POST_REL)
+            UNION ALL
+            (select
+                pe.PMSN_CD as menu,rel.USER_ID as userId
+            from RM_SYS_ROLE_PESN pe
+            left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
+        ) me
         where 1=1
         <if test="userId != null and userId != ''">
-            AND  USER_ID = #{userId}
+            AND  me.userId = #{userId}
         </if>
     </select>
 

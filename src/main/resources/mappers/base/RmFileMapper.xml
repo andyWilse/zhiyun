@@ -52,11 +52,5 @@
         where FILE_ID =#{fileIds}
 
     </select>
-    <select id="getimaPath" resultType="java.lang.String">
-        select CONCAT(FILE_PATH,FILE_NAME) as filePath
-        from RM_FILE_INFO
-        where FILE_ID =#{fileId}
-    </select>
-
 
 </mapper>

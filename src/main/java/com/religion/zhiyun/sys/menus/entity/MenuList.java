@@ -10,6 +10,7 @@ import lombok.*;
 public class MenuList {
     private Object[] children;
     private Object[] parent;
+    private Object[] button;
     private Object[] typeOption;
 
 }

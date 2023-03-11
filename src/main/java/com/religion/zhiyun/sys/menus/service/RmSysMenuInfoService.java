@@ -2,13 +2,14 @@ package com.religion.zhiyun.sys.menus.service;
 
 import com.religion.zhiyun.sys.menus.entity.MenuList;
 import com.religion.zhiyun.sys.menus.entity.RespPage;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.util.Map;
 
 public interface RmSysMenuInfoService {
     //查询
-    RespPage findAll();
+    RespPage findAll(String token);
 
     //查询
     RespPageBean findTreeMenus();
@@ -17,13 +18,13 @@ public interface RmSysMenuInfoService {
     RespPageBean saveRoleMenus(Map<String,String> map);
 
     //获取角色下所有菜单
-    MenuList getMenuByRole(String roleId);
+    PageResponse getMenuByRole(String roleId);
 
     //保存
     RespPageBean userGrand(Map<String,String> map);
 
     //获取角色下所有菜单
-    MenuList getMenuByUser(String roleId);
+    PageResponse getMenuByUser(String roleId);
 
 
 }

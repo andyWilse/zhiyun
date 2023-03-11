@@ -10,6 +10,8 @@ import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.utils.enums.RoleEnums;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.base.HttpServletRequestReader;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -108,17 +110,28 @@ public class SysUserServiceImpl implements SysUserService {
         Timestamp timestamp = null;
         try {
             timestamp = new Timestamp(new Date().getTime());
-            //组长添加必须满足3个组员
+            //查询组员数量
+            String relVenuesId = sysUserEntity.getRelVenuesId();
+            int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+
             String identity = sysUserEntity.getIdentity();
+            //只能两位组员
+            if(RoleEnums.ZU_YUAN.getCode().equals(identity) && yuanNum==2){
+                throw new RuntimeException("该场所内三人驻堂组员数量已满2人！");
+            }
+            //组长添加必须满足3个组员
             if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
-                String relVenuesId = sysUserEntity.getRelVenuesId();
-                //查询组员数量
-                int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
-                if(yuanNum!=3){
-                    message="该场所内三人驻堂组员数量不足，不能添加组长！";
+                if(yuanNum!=2){
+                    message="该场所内三人驻堂组员数量不足2人，不能添加组长！";
                     throw new RuntimeException(message);
                 }
             }
+            //电话不能重复
+            long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
+            if(numTel>0l){
+                throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
+            }
+
             sysUserEntity.setCreateTime(timestamp);
             sysUserEntity.setLastModifyTime(timestamp);
             Long maxCustCd = sysUserMapper.getMaxUserNbr();
@@ -231,6 +244,31 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public SysUserEntity queryByTel(String userMobile) {
         return sysUserMapper.queryByTel(userMobile);
+    }
+
+    @Override
+    public PageResponse getUserInfo(String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取登录用户信息";
+
+        List<Map<String,Object>> list=new ArrayList<>();
+        try {
+            String login = this.getLogin(token);
+            Map<String,Object> sysUserEntity = sysUserMapper.queryBySearch(login);
+            if(null==sysUserEntity || sysUserEntity.size()<1){
+                throw new RuntimeException("用户信息丢失！");
+            }
+            list.add(sysUserEntity);
+            code= ResultCode.SUCCESS.getCode();
+            message="获取登录用户信息成功";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="获取登录用户信息失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,list.toArray());
     }
 
     /**

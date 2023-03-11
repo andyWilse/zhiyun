@@ -262,6 +262,7 @@
 
     <select id="getUndoEvents" resultType="map">
         select
+            EVENT_ID as eventId,
             ev.WARN_TIME as warnTime,
             case ev.EVENT_TYPE
                 when '01' then '火灾预警'
@@ -270,31 +271,60 @@
                 when '04' then '人流聚集'
             end as eventType,
             ve.VENUES_NAME as venuesName,
-            ve.PICTURES_PATH as  path
+            ve.PICTURES_PATH as  path,
+            ev.EVENT_LEVEL as eventLevel,
+            case ev.EVENT_TYPE
+            when '01' then '紧急'
+            else '普通'
+            end as eventLevelCn
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         where 1=1
-        <if test="eventState != null and eventState != ''">
-            AND  ev.EVENT_STATE=#{eventState}
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
-        <if test="eventType != null and eventType != ''">
-            AND  ev.EVENT_TYPE =#{eventType}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  ev.EVENT_TYPE =#{vo.searchTwo}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
         ORDER BY ev.EVENT_TYPE
-        limit #{page},#{size}
-
+        limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getUndoEventsTotal" resultType="java.lang.Long">
         select
             count(ev.EVENT_ID)
         from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         where 1=1
-        <if test="eventState != null and eventState != ''">
-            AND  ev.EVENT_STATE=#{eventState}
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
-        <if test="eventType != null and eventType != ''">
-            AND  ev.EVENT_TYPE =#{eventType}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  ev.EVENT_TYPE =#{vo.searchTwo}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
     </select>
 
@@ -578,5 +608,43 @@
         us.USER_MOBILE as userMobile
         from rm_sys_user_info us
         WHERE REL_VENUES_ID=#{venuesId}
+    </select>
+
+    <select id="getEventDetail" resultType="map">
+        select
+            ev.WARN_TIME as warnTime,
+            case ev.EVENT_TYPE
+            when '01' then '火灾预警'
+            when '02' then '人脸识别'
+            when '03' then '任务预警'
+            when '04' then '人流聚集'
+            end as eventTypeCn,
+            ev.EVENT_TYPE as eventType,
+            case ev.EVENT_STATE
+            when '00' then '待查实'
+            when '01' then '已完成'
+            when '02' then '一键上报'
+            when '03' then '拨打119'
+            when '04' then '误报解除'
+            end as eventStateCn,
+            ev.EVENT_STATE as eventState,
+            ve.VENUES_PHONE as venuesPhone,
+            ve.VENUES_NAME as venuesName,
+            ve.PICTURES_PATH as  venuesPictures,
+            ORGANIZATION as organization,
+            VENUES_ADDRES as venuesAddres,
+            LONGITUDE as longitude,
+            LATITUDE as Latitude,
+            d.DICT_CN_DESC as religiousSect,
+            fz.MANAGER_MOBILE as responsibleMobile,
+            mo.MONITOR_URL as monitorUrl,
+            mo.ACCESS_NUMBER as accessNumber
+
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
+        left join rm_monitor_manage_info mo on ev.ACCESS_NUMBER=mo.ACCESS_NUMBER
+        left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
+        where ev.EVENT_ID = #{eventId}
     </select>
 </mapper>

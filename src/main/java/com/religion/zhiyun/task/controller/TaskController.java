@@ -3,6 +3,7 @@ package com.religion.zhiyun.task.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.task.service.TaskService;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,11 @@ public class TaskController {
         return taskService.getProcdef(page,size,taskName);
     }
 
+    //获取维修设备详情
+    @GetMapping("/getMonitorTask")
+    public PageResponse getMonitorTask(@RequestParam String taskId){
+        return taskService.getMonitorTask(taskId);
+    }
 
 
 }

@@ -8,11 +8,13 @@ import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,8 +184,24 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public Map<String, Object> getAllNum() {
-        return rmVenuesInfoMapper.getAllNum();
+    public PageResponse getAllNum(String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="统计场所数量";
+        List<Map<String, Object>> list=new ArrayList<>();
+        try {
+            ParamsVo auth = this.getAuth(token);
+            Map<String, Object> allNum = rmVenuesInfoMapper.getAllNum(auth);
+            list.add(allNum);
+            code=ResultCode.SUCCESS.getCode();
+            message="统计场所数量成功";
+        }catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="统计场所数量失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,list.toArray());
     }
 
     @Override
@@ -308,19 +326,26 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
 
                 //负责人
                 Map<String, Object> oneDirector=new HashMap<>();
-                String responsiblePerson= (String) venuesMap.get("responsiblePerson");
-                oneDirector.put("id","1");
-                oneDirector.put("name",responsiblePerson);
-                oneDirector.put("phone","");
+                String resId= (String) venuesMap.get("resId");
+                String resNm= (String) venuesMap.get("resNm");
+                String resMo= (String) venuesMap.get("resMo");
+                oneDirector.put("id",resId);
+                oneDirector.put("name",resNm);
+                oneDirector.put("phone",resMo);
                 Map<String, Object> twoDirector=new HashMap<>();
-                twoDirector.put("id","2");
-                twoDirector.put("name","");
-                twoDirector.put("phone","");
+                String groId= (String) venuesMap.get("groId");
+                String groNm= (String) venuesMap.get("groNm");
+                String groMo= (String) venuesMap.get("groMo");
+                twoDirector.put("id",groId);
+                twoDirector.put("name",groNm);
+                twoDirector.put("phone",groMo);
                 Map<String, Object> workDirector=new HashMap<>();
-                String liaisonMan= (String) venuesMap.get("liaisonMan");
-                workDirector.put("id","3");
-                workDirector.put("name",liaisonMan);
-                workDirector.put("phone","");
+                String liaId= (String) venuesMap.get("liaId");
+                String liaNm= (String) venuesMap.get("liaNm");
+                String liaMo= (String) venuesMap.get("liaMo");
+                workDirector.put("id",liaId);
+                workDirector.put("name",liaNm);
+                workDirector.put("phone",liaMo);
 
                 venuesMap.put("oneDirector",oneDirector);
                 venuesMap.put("twoDirector",twoDirector);
@@ -356,6 +381,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 message="获取地图场所信息成功！";
             }
         } catch (RuntimeException r ){
+            message=r.getMessage();
             r.printStackTrace();
         } catch (Exception e) {
             code = ResultCode.FAILED.getCode();
@@ -364,6 +390,45 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         }
         return new AppResponse(code,message,mapVenues.toArray());
     }
+
+    @Override
+    public AppResponse queryVenuesJz(String token, String search) {
+
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取更新场所信息失败！";
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        try {
+            String login = this.getLogin(token);
+            mapList = rmVenuesInfoMapper.queryVenuesJz(login, search);
+            if(null!=mapList && mapList.size()>0){
+                for(int i=0;i<mapList.size();i++){
+                    Map<String, Object> map = mapList.get(i);
+                    //封装图片信息
+                    String picturesPath = (String) map.get("picturesPath");
+                    List<Map<String, Object>> path =new ArrayList<>();
+                    if(null!=picturesPath && !picturesPath.isEmpty()){
+                        path = rmFileMapper.getPath(picturesPath.split(","));
+                    }
+                    map.put("picturesPath",path.toArray());
+                    //封装教职人员
+                    Integer venuesId = (Integer) map.get("venuesId");
+                    String staffJz = rmVenuesInfoMapper.getStaffJz(String.valueOf(venuesId));
+                    map.put("staffs",staffJz);
+                }
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取更新场所信息成功！";
+        } catch (RuntimeException r ){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message = "获取更新场所信息失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,mapList.toArray());
+    }
+
     /**
      * 获取登录人
      * @return
@@ -374,5 +439,34 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             throw new RuntimeException("登录过期，请重新登陆！");
         }
         return loginNm;
+    }
+    /**
+     * 获取
+     * @return
+     */
+    public ParamsVo getAuth(String token){
+        String login = this.getLogin(token);
+        SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+        String area="";
+        String town ="";
+        String relVenuesId="";
+        String[] venuesArr={};
+        if(null!=sysUserEntity){
+            relVenuesId = sysUserEntity.getRelVenuesId();
+            town = sysUserEntity.getTown();
+            area = sysUserEntity.getArea();
+        }else{
+            throw new RuntimeException("用户已过期，请重新登录！");
+        }
+        ParamsVo vo=new ParamsVo();
+        vo.setArea(area);
+        vo.setTown(town);
+        vo.setVenues(relVenuesId);
+        if(null!=relVenuesId && !relVenuesId.isEmpty()){
+            venuesArr=relVenuesId.split(",");
+            vo.setVenuesArr(venuesArr);
+        }
+        return vo;
+
     }
 }

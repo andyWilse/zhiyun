@@ -6,6 +6,7 @@ import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.service.TaskService;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
@@ -13,7 +14,9 @@ import org.activiti.engine.repository.DeploymentBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -62,5 +65,24 @@ public class TaskServiceImpl implements TaskService {
         List<ProcdefEntity> procdef = taskInfoMapper.getProcdef(page,size,taskName);
 
         return new RespPageBean(200l,procdef.toArray());
+    }
+
+    @Override
+    public PageResponse getMonitorTask(String taskId) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "报修设备任务信息获取失败！";
+        List<Map<String, Object>> monitorTask =new ArrayList<>();
+        try {
+            monitorTask = taskInfoMapper.getMonitorTask(taskId);
+            message = "报修设备任务信息获取成功";
+            log.info(message);
+            code= ResultCode.SUCCESS.getCode();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,monitorTask.toArray());
     }
 }

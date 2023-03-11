@@ -3,6 +3,7 @@ package com.religion.zhiyun.event.service;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.apache.ibatis.annotations.Param;
 
@@ -40,7 +41,13 @@ public interface RmEventInfoService {
      * 手机端（预警查询）
      * @return
      */
-    RespPageBean getUndoEvents(Integer page, Integer size);
+    RespPageBean getUndoEvents(Integer page, Integer size,String token);
+
+    /**
+     * 手机端（预警查询详情）
+     * @return
+     */
+    PageResponse getUndoEventDetail(String eventId);
 
     /**
      * 接收烟感器、燃气探测传输的数据

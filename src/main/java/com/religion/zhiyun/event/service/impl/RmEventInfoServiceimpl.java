@@ -19,6 +19,7 @@ import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.sms.SendMassage;
@@ -281,13 +282,23 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    public RespPageBean getUndoEvents(Integer page, Integer size) {
+    public RespPageBean getUndoEvents(Integer page, Integer size,String token) {
         long code= ResultCode.FAILED.getCode();
         String result="未完成预警查询失败！";
-        List<Map<String, Object>> events = null;
+        List<Map<String, Object>> events = new ArrayList<>();
         Long undoEventsTotal=0l;
         try {
-            events = rmEventInfoMapper.getUndoEvents(page,size,ParamCode.EVENT_STATE_00.getCode(),"");
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            //参数封装
+            ParamsVo auth = this.getAuth(token);
+            auth.setPage(page);
+            auth.setSize(size);
+            auth.setSearchOne(ParamCode.EVENT_STATE_00.getCode());
+            auth.setSearchTwo("");
+
+            events = rmEventInfoMapper.getUndoEvents(auth);
             for(int i=0;i<events.size();i++){
                 Map<String, Object> map = events.get(0);
                 String path = (String) map.get("path");
@@ -295,7 +306,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 map.put("path",split[0]);
             }
 
-            undoEventsTotal = rmEventInfoMapper.getUndoEventsTotal(ParamCode.EVENT_STATE_00.getCode(), "");
+            undoEventsTotal = rmEventInfoMapper.getUndoEventsTotal(auth);
             code=ResultCode.SUCCESS.getCode();
             result="未完成预警查询成功！";
         } catch (Exception e) {
@@ -305,6 +316,25 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         }
 
         return new RespPageBean(code,result,undoEventsTotal,events);
+    }
+
+    @Override
+    public PageResponse getUndoEventDetail(String eventId) {
+        long code= ResultCode.FAILED.getCode();
+        String result="未完成预警详情查询失败！";
+        List<Map<String, Object>> eventDetail = new ArrayList<>();
+        try {
+            eventDetail = rmEventInfoMapper.getEventDetail(eventId);
+            code=ResultCode.SUCCESS.getCode();
+            result="未完成预警详情查询成功！";
+        } catch (RuntimeException e) {
+            result=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            result=e.getMessage();
+            e.printStackTrace();
+        }
+        return new PageResponse(code,result,eventDetail.toArray());
     }
 
     @Override

@@ -62,4 +62,7 @@ public class FilingEntity {
     @Column(name = "RESPONSIBLE_PERSON")
     private String responsiblePerson;//'负责人'
 
+    private String responsibleMobil;//'手机号'
+    private String registerNbr;//'场所编号'
+
 }

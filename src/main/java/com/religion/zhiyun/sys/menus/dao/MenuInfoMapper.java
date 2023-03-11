@@ -37,4 +37,18 @@ public interface MenuInfoMapper {
      * @return
      */
     List<Map<String,Object>> findButtonTree(@Param("parentId") Integer parentId);
+
+    /**
+     * 查询权限菜单
+     * @param userId
+     * @return
+     */
+    List<MenuEntity> findGrandMenus(@Param("userId") String userId);
+
+    /**
+     * 获取一级菜单
+     * @return
+     */
+    List<Map<String,Object>> findGrandParent(@Param("userId") String userId);
+
 }

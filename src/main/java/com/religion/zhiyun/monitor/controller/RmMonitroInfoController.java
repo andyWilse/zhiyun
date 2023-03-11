@@ -4,6 +4,7 @@ package com.religion.zhiyun.monitor.controller;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -44,9 +45,8 @@ public class RmMonitroInfoController {
 
     //摄像头数量
     @RequestMapping("/getAllNum")
-    public String getAllNum(){
-        List<Map<String, Object>> list = rmMonitroInfoService.getAllNum();
-        return JsonUtils.objectTOJSONString(list);
+    public PageResponse getAllNum(@RequestHeader("token")String token){
+        return rmMonitroInfoService.getAllNum(token);
     }
 
     /**
@@ -84,25 +84,34 @@ public class RmMonitroInfoController {
 
     }
 
+    //app用
     @RequestMapping("/getVenuesMonitor")
-    public RespPageBean getVenuesMonitor(@RequestParam Map<String, Object> map) {
+    public RespPageBean getVenuesMonitor(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String venuesName = (String) map.get("venuesName");
-        String accessNumber = (String) map.get("accessNumber");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return rmMonitroInfoService.getVenuesMonitor(page,size,venuesName,accessNumber);
+        return rmMonitroInfoService.getVenuesMonitor(page,size,venuesName,token);
     }
 
+    //监控设备查询(app监控)
     @RequestMapping("/getMonitors")
-    public RespPageBean getMonitors(@RequestParam Map<String, Object> map) {
-        String venuesName = (String) map.get("venuesName");
-        String accessNumber = (String) map.get("accessNumber");
-        String state = (String) map.get("state");
+    public RespPageBean getMonitors(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmMonitroInfoService.getMonitors(map,token);
+    }
 
-        return rmMonitroInfoService.getMonitors(venuesName,accessNumber,state);
+    //监控详情查询（地图）
+    @GetMapping("/getMapMoDetail")
+    public PageResponse getMapMoDetail(@RequestParam String venuesId) {
+        return rmMonitroInfoService.getMoDetail(venuesId,"01");
+    }
+
+    //监控详情查询（教职）
+    @GetMapping("/getJzMoDetail")
+    public PageResponse getJzMoDetail(@RequestParam String accessNumber) {
+        return rmMonitroInfoService.getMoDetail(accessNumber,"02");
     }
 
 }

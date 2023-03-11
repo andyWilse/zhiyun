@@ -76,15 +76,14 @@ public interface RmEventInfoMapper {
      * 手机端（预警查询）
      * @return
      */
-    List<Map<String,Object>> getUndoEvents(@Param("page") Integer page, @Param("size") Integer size,
-            String eventState,String eventType);
+    List<Map<String,Object>> getUndoEvents(@Param("vo") ParamsVo vo);
 
 
     /**
      * 总条数,手机端（预警查询）
      * @return
      */
-    Long getUndoEventsTotal(String eventState,String eventType);
+    Long getUndoEventsTotal(@Param("vo") ParamsVo vo);
 
     /**
      * 接收烟感器、燃气探测传输的数据
@@ -191,5 +190,12 @@ public interface RmEventInfoMapper {
     EventEntity queryEvent(EventEntity eventEntity);
 
     List<SysUserEntity> getMobile(@Param("venuesId")String venuesId);
+
+    /**
+     * 根据事件id查询事件、场所、监控设备信息
+     * @param eventId
+     * @return
+     */
+    List<Map<String,Object>> getEventDetail(@Param("eventId") String eventId);
 
 }

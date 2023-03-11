@@ -22,8 +22,14 @@ public interface SysUserMapper {
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
 
-    //根据电话查询
+    //根据电话查询用户
     SysUserEntity queryByTel(@Param("userMobile") String userMobile);
+
+    //用户查询
+    Map<String,Object> queryBySearch(@Param("search") String search);
+
+    //根据电话查询数量
+    Long queryTelNum(@Param("userMobile") String userMobile);
 
     //根据用户id查询数据
     SysUserEntity queryByUserId(@Param("userId") String userId);
@@ -157,6 +163,5 @@ public interface SysUserMapper {
      * @return
      */
     List<Map<String,Object>> getZuZhang(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
-
 
 }

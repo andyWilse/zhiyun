@@ -1,5 +1,6 @@
 package com.religion.zhiyun.venues.dao;
 
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -22,6 +23,9 @@ public interface RmVenuesInfoMapper {
 
     //查询
     public List<Map<String,Object>> queryVenues(@Param("search") String search);
+
+    //查询(jz)
+    public List<Map<String,Object>> queryVenuesJz(@Param("login") String login,@Param("search") String search);
 
     /**
      * 新增
@@ -75,7 +79,7 @@ public interface RmVenuesInfoMapper {
      * 获取各教堂数量
      * @return
      */
-    Map<String,Object> getAllNum();
+    Map<String,Object> getAllNum(@Param("vo") ParamsVo vo );
 
     /**
      * 分页查询
@@ -138,4 +142,11 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     public List<Map<String,Object>> getVenuesByNm(@Param("venuesName") String venuesName);
+
+    /**
+     * 获取教职人员（场所更新使用）
+     * @param relVenuesId
+     * @return
+     */
+    public String getStaffJz(@Param("relVenuesId") String relVenuesId);
 }

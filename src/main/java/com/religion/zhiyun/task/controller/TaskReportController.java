@@ -60,7 +60,7 @@ public class TaskReportController {
         return handle;
     }
 
-    @RequiresPermissions("task:tasking")
+    //@RequiresPermissions("task:tasking")
     @RequestMapping("/getTasking")
     public RespPageBean getTasking(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String taskName = (String) map.get("taskName");

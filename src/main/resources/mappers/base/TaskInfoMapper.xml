@@ -233,4 +233,57 @@
         </if>
         order by g.user_id
     </select>
+
+    <select id="getFillHistory" resultType="map">
+        select
+            t.FILING_ID as filingId,
+            t.TASK_NAME as taskName,
+            DATE_FORMAT(t.TASK_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+            v.VENUES_NAME as venuesName
+        from rm_filing_info t
+        left join rm_venues_info v on v.VENUES_ID =t.REL_VENUES_ID
+        left join rm_venues_manager_info m on v.RESPONSIBLE_PERSON=m.MANAGER_ID
+        where t.FILING_STATUS='02'
+        and m.MANAGER_MOBILE=#{login}
+        <if test="search!=null and search!=''">
+            AND  (
+            t.TASK_NAME LIKE CONCAT('%',#{search},'%')
+            or t.TASK_CONTENT LIKE CONCAT('%',#{search},'%')
+            or v.VENUES_NAME LIKE CONCAT('%',#{search},'%')
+            )
+        </if>
+        order by t.TASK_TIME desc
+        limit #{page},#{size}
+
+    </select>
+
+    <select id="getFillHisDetail" resultType="map">
+        select
+            t.FILING_ID as filingId,
+            t.TASK_NAME as taskName,
+            DATE_FORMAT(t.TASK_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+            v.VENUES_NAME as venuesName,
+            t.PART_NUM as partNum,
+            t.TASK_CONTENT as taskContent,
+            m.MANAGER_CN_NM as responsiblePerson,
+            t.TASK_PICTURE as taskPicture
+
+        from rm_filing_info t
+        left join rm_venues_info v on v.VENUES_ID =t.REL_VENUES_ID
+        left join rm_venues_manager_info m on v.RESPONSIBLE_PERSON=m.MANAGER_ID
+        where t.FILING_ID =#{filingId}
+    </select>
+
+    <select id="getMonitorTask" resultType="map">
+        select
+            v.VENUES_ADDRES as venuesAddres,
+            ta.TASK_CONTENT as taskContent,
+            DATE_FORMAT(ta.END_TIME,'%Y-%m-%d %H:%i:%s') as endTime,
+            ta.LAUNCH_PERSON as launchPerson,
+            ta.PROC_INST_ID as procInstId
+        from rm_task_info ta
+        left join rm_venues_info v on v.VENUES_ID =ta.REL_VENUES_ID
+        where ta.TASK_ID=#{taskId}
+    </select>
+
 </mapper>

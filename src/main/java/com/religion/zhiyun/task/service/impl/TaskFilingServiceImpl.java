@@ -1,6 +1,7 @@
 package com.religion.zhiyun.task.service.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.FilingEntity;
@@ -10,6 +11,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,8 @@ public class TaskFilingServiceImpl implements TaskFilingService {
     private RmVenuesInfoMapper rmVenuesInfoMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RmFileMapper rmFileMapper;
 
 
     @Override
@@ -166,6 +170,60 @@ public class TaskFilingServiceImpl implements TaskFilingService {
         }
 
         return new AppResponse(code,message);
+    }
+
+    @Override
+    public PageResponse getFillHistory(Integer page,Integer size,String search, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取历史备案信息";
+        List<Map<String, Object>> fillHistory=new ArrayList<>();
+        try {
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            String login = this.getLogin(token);
+            fillHistory = taskInfoMapper.getFillHistory(search, login, page, size);
+            message="获取历史备案信息成功！";
+            code= ResultCode.SUCCESS.getCode();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+        } catch (Exception e) {
+            message="获取历史备案信息失败！";
+            e.printStackTrace();
+        }
+
+        return new PageResponse(code,message,fillHistory.toArray());
+    }
+
+    @Override
+    public PageResponse getFillHisDetail(String filingId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取历史备案详情";
+        List<Map<String, Object>> fillHisDetail =new ArrayList<>();
+        try {
+            fillHisDetail = taskInfoMapper.getFillHisDetail(filingId);
+            if(null!=fillHisDetail && fillHisDetail.size()>0){
+                for(int i=0;i<fillHisDetail.size();i++){
+                    Map<String, Object> map = fillHisDetail.get(i);
+                    //封装图片信息
+                    String taskPicture = (String) map.get("taskPicture");
+                    List<Map<String, Object>> path =new ArrayList<>();
+                    if(null!=taskPicture && !taskPicture.isEmpty()){
+                        path = rmFileMapper.getPath(taskPicture.split(","));
+                    }
+                    map.put("picturesPath",path.toArray());
+                }
+            }
+            message="获取历史备案详情成功！";
+            code= ResultCode.SUCCESS.getCode();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+        } catch (Exception e) {
+            message="获取历史备案详情失败！";
+            e.printStackTrace();
+        }
+
+        return new PageResponse(code,message,fillHisDetail.toArray());
     }
 
     /**

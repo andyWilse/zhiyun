@@ -2,6 +2,7 @@ package com.religion.zhiyun.user.controller;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +42,11 @@ public class SysUserController {
     @PostMapping("/update/password")
     public RespPageBean updatePassword(@RequestBody Map<String,String> map) {
         return sysUserService.updatePassword(map);
+    }
+
+    @GetMapping("/getUser")
+    public PageResponse getUserInfo(@RequestHeader("token")String token){
+        return sysUserService.getUserInfo(token);
     }
 
 }
