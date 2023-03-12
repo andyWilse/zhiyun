@@ -181,10 +181,34 @@
             when '01' then '负责人'
             when '02' then '管理组成员'
             when '03' then '紧急联系人'
-            end as managerType,
+        end as managerType,
+        CERT_NBR as careNBR,
+        RELIGIOUS_TYPE as religiousType,
+        SEX as sex,
+        NATION as nation,
+        NATIVE_PLACE as nativePlace,
+
+        g.GROUP_NAME as religiousGroup,
+        GROUP_POST as groupPost,
+        VENUES_POST as venuesPost,
+        BIRTHDAY as birthday,
+        MAILING_ADDRESS as mailingAddress,
+        REGISTERED_RESIDENCE as residence,
+        POLITICAL as political,
+        SOCIETY_CULTURE as societyCulture,
+        SOCIETY_SCHOOL as societySchool,
+        RELIGIOUS_CULTURE as religiousCulture,
+        RELIGIOUS_SCHOOL as religiousScholl,
+        COMPANY as company,
+        STAFF_POST as staffPost,
+        POSTTION as posttion,
+        CERTIFICATE_UNIT as certificateUNIT,
+        CERTIFICATE_TIME as certificateTime,
+        CERTIFICATE_NUMBER as certificateNumber
+
         from rm_venues_manager_info m
-        left join rm_venues_info v on m.MANAGER_ID=v.RESPONSIBLE_PERSON
-        left join rm_sys_dict d on d.DICT_CD=v.RELIGIOUS_SECT
+        left join rm_group_info g on m.RELIGIOUS_GROUP=g.GROUP_CD
+        left join rm_sys_dict d on d.DICT_CD=m.RELIGIOUS_SECT
         where MANAGER_ID=#{ManagerId}
     </select>
     <select id="getVenuesByManagerId" resultType="java.util.Map">
