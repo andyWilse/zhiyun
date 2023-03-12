@@ -198,7 +198,7 @@
         select
             u.IDENTITY as identity
         from act_hi_identitylink h
-        left join rm_sys_user_info u on h.USER_ID_=u.LOGIN_NM
+        left join rm_sys_user_info u on h.USER_ID_=u.USER_MOBILE
         where h.TYPE_='starter'
         <if test="procInstId != null and procInstId != ''">
             and h.PROC_INST_ID_ = #{procInstId}
@@ -252,7 +252,7 @@
         LEFT JOIN RM_SYS_USER_INFO jie on zu.town=jie.town and jie.IDENTITY  in ('10000004','10000005')
         WHERE jie.VALID_IND='1'
         <if test="loginNm != null and loginNm != ''">
-            and zu.LOGIN_NM = #{loginNm}
+            and zu.USER_MOBILE = #{loginNm}
         </if>
         <if test="identity != null and identity != ''">
             and zu.IDENTITY = #{identity}
@@ -267,7 +267,7 @@
         LEFT JOIN RM_SYS_USER_INFO qu on qu.area=jie.area and qu.IDENTITY  in ('10000002','10000003')
         WHERE qu.VALID_IND='1'
         <if test="loginNm != null and loginNm != ''">
-            and jie.LOGIN_NM = #{loginNm}
+            and jie.USER_MOBILE = #{loginNm}
         </if>
         <if test="identity != null and identity != ''">
             and jie.IDENTITY = #{identity}
@@ -293,7 +293,8 @@
     </update>
 
     <select id="getZuZhang" resultType="map">
-        SELECT zz.LOGIN_NM as loginNm,zz.USER_NM as userNm
+        SELECT
+            zz.LOGIN_NM as loginNm,zz.USER_NM as userNm,zz.USER_MOBILE as userMobile
         FROM rm_sys_user_info zy,rm_sys_user_info zz
         where zy.REL_VENUES_ID=zz.REL_VENUES_ID
         and zz.VALID_IND='1'
@@ -309,7 +310,7 @@
     </select>
 
     <select id="getJieGan" resultType="map">
-        SELECT jg.LOGIN_NM as loginNm,jg.USER_NM as userNm
+        SELECT jg.LOGIN_NM as loginNm,jg.USER_NM as userNm,jg.USER_MOBILE as userMobile
         FROM rm_sys_user_info zz,rm_sys_user_info jg
         where zz.town=jg.town
         and jg.VALID_IND='1'
@@ -324,7 +325,7 @@
     </select>
 
     <select id="getJieWei" resultType="map">
-        SELECT jw.LOGIN_NM as loginNm,jw.USER_NM as userNm
+        SELECT jw.LOGIN_NM as loginNm,jw.USER_NM as userNm,jw.USER_MOBILE as userMobile
         FROM rm_sys_user_info jw,rm_sys_user_info jg
         where jw.town=jg.town
         and jw.VALID_IND='1'
@@ -339,7 +340,7 @@
     </select>
 
     <select id="getQuGan" resultType="map">
-        SELECT qg.LOGIN_NM as loginNm,qg.USER_NM as userNm
+        SELECT qg.LOGIN_NM as loginNm,qg.USER_NM as userNm,qg.USER_MOBILE as userMobile
         FROM rm_sys_user_info jw,rm_sys_user_info qg
         where qg.area=jw.area
         and qg.VALID_IND='1'
@@ -354,7 +355,7 @@
     </select>
 
     <select id="getQuWei" resultType="map">
-        SELECT qw.LOGIN_NM as loginNm,qw.USER_NM  as userNm
+        SELECT qw.LOGIN_NM as loginNm,qw.USER_NM  as userNm,qw.USER_MOBILE as userMobile
         FROM rm_sys_user_info qw,rm_sys_user_info qg
         where qg.area=qw.area
         and qw.VALID_IND='1'
@@ -372,8 +373,18 @@
         select
             USER_ID as userId,
             USER_NM as userNm,
-            USER_MOBILE as userMobile
-        from RM_SYS_USER_INFO
+            USER_MOBILE as userMobile,
+            USER_PHOTO_URL as userPhotoUrl,
+            IDENTITY as identity,
+            ro.ROLE_NM as identityCn,
+            AREA as area,
+            aa.AREA_NAME as areaName,
+            tn.TOWN_NAME as townName,
+            TOWN as town
+        from RM_SYS_USER_INFO u
+        left join rm_sys_role ro on ro.ROLE_ID=u.IDENTITY
+        left join rm_town_info tn on tn.TOWN_CODE=u.TOWN
+        left join rm_area_info aa on aa.AREA_CODE=u.AREA
         where  USER_MOBILE= #{search}
         or LOGIN_NM LIKE CONCAT('%',#{search},'%')
         or USER_NM LIKE CONCAT('%',#{search},'%')

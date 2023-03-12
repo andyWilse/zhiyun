@@ -11,13 +11,13 @@ public interface NewsInfoService {
      * 新增
      * @param newsEntity
      */
-    RespPageBean add(NewsEntity newsEntity);
+    RespPageBean add(NewsEntity newsEntity,String token);
 
     /**
      * 修改
      * @param newsEntity
      */
-    RespPageBean update(NewsEntity newsEntity);
+    RespPageBean update(NewsEntity newsEntity,String token);
 
     /**
      * 下架

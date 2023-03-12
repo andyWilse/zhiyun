@@ -22,7 +22,7 @@ public interface RmVenuesInfoMapper {
     public List<VenuesEntity> querySelect(@Param("search") String search,@Param("town") String town);
 
     //查询
-    public List<Map<String,Object>> queryVenues(@Param("search") String search);
+    public List<Map<String,Object>> queryVenues(@Param("vo") ParamsVo vo);
 
     //查询(jz)
     public List<Map<String,Object>> queryVenuesJz(@Param("login") String login,@Param("search") String search);
@@ -106,7 +106,9 @@ public interface RmVenuesInfoMapper {
     void updateLngLat(@Param("longitude") String longitude,@Param("Latitude") String Latitude,@Param("venuesId") Integer venuesId);
 
     //查询
-    public List<Map<String,Object>> getMapVenues(@Param("search") String search,@Param("religiousSect") String religiousSect);
+    public List<Map<String,Object>> getMapVenues(@Param("search") String search,
+                                                 @Param("religiousSects") String[] religiousSects,
+                                                 @Param("religiousSect") String religiousSect);
 
     /**
      * 获取备案信息

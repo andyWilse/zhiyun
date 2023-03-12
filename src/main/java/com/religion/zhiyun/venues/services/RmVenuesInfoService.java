@@ -51,7 +51,7 @@ public interface RmVenuesInfoService {
      * @param search
      * @return
      */
-    public AppResponse queryVenues(String search);
+    public AppResponse queryVenues(String search,String token);
 
     /**
      * 获取地图详情

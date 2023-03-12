@@ -4,11 +4,13 @@ import com.religion.zhiyun.news.dao.RmNewsInfoMapper;
 import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,22 +19,31 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.activiti.engine.impl.util.json.XMLTokener.entity;
+
 @Service
 public class NewsInfoServiceImpl implements NewsInfoService {
 
     @Autowired
     private RmNewsInfoMapper rmNewsInfoMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
 
     @Override
-    public RespPageBean add(NewsEntity newsEntity) {
+    public RespPageBean add(NewsEntity newsEntity,String token) {
         long code= ResultCode.SUCCESS.getCode();
         try {
-            SysUserEntity entity = TokenUtils.getToken();
-            if(null==entity){
+            String login = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+
+            if(null==sysUserEntity){
                 throw new RuntimeException("登录人信息丢失，请登陆后重试！");
             }
-            newsEntity.setCreator(entity.getLoginNm());
-            newsEntity.setLastModifier(entity.getLoginNm());
+            newsEntity.setCreator(sysUserEntity.getUserNm());
+            newsEntity.setLastModifier(sysUserEntity.getUserNm());
             Timestamp timestamp = new Timestamp(new Date().getTime());
             newsEntity.setCreateTime(timestamp);
             newsEntity.setLastModifyTime(timestamp);
@@ -46,14 +57,16 @@ public class NewsInfoServiceImpl implements NewsInfoService {
     }
 
     @Override
-    public RespPageBean update(NewsEntity newsEntity) {
+    public RespPageBean update(NewsEntity newsEntity,String token) {
         long code= ResultCode.SUCCESS.getCode();
         try {
-            SysUserEntity entity = TokenUtils.getToken();
-            if(null==entity){
+            String login = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+
+            if(null==sysUserEntity){
                 throw new RuntimeException("登录人信息丢失，请登陆后重试！");
             }
-            newsEntity.setLastModifier(entity.getLoginNm());
+            newsEntity.setLastModifier(sysUserEntity.getUserNm());
             Timestamp timestamp = new Timestamp(new Date().getTime());
             newsEntity.setLastModifyTime(timestamp);
             rmNewsInfoMapper.update(newsEntity);
@@ -108,5 +121,17 @@ public class NewsInfoServiceImpl implements NewsInfoService {
         }
         respPageBean.setCode(code);
         return respPageBean;
+    }
+
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(String token){
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
+        }
+        return loginNm;
     }
 }

@@ -71,7 +71,28 @@ public class TaskReportServiceImpl implements TaskReportService {
         String message="上报任务发起";
         String procInstId="";
         try {
+            //数据校验
             String loginNm = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户已过期，请重新登录！");
+            }
+            String area = taskEntity.getArea();
+            String town = taskEntity.getTown();
+            String province = taskEntity.getProvince();
+            String areaUs =sysUserEntity.getArea();
+            if(null!=areaUs && !areaUs.isEmpty()){
+                if(!areaUs.equals(area)){
+                    throw new RuntimeException("请先选择用户管辖区！");
+                }
+            }
+            String townUs =sysUserEntity.getTown();
+            if(null!=townUs && !townUs.isEmpty()){
+                if(!townUs.equals(town)){
+                    throw new RuntimeException("请先选择用户管辖街道！");
+                }
+            }
+            //任务处理
             Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
                 throw new RuntimeException("下节点处理人信息丢失！");
@@ -552,8 +573,9 @@ public class TaskReportServiceImpl implements TaskReportService {
         if(null!=mapList && mapList.size()>0){
             for(int i=0;i<mapList.size();i++){
                 Map<String, Object> map = mapList.get(i);
-                String nm = (String) map.get("loginNm");
-                userList.add(nm);
+                //String nm = (String) map.get("loginNm");
+                String userMo = (String) map.get("userMobile");
+                userList.add(userMo);
             }
         }else if(RoleEnums.QU_WEI.getCode().equals(identity)){
 

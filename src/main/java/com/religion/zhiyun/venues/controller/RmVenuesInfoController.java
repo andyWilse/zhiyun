@@ -63,7 +63,7 @@ public class RmVenuesInfoController {
     //app下拉使用
     @RequestMapping("/getVenues")
     public AppResponse getVenuesList(@RequestParam String search,@RequestHeader("token")String token) {
-        return rmVenuesInfoService.queryVenues(search);
+        return rmVenuesInfoService.queryVenues(search,token);
     }
 
     //根据教派类别查询

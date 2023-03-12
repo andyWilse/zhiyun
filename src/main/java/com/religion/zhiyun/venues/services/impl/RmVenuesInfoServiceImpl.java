@@ -7,6 +7,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
+import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -68,8 +69,9 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             //获取经纬度
             String venuesAddres = venuesEntity.getVenuesAddres();
             if(null!=venuesAddres && ""!=venuesAddres){
-                String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
-                String[] split = coordinate.split(",");
+                //String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
+                String lngAndLag = GetLngAndLagGaoDe.getLngAndLag(venuesAddres);
+                String[] split = lngAndLag.split(",");
                 String lng=split[0];
                 String lat=split[1];
                 if("1".equals(lng) || "1".equals(lat) ){
@@ -251,12 +253,14 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public AppResponse queryVenues(String search) {
+    public AppResponse queryVenues(String search,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="app场所下拉";
-        List<Map<String, Object>> venuesList =null;
+        List<Map<String, Object>> venuesList =new ArrayList<>();
         try {
-            venuesList = rmVenuesInfoMapper.queryVenues(search);
+            ParamsVo auth = this.getAuth(token);
+            auth.setSearchOne(search);
+            venuesList = rmVenuesInfoMapper.queryVenues(auth);
             code= ResultCode.SUCCESS.getCode();
             message="场所下拉数据获取成功！";
         } catch (RuntimeException r){
@@ -369,22 +373,24 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
 
     @Override
     public AppResponse getMapVenues(String search, String religiousSect) {
-        long code= 0;
-        String message= null;
-        List<Map<String, Object>> mapVenues = null;
+        long code = ResultCode.FAILED.getCode();
+        String  message = "获取地图场所信息失败！";
+        List<Map<String, Object>> mapVenues = new ArrayList<>();
         try {
-            code = ResultCode.FAILED.getCode();
-            message = "获取地图场所信息失败！";
-            mapVenues = rmVenuesInfoMapper.getMapVenues(search, religiousSect);
-            if(mapVenues!=null && mapVenues.size()>0){
-                code= ResultCode.SUCCESS.getCode();
-                message="获取地图场所信息成功！";
+            String[] split ={};
+            if(null!=religiousSect && !religiousSect.isEmpty()){
+                split = religiousSect.split(",");
             }
+
+            mapVenues = rmVenuesInfoMapper.getMapVenues(search, split,religiousSect);
+
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取地图场所信息成功！";
         } catch (RuntimeException r ){
             message=r.getMessage();
             r.printStackTrace();
         } catch (Exception e) {
-            code = ResultCode.FAILED.getCode();
             message = "获取地图场所信息失败！";
             e.printStackTrace();
         }

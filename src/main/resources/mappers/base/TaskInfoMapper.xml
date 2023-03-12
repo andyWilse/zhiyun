@@ -102,7 +102,7 @@
         select
             ta.TASK_NAME as taskName,
             ta.TASK_CONTENT as taskContent,
-            ta.END_TIME as endTime,
+            DATE_FORMAT(ta.END_TIME ,'%Y-%m-%d %H:%i:%s') as endTime,
             ve.VENUES_ADDRES as venuesAddres,
             case ta.EMERGENCY_LEVEL
             when '01' then '紧急'
@@ -111,8 +111,8 @@
             end as emergencyLevel,
             ta.EMERGENCY_LEVEL as emergencyLevelCode,
             ta.LAUNCH_PERSON as launchPerson,
-            ta.LAUNCH_TIME as launchTime,
-            ta.HANDLE_TIME as handleTime,
+            DATE_FORMAT(ta.LAUNCH_TIME ,'%Y-%m-%d %H:%i:%s') as launchTime,
+            DATE_FORMAT(ta.HANDLE_TIME ,'%Y-%m-%d %H:%i:%s') as handleTime,
             ta.HANDLE_RESULTS as handleResults,
             ta.PROC_INST_ID as procInstId,
             ta.FLOW_TYPE as flowType,
@@ -124,7 +124,7 @@
         <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
             #{procInstId}
         </foreach>
-        order by ta.END_TIME
+        order by ta.END_TIME desc
         limit #{page},#{size}
 
     </select>
@@ -223,7 +223,7 @@
 
     <select id="getJieGanUsers" resultType="String">
         select
-           distinct g.LOGIN_NM AS loginNm
+           distinct g.USER_MOBILE as userMobile
         from rm_sys_user_info  g
         left join rm_sys_user_info u on g.town=u.town
         where g.VALID_IND='1'

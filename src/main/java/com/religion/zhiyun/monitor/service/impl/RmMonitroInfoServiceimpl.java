@@ -207,6 +207,9 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
                     }
                     map.put("monitors",str);
                 }
+            }else{
+                code= ResultCode.VALIDATE_FAILED.getCode();
+                throw new RuntimeException("该场所尚未接入监控信息！");
             }
             code= ResultCode.SUCCESS.getCode();
             message="监控详情查询成功";

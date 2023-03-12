@@ -85,12 +85,27 @@
         select
             VENUES_ID as venuesId ,
             VENUES_NAME as venuesName
-        from RM_VENUES_INFO
-        <if test="search!=null and search!=''">
-            where RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
-                    or VENUES_ADDRES LIKE concat('%',#{search},'%')
-                    or VENUES_NAME LIKE concat('%',#{search},'%')
+        from RM_VENUES_INFO ve
+        where VENUES_STATUS!='02'
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and( RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
+                    or VENUES_ADDRES LIKE concat('%',#{vo.searchOne},'%')
+                    or VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
+            )
         </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+
     </select>
 
     <insert id="add" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity"
@@ -304,19 +319,26 @@
         select
             ve.VENUES_ID as venuesId ,
             ve.LONGITUDE as longitude,
-            ve.LATITUDE as Latitude
+            ve.LATITUDE as Latitude,
+            d.DICT_CN_DESC as religiousSectCn,
+            ve.RELIGIOUS_SECT as religiousSect
         from RM_VENUES_INFO ve
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         where VENUES_STATUS='01'
         and ve.LONGITUDE is not null
         and ve.LATITUDE is not null
         <if test="religiousSect!=null and religiousSect!=''">
-            and RELIGIOUS_SECT = #{religiousSect}
+            and ve.RELIGIOUS_SECT in
+            <foreach collection="religiousSects" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
         <if test="search!=null and search!=''">
-            and (RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
-            or VENUES_ADDRES LIKE concat('%',#{search},'%')
-            or VENUES_NAME LIKE concat('%',#{search},'%') )
+            and (ve.RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
+            or ve.VENUES_ADDRES LIKE concat('%',#{search},'%')
+            or ve.VENUES_NAME LIKE concat('%',#{search},'%') )
         </if>
+        order by ve.VENUES_ID desc
     </select>
 
     <select id="getVenuesByID" resultType="map">

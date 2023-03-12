@@ -162,7 +162,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
 
             taskEntity.setLaunchPerson(loginNm);
             taskEntity.setLaunchTime(new Date());
-            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
+            taskEntity.setTaskType(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getName());
             taskEntity.setProcInstId(tmp.getProcessInstanceId());
             taskEntity.setFlowType("02");
             //保存任务信息

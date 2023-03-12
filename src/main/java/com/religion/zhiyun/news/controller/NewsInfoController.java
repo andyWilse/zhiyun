@@ -17,13 +17,13 @@ public class NewsInfoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public RespPageBean add(@RequestBody NewsEntity newsEntity) {
-        return  newsInfoService.add(newsEntity);
+    public RespPageBean add(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
+        return  newsInfoService.add(newsEntity,token);
     }
 
     @PostMapping("/update")
-    public RespPageBean update(@RequestBody NewsEntity newsEntity) {
-        return newsInfoService.update(newsEntity);
+    public RespPageBean update(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
+        return newsInfoService.update(newsEntity,token);
     }
 
     @PostMapping("/delete/{newsId}")

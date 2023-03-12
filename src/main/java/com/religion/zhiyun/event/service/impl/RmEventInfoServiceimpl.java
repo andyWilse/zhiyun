@@ -446,16 +446,20 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     @Override
     @Transactional
     public AppResponse dismissEvent(String eventId) {
-        long code= ResultCode.SUCCESS.getCode();
-        String message="";
+        long code= ResultCode.FAILED.getCode();
+        String message="误报解除失败！";
         try {
             //更新预警事件表
             rmEventInfoMapper.updateEventState(eventId,new Date(),ParamCode.EVENT_STATE_04.getCode());
             //更新通知
             eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_04.getCode());
+
+            code= ResultCode.SUCCESS.getCode();
             message="误报解除成功";
-        } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
             message="误报解除失败";
             e.printStackTrace();
         }
@@ -465,16 +469,19 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     @Override
     @Transactional
     public AppResponse callFire(String eventId) {
-        long code= ResultCode.SUCCESS.getCode();
-        String message="";
+        long code= ResultCode.FAILED.getCode();
+        String message="拨打119";
         try {
             //更新预警事件表
             rmEventInfoMapper.updateEventState(eventId,new Date(),ParamCode.EVENT_STATE_03.getCode());
             //更新通知
             eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_03.getCode());
             message="拨打119成功";
-        } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
+            code= ResultCode.SUCCESS.getCode();
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
             message="拨打119失败";
             e.printStackTrace();
         }
@@ -487,7 +494,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         long code= ResultCode.FAILED.getCode();
         String message="一键上报";
         try {
-            String mobil = this.getLogin(token);
+            //任务
             TaskEntity taskEntity=new TaskEntity();
             EventEntity event = rmEventInfoMapper.getEventById(eventId);
             if(null!=event){
@@ -498,8 +505,15 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
                 taskEntity.setEmergencyLevel("01");
             }
+            //获取登录用户信息
+            String login = this.getLogin(token);
 
-            /*if("10000006".equals(identify) || "10000007".equals(identify)){
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户已过期，请重新登录！");
+            }
+            String identify = sysUserEntity.getIdentity();
+            if("10000006".equals(identify) || "10000007".equals(identify)){
                 //查找街干事、街委员
                 List<SysUserEntity> jie = sysUserMapper.getJie(login, identify);
                 if(jie.size()>0 && null!=jie){
@@ -514,7 +528,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                         this.launch(taskEntity,qu.get(i).getLoginNm());
                     }
                 }
-            }*/
+            }
             //根据用户身份，查询
             //发起流程
             //根据用户查询上级
@@ -523,9 +537,13 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             rmEventInfoMapper.updateEventState(eventId,new Date(),ParamCode.EVENT_STATE_02.getCode());
             //更新通知
             eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_02.getCode());
+
             message="一键上报成功";
-        } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
+            code= ResultCode.SUCCESS.getCode();
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
             message="一键上报失败";
             e.printStackTrace();
         }
