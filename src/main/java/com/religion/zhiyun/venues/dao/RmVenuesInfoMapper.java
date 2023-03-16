@@ -149,4 +149,10 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     public String getStaffJz(@Param("relVenuesId") String relVenuesId);
+
+    //根据教派类别获取场所信息
+    List<Map<String,Object>> getvenuesByType(@Param("Type")String Type);
+
+
+
 }

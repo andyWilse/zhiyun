@@ -65,4 +65,26 @@ public interface TaskInfoMapper {
     /**获取维设备信息**/
     List<Map<String,Object>>  getMonitorTask( @Param("taskId") String taskId);
 
+
+    /**
+     * 月（10个月，传-9）
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getTaskMonth(@Param("num") int num);
+
+    /**
+     * 日(10天，传-10)
+     * @param num
+     * @return
+     */
+    List<Map<String,Object>> getTaskDayGather(@Param("num") int num);
+
+    /**
+     * 周
+     * @param num（10周，传-10）
+     * @param （=7*(num+1)-1）
+     * @return
+     */
+    List<Map<String,Object>> getTaskWeekGather(@Param("num") int num);
 }

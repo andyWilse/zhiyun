@@ -85,4 +85,28 @@ public class TaskServiceImpl implements TaskService {
         }
         return new PageResponse(code,message,monitorTask.toArray());
     }
+
+    @Override
+    public AppResponse getTasksGather(int num, String dateType) {
+        long code =ResultCode.FAILED.getCode();
+        String message="统计任务数量数据失败！";
+        List<Map<String,Object>> list=new ArrayList<>();
+        try {
+            if ("month".equals(dateType)){
+                list=taskInfoMapper.getTaskMonth(num);
+            }else if ("week".equals(dateType)){
+                list=taskInfoMapper.getTaskWeekGather(num);
+            }else if ("day".equals(dateType)){
+                list=taskInfoMapper.getTaskDayGather(num);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="统计任务数量数据成功！";
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="统计任务数量数据失败！";
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message,list.toArray());
+    }
 }

@@ -13,4 +13,11 @@ public interface TaskService {
 
     /*** 获取流程部署信息  **/
     PageResponse getMonitorTask(String taskId);
+
+    /**
+     * 折线图总计
+     * @param dateType（周：week,月：month,日：day）
+     * @return
+     */
+    AppResponse getTasksGather(int num,String dateType);
 }

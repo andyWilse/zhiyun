@@ -37,9 +37,13 @@ public class TaskController {
 
     //获取维修设备详情
     @GetMapping("/getMonitorTask")
-    public PageResponse getMonitorTask(@RequestParam String taskId){
+    public PageResponse getMonitorTask(@RequestParam String taskId) {
         return taskService.getMonitorTask(taskId);
     }
 
-
+    //折线图（总图）
+    @RequestMapping("/zxt/tasksGather")
+    public AppResponse getTasksGather(@RequestParam String dateType) {
+        return taskService.getTasksGather(-10,dateType);
+    }
 }
