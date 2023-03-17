@@ -88,4 +88,13 @@
         </if>
     </select>
 
+    <select id="getManagerById" resultType="string">
+        select
+            MANAGER_CN_NM as  managerCnNm
+        from RM_VENUES_MANAGER_INFO
+        <if test="managerId!=null and managerId!=''">
+            where  MANAGER_ID = #{managerId}
+        </if>
+    </select>
+
 </mapper>

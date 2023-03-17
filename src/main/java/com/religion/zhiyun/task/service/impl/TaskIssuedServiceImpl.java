@@ -3,6 +3,7 @@ package com.religion.zhiyun.task.service.impl;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskIssuedService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
@@ -202,7 +203,11 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                         //设置本地参数。在myListener1监听中获取。
                         taskService.setVariableLocal(item.getId(), "isSuccess", true);
                         //增加审批备注
-                        taskService.addComment(item.getId(), item.getProcessInstanceId(), "已处理");
+                        CommentEntity en =new CommentEntity();
+                        en.setFeedBack(feedBack);
+                        en.setHandleResults(handleResults);
+                        en.setPicture(picture);
+                        taskService.addComment(item.getId(), item.getProcessInstanceId(), JsonUtils.beanToJson(en));
                         //完成此次审批。如果下节点为endEvent。结束流程
                         taskService.complete(item.getId(), variables);
 

@@ -17,7 +17,7 @@
         EVENT_LEVEL as eventLevel,
         LOCATION as location,
         EVENT_STATE as eventState,
-        HANDLE_RESULTS as handleTesults,
+        HANDLE_RESULTS as handleResults,
         HANDLE_TIME as handleTime
     </sql>
     <sql id="infoColumn">
@@ -42,7 +42,10 @@
             EVENT_TYPE,
             EVENT_STATE,
             HANDLE_RESULTS,
-            HANDLE_TIME
+            HANDLE_TIME,
+            EVENT_RESOURCE,
+            EVENT_LEVEL,
+            PICTURES_PATH
         ) values (
             #{accessNumber},
             #{warnTime},
@@ -50,11 +53,14 @@
             #{responsiblePerson},
             #{eventType},
             #{eventState},
-            #{handleTesults},
-            #{handleTime}
+            #{handleResults},
+            #{handleTime},
+            #{eventResource},
+            #{eventLevel},
+            #{picturesPath}
         )
     </insert>
-    <insert id="addEventByNB">
+    <insert id="addEventByNB" useGeneratedKeys="true" keyProperty="eventId">
         insert into rm_event_info(
             DEVICE_NAME,
             ACCESS_NUMBER,
@@ -68,7 +74,8 @@
             EVENT_STATE,
             HANDLE_RESULTS,
             HANDLE_TIME,
-            REL_VENUES_ID
+            REL_VENUES_ID,
+            EVENT_RESOURCE
         ) values (
             #{deviceName},
             #{accessNumber},
@@ -80,9 +87,10 @@
             #{eventLevel},
             #{location},
             #{eventState},
-            #{handleTesults},
+            #{handleResults},
             #{handleTime},
-            #{relVenuesId}
+            #{relVenuesId},
+            #{eventResource}
         )
 
     </insert>
@@ -91,7 +99,7 @@
         set RESPONSIBLE_PERSON=#{responsiblePerson},
             EVENT_TYPE=#{eventType},
             EVENT_STATE=#{eventState},
-            HANDLE_RESULTS=#{handleTesults}
+            HANDLE_RESULTS=#{handleResults}
         where EVENT_ID=#{eventId}
     </update>
 
@@ -104,11 +112,22 @@
         from rm_event_info
     </select>
 
-    <select id="allEventByState" resultType="com.religion.zhiyun.event.entity.EventEntity">
-        select <include refid="eventColumn"/> from rm_event_info
-        where EVENT_STATE=00
+    <select id="getEventByVo" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        select
+            EVENT_ID as eventId,
+            WARN_TIME as warnTime,
+            REL_VENUES_ID as relVenuesId,
+            EVENT_TYPE as eventType,
+            EVENT_LEVEL as eventLevel,
+            EVENT_STATE as eventState
+        from rm_event_info ev
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ev.EVENT_ID=#{vo.searchOne}
+        </if>
         order by WARN_TIME desc
     </select>
+
     <select id="getByEventId" resultType="com.religion.zhiyun.event.entity.EventEntity">
         SELECT <include refid="infoColumn"/>
         FROM rm_event_info
@@ -140,7 +159,7 @@
             when '02' then '误报'
             else '其他'
             end as eventStateNm,
-            HANDLE_RESULTS as handleTesults,
+            HANDLE_RESULTS as handleResults,
             DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
             ve.PICTURES_PATH as picturesPath,
             ve.VENUES_NAME as venuesName,
@@ -152,8 +171,8 @@
             when '3' then '严重'
             else '其他'
             end as eventLevelNm,
-            m.MONITOR_URL as monitorUrl
-
+            m.MONITOR_URL as monitorUrl,
+            ve.RELIGIOUS_SECT as sect
         from RM_EVENT_INFO e
         left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
         left join rm_monitor_manage_info m on e.ACCESS_NUMBER=m.ACCESS_NUMBER
@@ -201,7 +220,7 @@
                 when '02' then '误报'
                 else '其他'
             end as eventState,
-            e.HANDLE_RESULTS as handleTesults,
+            e.HANDLE_RESULTS as handleResults,
             e.HANDLE_TIME as handleTime
         from RM_EVENT_INFO e
         left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
@@ -276,27 +295,28 @@
             case ev.EVENT_TYPE
             when '01' then '紧急'
             else '普通'
-            end as eventLevelCn
-        from RM_EVENT_INFO ev
+            end as eventLevelCn,
+            ev.EVENT_RESOURCE as eventResource,
+            case ev.EVENT_RESOURCE
+            when '01' then 'AI预警'
+            when '02' then '烟感'
+            end as eventResourceCn,
+            ve.RELIGIOUS_SECT as sect
+        from rm_event_notified_info no
+        left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        where 1=1
+        where no.NOTIFIED_FLAG='01'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  ev.EVENT_TYPE =#{vo.searchTwo}
         </if>
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
-        </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
-        </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  (
+                no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
+            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
+            )
         </if>
         ORDER BY ev.EVENT_TYPE
         limit #{vo.page},#{vo.size}
@@ -305,36 +325,30 @@
     <select id="getUndoEventsTotal" resultType="java.lang.Long">
         select
             count(ev.EVENT_ID)
-        from RM_EVENT_INFO ev
+        from rm_event_notified_info no
+        left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        where 1=1
+        where no.NOTIFIED_FLAG='01'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  ev.EVENT_TYPE =#{vo.searchTwo}
         </if>
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
-        </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
-        </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  (
+            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
+            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
+            )
         </if>
     </select>
 
     <select id="getEventsByState" resultType="map">
         select
                 EVENT_ID as eventId,
-                m.ACCESS_NUMBER as accessNumber,
                 DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
                 v.VENUES_ADDRES as venuesAddres,
-                e.RESPONSIBLE_PERSON as responsiblePerson,
+                ev.RESPONSIBLE_PERSON as responsiblePerson,
                 EVENT_TYPE as eventType,
                 case EVENT_TYPE
                 when '01' then '火灾预警'
@@ -350,49 +364,67 @@
                 when '02' then '误报'
                 else '其他'
                 end as eventStateNm,
-                HANDLE_RESULTS as handleTesults,
+                HANDLE_RESULTS as handleResults,
                 DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
                 v.PICTURES_PATH as picturesPath,
                 v.VENUES_NAME as venuesName,
-                e.event_level as eventLevel,
+                ev.event_level as eventLevel,
                 case event_level
                 when '0' then '事件'
                 when '1' then '次要'
                 when '2' then '重要'
                 when '3' then '严重'
                 else '其他'
-                end as eventLevelNm,
-                m.MONITOR_URL as monitorUrl
+                end as eventLevelNm
 
-        from RM_EVENT_INFO e
-        left join RM_VENUES_INFO v on e.REL_VENUES_ID=v.VENUES_ID
-        left join rm_monitor_manage_info m on e.ACCESS_NUMBER=m.ACCESS_NUMBER
-        left join RM_EVENT_NOTIFIED_INFO noti on noti.ref_event_id=e.EVENT_ID
-        where e.EVENT_STATE in
-        <foreach collection="eventStates" item="eventState" index="index" open="(" close=")" separator=",">
-            #{eventState}
-        </foreach>
-        <if test="login != null and login != ''">
+        from RM_EVENT_NOTIFIED_INFO no
+        left join RM_EVENT_INFO ev on no.ref_event_id=ev.EVENT_ID
+        left join RM_VENUES_INFO v on ev.REL_VENUES_ID=v.VENUES_ID
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ev.EVENT_STATE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  ev.EVENT_STATE !=#{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
             AND  (
-                noti.NOTIFIED_USER =#{login} or NOTIFIED_STAFF =#{login}
+            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
+            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
             )
         </if>
-        ORDER BY WARN_TIME DESC
-        limit #{page},#{size}
+        ORDER BY ev.WARN_TIME DESC
+        limit #{vo.page},#{vo.size}
 
     </select>
 
     <select id="getTotalByState" resultType="java.lang.Long">
-        select count(EVENT_ID)
-        from RM_EVENT_INFO
-        where EVENT_STATE in
-        <foreach collection="eventStates" item="eventState" index="index" open="(" close=")" separator=",">
-            #{eventState}
-        </foreach>
+        select
+            count(EVENT_ID)
+        from RM_EVENT_NOTIFIED_INFO no
+        left join RM_EVENT_INFO ev on no.ref_event_id=ev.EVENT_ID
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ev.EVENT_STATE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  ev.EVENT_STATE !=#{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  (
+            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
+            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
+            )
+        </if>
     </select>
 
     <update id="updateEventState">
-        update rm_event_info set EVENT_STATE=#{eventState},HANDLE_TIME=#{ymdHms} where EVENT_ID=#{eventId}
+        update rm_event_info 
+        set EVENT_STATE=#{eventState},
+            HANDLE_RESULTS=#{handleResults},
+            HANDLE_TIME=#{handleTime}
+        where EVENT_ID=#{eventId}
+
     </update>
 
     <select id="getEventById" resultType="com.religion.zhiyun.event.entity.EventEntity">
@@ -428,13 +460,28 @@
         SELECT tm.tmDate as date,IFNULL(ev.sum,0) as count
         FROM (
             SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
-            FROM num a where a.i &gt; #{num} and type='month'
+            FROM num a where a.i &gt; #{vo.size} and type='month'
         ) tm
         LEFT JOIN (
-            select DATE_FORMAT(WARN_TIME,'%Y-%m') evDate,count(EVENT_ID) sum
-            from rm_event_info
-            where EVENT_TYPE=#{eventType}
-                and  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num}  day)
+            select
+                DATE_FORMAT(ev.WARN_TIME,'%Y-%m') evDate,count(ev.EVENT_ID) sum
+            from rm_event_info ev
+            left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+            where ve.VENUES_STATUS='01'
+                and ev.EVENT_TYPE=#{vo.searchOne}
+                and  DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{vo.size}  day)
+                <if test="vo.town != null and vo.town != ''">
+                    AND  ve.TOWN = #{vo.town}
+                </if>
+                <if test="vo.area != null and vo.area != ''">
+                    AND  ve.AREA = #{vo.area}
+                </if>
+                <if test="vo.venues != null and vo.venues != ''">
+                    and ve.VENUES_ID IN
+                    <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                        #{value}
+                    </foreach>
+                </if>
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -443,13 +490,27 @@
     <select id="getEventsDay" resultType="map">
         SELECT DATE_FORMAT(tm.tmDate,'%Y-%m-%d') as date,IFNULL(ev.sum,0)  as count
         FROM(
-            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{num} and type='day'
+            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{vo.size} and type='day'
         ) tm
         LEFT JOIN(
             select DATE_FORMAT(WARN_TIME,'%Y-%m-%d') evDate,count(EVENT_ID) as sum
-            from rm_event_info
-            where EVENT_TYPE=#{eventType}
-                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{num}  day)
+            from rm_event_info ev
+            left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+            where ve.VENUES_STATUS='01'
+                and EVENT_TYPE=#{vo.searchOne}
+                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{vo.size}  day)
+                <if test="vo.town != null and vo.town != ''">
+                    AND  ve.TOWN = #{vo.town}
+                </if>
+                <if test="vo.area != null and vo.area != ''">
+                    AND  ve.AREA = #{vo.area}
+                </if>
+                <if test="vo.venues != null and vo.venues != ''">
+                    and ve.VENUES_ID IN
+                    <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                        #{value}
+                    </foreach>
+                </if>
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -459,29 +520,57 @@
         SELECT (@rownum := @rownum + 1) AS date,
                 IFNULL(zh.sum,0)  as count
         FROM(
-            SELECT i AS tmDate FROM num a where a.i > #{num} and type='day'
+            SELECT i AS tmDate FROM num a where a.i > #{vo.size} and type='day'
         ) tm
         LEFT JOIN
         (
         SELECT ors.weeks,ors.sum
         from (
             (
-                select  WEEK(WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
-                        count( e.EVENT_ID) as sum
-                from rm_event_info  e
-                where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
-                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num} +1)*7 day)
-                and EVENT_TYPE=#{eventType}
+                select  WEEK(ev.WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
+                        count( ev.EVENT_ID) as sum
+                from rm_event_info ev
+                left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+                where ve.VENUES_STATUS='01'
+                and DATE_FORMAT(ev.WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{vo.size} +1)*7 day)
+                and ev.EVENT_TYPE=#{vo.searchOne}
+                <if test="vo.town != null and vo.town != ''">
+                    AND  ve.TOWN = #{vo.town}
+                </if>
+                <if test="vo.area != null and vo.area != ''">
+                    AND  ve.AREA = #{vo.area}
+                </if>
+                <if test="vo.venues != null and vo.venues != ''">
+                    and ve.VENUES_ID IN
+                    <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                        #{value}
+                    </foreach>
+                </if>
                 GROUP BY weeks
                 ORDER BY weeks
             )union all(
                 select
-                    (WEEK(WARN_TIME,3) -(select WEEK(HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
-                    count( e.EVENT_ID) as sum
-                from rm_event_info  e
-                where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
-                and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval (#{num} +1)*7 day)from dual)
-                and EVENT_TYPE=#{eventType}
+                    (WEEK(ev.WARN_TIME,3) -(select WEEK(ev.HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                    count( ev.EVENT_ID) as sum
+                from rm_event_info  ev
+                left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+                where ve.VENUES_STATUS='01'
+                and DATE_FORMAT(ev.WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval (#{vo.size} +1)*7 day)from dual)
+                and EVENT_TYPE=#{vo.searchOne}
+                <if test="vo.town != null and vo.town != ''">
+                    AND  ve.TOWN = #{vo.town}
+                </if>
+                <if test="vo.area != null and vo.area != ''">
+                    AND  ve.AREA = #{vo.area}
+                </if>
+                <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+                </if>
                 GROUP BY weeks
                 ORDER BY weeks desc
             )
@@ -492,7 +581,6 @@
         order by tm.tmDate
     </select>
 
-
     <select id="getEventsMonthGather" resultType="map">
         SELECT  tm.tmDate as date,
                 IFNULL(ev.fire,0) as fire,
@@ -500,16 +588,30 @@
                 IFNULL(ev.crowd,0) as crowd
         FROM (
             SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
-            FROM num a where a.i &gt; #{num} and type='month'
+            FROM num a where a.i &gt; #{vo.size} and type='month'
         ) tm
         LEFT JOIN (
             select  DATE_FORMAT(WARN_TIME,'%Y-%m') evDate,
-                    SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
-                    SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
-                    SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
-                    SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
-            from rm_event_info
-            where DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+                    SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+            from rm_event_info ev
+            left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+            where ve.VENUES_STATUS='01'
+            and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{vo.size} day)
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -521,16 +623,30 @@
                 IFNULL(ev.face,0) as face,
                 IFNULL(ev.crowd,0) as crowd
         FROM(
-            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{num} and type='day'
+            SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{vo.size} and type='day'
         ) tm
         LEFT JOIN(
-            select  DATE_FORMAT(WARN_TIME,'%Y-%m-%d') evDate,
-                    SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
-                    SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
-                    SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
-                    SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
-            from rm_event_info
-            where DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+            select  DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') evDate,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+            from rm_event_info ev
+            left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+            where ve.VENUES_STATUS='01'
+            and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{vo.size} day)
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
             group by evDate
         ) ev on tm.tmDate= ev.evDate
         ORDER BY tm.tmDate
@@ -542,7 +658,7 @@
                 IFNULL(zh.face,0) as face,
                 IFNULL(zh.crowd,0) as crowd
         FROM(
-            SELECT i AS tmDate FROM num a where a.i > #{num} and type='day'
+            SELECT i AS tmDate FROM num a where a.i > #{vo.size} and type='day'
         ) tm
         LEFT JOIN
         (
@@ -552,25 +668,53 @@
                     IFNULL(ors.crowd,0) as crowd
             from (
                 (
-                    select  WEEK(WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
-                            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
-                            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
-                            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
-                            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
-                    from rm_event_info  e
-                    where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
-                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    select  WEEK(ev.WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+                    from rm_event_info  ev
+                    left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+                    where ve.VENUES_STATUS='01'
+                    and DATE_FORMAT(ev.WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                    and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{vo.size}+1)*7 day)
+                    <if test="vo.town != null and vo.town != ''">
+                        AND  ve.TOWN = #{vo.town}
+                    </if>
+                    <if test="vo.area != null and vo.area != ''">
+                        AND  ve.AREA = #{vo.area}
+                    </if>
+                    <if test="vo.venues != null and vo.venues != ''">
+                        and ve.VENUES_ID IN
+                        <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                            #{value}
+                        </foreach>
+                    </if>
                     GROUP BY weeks
                     ORDER BY weeks
                 )union all(
-                    select (WEEK(WARN_TIME,3) -(select WEEK(HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
-                            SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
-                            SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
-                            SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
-                            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
-                    from rm_event_info  e
-                    where DATE_FORMAT(WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
-                    and DATE_FORMAT(WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    select (WEEK(ev.WARN_TIME,3) -(select WEEK(ev.HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+                    from rm_event_info  ev
+                    left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+                    where ve.VENUES_STATUS='01'
+                    and DATE_FORMAT(ev.WARN_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                    and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{vo.size}+1)-1 day)from dual)
+                    <if test="vo.town != null and vo.town != ''">
+                        AND  ve.TOWN = #{vo.town}
+                    </if>
+                    <if test="vo.area != null and vo.area != ''">
+                        AND  ve.AREA = #{vo.area}
+                    </if>
+                    <if test="vo.venues != null and vo.venues != ''">
+                        and ve.VENUES_ID IN
+                        <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                            #{value}
+                        </foreach>
+                    </if>
                     GROUP BY weeks
                     ORDER BY weeks desc
                 )
@@ -631,6 +775,7 @@
             ve.VENUES_PHONE as venuesPhone,
             ve.VENUES_NAME as venuesName,
             ve.PICTURES_PATH as  venuesPictures,
+            ve.VENUES_ID as venuesId,
             ORGANIZATION as organization,
             VENUES_ADDRES as venuesAddres,
             LONGITUDE as longitude,
@@ -638,8 +783,12 @@
             d.DICT_CN_DESC as religiousSect,
             fz.MANAGER_MOBILE as responsibleMobile,
             mo.MONITOR_URL as monitorUrl,
-            mo.ACCESS_NUMBER as accessNumber
-
+            mo.ACCESS_NUMBER as accessNumber,
+            ev.EVENT_RESOURCE as eventResource,
+            case ev.EVENT_RESOURCE
+            when '01' then 'AI预警'
+            when '02' then '烟感'
+            end as eventResourceCn
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -647,4 +796,20 @@
         left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
         where ev.EVENT_ID = #{eventId}
     </select>
+
+
+    <select id="findFillEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
+        SELECT
+            <include refid="eventColumn"/>
+        from rm_event_info ev
+        WHERE  EVENT_STATE='00'
+        <if test="minute!=null and minute!=''">
+            and EVENT_TYPE='01'
+            and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d %H:%i')  = DATE_FORMAT(ADDDATE(NOW(), INTERVAL #{minute} MINUTE),'%Y-%m-%d %H:%i')
+        </if>
+        <if test="day!=null and day!=''">
+            and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d')  = DATE_FORMAT(ADDDATE(NOW(), INTERVAL #{day} day),'%Y-%m-%d')
+        </if>
+    </select>
+
 </mapper>

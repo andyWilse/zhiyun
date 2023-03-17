@@ -21,4 +21,5 @@ public class ParamsVo {
 
     private String searchOne;
     private String searchTwo;
+    private String searchThree;
 }

@@ -42,7 +42,9 @@
 
     <update id="updateTask" >
         update rm_task_info t
-            set t.HANDLE_PERSON=#{handlePerson},t.HANDLE_RESULTS=#{handleResults},t.HANDLE_TIME=#{handleTime}
+            set t.HANDLE_PERSON=#{handlePerson},
+            t.HANDLE_RESULTS=#{handleResults},
+            t.HANDLE_TIME=#{handleTime}
         where PROC_INST_ID=#{procInstId}
     </update>
 
@@ -62,32 +64,86 @@
         PROC_INST_ID as procInstId
     </sql>
 
-    <select id="queryTasks" resultType="com.religion.zhiyun.task.entity.TaskEntity">
+    <select id="queryTaskCommon" resultType="map">
         select
+            case task.num
+            when 1 then '任务发起'
+            when 2 then '任务处理节点1'
+            when 3 then '任务处理节点2'
+            when 4 then '任务处理节点3'
+            when 5 then '任务处理节点4'
+            when 6 then '任务处理节点5'
+            end as jieDian,
+            task.handleTime,
+            task.message,
+            task.taskNm
+        from(
+            select
+                @rownum := @rownum +1 as num,
+                DATE_FORMAT(co.TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
+                co.MESSAGE_ as message,
+                case when us.USER_NM is not null then us.USER_NM
+                else u.MANAGER_CN_NM
+                end as taskNm
+            from act_hi_identitylink ti
+            left join act_hi_comment  co on ti.USER_ID_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
+            left join rm_sys_user_info us on us.USER_MOBILE=ti.USER_ID_
+            left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.USER_ID_
+            join (SELECT  @rownum := 0) r
+            where ti.PROC_INST_ID_=#{procInstId}
+            order by co.TIME_ desc
+        )task
+    </select>
+
+    <select id="queryTasks" resultType="map">
+        SELECT
             ta.TASK_NAME as taskName,
-            ta.TASK_CONTENT as taskContent,
-            ta.END_TIME as endTime,
-            ve.VENUES_ADDRES as venuesAddres,
-            case ta.EMERGENCY_LEVEL
-            when '01' then '紧急'
-            when '02' then '普通'
-            else ta.EMERGENCY_LEVEL
-            end as emergencyLevel
-
-        from rm_task_info ta
+            ve.VENUES_NAME as venuesAddres,
+            di.DICT_CN_DESC as flowType,
+            DATE_FORMAT(ta.END_TIME,'%Y-%m-%d %H:%i:%s') as endTime,
+            case when ta.FLOW_TYPE in ('03','04','06') then u.MANAGER_CN_NM else us.USER_NM end as launchPerson,
+            case ta.HANDLE_RESULTS
+                when '0' then '未解决'
+                when '1' then '已解决'
+                else ta.HANDLE_RESULTS
+            end as handleResults,
+            case when ta.HANDLE_TIME is null then '进行中' else '已结束' end as statTask,
+            ta.PROC_INST_ID as procInstId
+        FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join act_ru_task ac on ta.PROC_INST_ID=ac.PROC_INST_ID_
-        where ac.assignee_=#{loginNm}
-
-        <if test="taskName != null and taskName != ''">
-            and ta.TASK_NAME LIKE CONCAT('%',#{taskName},'%')
+        left join rm_sys_dict di on ta.FLOW_TYPE=di.DICT_CD and di.DICT_TYPE_CD='1003'
+        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join act_hi_identitylink ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.TYPE_='starter'
+        where 1=1
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and ac.USER_ID_=#{vo.searchThree}
         </if>
-        <if test="taskContent != null and taskContent != ''">
-            and ta.TASK_CONTENT LIKE CONCAT('%',#{taskContent},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
-        order by ta.END_TIME desc
-        limit #{page},#{size}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ve.VENUES_NAME  LIKE CONCAT('%',#{vo.searchTwo},'%')
+        </if>
+        order by ta.HANDLE_RESULTS,ta.END_TIME
+        limit #{vo.page},#{vo.size}
+    </select>
 
+    <select id="queryTasksTotal" resultType="long">
+        SELECT
+            count(ta.TASK_ID)
+        FROM rm_task_info ta
+        left join act_hi_identitylink ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.TYPE_='starter'
+        where 1=1
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and ac.USER_ID_=#{vo.searchThree}
+        </if>
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ve.VENUES_NAME  LIKE CONCAT('%',#{vo.searchTwo},'%')
+        </if>
     </select>
 
     <select id="getTaskNum" resultType="map">
@@ -110,7 +166,9 @@
             else ta.EMERGENCY_LEVEL
             end as emergencyLevel,
             ta.EMERGENCY_LEVEL as emergencyLevelCode,
-            ta.LAUNCH_PERSON as launchPerson,
+            case when FLOW_TYPE in ('06','04','03') then ma.MANAGER_CN_NM
+            else us.USER_NM
+            end as launchPerson,
             DATE_FORMAT(ta.LAUNCH_TIME ,'%Y-%m-%d %H:%i:%s') as launchTime,
             DATE_FORMAT(ta.HANDLE_TIME ,'%Y-%m-%d %H:%i:%s') as handleTime,
             ta.HANDLE_RESULTS as handleResults,
@@ -120,6 +178,8 @@
 
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info us on ta.LAUNCH_PERSON=us.USER_MOBILE
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
         where ta.PROC_INST_ID in
         <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
             #{procInstId}
@@ -193,11 +253,11 @@
 
     <select id="getIssuedUsers" resultType="String">
         select
-            f.LOGIN_NM AS loginNm
+            f.USER_MOBILE AS loginNm
         FROM rm_sys_user_info f
         left join rm_sys_user_info u on u.province=f.province
         where f.VALID_IND='1'
-        and u.LOGIN_NM=#{loginNm}
+        and u.USER_MOBILE=#{loginNm}
         and f.IDENTITY  not in
         <foreach collection="identityArr" item="identity" index="index" open="(" close=")" separator=",">
             #{identity}
@@ -239,7 +299,10 @@
             t.FILING_ID as filingId,
             t.TASK_NAME as taskName,
             DATE_FORMAT(t.TASK_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
-            v.VENUES_NAME as venuesName
+            v.VENUES_NAME as venuesName,
+            t.PART_NUM as partNum,
+            t.RESPONSIBLE_PERSON as responsiblePerson,
+            t.TASK_CONTENT as taskContent
         from rm_filing_info t
         left join rm_venues_info v on v.VENUES_ID =t.REL_VENUES_ID
         left join rm_venues_manager_info m on v.RESPONSIBLE_PERSON=m.MANAGER_ID
@@ -284,6 +347,13 @@
         from rm_task_info ta
         left join rm_venues_info v on v.VENUES_ID =ta.REL_VENUES_ID
         where ta.TASK_ID=#{taskId}
+    </select>
+
+    <select id="getTaskContent" resultType="String">
+        select
+            TASK_CONTENT  as taskContent
+        from rm_task_info ta
+        where ta.PROC_INST_ID = #{procInstId}
     </select>
 
 </mapper>

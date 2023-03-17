@@ -7,6 +7,7 @@ import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.utils.enums.ParamCode;
@@ -26,7 +27,8 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     @Autowired
     private RmFileMapper rmFileMapper;
 
-
+    long code= ResultCode.FAILED.getCode();
+    String message="教职人员信息处理！";
     @Override
     public RespPageBean add(StaffEntity staffEntity) {
         long code= ResultCode.SUCCESS.getCode();
@@ -57,8 +59,28 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public List<StaffEntity> all() {
-        return staffInfoMapper.all();
+    public PageResponse findStaffSelect(Map<String, Object> map) {
+        long code= ResultCode.FAILED.getCode();
+        String message="教职人员获取";
+        List<Map<String, Object>> allStaff=new ArrayList<>();
+        long total=0l;
+        try {
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            String search = (String)map.get("search");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            allStaff = staffInfoMapper.getAllStaff(page,size,search);
+            total=staffInfoMapper.getAllStaffTotal(search);
+            code= ResultCode.SUCCESS.getCode();
+            message="教职人员获取成功";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,total,allStaff.toArray());
     }
 
     @Override
@@ -81,22 +103,54 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
     }
 
     @Override
-    public void delete(int staffId) {
-        staffInfoMapper.delete(staffId);
+    public PageResponse delete(String staffVenues,String staffId) {
+        code= ResultCode.FAILED.getCode();
+        message="教职人员删除！";
+        try {
+            String venuesStaff = staffInfoMapper.getVenuesStaff(staffVenues);
+            String venuesStaffs="";
+            if(null!=venuesStaff && !venuesStaff.isEmpty()){
+                String[] split = venuesStaff.split(",");
+                for(int i=0;i<split.length;i++){
+                    if(!staffId.equals(split[i])){
+                        venuesStaffs=venuesStaffs+split[i]+",";
+                    }
+                }
+                staffInfoMapper.updateVenuesStaff(venuesStaffs,staffVenues);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="教职人员删除成功！";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new PageResponse(code,message);
     }
 
     @Override
-    public RespPageBean getStaffByPage(Integer page, Integer size, String staffName, String staffPost, String religiousSect) throws IOException {
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
+    public PageResponse getStaffByPage(Integer page, Integer size, String staffName, String staffVenues){
+        code= ResultCode.FAILED.getCode();
+        message="教职人员信息获取！";
+        List<Map<String, Object>> staffByVenues =new ArrayList<>();
+        Long total=0l;
+        try {
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            //根据场所获取教职人员信息
+            String venuesStaff = staffInfoMapper.getVenuesStaff(staffVenues);
+            if(null!=venuesStaff && !venuesStaff.isEmpty()){
+                String[] split = venuesStaff.split(",");
+                staffByVenues = staffInfoMapper.getStaffByVenues(split,page,size);
+                total=Integer.toUnsignedLong(split.length);
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="教职人员信息获取成功！";
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        List<StaffEntity> dataList=staffInfoMapper.getStaffByPage(page,size,staffName,staffPost,religiousSect);
-        Object[] objects = dataList.toArray();
-        Long total=staffInfoMapper.getTotal(staffName,staffPost,religiousSect);
-        RespPageBean respPageBean = new RespPageBean();
-        respPageBean.setDatas(objects);
-        respPageBean.setTotal(total);
-        return respPageBean;
+        return new PageResponse(code,message,total,staffByVenues.toArray());
     }
 
     @Override

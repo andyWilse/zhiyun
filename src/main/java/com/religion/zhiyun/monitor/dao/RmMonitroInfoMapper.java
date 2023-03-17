@@ -86,6 +86,6 @@ public interface RmMonitroInfoMapper {
      * @param accessNumber
      * @return
      */
-    MonitroEntity getMonitorsList( @Param("accessNumber") String accessNumber);
+    List<MonitroEntity> getMonitorsList( @Param("accessNumber") String accessNumber);
 
 }

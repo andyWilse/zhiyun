@@ -132,58 +132,64 @@ public class RmEventInfoController {
 
     //根据登录人不同，通知不同
     @RequestMapping("/zlb/getEventsByState")
-    public AppResponse getEventsByState(@RequestParam Map<String, Object> map) {
+    public AppResponse getEventsByState(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventState = (String)map.get("eventState");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmEventInfoService.getEventsByState(page,size,eventState);
+        return rmEventInfoService.getEventsByState(page,size,eventState,token);
     }
 
     //解除误报
     @RequestMapping("/zlb/dismiss")
-    public AppResponse dismissEvents(@RequestParam Map<String, Object> map) {
+    public AppResponse dismissEvents(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventId = (String)map.get("eventId");
-        return rmEventInfoService.dismissEvent(eventId);
+        return rmEventInfoService.dismissEvent(eventId,token);
     }
 
     //拨打119
     @RequestMapping("/zlb/callFire")
-    public AppResponse callFire(@RequestParam Map<String, Object> map) {
+    public AppResponse callFire(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventId = (String)map.get("eventId");
-        return rmEventInfoService.callFire(eventId);
+        return rmEventInfoService.callFire(eventId,token);
     }
 
-    //一键上报
+    //一键上报（管理）
     @RequestMapping("/zlb/reportOne")
     public AppResponse reportOne(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventId = (String)map.get("eventId");
         return rmEventInfoService.reportOne(eventId,token);
     }
+    //一键上报（监管）
+    @RequestMapping("/jg/reportOne")
+    public AppResponse reportOneJg(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        String eventId = (String)map.get("eventId");
+        return rmEventInfoService.reportOneJg(eventId,token);
+    }
 
     //折线图（月）
     @RequestMapping("/zxt/month")
-    public AppResponse getEventsMonth(@RequestParam String eventType) {
-        return rmEventInfoService.getEventsMonth(-9,eventType);
+    public AppResponse getEventsMonth(@RequestParam String eventType,@RequestHeader("token")String token) {
+        return rmEventInfoService.getEventsMonth(-9,eventType,token);
     }
 
     //折线图（日）
     @RequestMapping("/zxt/day")
-    public AppResponse getEventsDay(@RequestParam String eventType) {
-        return rmEventInfoService.getEventsDay(-10,eventType);
+    public AppResponse getEventsDay(@RequestParam String eventType,@RequestHeader("token")String token) {
+        return rmEventInfoService.getEventsDay(-10,eventType,token);
     }
 
     //折线图（周）
     @RequestMapping("/zxt/week")
-    public AppResponse getEventsWeek(@RequestParam String eventType) {
-        return rmEventInfoService.getEventsWeek(-10,7*(-9)-1,eventType);
+    public AppResponse getEventsWeek(@RequestParam String eventType,@RequestHeader("token")String token) {
+        return rmEventInfoService.getEventsWeek(-10,7*(-9)-1,eventType,token);
     }
 
     //折线图（总图）
     @RequestMapping("/zxt/eventGather")
-    public AppResponse getEventsGather(@RequestParam String dateType) {
-        return rmEventInfoService.getEventsGather(-10,dateType);
+    public AppResponse getEventsGather(@RequestParam String dateType,@RequestHeader("token")String token) {
+        return rmEventInfoService.getEventsGather(-10,dateType,token);
     }
 
 }

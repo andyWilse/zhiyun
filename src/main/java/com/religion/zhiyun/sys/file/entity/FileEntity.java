@@ -36,6 +36,6 @@ public class FileEntity implements Serializable {
     private String creator;//创建人
 
     @Column(name = "CREATE_TIME")
-    private Timestamp createTime;//创建时间
+    private String createTime;//创建时间
 
 }

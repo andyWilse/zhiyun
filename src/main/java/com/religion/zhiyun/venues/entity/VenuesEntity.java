@@ -4,7 +4,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.sql.Date;
+
 
 @Data
 @AllArgsConstructor
@@ -59,13 +60,13 @@ public  class VenuesEntity implements Serializable {
     private String creator;//创建人
 
     @Column(name = "CREATE_TIME")
-    private Timestamp createTime;//创建时间
+    private String createTime;//创建时间
 
     @Column(name = "LAST_MODIFIER")
     private String lastModifier;//最后修改人
 
     @Column(name = "LAST_MODIFY_TIME")
-    private Timestamp lastModifyTime;//最后修改时间
+    private String lastModifyTime;//最后修改时间
 
     @Column(name = "LONGITUDE")
     private String longitude;//经度
@@ -84,6 +85,11 @@ public  class VenuesEntity implements Serializable {
     private String area;
     @Column(name = "TOWN")
     private String town;
+
+    @Column(name = "VENUES_STAFF")
+    private String venuesStaff;
+
+    private String venuesStaffId;
 
     private String dictCd;
 

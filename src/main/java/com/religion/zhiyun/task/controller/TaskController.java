@@ -1,7 +1,9 @@
 package com.religion.zhiyun.task.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskService;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -39,6 +41,35 @@ public class TaskController {
     @GetMapping("/getMonitorTask")
     public PageResponse getMonitorTask(@RequestParam String taskId){
         return taskService.getMonitorTask(taskId);
+    }
+
+
+    //一键上报（处理）
+    @RequestMapping("/reportOne/handle")
+    @ResponseBody
+    public AppResponse reportOneHandle(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        AppResponse report = taskService.reportOneHandle(map,token);
+        return report;
+    }
+
+    //一键上报（上报）
+    @RequestMapping("/reportOne/report")
+    @ResponseBody
+    public AppResponse reportOneReport(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        AppResponse report = taskService.reportOneReport(map,token);
+        return report;
+    }
+
+    //获取所有任务
+    //@RequiresPermissions("task:tasking")
+    @RequestMapping("/getTasks")
+    public PageResponse getTasking(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return taskService.getTasking(map,token);
+    }
+
+    @RequestMapping("/getCommon")
+    public PageResponse getCommon(@RequestParam String procInstId) {
+        return taskService.getTaskCommon(procInstId);
     }
 
 

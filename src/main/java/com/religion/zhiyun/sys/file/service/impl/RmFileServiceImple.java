@@ -3,6 +3,7 @@ package com.religion.zhiyun.sys.file.service.impl;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.file.service.RmFileService;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.enums.ParamCode;
@@ -44,8 +45,7 @@ public class RmFileServiceImple implements RmFileService {
                 for (int i=0;i<fileEntities.size();i++){
                     FileEntity fileEntity = fileEntities.get(i);
                     fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
-                    Timestamp timestamp = new Timestamp(new Date().getTime());
-                    fileEntity.setCreateTime(timestamp);
+                    fileEntity.setCreateTime(TimeTool.getYmdHms());
                     //String nbr = request.getHeader("login-name");
                     fileEntity.setCreator("admin");
                     rmFileMapper.add(fileEntity);

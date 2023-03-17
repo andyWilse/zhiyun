@@ -4,6 +4,7 @@ import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import org.apache.ibatis.annotations.Param;
@@ -29,10 +30,9 @@ public class RmStaffInfoController {
         return  rmStaffInfoService.add(staffEntity);
     }
 
-    @RequestMapping("/all")
-    public String allStaff(){
-        List<StaffEntity> list = rmStaffInfoService.all();
-        return  JsonUtils.objectTOJSONString(list);
+    @RequestMapping("/select")
+    public PageResponse findSelect(@RequestParam Map<String, Object> map){
+        return  rmStaffInfoService.findStaffSelect(map);
     }
 
     @PostMapping("/update")
@@ -40,23 +40,24 @@ public class RmStaffInfoController {
        return rmStaffInfoService.update(staffEntity);
     }
 
-    @PostMapping("/delete/{staffId}")
-    public void delete(@PathVariable int staffId) {
-        rmStaffInfoService.delete(staffId);
+    @PostMapping("/delete")
+    public PageResponse delete(@RequestBody Map<String, Object> map) {
+        String staffVenues = (String)map.get("staffVenues");
+        String staffId = (String)map.get("staffId");
+        return rmStaffInfoService.delete(staffVenues,staffId);
     }
 
     @GetMapping("/find")
-    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map) throws IOException {
+    public PageResponse getEmpByPage(@RequestParam Map<String, Object> map){
 
         String staffName = (String)map.get("staffName");
-        String staffPost = (String)map.get("staffPost");
-        String religiousSect = (String)map.get("religiousSect");
+        String staffVenues = (String)map.get("staffVenues");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
 
-        return rmStaffInfoService.getStaffByPage(page,size,staffName,staffPost,religiousSect);
+        return rmStaffInfoService.getStaffByPage(page,size,staffName,staffVenues);
     }
 
     /*

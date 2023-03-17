@@ -32,10 +32,9 @@ public class RmMonitroInfoController {
         return "添加成功！";
     }
 
-    @PostMapping("/updateMonitro")
-    public void updateMonitro(@RequestBody String monitroJson){
-        MonitroEntity monitroEntity = JsonUtils.jsonTOBean(monitroJson, MonitroEntity.class);
-        rmMonitroInfoService.updateMonitro(monitroEntity);
+    @PostMapping("/repair")
+    public PageResponse moRepair(@RequestBody String repairJson){
+        return rmMonitroInfoService.addMonitorEvent(repairJson);
     }
 
     @PostMapping("/deleteMonitro")

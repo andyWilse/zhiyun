@@ -20,9 +20,6 @@ public interface TaskReportService {
     /** 流程结束 **/
     public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token);
 
-    /** 获取未完成任务 **/
-    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent,String token);
-
     /** 统计任务数量 **/
     public AppResponse getTaskNum(String token);
 

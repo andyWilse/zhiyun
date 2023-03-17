@@ -24,10 +24,6 @@
         TOWN
     </sql>
 
-    <select id="queryAll" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
-        select * from RM_SYS_USER_INFO
-    </select>
-
     <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity" useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO
             RM_SYS_USER_INFO
@@ -116,13 +112,6 @@
         from RM_SYS_USER_INFO where  USER_MOBILE= #{userMobile}
     </select>
 
-    <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
-        select
-        <include refid="userColumn"/>
-        from RM_SYS_USER_INFO
-        where USER_ID = #{userId}
-    </select>
-
     <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             <include refid="userColumn"/>
@@ -205,49 +194,23 @@
         </if>
     </select>
 
-    <select id="getUserByVenues" resultType="java.util.Map">
-        select  zuyuan.USER_NBR as zuyuan,
-                zuzh.USER_NBR as zuzh,
-                jiegan.USER_NBR as jiegan,
-                jiewei.USER_NBR as jiewei,
-                qugan.USER_NBR as qugan,
-                quwei.USER_NBR as quwei,
-                admin.USER_NBR as admin
-        from rm_sys_user_info zuyuan
-        left join rm_sys_user_info zuzh on zuyuan.OFC_ID=zuzh.USER_NBR
-        left join rm_sys_user_info jiegan on zuzh.OFC_ID=jiegan.USER_NBR
-        left join rm_sys_user_info jiewei on jiegan.OFC_ID=jiewei.USER_NBR
-        left join rm_sys_user_info qugan on jiewei.OFC_ID=qugan.USER_NBR
-        left join rm_sys_user_info quwei on qugan.OFC_ID=quwei.USER_NBR
-        left join rm_sys_user_info admin on quwei.OFC_ID=admin.USER_NBR
-        where VALID_IND='1'
-        <if test="relVenuesId != null and relVenuesId != ''">
-            and (
-                zuyuan.REL_VENUES_ID=#{relVenuesId}
-                or zuzh.REL_VENUES_ID=#{relVenuesId}
-                or jiegan.REL_VENUES_ID=#{relVenuesId}
-                or jiewei.REL_VENUES_ID=#{relVenuesId}
-                or qugan.REL_VENUES_ID=#{relVenuesId}
-                or quwei.REL_VENUES_ID=#{relVenuesId}
-                or admin.REL_VENUES_ID=#{relVenuesId}
-            )
-        </if>
-    </select>
-
     <select id="getSanByVenues" resultType="java.util.Map">
         select
-            zy.USER_NBR as userNbr
+            zy.USER_NBR as userNbr,
+            USER_MOBILE as userMobile,
+            USER_NM as userNm
         from rm_sys_user_info zy
         where zy.VALID_IND='1'
+        and IDENTITY in ('10000006','10000007')
         <if test="relVenuesId != null and relVenuesId != ''">
-        and zy.REL_VENUES_ID=#{relVenuesId}
+            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
         </if>
     </select>
 
     <select id="getJie" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             jie.USER_NM as userNm,
-            jie.LOGIN_NM as loginNm
+            jie.USER_MOBILE as userMobile
         FROM  RM_SYS_USER_INFO zu
         LEFT JOIN RM_SYS_USER_INFO jie on zu.town=jie.town and jie.IDENTITY  in ('10000004','10000005')
         WHERE jie.VALID_IND='1'
@@ -262,7 +225,7 @@
     <select id="getQu" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             qu.USER_NM as userNm,
-            qu.LOGIN_NM as loginNm
+            qu.USER_MOBILE as userMobile
         FROM  RM_SYS_USER_INFO jie
         LEFT JOIN RM_SYS_USER_INFO qu on qu.area=jie.area and qu.IDENTITY  in ('10000002','10000003')
         WHERE qu.VALID_IND='1'
@@ -389,5 +352,6 @@
         or LOGIN_NM LIKE CONCAT('%',#{search},'%')
         or USER_NM LIKE CONCAT('%',#{search},'%')
     </select>
+
 
 </mapper>

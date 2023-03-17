@@ -21,10 +21,19 @@ public interface RmVenuesInfoMapper {
      */
     public List<VenuesEntity> querySelect(@Param("search") String search,@Param("town") String town);
 
-    //查询
+    /**
+     * app下拉使用(监管)
+     * @param vo
+     * @return
+     */
     public List<Map<String,Object>> queryVenues(@Param("vo") ParamsVo vo);
 
-    //查询(jz)
+    /**
+     *场所更新：下拉使用(管理)
+     * @param login
+     * @param search
+     * @return
+     */
     public List<Map<String,Object>> queryVenuesJz(@Param("login") String login,@Param("search") String search);
 
     /**
@@ -44,6 +53,13 @@ public interface RmVenuesInfoMapper {
      * @param venuesId
      */
     int delete(int venuesId);
+
+    /**
+     * 场所更新流程
+     * @param venuesEntity
+     */
+    void updateFillVenues(VenuesEntity venuesEntity);
+
 
     /**
      * 根据负责人获取

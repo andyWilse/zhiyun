@@ -21,9 +21,6 @@ public class NotifiedEntity {
     @Column(name = "NOTIFIED_USER")
     private String notifiedUser;//被通知人(用户)
 
-    @Column(name = "NOTIFIED_STAFF")
-    private String notifiedStaff;//被通知人(职员)
-
     @Column(name = "NOTIFIED_FLAG")
     private String notifiedFlag;//状态:00-未通知；01-已通知；02-一键上报；03-误报解除
 
@@ -36,6 +33,7 @@ public class NotifiedEntity {
     @Column(name = "REF_EVENT_ID")
     private int refEventId;//关联事件
 
-
+    @Column(name = "NOTIFIED_MANAGER")
+    private String notifiedManager;//被通知人
 
 }

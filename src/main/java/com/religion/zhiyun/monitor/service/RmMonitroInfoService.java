@@ -12,7 +12,11 @@ public interface RmMonitroInfoService {
 
     void addMonitro(MonitroEntity monitroEntity);
 
-    void updateMonitro(MonitroEntity monitroEntity);
+    /**
+     * 维修设备保存
+     * @param repairJson
+     */
+    PageResponse addMonitorEvent(String repairJson);
 
     void deleteMonitro(String monitroId);
 

@@ -21,10 +21,12 @@
         LAST_MODIFY_TIME as lastModifyTime,
         LONGITUDE as longitude,
         LATITUDE as Latitude,
-        PROVINCE,
-        CITY,
-        AREA,
-        TOWN
+        GROUP_MEMBERS as groupMembers,
+        PROVINCE as province,
+        CITY as city,
+        AREA as area,
+        TOWN as  town,
+        VENUES_STAFF as venuesStaff
     </sql>
 
     <sql id="twoColumn">
@@ -91,6 +93,7 @@
             and( RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
                     or VENUES_ADDRES LIKE concat('%',#{vo.searchOne},'%')
                     or VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
+                    or VENUES_ID=#{vo.searchOne}
             )
         </if>
         <if test="vo.town != null and vo.town != ''">
@@ -131,7 +134,9 @@
             PROVINCE,
             CITY,
             AREA,
-            TOWN
+            TOWN,
+            VENUES_STAFF,
+            GROUP_MEMBERS
         )values (
                     #{venuesName},
                     #{religiousSect},
@@ -153,20 +158,45 @@
                     #{province},
                     #{city},
                     #{area},
-                    #{town}
+                    #{town},
+                    #{venuesStaff},
+                    #{groupMembers}
                 )
     </insert>
 
     <update id="update" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
         UPDATE
             RM_VENUES_INFO
-        set VENUES_ADDRES=#{venuesAddres},
+        set
+            VENUES_NAME =#{venuesName},
+            RELIGIOUS_SECT =#{religiousSect},
+            REGISTER_NBR =#{registerNbr},
+            VENUES_PHONE =#{venuesPhone},
+            ORGANIZATION =#{organization},
+            VENUES_ADDRES =#{venuesAddres},
+            PICTURES_PATH =#{picturesPath},
+            RESPONSIBLE_PERSON  =#{responsiblePerson},
+            LIAISON_MAN =#{liaisonMan},
+            BRIEF_INTRODUCTION =#{briefIntroduction},
+            LAST_MODIFIER =#{lastModifier},
+            LAST_MODIFY_TIME =#{lastModifyTime},
+            LONGITUDE =#{longitude},
+            LATITUDE =#{Latitude},
+            GROUP_MEMBERS =#{groupMembers},
+            PROVINCE =#{province},
+            CITY =#{city},
+            AREA =#{area},
+            TOWN =#{ town},
+            VENUES_STAFF =#{venuesStaff}
+        WHERE VENUES_ID = #{venuesId}
+    </update>
+
+    <update id="updateFillVenues" parameterType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        UPDATE
+            RM_VENUES_INFO
+        set
             PICTURES_PATH=#{picturesPath},
-            RELIGIOUS_SECT=#{religiousSect},
             VENUES_PHONE=#{venuesPhone},
-            RESPONSIBLE_PERSON=#{responsiblePerson},
-            LIAISON_MAN=#{liaisonMan},
-            ORGANIZATION=#{organization},
             BRIEF_INTRODUCTION=#{briefIntroduction},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
@@ -196,14 +226,10 @@
     </select>
 
     <select id="getVenueByID" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
-        select <include refid="venuesColumn"/>
+        select
+            <include refid="venuesColumn"/>
         from RM_VENUES_INFO
         where VENUES_ID=#{venuesId}
-        <!--<where>
-            <if test="VENUES_ID!=null and VENUES_ID!=''">
-                VENUES_ID=#{venuesId,jdbcType=VARCHAR}
-            </if>
-        </where>-->
     </select>
 
     <select id="getAllNum" resultType="map">
@@ -429,13 +455,20 @@
 
     <select id="queryVenuesJz" resultType="map">
         select
-        ve.VENUES_ID as venuesId ,
-        ve.VENUES_NAME as venuesName,
-        ve.REGISTER_NBR as registerNbr,
-        ve.PICTURES_PATH as picturesPath,
-        m.MANAGER_CN_NM as managerCnNm,
-        m.MANAGER_MOBILE as managerMobile
+            ve.VENUES_ID as venuesId ,
+            ve.VENUES_NAME as venuesName,
+            ve.REGISTER_NBR as registerNbr,
+            ve.PICTURES_PATH as picturesPath,
+            ve.VENUES_PHONE as venuesPhone,
+            ve.ORGANIZATION as organization,
+            ve.VENUES_ADDRES as venuesAddres,
+            ve.BRIEF_INTRODUCTION as briefIntroduction,
+            ve.RELIGIOUS_SECT as religiousSect,
+            d.DICT_CN_DESC as religiousSectCn,
+            m.MANAGER_CN_NM as managerCnNm,
+            m.MANAGER_MOBILE as managerMobile
         from RM_VENUES_INFO ve
+        left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         left join rm_venues_manager_info m on ve.RESPONSIBLE_PERSON=m.MANAGER_ID
         where m.MANAGER_MOBILE=#{login}
         <if test="search!=null and search!=''">

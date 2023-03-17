@@ -12,8 +12,14 @@ import java.util.Map;
 
 public interface RmVenuesInfoService {
 
+    /**
+     * 场所新增
+     * @param venuesEntity
+     * @param token
+     * @return
+     */
     RespPageBean add(VenuesEntity venuesEntity,String token);
-    RespPageBean update(VenuesEntity venuesEntity);
+    RespPageBean update(VenuesEntity venuesEntity,String token);
     int delete(int venuesId);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
 
@@ -27,7 +33,13 @@ public interface RmVenuesInfoService {
 
     List<VenuesEntity> querySectAll(String religiousSect);
     List<VenuesEntity> getByVenuesFaculty(String venuesName,String responsiblePerson);
-    VenuesEntity getVenueByID(String venuesId);
+
+    /**
+     * 根据id获取
+     * @param venuesId
+     * @return
+     */
+    AppResponse getVenueByID(String venuesId);
 
     /**
      * 统计场所数量（app首页）
@@ -47,11 +59,13 @@ public interface RmVenuesInfoService {
     RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect,String token);
 
     /**
-     * 场所下拉
-     * @param search
+     * 场所下拉(监管)
+     * @param map
      * @return
      */
-    public AppResponse queryVenues(String search,String token);
+    public AppResponse queryVenues(Map<String, Object> map,String token);
+
+    public AppResponse queryStaffVenues(Map<String, Object> map,String token);
 
     /**
      * 获取地图详情
@@ -69,7 +83,7 @@ public interface RmVenuesInfoService {
     AppResponse getMapVenues(String search,String religiousSect);
 
     /**
-     * 场所更新用（教职端）
+     * 场所更新用：场所下拉(管理)
      * @param token
      * @param search
      * @return

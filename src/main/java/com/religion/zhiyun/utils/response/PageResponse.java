@@ -9,6 +9,7 @@ import lombok.Setter;
 public class PageResponse {
     private long code;
     private String message;
+    private long total;
     private Object result;
 
     public PageResponse(){
@@ -18,6 +19,18 @@ public class PageResponse {
     public PageResponse(long code, String message, Object result){
         this.code=code;
         this.message=message;
+        this.result=result;
+    }
+
+    public PageResponse(long code, String message){
+        this.code=code;
+        this.message=message;
+    }
+
+    public PageResponse(long code, String message, long total,Object result){
+        this.code=code;
+        this.message=message;
+        this.total=total;
         this.result=result;
     }
 

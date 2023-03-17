@@ -60,20 +60,6 @@ public class TaskReportController {
         return handle;
     }
 
-    //@RequiresPermissions("task:tasking")
-    @RequestMapping("/getTasking")
-    public RespPageBean getTasking(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
-        String taskName = (String) map.get("taskName");
-        String taskContent = (String) map.get("taskContent");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-
-        return warnTaskService.getTasking(page,size,taskName,taskContent,token);
-    }
-
     @RequestMapping("/getTaskStatistics")
     public AppResponse getTaskStatistics(@RequestHeader("token")String token) {
         return warnTaskService.getTaskNum(token);

@@ -63,7 +63,7 @@ public class LoginUserController {
             // LoginInfo loginInfo = loginService.getLoginInfo(username);
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             String token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
-            stringRedisTemplate.opsForValue().set(token,username,24*60, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);
 
             return LoginResp.success("登录成功").add("token",token); // 将用户的角色和权限发送到前台
         } catch (IncorrectCredentialsException e) {

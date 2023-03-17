@@ -19,12 +19,20 @@ public enum ParamCode {
     FILE_TYPE_01("01", "照片"),
     FILE_TYPE_02("02", "文件"),
 
+    //事件文件类型
+    EVENT_FILE_00("00", "AI预警(图片)"),
+    EVENT_FILE_01("01", "AI预警(视频)"),
+    EVENT_FILE_02("02", "烟感"),
+
+    //事件类型
+    EVENT_LEVEL_0("0", "事件"),
+    EVENT_LEVEL_1("1", "次要"),
     //事件类型
     EVENT_TYPE_01("01", "火灾预警"),
     EVENT_TYPE_02("02", "人脸识别"),
     EVENT_TYPE_03("03", "任务预警"),
     EVENT_TYPE_04("04", "人流聚集"),
-
+    EVENT_TYPE_05("05", "设备报修"),
     //事件状态
     EVENT_STATE_00("00", "待查实"),
     EVENT_STATE_01("01", "已完成"),

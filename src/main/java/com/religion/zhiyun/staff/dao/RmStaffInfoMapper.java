@@ -1,10 +1,8 @@
 package com.religion.zhiyun.staff.dao;
 
 import com.religion.zhiyun.staff.entity.StaffEntity;
-import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,8 +18,9 @@ public interface RmStaffInfoMapper {
     void add(StaffEntity staffEntity);
 
     //查询
-    List<StaffEntity> all();
-
+    List<Map<String,Object>> getAllStaff(@Param("page") Integer page, @Param("size") Integer size, @Param("search") String search);
+    //总数
+    long getAllStaffTotal(@Param("search") String search);
     /**
      * 修改
       * @param staffEntity
@@ -63,11 +62,18 @@ public interface RmStaffInfoMapper {
     Long getMaxStaffCd();
 
     /**
-     * 根据场所获取职员信息
+     * 根据场所获取管理人员信息
      * @param relVenuesId
      * @return
      */
-    List<StaffEntity> getStaffByVenuesId(@Param("relVenuesId") Integer relVenuesId);
+    String getManagerByVenuesId(@Param("relVenuesId") Integer relVenuesId);
+
+    /**
+     * 根据场所获取三人堂组员
+     * @param relVenuesId
+     * @return
+     */
+    List<String> getSanByVenuesId(@Param("relVenuesId") Integer relVenuesId);
 
     /**
      * 根据条件获取职员信息
@@ -102,4 +108,22 @@ public interface RmStaffInfoMapper {
 
     //hu活动备案
     List<Map<String,Object>> getFilingByManagerId(@Param("ManagerId") String ManagerId);
+
+    String findVenuesStaffs(@org.springframework.data.repository.query.Param("staffIds") String[] staffIds);
+
+    /**
+     * 根据场所获取职员信息
+     * @param venuesId
+     * @return
+     */
+    String getVenuesStaff(@Param("venuesId")String venuesId);
+
+    /**
+     * 根据人员获取详细
+     * @param staffIds
+     * @return
+     */
+    List<Map<String,Object>> getStaffByVenues(@Param("staffIds") String[] staffIds,@Param("page") Integer page,@Param("size") Integer size);
+
+    void updateVenuesStaff(@Param("venuesStaff")String venuesStaff,@Param("venuesId")String venuesId);
 }

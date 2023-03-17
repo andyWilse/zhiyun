@@ -2,6 +2,7 @@ package com.religion.zhiyun.task.dao;
 
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -19,12 +20,10 @@ public interface TaskInfoMapper {
     void updateTask(TaskEntity taskEntity);
 
     /**分页查询**/
-    List<TaskEntity> queryTasks(@Param("page") Integer page,
-                                @Param("size") Integer size,
-                                @Param("taskName") String taskName,
-                                @Param("taskContent") String taskContent,
-                                @Param("loginNm") String loginNm
-                                );
+    List<Map<String,Object>> queryTasks(@Param("vo") ParamsVo vo);
+    Long queryTasksTotal(@Param("vo") ParamsVo vo);
+    /**流转意见**/
+    List<Map<String,Object>> queryTaskCommon(String procInstId);
 
     /** 任务数量统计 **/
     Map<String,Object> getTaskNum(String loginNm);
@@ -64,5 +63,11 @@ public interface TaskInfoMapper {
 
     /**获取维设备信息**/
     List<Map<String,Object>>  getMonitorTask( @Param("taskId") String taskId);
+
+    /**获取**/
+    String  getTaskContent(@Param("procInstId") String procInstId);
+
+
+
 
 }

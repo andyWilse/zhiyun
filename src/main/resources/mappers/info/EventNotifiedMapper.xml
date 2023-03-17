@@ -6,18 +6,18 @@
     <insert id="addNotified" >
         insert into RM_EVENT_NOTIFIED_INFO (
             NOTIFIED_USER,
-            NOTIFIED_STAFF,
             NOTIFIED_FLAG,
             NOTIFIED_TIME,
             REPORT_TIME,
-            REF_EVENT_ID
+            REF_EVENT_ID,
+            NOTIFIED_MANAGER
         ) values (
             #{notifiedUser},
-            #{notifiedStaff},
             #{notifiedFlag},
             #{notifiedTime},
             #{reportTime},
-            #{refEventId}
+            #{refEventId},
+            #{notifiedManager}
         )
     </insert>
 

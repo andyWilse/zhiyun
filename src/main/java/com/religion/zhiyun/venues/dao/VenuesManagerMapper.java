@@ -45,5 +45,13 @@ public interface VenuesManagerMapper {
      */
     List<Map<String,Object>> getManagerByNm(@Param("name") String name);
 
+    /**
+     * 查询
+     * @param managerId
+     * @return
+     */
+    String getManagerById(@Param("managerId") String managerId);
+
+
 
 }

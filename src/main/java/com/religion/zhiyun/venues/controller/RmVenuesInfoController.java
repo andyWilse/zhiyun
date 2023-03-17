@@ -3,6 +3,7 @@ package com.religion.zhiyun.venues.controller;
 
 import com.religion.zhiyun.login.api.CommonResult;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -36,18 +37,9 @@ public class RmVenuesInfoController {
 
     @PostMapping("/updateVenues")
     @ResponseBody
-    public CommonResult updateVenues(@RequestBody VenuesEntity venuesEntity) {
-        Timestamp timestamp = new Timestamp(new Date().getTime());
-        venuesEntity.setLastModifyTime(timestamp);
-        venuesEntity.setLastModifier("last");
-        rmVenuesInfoService.update(venuesEntity);
+    public CommonResult updateVenues(@RequestBody VenuesEntity venuesEntity,@RequestHeader("token")String token) {
+        rmVenuesInfoService.update(venuesEntity,token);
         return CommonResult.success("修改成功！");
-    }
-
-    @PostMapping("/update")
-    public void update(@RequestBody String venuesJson) {
-        VenuesEntity venuesEntity=JsonUtils.jsonTOBean(venuesJson,VenuesEntity.class);
-        rmVenuesInfoService.update(venuesEntity);
     }
 
     @PostMapping("/delete/{venuesId}")
@@ -60,10 +52,16 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.querySelect(search,town);
     }
 
-    //app下拉使用
+    //app下拉使用(监管)
     @RequestMapping("/getVenues")
-    public AppResponse getVenuesList(@RequestParam String search,@RequestHeader("token")String token) {
-        return rmVenuesInfoService.queryVenues(search,token);
+    public AppResponse getVenuesList(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.queryVenues(map,token);
+    }
+
+    //场所下拉使用(pc教职)
+    @RequestMapping("/getStaffVenues")
+    public AppResponse getStaffVenues(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.queryStaffVenues(map,token);
     }
 
     //根据教派类别查询
@@ -75,9 +73,8 @@ public class RmVenuesInfoController {
 
     //根据id获取该教堂
     @RequestMapping("/getVenueByID")
-    String getVenueByID(String venuesId){
-        VenuesEntity venuesEntity = rmVenuesInfoService.getVenueByID(venuesId);
-        return JsonUtils.objectTOJSONString(venuesEntity);
+    public AppResponse getVenueByID(String venuesId){
+        return rmVenuesInfoService.getVenueByID(venuesId);
     }
 
     //统计场所数量（app首页）
@@ -106,17 +103,11 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,token);
     }
 
-    //场所更新（教职）
+    //场所更新：app下拉使用(管理)
     @RequestMapping("/getVenueJz")
     public AppResponse queryVenuesJz(@RequestParam String search,@RequestHeader("token")String token) {
         return rmVenuesInfoService.queryVenuesJz(token,search);
     }
-/*
-    @RequestMapping("/getVenueAddress")
-    public String getVenueAddress(@RequestParam String search) {
-        List<VenuesEntity> list = rmVenuesInfoService.queryAll(search);
-        return JsonUtils.objectTOJSONString(list);
-    }*/
 
     //地图(app用)
     @RequestMapping("/map/getVenues")

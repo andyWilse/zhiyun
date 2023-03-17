@@ -3,20 +3,36 @@ package com.religion.zhiyun.task.service.impl;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
+import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskService;
+import com.religion.zhiyun.user.dao.SysUserMapper;
+import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import lombok.extern.slf4j.Slf4j;
+import org.activiti.engine.HistoryService;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.repository.DeploymentBuilder;
+import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -26,6 +42,15 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     private TaskInfoMapper taskInfoMapper;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private org.activiti.engine.TaskService taskService;
 
     @Override
     public AppResponse deployment(String taskKey) {
@@ -63,7 +88,6 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public RespPageBean getProcdef(Integer page,Integer size,String taskName) {
         List<ProcdefEntity> procdef = taskInfoMapper.getProcdef(page,size,taskName);
-
         return new RespPageBean(200l,procdef.toArray());
     }
 
@@ -84,5 +108,256 @@ public class TaskServiceImpl implements TaskService {
             e.printStackTrace();
         }
         return new PageResponse(code,message,monitorTask.toArray());
+    }
+
+    @Override
+    @Transactional
+    public AppResponse reportOneReport(Map<String, Object> map, String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="一键上报任务上报失败！";
+
+        try {
+            String procInstId = (String)map.get("procInstId");
+            String loginNm = this.getLogin(token);
+            //下节点处理人
+            List<String> userList=new ArrayList();
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            if(null!=sysUserEntity){
+                String identify = sysUserEntity.getIdentity();
+                //根据用户身份，查询
+                if("10000006".equals(identify) || "10000007".equals(identify)){
+                    //查找街干事、街委员
+                    List<SysUserEntity> jie = sysUserMapper.getJie(loginNm, identify);
+                    if(jie.size()>0 && null!=jie){
+                        for(int i=0;i<jie.size();i++){
+                            String userMobile = jie.get(i).getUserMobile();
+                            userList.add(userMobile);
+                        }
+                    }
+                }else if("10000004".equals(identify) || "10000005".equals(identify)){
+                    //查找区干事、区委员
+                    List<SysUserEntity> qu = sysUserMapper.getQu(loginNm, identify);
+                    if(qu.size()>0 && null!=qu){
+                        for(int i=0;i<qu.size();i++){
+                            String userMobile = qu.get(i).getUserMobile();
+                            userList.add(userMobile);
+                        }
+                    }
+                }
+            }else{
+                throw new RuntimeException("系统中不存在下节点处理人，请先添加！");
+            }
+
+            //根据角色信息获取自己的待办 act_ru_task
+            //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+            //处理自己的待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    String assignee = item.getAssignee();
+                    if(assignee.equals(loginNm)){
+                        Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "go", userList, procInstId);
+                        variables.put("isSuccess", true);
+                        //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
+                        taskService.setVariableLocal(item.getId(),"isSuccess",false);
+                        //增加审批备注
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
+                        //完成此次审批。由下节点审批
+                        taskService.complete(item.getId(), variables);
+                    }
+                }
+            }
+            log.info("任务id："+procInstId+" 上报");
+            code= ResultCode.SUCCESS.getCode();
+            message="一键上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="上报流程上报失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+    }
+
+    @Override
+    @Transactional
+    public AppResponse reportOneHandle(Map<String, Object> map, String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="任务处理";
+        try {
+            String procInstId = (String)map.get("procInstId");
+            String loginNm = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户信息丢失，请联系管理员！");
+            }
+            //处理待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    String assignee = item.getAssignee();
+                    if(assignee.equals(loginNm)){
+                        Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "end",null,procInstId);
+                        variables.put("nrOfCompletedInstances", 1);
+                        variables.put("isSuccess", true);
+
+                        //设置本地参数。在myListener1监听中获取。
+                        taskService.setVariableLocal(item.getId(),"isSuccess",true);
+                        //增加审批备注
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
+                        //完成此次审批。如果下节点为endEvent。结束流程
+                        taskService.complete(item.getId(), variables);
+                        log.info("任务id："+procInstId+" 已处理，流程结束！");
+
+                        //更新处理结果
+                        TaskEntity taskEntity=new TaskEntity();
+                        taskEntity.setHandlePerson(loginNm);
+                        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                        taskEntity.setHandleTime(new Date());
+                        taskEntity.setHandleResults((String) map.get("handleResults"));
+                        taskEntity.setProcInstId(procInstId);
+                        taskInfoMapper.updateTask(taskEntity);
+                    }
+                }
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="上报流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="上报流程处理失败！";
+            e.printStackTrace();
+        }
+        log.info("任务已处理，数据更新！");
+        return new AppResponse(code,message);
+    }
+
+
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(String token){
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
+        }
+        return loginNm;
+    }
+
+    /**
+     * 封装意见
+     * @param map
+     * @return
+     */
+    public String getComment(Map<String, Object> map){
+        CommentEntity en =new CommentEntity();
+        String handleResults = (String)map.get("handleResults");
+        String feedBack = (String)map.get("feedBack");
+        String picture = (String)map.get("picture");
+        en.setFeedBack(feedBack);
+        en.setHandleResults(handleResults);
+        en.setPicture(picture);
+        return JsonUtils.beanToJson(en);
+    }
+    /**
+     * 流程走向定义
+     * @param identity
+     * @param flag
+     * @param userList
+     * @param procInstId
+     * @return
+     */
+    public Map<String, Object>  setFlag(String identity,String flag,List<String> userList ,String procInstId) {
+        String identi = sysUserMapper.queryStarter(procInstId);
+        int no=0;
+        if("10000007".equals(identi) || "10000006".equals(identi)){
+            no=1;
+        }else{
+            no=2;
+        }
+        int flagNo=0;
+        int assiNo=0;
+        if("10000007".equals(identity) || "10000006".equals(identity)){
+            flagNo=no;
+            assiNo=no+1;
+        }else if("10000005".equals(identity) || "10000004".equals(identity)){
+            flagNo=no+1;
+            assiNo=no+2;
+        }else if("10000003".equals(identity) || "10000002".equals(identity)){
+            flagNo=no+2;
+            assiNo=no+3;
+        }
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("flag"+flagNo, flag);
+        variables.put("handleList"+assiNo, userList);
+        return variables;
+    }
+
+    @Override
+    public PageResponse getTasking(Map<String, Object> map,String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取任务信息";
+        List<Map<String,Object>> taskEntities = new ArrayList<>();
+        long total=0l;
+        try {
+            //参数解析
+            String taskName = (String) map.get("taskName");
+            String taskContent = (String) map.get("taskContent");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            //获取任务
+            String loginNm = this.getLogin(token);
+            ParamsVo vo=new ParamsVo();
+            vo.setPage(page);
+            vo.setSize(size);
+            vo.setSearchOne(taskName);
+            vo.setSearchTwo(taskContent);
+            //超级管理员
+            if(!loginNm.equals("admin")){
+                vo.setSearchThree(loginNm);
+            }
+            taskEntities = taskInfoMapper.queryTasks(vo);
+            total=taskInfoMapper.queryTasksTotal(vo);
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取任务信息成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取任务信息失败！";
+            e.printStackTrace();
+        }
+
+        return new PageResponse(code,message,total,taskEntities.toArray());
+    }
+
+    @Override
+    public PageResponse getTaskCommon(String procInstId) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取任务流转意见";
+        List<Map<String,Object>> taskCommon = new ArrayList<>();
+
+        try {
+            taskCommon= taskInfoMapper.queryTaskCommon(procInstId);
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取任务流转意见成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取任务流转意见失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,taskCommon.toArray());
     }
 }

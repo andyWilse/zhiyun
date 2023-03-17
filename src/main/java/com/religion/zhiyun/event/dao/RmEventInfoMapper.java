@@ -42,7 +42,7 @@ public interface RmEventInfoMapper {
      * 根据未完成的状态展示
      * @return
      */
-    List<EventEntity> allEventByState();
+    List<EventEntity> getEventByVo(@Param("vo") ParamsVo vo);
 
     /**
      * 根据事件id查询事件、场所、监控设备信息
@@ -74,6 +74,7 @@ public interface RmEventInfoMapper {
 
     /**
      * 手机端（预警查询）
+     * 已通知，待核查
      * @return
      */
     List<Map<String,Object>> getUndoEvents(@Param("vo") ParamsVo vo);
@@ -89,32 +90,28 @@ public interface RmEventInfoMapper {
      * 接收烟感器、燃气探测传输的数据
      * @param eventEntity
      */
-    void addEventByNB(EventEntity eventEntity);
+    Long addEventByNB(EventEntity eventEntity);
 
     /**
      * 预警通知（浙里办）
-     * @param page
-     * @param size
-     * @param eventState
+     * @param vo
      * @return
      */
-    List<Map<String, Object>> getEventsByState(Integer page, Integer size,
-                                               @Param("eventStates") String[] eventState,
-                                               String login);
+    List<Map<String, Object>> getEventsByState(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数（浙里办）
      * @return
      */
-    Long getTotalByState(@Param("eventStates") String[] eventState,String login);
+    Long getTotalByState(@Param("vo") ParamsVo vo);
 
 
     /**
      *更新事件表状态
-     * @param eventId
+     * @param event
      * @return
      */
-    void updateEventState(String eventId, Date ymdHms,String eventState);
+    void updateEventState(EventEntity event);
 
     /**
      * 获取事件
@@ -139,48 +136,48 @@ public interface RmEventInfoMapper {
 
     /**
      * 月（10个月，传-9）
-     * @param num
+     * @param vo
      * @return
      */
-    List<Map<String,Object>> getEventsMonth(@Param("num") int num,@Param("eventType") String eventType);
+    List<Map<String,Object>> getEventsMonth(@Param("vo") ParamsVo vo);
 
     /**
      * 日(10天，传-10)
-     * @param num
+     * @param vo num
      * @return
      */
-    List<Map<String,Object>> getEventsDay(@Param("num") int num,@Param("eventType") String eventType);
+    List<Map<String,Object>> getEventsDay(@Param("vo") ParamsVo vo);
 
     /**
      * 周
-     * @param num（10周，传-10）
-     * @param dayNum（=7*(num+1)-1）
+     * @param vo num（10周，传-10）
+     * @param vo dayNum（=7*(num+1)-1）
      * @return
      */
-    List<Map<String,Object>> getEventsWeek(@Param("num") int num,@Param("dayNum") int dayNum,@Param("eventType") String eventType);
+    List<Map<String,Object>> getEventsWeek(@Param("vo") ParamsVo vo);
 
 
     /**
      * 月（10个月，传-9）
-     * @param num
+     * @param vo
      * @return
      */
-    List<Map<String,Object>> getEventsMonthGather(@Param("num") int num);
+    List<Map<String,Object>> getEventsMonthGather(@Param("vo") ParamsVo vo);
 
     /**
      * 日(10天，传-10)
-     * @param num
+     * @param vo
      * @return
      */
-    List<Map<String,Object>> getEventsDayGather(@Param("num") int num);
+    List<Map<String,Object>> getEventsDayGather(@Param("vo") ParamsVo vo);
 
     /**
      * 周
-     * @param num（10周，传-10）
+     * @param vo（10周，传-10）
      * @param （=7*(num+1)-1）
      * @return
      */
-    List<Map<String,Object>> getEventsWeekGather(@Param("num") int num);
+    List<Map<String,Object>> getEventsWeekGather(@Param("vo") ParamsVo vo);
 
 
     /**
@@ -198,4 +195,10 @@ public interface RmEventInfoMapper {
      */
     List<Map<String,Object>> getEventDetail(@Param("eventId") String eventId);
 
+    /**
+     * 查询十分钟没人处理
+     * String quarter,String month,String week ,String second
+     * @return
+     */
+    List<EventEntity> findFillEvent(String day,String hour,String minute);
 }

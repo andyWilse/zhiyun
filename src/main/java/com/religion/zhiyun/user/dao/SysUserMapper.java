@@ -13,8 +13,6 @@ import java.util.Map;
 @Mapper
 @Repository
 public interface SysUserMapper {
-    //查询
-    public List<SysUserEntity> queryAll();
 
     //根据用户名查询数据
     SysUserEntity queryByName(@Param("loginNm") String loginNm);
@@ -30,9 +28,6 @@ public interface SysUserMapper {
 
     //根据电话查询数量
     Long queryTelNum(@Param("userMobile") String userMobile);
-
-    //根据用户id查询数据
-    SysUserEntity queryByUserId(@Param("userId") String userId);
 
     /**
      * 分页查询
@@ -75,13 +70,6 @@ public interface SysUserMapper {
      * @return
      */
     String queryStarter(@Param("procInstId") String procInstId);
-
-    /**
-     * 获取场所内用户
-     * @param relVenuesId
-     * @return
-     */
-    List<Map<String,Object>> getUserByVenues(@Param("relVenuesId") Integer relVenuesId);
 
     /**
      * 获取三人驻堂的成员

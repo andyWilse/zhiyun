@@ -60,11 +60,18 @@ public class EventEntity implements Serializable {
     private String eventState;//事件状态   00-待查实；01-已完成；02-误报
 
     @Column(name = "HANDLE_RESULTS")
-    private String handleTesults;//处理结果
+    private String handleResults;//处理结果
 
     @Column(name = "HANDLE_TIME")
     private String handleTime;//处理时间
 
+    @Column(name = "EVENT_RESOURCE")
+    private String eventResource;//警情来源：01-AI预警；02-烟感
 
+    @Column(name = "PICTURES_PATH")
+    private String picturesPath;//图片
+
+    @Column(name = "VIDEOS_PATH")
+    private String videosPath;//视频
 
 }

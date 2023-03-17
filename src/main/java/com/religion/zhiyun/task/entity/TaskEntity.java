@@ -28,7 +28,7 @@ public class TaskEntity implements Serializable {
     private String taskContent;//'任务内容'
 
     @Column(name = "END_TIME")
-    private Date endTime;//'截至时间'
+    private String endTime;//'截至时间'
 
     @Column(name = "REL_VENUES_ID")
     private String relVenuesId;//'地址(关联场所主键ID）'
@@ -66,19 +66,20 @@ public class TaskEntity implements Serializable {
     @Column(name = "PROC_INST_ID")
     private String procInstId;//'关联任务'
 
+    @Column(name = "REL_EVENT_ID")
+    private String relEventId;//'预警事件id'
 
     private String partNum;//'参与人数'
-
     private String responsiblePerson;//'负责人'
-
     private String venuesAddres;
-
-    private Date taskTime;//'活动时间'
-
+    private String taskTime;//'活动时间'
     private String province;
     private String city;
     private String area;
     private String town;
     private String filingStatus;
 
+    private String venuesId;
+    private String briefIntroduction;
+    private String venuesPhone;
 }

@@ -69,8 +69,26 @@
         update RM_STAFF_INFO set STAFF_STATUS='02' where STAFF_ID = #{staffId}
     </update>
 
-    <select id="all" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
-        select <include refid="staffColumn"/> from rm_staff_info
+    <select id="getAllStaff" resultType="map">
+        select
+            STAFF_ID as staffId,
+            STAFF_CN_NM as staffName,
+            STAFF_TELPHONE as staffTelphone
+        from rm_staff_info
+        where STAFF_STATUS!='02'
+        <if test="search != null and search != ''">
+            and  STAFF_CN_NM LIKE CONCAT('%',#{search},'%')
+        </if>
+        limit #{page},#{size}
+    </select>
+    <select id="getAllStaffTotal" resultType="long">
+        select
+            count(STAFF_ID)
+        from rm_staff_info
+        where STAFF_STATUS!='02'
+        <if test="search != null and search != ''">
+            and  STAFF_CN_NM LIKE CONCAT('%',#{search},'%')
+        </if>
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
@@ -147,14 +165,16 @@
         select max(STAFF_CD) as staffCd from RM_STAFF_INFO
     </select>
 
-    <select id="getStaffByVenuesId" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+    <select id="getManagerByVenuesId" resultType="String">
         select
-            STAFF_CD as staffCd,
-            STAFF_CN_NM as staffName
-        from RM_STAFF_INFO
-        where STAFF_STATUS='01'
+            CONCAT_WS(',',res.MANAGER_MOBILE,lia.MANAGER_MOBILE,gro.MANAGER_MOBILE) as c
+        from rm_venues_info ve
+        left join rm_venues_manager_info res on res.MANAGER_ID=ve.RESPONSIBLE_PERSON and res.MANAGER_TYPE_CD='01' and res.VALID_IND='1'
+        left join rm_venues_manager_info gro on gro.MANAGER_ID=ve.GROUP_MEMBERS and gro.MANAGER_TYPE_CD='02' and gro.VALID_IND='1'
+        left join rm_venues_manager_info lia on lia.MANAGER_ID=ve.LIAISON_MAN and lia.MANAGER_TYPE_CD='03' and lia.VALID_IND='1'
+        where 1=1
         <if test="relVenuesId != null and relVenuesId != ''">
-            AND  REL_VENUES_ID = #{relVenuesId}
+            AND  ve.VENUES_ID = #{relVenuesId}
         </if>
     </select>
 
@@ -226,6 +246,44 @@
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
         WHERE MANAGER_ID = #{staffId}
+    </update>
+
+    <select id="findVenuesStaffs" resultType="String">
+        select
+         GROUP_CONCAT(STAFF_CN_NM) as name
+        from rm_staff_info
+        where STAFF_ID in
+        <foreach collection="array" item="staffIds" index="index" open="(" close=")" separator=",">
+            #{staffIds}
+        </foreach>
+    </select>
+
+    <select id="getVenuesStaff" resultType="String">
+        SELECT
+            venues_staff as venuesStaff
+        FROM rm_venues_info
+        where (venues_id = #{venuesId}
+        OR venues_name LIKE CONCAT('%',#{venuesId},'%')
+        )
+    </select>
+
+    <select id="getStaffByVenues" resultType="map">
+        SELECT
+            STAFF_ID as staffId,
+            STAFF_CN_NM as staffName,
+            STAFF_TELPHONE as staffTelphone
+        from rm_staff_info
+        where STAFF_ID in
+        <foreach collection="staffIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        group by STAFF_CN_NM
+        limit #{page},#{size}
+    </select>
+
+    <update id="updateVenuesStaff">
+        update rm_venues_info set venues_staff=#{venuesStaff}
+        where (venues_id = #{venuesId} OR venues_name LIKE CONCAT('%',#{venuesId},'%') )
     </update>
 
 </mapper>

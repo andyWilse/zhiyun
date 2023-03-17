@@ -5,10 +5,12 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.config.TestCommand;
 import com.religion.zhiyun.task.dao.ActReProcdefMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -73,6 +75,7 @@ public class TaskReportServiceImpl implements TaskReportService {
         try {
             //数据校验
             String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
             if(null==sysUserEntity){
                 throw new RuntimeException("用户已过期，请重新登录！");
@@ -169,7 +172,11 @@ public class TaskReportServiceImpl implements TaskReportService {
                         //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
                         taskService.setVariableLocal(item.getId(),"isSuccess",false);
                         //增加审批备注
-                        taskService.addComment(item.getId(),item.getProcessInstanceId(),"上报");
+                        CommentEntity en =new CommentEntity();
+                        en.setFeedBack(feedBack);
+                        en.setHandleResults(handleResults);
+                        en.setPicture(picture);
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(), JsonUtils.beanToJson(en));
                         //完成此次审批。由下节点审批
                         taskService.complete(item.getId(), variables);
                     }
@@ -180,7 +187,7 @@ public class TaskReportServiceImpl implements TaskReportService {
             message="上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
         }catch (RuntimeException r){
             message=r.getMessage();
-            //throw new RuntimeException(message);
+            r.printStackTrace();
         }catch (Exception e) {
             code= ResultCode.FAILED.getCode();
             message="上报流程上报失败！";
@@ -250,31 +257,6 @@ public class TaskReportServiceImpl implements TaskReportService {
         }
         log.info("任务id："+procInstId+" 已处理，数据更新！");
         return new AppResponse(code,message);
-    }
-
-    @Override
-    public RespPageBean getTasking(Integer page, Integer size,String taskName, String taskContent,String token) {
-        long code= ResultCode.FAILED.getCode();
-        String message= "获取未处理任务";
-        List<TaskEntity> taskEntities = null;
-        try {
-            if(page<1){
-                page=1;
-            } else if(page!=null&&size!=null){
-                page=(page-1)*size;
-            }
-            String loginNm = this.getLogin(token);
-            taskEntities = taskInfoMapper.queryTasks(page, size, taskName, taskContent,loginNm);
-            code= ResultCode.SUCCESS.getCode();
-            message= "获取未处理任务成功";
-        }catch (RuntimeException r){
-            message=r.getMessage();
-            //throw new RuntimeException(message) ;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return new RespPageBean(code,message,taskEntities.toArray());
     }
 
     @Override
@@ -350,9 +332,8 @@ public class TaskReportServiceImpl implements TaskReportService {
             message="查找未完成任务成功！";
         }catch (RuntimeException r){
             message=r.getMessage();
-           // throw new RuntimeException(message) ;
+            r.printStackTrace();
         } catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
             message="查找未完成任务失败！";
             e.printStackTrace();
         }
@@ -371,11 +352,7 @@ public class TaskReportServiceImpl implements TaskReportService {
                 page=(page-1)*size;
             }
             String loginNm = this.getLogin(token);
-           /* SysUserEntity sysUserEntity = sysUserMapper.queryByTel(mobil);
-            if(null==sysUserEntity){
-                throw new RuntimeException("用户信息丢失");
-            }
-            String loginNm = sysUserEntity.getLoginNm();*/
+
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
             HistoryService historyService = defaultProcessEngine.getHistoryService();
             List<String> idList= new ArrayList<>();
@@ -409,9 +386,8 @@ public class TaskReportServiceImpl implements TaskReportService {
             message="查找已完成任务成功！";
         } catch (RuntimeException r){
             message=r.getMessage();
-            //throw new RuntimeException(message) ;
+            r.printStackTrace();
         }catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
             message="查找已完成任务失败！";
             e.printStackTrace();
         }
