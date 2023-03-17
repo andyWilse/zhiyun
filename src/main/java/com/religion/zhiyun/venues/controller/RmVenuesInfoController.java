@@ -122,4 +122,11 @@ public class RmVenuesInfoController {
         return appResponse;
     }
 
+    //地图分类列表（app
+    @RequestMapping("/map/venuesType")
+    public AppResponse getvenuesByType(@RequestParam String type) {
+        AppResponse appResponse = rmVenuesInfoService.getvenuesByType(type);
+        return appResponse;
+    }
+
 }

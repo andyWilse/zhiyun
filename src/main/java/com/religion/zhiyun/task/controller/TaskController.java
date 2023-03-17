@@ -1,9 +1,7 @@
 package com.religion.zhiyun.task.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskService;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -39,10 +37,15 @@ public class TaskController {
 
     //获取维修设备详情
     @GetMapping("/getMonitorTask")
-    public PageResponse getMonitorTask(@RequestParam String taskId){
+    public PageResponse getMonitorTask(@RequestParam String taskId) {
         return taskService.getMonitorTask(taskId);
     }
 
+    //折线图（总图）
+    @RequestMapping("/zxt/tasksGather")
+    public AppResponse getTasksGather(@RequestParam String dateType) {
+        return taskService.getTasksGather(-10,dateType);
+    }
 
     //一键上报（处理）
     @RequestMapping("/reportOne/handle")

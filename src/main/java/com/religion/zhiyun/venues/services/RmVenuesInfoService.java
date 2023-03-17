@@ -89,4 +89,13 @@ public interface RmVenuesInfoService {
      * @return
      */
     AppResponse queryVenuesJz(String token,String search);
+
+    /**
+     * 根据分类展示场所列表
+     * @param Type
+     * @return
+     */
+    AppResponse getvenuesByType(String Type);
+
+
 }

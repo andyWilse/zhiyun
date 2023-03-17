@@ -605,4 +605,27 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
 
         return venuesEntity;
     }
+
+
+
+    @Override
+    public AppResponse getvenuesByType(String Type) {
+        long code=ResultCode.FAILED.getCode();
+        String message="获取场所列表失败！";
+        List<Map<String,Object>> list=new ArrayList<>();
+        try {
+            list=rmVenuesInfoMapper.getvenuesByType(Type);
+            code= ResultCode.SUCCESS.getCode();
+            message="获取场所列表成功！";
+        } catch (RuntimeException r){
+            message=r.getMessage();
+        } catch (Exception e) {
+            message="获取场所列表失败！";
+            e.printStackTrace();
+        }
+
+
+        return new AppResponse(code,message,list.toArray());
+    }
+
 }
