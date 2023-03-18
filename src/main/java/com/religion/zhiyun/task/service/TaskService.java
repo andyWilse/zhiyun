@@ -22,7 +22,13 @@ public interface TaskService {
      * @param dateType（周：week,月：month,日：day）
      * @return
      */
-    AppResponse getTasksGather(int num,String dateType);
+    AppResponse getTaskZxt(int num,String dateType,String token);
+    /**
+     * 折线图总计
+     * @param
+     * @return
+     */
+    AppResponse getTaskGather(int num,String token);
 
     /** 提交申请(上报) **/
     public AppResponse reportOneReport(Map<String, Object> map, String token);
@@ -35,5 +41,8 @@ public interface TaskService {
 
     /*** 获取流程流转意见 **/
     PageResponse getTaskCommon(String procInstId);
+
+    /*** APP我的任务 **/
+    public PageResponse getMyTask(Map<String, Object> map,String token);
 
 }

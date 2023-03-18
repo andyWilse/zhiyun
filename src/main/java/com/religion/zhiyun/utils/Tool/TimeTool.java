@@ -47,4 +47,11 @@ public class TimeTool {
         Date strToDate = format.parse(date);
         return strToDate;
     }
+
+    //转换为date
+    public static Date strYmdHmsToDate(String date) throws ParseException {
+        SimpleDateFormat format=new SimpleDateFormat(ymdHms);
+        Date strToDate = format.parse(date);
+        return strToDate;
+    }
 }

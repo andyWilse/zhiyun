@@ -80,6 +80,7 @@ public interface RmMonitroInfoMapper {
      * @return
      */
     List<Map<String,Object>> getMoDetail(String accessNumber,String venuesId);
+    List<Map<String,Object>> getMonitInfo(String accessNumber,String venuesId);
 
     /**
      * 获取监控信息

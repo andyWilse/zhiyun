@@ -329,12 +329,9 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             if(null!=list && list.size()>0){
                 for(int i=0;i<list.size();i++){
                     Map<String, Object> map = list.get(i);
-                    String monitors = (String) map.get("monitors");
-                    String[] str={};
-                    if(null!=monitors && !monitors.isEmpty()){
-                        str=monitors.split(",");
-                    }
-                    map.put("monitors",str);
+                    Integer venuesId = (Integer) map.get("venuesId");
+                    List<Map<String, Object>> monitInfo = rmMonitroInfoMapper.getMonitInfo("",Integer.toString(venuesId) );
+                    map.put("monitors",monitInfo.toArray());
                 }
             }
             total = rmMonitroInfoMapper.getVenuesMonitorTotal(auth);
@@ -392,6 +389,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
         long code= ResultCode.FAILED.getCode();
         String message="监控详情查询失败";
         List<Map<String,Object>> list=new ArrayList<>();
+        List<Map<String,Object>> monitList=new ArrayList<>();
         try {
             if("01".equals(type)){//地图
                 list = rmMonitroInfoMapper.getMoDetail("",search);
@@ -399,15 +397,18 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
                 list = rmMonitroInfoMapper.getMoDetail(search,"");
             }
             //监控地址数据处理
+
             if(null!=list && list.size()>0){
                 for(int i=0;i<list.size();i++){
                     Map<String, Object> map = list.get(i);
-                    String monitors = (String) map.get("monitors");
-                    String[] str={};
-                    if(null!=monitors && !monitors.isEmpty()){
-                        str=monitors.split(",");
+                    if("01".equals(type)){
+                        monitList=rmMonitroInfoMapper.getMonitInfo("",search);
+                    }else if("02".equals(type)){
+                        monitList=rmMonitroInfoMapper.getMonitInfo(search,"");
                     }
-                    map.put("monitors",str);
+                    if(null!=monitList && monitList.size()>0){
+                        map.put("monitors",monitList.toArray());
+                    }
                 }
             }else{
                 code= ResultCode.VALIDATE_FAILED.getCode();

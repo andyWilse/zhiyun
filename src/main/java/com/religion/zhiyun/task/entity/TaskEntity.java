@@ -28,7 +28,7 @@ public class TaskEntity implements Serializable {
     private String taskContent;//'任务内容'
 
     @Column(name = "END_TIME")
-    private String endTime;//'截至时间'
+    private Date endTime;//'截至时间'
 
     @Column(name = "REL_VENUES_ID")
     private String relVenuesId;//'地址(关联场所主键ID）'

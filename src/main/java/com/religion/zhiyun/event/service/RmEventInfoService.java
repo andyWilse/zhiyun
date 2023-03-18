@@ -22,9 +22,15 @@ public interface RmEventInfoService {
 
     EventEntity getByEventId(String eventId);
 
-    AppResponse getByType(Integer page, Integer size, String eventType,String token);
+    AppResponse getByType(Map<String, Object> map,String token);
 
-    List<Map<String,Object>> getAllNum();
+    /**
+     * 获取事件数量
+     * @param type
+     * @param token
+     * @return
+     */
+    AppResponse getAllNum(String type,String token);
 
     /**
      * 分页查询

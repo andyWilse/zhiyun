@@ -47,6 +47,8 @@ public interface RmVenuesInfoService {
      */
     PageResponse getAllNum(String token);
 
+    PageResponse getDialogVenue(Map<String, Object> map,String token);
+
     /**
      * 分页查询
      * @param page

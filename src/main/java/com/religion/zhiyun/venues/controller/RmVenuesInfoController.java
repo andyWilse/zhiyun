@@ -83,6 +83,13 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.getAllNum(token);
     }
 
+    //统计场所弹框（app首页）
+    @RequestMapping("/getDialogVenue")
+    public PageResponse getDialogVenue(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        return rmVenuesInfoService.getDialogVenue(map,token);
+    }
+
+
     //教堂的数量展示
     @RequestMapping("/getByResponsiblePerson")
     public String getByResponsiblePerson(String responsiblePerson){

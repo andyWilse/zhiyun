@@ -53,7 +53,6 @@ public class FileUpDown {
         String type = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
         //获取文件名称（不包含格式）
         String name = originalFileName.substring(0, originalFileName.lastIndexOf("."));
-
         //设置文件新名称: 当前时间+文件名称（不包含格式）
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -84,7 +83,7 @@ public class FileUpDown {
             //保存文件信息
             FileEntity vo=new FileEntity();
             vo.setFileName(fileName);
-            vo.setFilePath(pathUpload+"\\");
+            vo.setFilePath(dir+"/"+fileName);
             return vo;
         } catch (IOException e) {
             logger.info("上传失败");

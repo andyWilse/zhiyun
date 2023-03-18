@@ -112,26 +112,52 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public AppResponse getTasksGather(int num, String dateType) {
+    public AppResponse getTaskZxt(int num, String dateType,String token) {
+        long code =ResultCode.FAILED.getCode();
+        String message="统计任务数量数据失败！";
+        List<Map<String,Object>> taskList=new ArrayList<>();
+        try {
+            Map<String,Object> map=new HashMap<>();
+            //获取登录用户
+            String login = this.getLogin(token);
+            if ("month".equals(dateType)){
+                taskList=taskInfoMapper.getTaskMonth(num,login);
+            }else if ("week".equals(dateType)){
+                taskList=taskInfoMapper.getTaskWeek(num,login);
+            }else if ("day".equals(dateType)){
+                taskList=taskInfoMapper.getTaskDay(num,login);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="统计任务数量数据成功！";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="统计任务数量数据失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,taskList.toArray());
+    }
+
+    @Override
+    public AppResponse getTaskGather(int num, String token) {
         long code =ResultCode.FAILED.getCode();
         String message="统计任务数量数据失败！";
         List<Map<String,Object>> list=new ArrayList<>();
         try {
-            if ("month".equals(dateType)){
-                list=taskInfoMapper.getTaskMonth(num);
-            }else if ("week".equals(dateType)){
-                list=taskInfoMapper.getTaskWeekGather(num);
-            }else if ("day".equals(dateType)){
-                list=taskInfoMapper.getTaskDayGather(num);
-            }
+            Map<String,Object> map=new HashMap<>();
+            //获取登录用户
+            String login = this.getLogin(token);
+            list=taskInfoMapper.getTaskGather(num,login);
             code= ResultCode.SUCCESS.getCode();
             message="统计任务数量数据成功！";
-        } catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
             message="统计任务数量数据失败！";
             e.printStackTrace();
         }
-
         return new AppResponse(code,message,list.toArray());
     }
 
@@ -384,5 +410,48 @@ public class TaskServiceImpl implements TaskService {
             e.printStackTrace();
         }
         return new PageResponse(code,message,taskCommon.toArray());
+    }
+
+    @Override
+    public PageResponse getMyTask(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取我的任务";
+        List<Map<String,Object>> taskList = new ArrayList<>();
+        long total=0l;
+        try {
+            ParamsVo vo=new ParamsVo();
+            //分页
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            vo.setPage(page);
+            vo.setSize(size);
+            //类型
+            String type = (String)map.get("type");
+            if("01".equals(type)){
+                vo.setSearchOne("startEvent");
+            }else if("02".equals(type)){
+                vo.setSearchOne("userTask");
+            }
+            //用户
+            String login = this.getLogin(token);
+            vo.setSearchTwo(login);
+            //查询
+            taskList =taskInfoMapper.getMyTask(vo);
+            total =taskInfoMapper.getMyTaskTotal(vo);
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取我的任务成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取我的任务失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,total,taskList.toArray());
     }
 }

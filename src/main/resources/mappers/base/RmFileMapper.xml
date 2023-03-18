@@ -39,7 +39,7 @@
     </select>
 
     <select id="getPath" resultType="map">
-        select CONCAT(FILE_PATH,FILE_NAME) as filePath
+        select FILE_PATH as filePath
         from RM_FILE_INFO
         where FILE_ID in
         <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">

@@ -42,9 +42,15 @@ public class TaskController {
     }
 
     //折线图（总图）
-    @RequestMapping("/zxt/tasksGather")
-    public AppResponse getTasksGather(@RequestParam String dateType) {
-        return taskService.getTasksGather(-10,dateType);
+    @RequestMapping("/zxt/getTaskZxt")
+    public AppResponse getZxt(@RequestParam String dateType,@RequestHeader("token")String token) {
+        return taskService.getTaskZxt(-10,dateType,token);
+    }
+
+    //折线图（总图）
+    @RequestMapping("/zxt/getTaskGather")
+    public AppResponse getTasksGather(@RequestHeader("token")String token) {
+        return taskService.getTaskGather(-7,token);
     }
 
     //一键上报（处理）
@@ -75,5 +81,9 @@ public class TaskController {
         return taskService.getTaskCommon(procInstId);
     }
 
-
+    //APP我的任务
+    @RequestMapping("/app/getMyTask")
+    public PageResponse getMyTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return taskService.getMyTask(map,token);
+    }
 }

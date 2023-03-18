@@ -5,7 +5,6 @@ import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -96,6 +95,9 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     Map<String,Object> getAllNum(@Param("vo") ParamsVo vo );
+
+    List<Map<String,Object>> getDialogVenue(@Param("vo") ParamsVo vo );
+    Long getDialogVenueTotal(@Param("vo") ParamsVo vo );
 
     /**
      * 分页查询

@@ -89,12 +89,7 @@ public class RmEventInfoController {
      */
     @RequestMapping("/getEventByType")
     public AppResponse getEventByType(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
-        String eventType = (String)map.get("eventType");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-        return rmEventInfoService.getByType(page,size,eventType,token);
+        return rmEventInfoService.getByType(map,token);
     }
 
     /**
@@ -102,9 +97,8 @@ public class RmEventInfoController {
      * @return
      */
     @RequestMapping("/getAllNum")
-    public String getAllNum(){
-        List<Map<String, Object>> list = rmEventInfoService.getAllNum();
-        return JsonUtils.objectTOJSONString(list);
+    public AppResponse getAllNum(@RequestParam String type,@RequestHeader("token")String token){
+        return rmEventInfoService.getAllNum(type,token);
     }
 
     @GetMapping("/findpage")

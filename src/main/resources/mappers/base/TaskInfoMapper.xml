@@ -348,79 +348,142 @@
         left join rm_venues_info v on v.VENUES_ID =ta.REL_VENUES_ID
         where ta.TASK_ID=#{taskId}
     </select>
+
     <select id="getTaskMonth" resultType="java.util.Map">
         SELECT  tm.tmDate as date,
-                IFNULL(task.reach,0) as reach,
-                IFNULL(task.issued,0) as issued
+                IFNULL(comm.commTotal,0) as handleTotal,
+                IFNULL(act.actTotal,0) as launchTotal
         FROM (
             SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
-            FROM num a where a.i >-9 and type='month'
+            FROM num a where a.i >#{num} and type='month'
         ) tm
-        LEFT JOIN (
-            select  DATE_FORMAT(LAUNCH_TIME,'%Y-%m') evDate,
-                    SUM(CASE WHEN FLOW_TYPE = 01 THEN 1 ELSE 0 END) AS reach,
-                    SUM(CASE WHEN FLOW_TYPE = 02 THEN 1 ELSE 0 END) AS issued
-            from rm_task_info
-            where DATE_FORMAT(LAUNCH_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*-9 day)
+        left join(
+            select
+                DATE_FORMAT(co.TIME_,'%Y-%m') as evDate,
+                count(co.ID_) as commTotal
+            from act_hi_comment  co
+            where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            <if test="login!=null and login!=''">
+                and co.USER_ID_= #{login}
+            </if>
             group by evDate
-        ) task on tm.tmDate= task.evDate
+        ) comm on comm.evDate=tm.tmDate
+        left join (
+            select DATE_FORMAT(ac.END_TIME_,'%Y-%m') as evDate,
+                count(ac.ID_) as actTotal
+            FROM act_hi_actinst ac
+            where DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            and ac.ACT_TYPE_='startEvent'
+            <if test="login!=null and login!=''">
+                and ac.ASSIGNEE_=#{login}
+            </if>
+            group by evDate
+        )act on act.evDate=tm.tmDate
         ORDER BY tm.tmDate
     </select>
-    <select id="getTaskDayGather" resultType="java.util.Map">
+
+    <select id="getTaskDay" resultType="java.util.Map">
         SELECT  DATE_FORMAT(tm.tmDate,'%Y-%m-%d') as date,
-                IFNULL(task.reach,0) as reach,
-                IFNULL(task.issued,0) as issued
+                IFNULL(comm.commTotal,0) as handleTotal,
+                IFNULL(act.actTotal,0) as launchTotal
         FROM(
             SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i > #{num} and type='day'
         ) tm
-        LEFT JOIN(
-            select  DATE_FORMAT(LAUNCH_TIME,'%Y-%m-%d') evDate,
-                    SUM(CASE WHEN FLOW_TYPE = 01 THEN 1 ELSE 0 END) AS reach,
-                    SUM(CASE WHEN FLOW_TYPE = 02 THEN 1 ELSE 0 END) AS issued
-            from rm_task_info
-            where DATE_FORMAT(LAUNCH_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+        left join(
+            select
+                DATE_FORMAT(co.TIME_,'%Y-%m-%d') as evDate,
+                count(co.ID_) as commTotal
+            from act_hi_comment  co
+            where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+            <if test="login!=null and login!=''">
+                and co.USER_ID_= #{login}
+            </if>
             group by evDate
-        ) task on tm.tmDate= task.evDate
+        ) comm on comm.evDate=tm.tmDate
+        left join (
+            select DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') as evDate,
+                count(ac.ID_) as actTotal
+            FROM act_hi_actinst ac
+            where DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+            and ac.ACT_TYPE_='startEvent'
+            <if test="login!=null and login!=''">
+                and ac.ASSIGNEE_=#{login}
+            </if>
+            group by evDate
+        )act on act.evDate=tm.tmDate
         ORDER BY tm.tmDate
     </select>
-    <select id="getTaskWeekGather" resultType="java.util.Map">
+
+    <select id="getTaskWeek" resultType="java.util.Map">
         SELECT (@rownum := @rownum + 1) AS date,
-                IFNULL(zh.reach,0) as reach,
-                IFNULL(zh.issued,0) as issued
+            IFNULL(comm.tots,0) as handleTotal,
+            IFNULL(act.tots,0) as launchTotal
         FROM(
             SELECT i AS tmDate FROM num a where a.i > #{num} and type='day'
         ) tm
-        LEFT JOIN
-        (
+        LEFT JOIN (
             SELECT  ors.weeks,
-                IFNULL(ors.reach,0) as reach,
-                IFNULL(ors.issued,0) as issued
+                IFNULL(ors.tot,0) as tots
             from (
                 (
-                    select  WEEK(LAUNCH_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
-                    SUM(CASE WHEN FLOW_TYPE = 01 THEN 1 ELSE 0 END) AS reach,
-                    SUM(CASE WHEN FLOW_TYPE = 02 THEN 1 ELSE 0 END) AS issued
-                    from rm_task_info task
-                    where DATE_FORMAT(LAUNCH_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
-                    and DATE_FORMAT(LAUNCH_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    select  WEEK(co.TIME_,3) -(WEEK(CURDATE(),3)) as weeks,
+                            count(co.ID_) as tot
+                    from act_hi_comment  co
+                    where DATE_FORMAT(co.TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                    and DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    <if test="login!=null and login!=''">
+                        and co.USER_ID_= #{login}
+                    </if>
                     GROUP BY weeks
                     ORDER BY weeks
                 )union all(
-                    select (WEEK(LAUNCH_TIME,3) -(select WEEK(HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
-                    SUM(CASE WHEN FLOW_TYPE = 01 THEN 1 ELSE 0 END) AS reach,
-                    SUM(CASE WHEN FLOW_TYPE = 02 THEN 1 ELSE 0 END) AS issued
-                    from rm_task_info  task
-                    where DATE_FORMAT(LAUNCH_TIME,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
-                    and DATE_FORMAT(LAUNCH_TIME,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    select (WEEK(co.TIME_,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                            count(co.ID_) as tot
+                    from act_hi_comment  co
+                    where   DATE_FORMAT(co.TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                        and DATE_FORMAT(co.TIME_,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    <if test="login!=null and login!=''">
+                        and co.USER_ID_= #{login}
+                    </if>
                     GROUP BY weeks
                     ORDER BY weeks desc
                 )
             ) ors
-        )zh on tm.tmDate=zh.weeks
+        )comm on tm.tmDate=comm.weeks
+        LEFT JOIN (
+            SELECT  ors.weeks,
+            IFNULL(ors.tot,0) as tots
+            from (
+                (
+                    select  WEEK(ac.END_TIME_,3) -(WEEK(CURDATE(),3)) as weeks,
+                        count(ac.ID_) as tot
+                    from act_hi_actinst  ac
+                    where DATE_FORMAT(ac.END_TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
+                    and DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    and ac.ACT_TYPE_='startEvent'
+                    <if test="login!=null and login!=''">
+                        and ac.ASSIGNEE_= #{login}
+                    </if>
+                    GROUP BY weeks
+                    ORDER BY weeks
+                )union all(
+                    select (WEEK(ac.END_TIME_,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                            count(ac.ID_) as tot
+                    from act_hi_actinst  ac
+                    where   DATE_FORMAT(ac.END_TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                    and DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    and ac.ACT_TYPE_='startEvent'
+                    <if test="login!=null and login!=''">
+                        and ac.ASSIGNEE_= #{login}
+                    </if>
+                    GROUP BY weeks
+                    ORDER BY weeks desc
+                )
+            ) ors
+        )act on tm.tmDate=act.weeks
         join (SELECT @rownum := 0) AS rn
         order by tm.tmDate
     </select>
-
 
     <select id="getTaskContent" resultType="String">
         select
@@ -428,5 +491,65 @@
         from rm_task_info ta
         where ta.PROC_INST_ID = #{procInstId}
     </select>
+
+    <select id="getTaskGather" resultType="map">
+        select tm.tmDate,
+                tm.REMARK as remarkDate,
+                IFNULL(tt.total,0) as ouHai,
+                IFNULL(tt.dd,0) as myTotal
+
+        FROM(
+            SELECT date_add(CURDATE(), interval i day) AS tmDate,REMARK FROM num a where a.i >#{num} and type='taskDay'
+        ) tm
+        LEFT JOIN(
+            select
+                DATE_FORMAT(co.TIME_,'%Y-%m-%d') as evDate,
+                count(co.ID_) as total,
+                SUM(case when co.USER_ID_= #{handle}  then 1 else 0 END )as dd
+            from act_hi_comment  co
+            group by evDate
+        ) tt on tm.tmDate= tt.evDate
+
+    </select>
+
+    <select id="getMyTask" resultType="map">
+        SELECT
+            ta.TASK_NAME as taskName,
+            ve.VENUES_NAME as venuesName,
+            ve.VENUES_ADDRES as venuesAddres,
+            case when(select count(ti.ID_) from act_hi_actinst ti where ti.PROC_INST_ID_=ta.PROC_INST_ID  and ti.ACT_TYPE_='endEvent')>0
+            then  '已完成' else '待完成' end as statTask,
+            ta.PROC_INST_ID as procInstId,
+            DATE_FORMAT(ac.START_TIME_,'%Y-%m-%d %H:%i:%s') as taskTime,
+            case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+            ta.EMERGENCY_LEVEL as emeLevel
+        FROM rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
+        where ac.ASSIGNEE_ = #{vo.searchTwo}
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ac.ACT_TYPE_ = #{vo.searchOne}
+        </if>
+        order by statTask desc,taskTime asc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getMyTaskTotal" resultType="long">
+        SELECT
+            count(ta.PROC_INST_ID)
+        FROM rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
+        where ac.ASSIGNEE_ = #{vo.searchTwo}
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ac.ACT_TYPE_ = #{vo.searchOne}
+        </if>
+    </select>
+
+    <update id="updateHiActinst">
+        update act_hi_actinst set ASSIGNEE_=#{assignee}
+        where ACT_TYPE_='startEvent'
+        and PROC_INST_ID_=#{procInstId}
+    </update>
 
 </mapper>

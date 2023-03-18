@@ -153,11 +153,10 @@
             else '其他'
             end as eventTypeNm,
             EVENT_STATE as eventState,
-            case EVENT_STATE
-            when '00' then '待查实'
-            when '01' then '已完成'
-            when '02' then '误报'
-            else '其他'
+            case
+                when EVENT_STATE in ('00','02') then '待完成'
+                when EVENT_STATE in ('01','03','04') then '已完成'
+                else '其他'
             end as eventStateNm,
             HANDLE_RESULTS as handleResults,
             DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
@@ -180,6 +179,13 @@
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and e.EVENT_TYPE=#{vo.searchOne}
         </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and e.EVENT_STATE in
+            <foreach collection="vo.searchArr" item="state" separator="," open="(" close=")">
+                #{state}
+            </foreach>
+        </if>
+
         <if test="vo.town != null and vo.town != ''">
             AND  ve.TOWN = #{vo.town}
         </if>
@@ -268,15 +274,33 @@
     </select>
 
     <select id="getAllNum" resultType="java.util.Map">
-        /*SELECT EVENT_TYPE '类型', COUNT(1) '数量' FROM rm_event_info GROUP BY EVENT_TYPE*/
         SELECT
             COUNT(EVENT_ID) AS total,
             SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
             SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
             SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
             SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
-        FROM rm_event_info
-        where EVENT_STATE='00'
+        FROM rm_event_info ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where ev.EVENT_TYPE!='05'
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ev.EVENT_STATE in
+            <foreach collection="vo.searchArr" item="state" separator="," open="(" close=")">
+                #{state}
+            </foreach>
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
     </select>
 
     <select id="getUndoEvents" resultType="map">
@@ -551,7 +575,7 @@
                 ORDER BY weeks
             )union all(
                 select
-                    (WEEK(ev.WARN_TIME,3) -(select WEEK(ev.HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                    (WEEK(ev.WARN_TIME,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
                     count( ev.EVENT_ID) as sum
                 from rm_event_info  ev
                 left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
@@ -693,7 +717,7 @@
                     GROUP BY weeks
                     ORDER BY weeks
                 )union all(
-                    select (WEEK(ev.WARN_TIME,3) -(select WEEK(ev.HANDLE_TIME,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
+                    select (WEEK(ev.WARN_TIME,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
                             SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
                             SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
                             SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
@@ -809,6 +833,78 @@
         </if>
         <if test="day!=null and day!=''">
             and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d')  = DATE_FORMAT(ADDDATE(NOW(), INTERVAL #{day} day),'%Y-%m-%d')
+        </if>
+    </select>
+
+    <select id="getByTypeEvent" resultType="map">
+        select
+            ev.EVENT_ID as eventId,
+            DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
+            ve.VENUES_NAME as venuesName,
+            ev.EVENT_TYPE as eventType,
+            case ev.EVENT_TYPE
+            when '01' then '火灾预警'
+            when '02' then '人脸识别'
+            when '03' then '任务预警'
+            when '04' then '人流聚集'
+            else '其他'
+            end as eventTypeNm,
+            ve.PICTURES_PATH as venuesPicture
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where ev.EVENT_TYPE!='05'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ev.EVENT_TYPE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ev.EVENT_STATE in
+            <foreach collection="vo.searchArr" item="state" separator="," open="(" close=")">
+                #{state}
+            </foreach>
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        ORDER BY ev.WARN_TIME DESC
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getByTypeEventTotal" resultType="long">
+        select
+            count(ev.EVENT_ID)
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where ev.EVENT_TYPE!='05'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ev.EVENT_TYPE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ev.EVENT_STATE in
+            <foreach collection="vo.searchArr" item="state" separator="," open="(" close=")">
+                #{state}
+            </foreach>
+        </if>
+
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
     </select>
 

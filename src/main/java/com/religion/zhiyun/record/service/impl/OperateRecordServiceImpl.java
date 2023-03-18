@@ -6,6 +6,8 @@ import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -14,7 +16,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -60,6 +64,46 @@ public class OperateRecordServiceImpl implements OperateRecordService {
             e.printStackTrace();
         }
         return new RespPageBean(code,message,total,dataList.toArray());
+    }
+
+    @Override
+    public AppResponse addMonitRecord(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="监控查看记录保存！";
+
+        try {
+            String venuesId = (String) map.get("venuesId");
+            String accessNumber = (String) map.get("accessNumber");
+            String type = (String) map.get("type");//01-例行巡查；02-警报排查；03-维修检测；04-其他；
+            String content = (String) map.get("content");
+            if(null==content || content.isEmpty()){
+                content="监控查看";
+            }
+            if("01".equals(type)){
+                type="例行巡查";
+            }else if("02".equals(type)){
+                type="警报排查";
+            }else if("03".equals(type)){
+                type="维修检测";
+            }else if("04".equals(type)){
+                type="其他";
+            }
+            RecordEntity recordEntity=new RecordEntity();
+            String login = this.getLogin(token);
+            recordEntity.setOperator(login);
+            recordEntity.setOperateTime(new Date());
+            recordEntity.setOperateType("11");
+            recordEntity.setOperateRef(accessNumber);
+            recordEntity.setOperateDetail(content);
+            recordEntity.setOperateContent(type);
+            rmUserLogsInfoMapper.add(recordEntity);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="操作记录信息查询成功！";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
     }
 
     /**

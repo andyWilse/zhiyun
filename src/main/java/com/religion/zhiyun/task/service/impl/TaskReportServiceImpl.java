@@ -111,12 +111,14 @@ public class TaskReportServiceImpl implements TaskReportService {
             ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode(),variables);
             String processInstanceId = processInstance.getProcessInstanceId();
             /**end**/
+            //taskService.setAssignee("assignee1",loginNm);
             //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
             TaskQuery taskQuery = taskService.createTaskQuery();
             Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
             procInstId=tmp.getProcessInstanceId();
-            //taskService.setAssignee("assignee2",userNbr);
             taskService.complete(tmp.getId(),variables);
+            //发起人
+            taskInfoMapper.updateHiActinst(loginNm,procInstId);
 
             //保存任务信息
             taskEntity.setLaunchPerson(loginNm);
@@ -131,11 +133,9 @@ public class TaskReportServiceImpl implements TaskReportService {
             log.info(message);
 
         } catch (RuntimeException e) {
-            code=ResultCode.FAILED.getCode();
             message=e.getMessage();
-            //throw new RuntimeException(message) ;
+            e.printStackTrace();
         }catch (Exception e){
-            code=ResultCode.FAILED.getCode();
             message="未知错误，请联系管理员！";
             e.printStackTrace();
         }
@@ -150,6 +150,7 @@ public class TaskReportServiceImpl implements TaskReportService {
         String loginNm ="";
         try {
             loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
             Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";
@@ -228,7 +229,11 @@ public class TaskReportServiceImpl implements TaskReportService {
                         //设置本地参数。在myListener1监听中获取。
                         taskService.setVariableLocal(item.getId(),"isSuccess",true);
                         //增加审批备注
-                        taskService.addComment(item.getId(),item.getProcessInstanceId(),handleResults);
+                        CommentEntity en =new CommentEntity();
+                        en.setFeedBack(feedBack);
+                        en.setHandleResults(handleResults);
+                        en.setPicture(picture);
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(),JsonUtils.beanToJson(en));
                         //完成此次审批。如果下节点为endEvent。结束流程
                         taskService.complete(item.getId(), variables);
                         log.info("任务id："+procInstId+" 已处理，流程结束！");

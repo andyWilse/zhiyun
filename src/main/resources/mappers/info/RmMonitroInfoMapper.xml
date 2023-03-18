@@ -126,7 +126,7 @@
 
     <select id="getVenuesMonitor" resultType="map">
         select
-            ve.VENUES_ID as VenuesId,
+            ve.VENUES_ID as venuesId,
             ve.VENUES_NAME as venuesName,
             ve.VENUES_ADDRES as venuesAddres,
             ve.ORGANIZATION as organization,
@@ -262,6 +262,7 @@
             lia.MANAGER_MOBILE as liaisonManMobile,
             m.ACCESS_NUMBER  as accessNumber,
             m.MONITOR_URL as monitorUrl,
+            m.STATE as monitorStatus,
             (SELECT GROUP_CONCAT(ACCESS_NUMBER) FROM rm_monitor_manage_info mo where mo.REL_VENUES_ID=m.REL_VENUES_ID ) as monitors
         from rm_monitor_manage_info m
         left join  RM_VENUES_INFO ve on ve.VENUES_ID=m.rel_venues_id
@@ -271,6 +272,29 @@
         where 1=1
         <if test="accessNumber != null and accessNumber != ''">
             AND  m.ACCESS_NUMBER =#{accessNumber}
+        </if>
+        <if test="venuesId != null and venuesId != ''">
+            AND  ve.VENUES_ID =#{venuesId}
+        </if>
+    </select>
+
+    <select id="getMonitInfo" resultType="map">
+        select
+        distinct
+            m.ACCESS_NUMBER  as accessNumber,
+            m.MONITOR_URL as monitorUrl,
+            m.STATE as status,
+            case m.STATE
+            when '01' then '完好'
+            when '02' then '损坏'
+            else m.STATE
+            end as statusCn
+        from rm_monitor_manage_info m
+        left join rm_monitor_manage_info mo on mo.rel_venues_id =m.rel_venues_id
+        left join  RM_VENUES_INFO ve on ve.VENUES_ID=m.rel_venues_id
+        where 1=1
+        <if test="accessNumber != null and accessNumber != ''">
+            AND  mo.ACCESS_NUMBER =#{accessNumber}
         </if>
         <if test="venuesId != null and venuesId != ''">
             AND  ve.VENUES_ID =#{venuesId}

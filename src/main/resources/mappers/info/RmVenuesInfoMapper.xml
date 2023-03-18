@@ -256,6 +256,56 @@
         </if>
     </select>
 
+    <select id="getDialogVenue" resultType="map">
+        SELECT
+            ve.VENUES_NAME as venuesName,
+            ma.MANAGER_CN_NM as  managerCnNm,
+            ma.MANAGER_MOBILE as managerMobile
+        FROM rm_venues_info ve
+        left join rm_venues_manager_info ma on ve.RESPONSIBLE_PERSON=ma.manager_id
+        where ve.VENUES_STATUS='01'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ve.RELIGIOUS_SECT  = #{vo.searchOne}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        order by ve.LAST_MODIFY_TIME desc,ve.VENUES_ID asc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getDialogVenueTotal" resultType="java.lang.Long">
+        SELECT
+            count(ve.venues_id)
+        FROM rm_venues_info ve
+        where ve.VENUES_STATUS='01'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  ve.RELIGIOUS_SECT  = #{vo.searchOne}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+
+    </select>
+
     <select id="getTotal" resultType="java.lang.Long">
         select count(VENUES_ID)
         from RM_VENUES_INFO ve
@@ -329,7 +379,7 @@
             </foreach>
         </if>
         order by ve.LAST_MODIFY_TIME desc
-        limit #{page},#{size}
+        limit #{pagepage},#{size}
     </select>
 
     <update id="updateLngLat">
@@ -347,7 +397,8 @@
             ve.LONGITUDE as longitude,
             ve.LATITUDE as Latitude,
             d.DICT_CN_DESC as religiousSectCn,
-            ve.RELIGIOUS_SECT as religiousSect
+            ve.RELIGIOUS_SECT as religiousSect,
+            ve.VENUES_NAME as venuesName
         from RM_VENUES_INFO ve
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         where VENUES_STATUS='01'

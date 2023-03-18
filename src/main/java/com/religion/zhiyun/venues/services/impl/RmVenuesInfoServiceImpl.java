@@ -3,7 +3,7 @@ package com.religion.zhiyun.venues.services.impl;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.login.api.ResultCode;
-import com.religion.zhiyun.sys.menus.entity.MenuEntity;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
@@ -182,7 +182,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             VenuesEntity venuesentity = rmVenuesInfoMapper.getVenueByID(venuesId);
             
             if(null!=venuesentity){
-                //场所管理人员
+                //1.场所管理人员
                 String responsiblePerson = venuesentity.getResponsiblePerson();
                 if(responsiblePerson!=null && !responsiblePerson.isEmpty()){
                     String manager= venuesManagerMapper.getManagerById(responsiblePerson);
@@ -198,13 +198,19 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                     String manager= venuesManagerMapper.getManagerById(groupMembers);
                     venuesentity.setGroupMembers(manager);
                 }
-                //教职人员
+                //2.教职人员
                 String venuesStaff = venuesentity.getVenuesStaff();
                 if(venuesStaff!=null && !venuesStaff.isEmpty()){
                     String[] split = venuesStaff.split(",");
                     String venuesStaffs = staffInfoMapper.findVenuesStaffs(split);
                     venuesentity.setVenuesStaff(venuesStaffs+",");
                     venuesentity.setVenuesStaffId(venuesStaff);
+                }
+                //3.图片
+                String picturesPath = venuesentity.getPicturesPath();
+                if(null!=picturesPath && !picturesPath.isEmpty()){
+                    String[] split = picturesPath.split(",");
+                    List<FileEntity> fileEntities = rmFileMapper.queryPath(split);
                 }
             }else{
                 throw new RuntimeException("场所信息丢失，请联系管理员！");
@@ -237,6 +243,41 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             e.printStackTrace();
         }
         return new PageResponse(code,message,list.toArray());
+    }
+
+    @Override
+    public PageResponse getDialogVenue(Map<String, Object> map, String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="统计场所弹框";
+        List<Map<String, Object>> list=new ArrayList<>();
+        long total=0l;
+        try {
+            ParamsVo auth = this.getAuth(token);
+            String religiousSect = (String) map.get("religiousSect");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            auth.setPage(page);
+            auth.setSize(size);
+            auth.setSearchOne(religiousSect);
+
+            list = rmVenuesInfoMapper.getDialogVenue(auth);
+            total=rmVenuesInfoMapper.getDialogVenueTotal(auth);
+
+            code=ResultCode.SUCCESS.getCode();
+            message="统计场所弹框成功";
+        }catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="统计场所弹框失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,total,list.toArray());
     }
 
     @Override
@@ -447,7 +488,6 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
 
             mapVenues = rmVenuesInfoMapper.getMapVenues(search, split,religiousSect);
-
 
             code= ResultCode.SUCCESS.getCode();
             message="获取地图场所信息成功！";

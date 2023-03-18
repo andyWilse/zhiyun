@@ -57,8 +57,14 @@ public interface RmEventInfoMapper {
      * @return
      */
     List<Map<String,Object>> getByType(@Param("vo") ParamsVo vo);
+    List<Map<String,Object>> getByTypeEvent(@Param("vo") ParamsVo vo);
+    Long getByTypeEventTotal(@Param("vo") ParamsVo vo);
 
-    List<Map<String,Object>> getAllNum();
+    /**
+     * 事件数量统计
+     * @return
+     */
+    List<Map<String,Object>> getAllNum(@Param("vo") ParamsVo vo);
 
     /* 分页查询
      * @param vo

@@ -9,6 +9,7 @@ import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.TaskEntity;
@@ -60,6 +61,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private RmFileMapper rmFileMapper;
 
     @Autowired
     TaskInfoMapper taskInfoMapper;
@@ -224,40 +228,98 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    public AppResponse getByType(Integer page, Integer size,String eventType,String token) {
+    public AppResponse getByType(Map<String, Object> map,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="根据预警类型查询预警信息";
         List<Map<String, Object>> mapList=null;
         Long total=0L;
         try {
+            ParamsVo auth = this.getAuth(token);
+            //分页
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
+            auth.setSize(size);
+            auth.setPage(page);
+            //预警类型（all-全部；01-火灾预警；02-人脸识别；03-任务预警；04-人流聚集）
+            String eventType = (String)map.get("eventType");
             if("all".equals(eventType)){
                 eventType="";
             }
-            ParamsVo auth = this.getAuth(token);
-            auth.setSize(size);
-            auth.setPage(page);
             auth.setSearchOne(eventType);
-            mapList = rmEventInfoMapper.getByType(auth);
-            total=rmEventInfoMapper.getTotal(auth);
+            //01-AI预警；02-历史预警
+            String[]  searchArr={};
+            String type = (String)map.get("type");
+            auth.setSearchTwo(type);
+            if("01".equals(type)){
+                message="AI预警";
+                searchArr=new String[]{"00","02"};
+                auth.setSearchArr(searchArr);
+            }else if("02".equals(type)){
+                message="历史预警";
+                searchArr=new String[]{"01","03","04"};
+                auth.setSearchArr(searchArr);
+            }
+            //mapList = rmEventInfoMapper.getByType(auth);
+            //total=rmEventInfoMapper.getTotal(auth);
+            mapList = rmEventInfoMapper.getByTypeEvent(auth);
+            if(null!=mapList && mapList.size()>0){
+                for(int i=0;i<mapList.size();i++){
+                    Map<String, Object> maps = mapList.get(i);
+                    String venuesPictures = (String) maps.get("venuesPicture");
+                    if(null!=venuesPictures && !venuesPictures.isEmpty()){
+                        List<Map<String, Object>> path = rmFileMapper.getPath(venuesPictures.split(","));
+                        if(null!=path && path.size()>0){
+                            maps.put("venuesPicture",path.get(0).get("filePath"));
+                        }
+                    }
+                }
+            }
+            total=rmEventInfoMapper.getByTypeEventTotal(auth);
 
             code=ResultCode.SUCCESS.getCode();
-            message="预警事件台账，查询成功";
+            message=message+"，查询成功";
         } catch (RuntimeException r) {
             message=r.getMessage();
             r.printStackTrace();
         } catch (Exception e) {
-            message="预警事件台账，查询失败";
+            message=message+"，查询失败";
             e.printStackTrace();
         }
         return new AppResponse(code,message,total,mapList.toArray());
     }
 
     @Override
-    public List<Map<String, Object>> getAllNum() {
-        return rmEventInfoMapper.getAllNum();
+    public AppResponse getAllNum(String type,String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="预警事件数量统计！";
+        List<Map<String, Object>> allNum = new ArrayList<>();
+        try {
+            ParamsVo auth = this.getAuth(token);
+            auth.setSearchTwo(type);
+            if("01".equals(type)){
+                message="AI预警";
+                auth.setSearchArr(new String[]{"00","02"});
+            }else if("02".equals(type)){
+                message="历史预警";
+                auth.setSearchArr(new String[]{"01","03","04"});
+            }
+            allNum = rmEventInfoMapper.getAllNum(auth);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="预警事件数量统计成功！";
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="预警事件数量统计失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,allNum.toArray());
     }
 
     @Override
@@ -529,7 +591,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             //任务
             TaskEntity taskEntity=new TaskEntity();
             taskEntity.setTaskType(event.getEventType());
-            taskEntity.setEndTime(event.getWarnTime());
+            taskEntity.setEndTime(TimeTool.strYmdHmsToDate(event.getWarnTime()));
             taskEntity.setTaskName("预警事件：一键上报（场所管理人员）");
             taskEntity.setTaskContent("预警事件,请处理");
             taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
@@ -584,7 +646,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             //任务
             TaskEntity taskEntity=new TaskEntity();
             taskEntity.setTaskType(event.getEventType());
-            taskEntity.setEndTime(event.getWarnTime());
+            taskEntity.setEndTime(TimeTool.strYmdHmsToDate(event.getWarnTime()));
             taskEntity.setTaskName("预警事件：一键上报（监管）");
             taskEntity.setTaskContent("预警事件,请处理");
             taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));

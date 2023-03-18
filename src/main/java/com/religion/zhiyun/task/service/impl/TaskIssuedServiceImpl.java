@@ -107,6 +107,8 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             taskEntity.setRelVenuesId(relVenuesIds);
             //获取登录人身份信息
             String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
+
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
             if(null==sysUserEntity){
                 throw new RuntimeException("登录人信息丢失，请重新登录");
@@ -145,8 +147,6 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             Map<String, Object> variables = new HashMap<>();
             variables.put("handleList",userList );
 
-            Authentication.setAuthenticatedUserId(loginNm);
-
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
             ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
@@ -160,6 +160,9 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
             //taskService.setAssignee("assignee2",userNbr);
             taskService.complete(tmp.getId(),variables);
+
+            //发起人
+            taskInfoMapper.updateHiActinst(loginNm,processInstanceId);
 
             taskEntity.setLaunchPerson(loginNm);
             taskEntity.setLaunchTime(new Date());
@@ -191,6 +194,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
         String message="任务下达处理";
         try {
             String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
@@ -207,6 +211,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                         en.setFeedBack(feedBack);
                         en.setHandleResults(handleResults);
                         en.setPicture(picture);
+
                         taskService.addComment(item.getId(), item.getProcessInstanceId(), JsonUtils.beanToJson(en));
                         //完成此次审批。如果下节点为endEvent。结束流程
                         taskService.complete(item.getId(), variables);

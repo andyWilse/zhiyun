@@ -2,7 +2,7 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
   <process id="reportTaskKey" name="任务上报" isExecutable="true">
     <documentation>层层上报，直至处理</documentation>
-    <startEvent id="taskStart" name="上报流程开始"></startEvent>
+    <startEvent id="taskStart" name="上报流程开始" activiti:assignee="${assignee}"></startEvent>
     <userTask id="taskUser1" name="任务节点1"></userTask>
     <userTask id="taskUser2" name="任务节点2" activiti:assignee="${handle}">
       <extensionElements>

@@ -67,23 +67,19 @@ public interface TaskInfoMapper {
     /**获取**/
     String  getTaskContent(@Param("procInstId") String procInstId);
 
-
-
-
-
     /**
      * 月（10个月，传-9）
      * @param num
      * @return
      */
-    List<Map<String,Object>> getTaskMonth(@Param("num") int num);
+    List<Map<String,Object>> getTaskMonth(@Param("num") int num,@Param("login") String login);
 
     /**
      * 日(10天，传-10)
      * @param num
      * @return
      */
-    List<Map<String,Object>> getTaskDayGather(@Param("num") int num);
+    List<Map<String,Object>> getTaskDay(@Param("num") int num,@Param("login") String login);
 
     /**
      * 周
@@ -91,5 +87,28 @@ public interface TaskInfoMapper {
      * @param （=7*(num+1)-1）
      * @return
      */
-    List<Map<String,Object>> getTaskWeekGather(@Param("num") int num);
+    List<Map<String,Object>> getTaskWeek(@Param("num") int num,@Param("login") String login);
+
+    /**
+     * 比较
+     * @param num
+     * @param handle
+     * @return
+     */
+    List<Map<String,Object>> getTaskGather(@Param("num") int num,@Param("handle") String handle);
+
+    /**
+     *获取我的任务（app）
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> getMyTask(@Param("vo") ParamsVo vo);
+    Long getMyTaskTotal(@Param("vo") ParamsVo vo);
+    /**
+     * 发起人
+     * @param assignee
+     * @param procInstId
+     */
+    void updateHiActinst(@Param("assignee") String assignee,@Param("procInstId") String procInstId);
+
 }
