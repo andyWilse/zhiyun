@@ -31,12 +31,11 @@ public interface RmMonitroInfoService {
 
     /**
      * 分页查询
-     * @param page
-     * @param size
-     * @param accessNumber
+     * @param map
+     * @param token
      * @return
      */
-    RespPageBean getMonitrosByPage(Integer page, Integer size, String accessNumber);
+    PageResponse getMonitorByPage(Map<String, Object> map, String token);
 
     String getMonitorURLByAccessNum(String accessNum);
 

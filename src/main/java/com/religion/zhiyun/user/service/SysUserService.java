@@ -15,7 +15,7 @@ public interface SysUserService {
      * @return
      * @throws IOException
      */
-    RespPageBean getUsersByPage(Map<String, Object> map);
+    PageResponse getUsersByPage(Map<String, Object> map,String token);
 
     /**
      * 新增
@@ -27,7 +27,7 @@ public interface SysUserService {
      * 修改
      * @param sysUserEntity
      */
-    RespPageBean update(SysUserEntity sysUserEntity);
+    PageResponse update(SysUserEntity sysUserEntity);
 
     /**
      * 密码修改
@@ -55,6 +55,11 @@ public interface SysUserService {
      * @param token
      */
     PageResponse getUserInfo(String token);
+    /**
+     * 获取修改用户信息
+     * @param userId
+     */
+    PageResponse getModifyUser(String userId);
 
 
 }

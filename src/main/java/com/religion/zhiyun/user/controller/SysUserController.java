@@ -18,9 +18,8 @@ public class SysUserController {
     private SysUserService sysUserService;
 
     @GetMapping("/find")
-    public RespPageBean getUsersByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-        map.put("token",token);
-        return sysUserService.getUsersByPage(map);
+    public PageResponse getUsersByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        return sysUserService.getUsersByPage(map,token);
     }
 
     @PostMapping("/add")
@@ -30,7 +29,7 @@ public class SysUserController {
     }
 
     @PostMapping("/update")
-    public RespPageBean update(@RequestBody SysUserEntity sysUserEntity) {
+    public PageResponse update(@RequestBody SysUserEntity sysUserEntity) {
         return sysUserService.update(sysUserEntity);
     }
 
@@ -47,6 +46,11 @@ public class SysUserController {
     @GetMapping("/getUser")
     public PageResponse getUserInfo(@RequestHeader("token")String token){
         return sysUserService.getUserInfo(token);
+    }
+
+    @GetMapping("/getMoUser")
+    public PageResponse getModifyUser(@RequestParam String userId){
+        return sysUserService.getModifyUser(userId);
     }
 
 }

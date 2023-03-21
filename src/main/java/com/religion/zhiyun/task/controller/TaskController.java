@@ -34,6 +34,11 @@ public class TaskController {
         Integer size = Integer.valueOf(sizes);
         return taskService.getProcdef(page,size,taskName);
     }
+    //获取维修设备任务
+    @GetMapping("/getRepairTask")
+    public PageResponse getRepairTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return taskService.getRepairTask(map,token);
+    }
 
     //获取维修设备详情
     @GetMapping("/getMonitorTask")
@@ -85,5 +90,10 @@ public class TaskController {
     @RequestMapping("/app/getMyTask")
     public PageResponse getMyTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         return taskService.getMyTask(map,token);
+    }
+
+    @RequestMapping("/app/getTaskDetail")
+    public PageResponse getTaskDetail(@RequestParam String procInstId) {
+        return taskService.getTaskDetail(procInstId);
     }
 }

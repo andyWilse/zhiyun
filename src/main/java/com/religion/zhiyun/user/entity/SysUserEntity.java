@@ -82,6 +82,12 @@ public class SysUserEntity implements Serializable {
 
     private String uId;
 
+    private Object[] fileList;
+    private String picturesPathRemove;
+    private String identityType;
+    private String venuesNm;
+    private String userMobileOrigin;
+
     private String salt;
     /**
      * 密码盐.

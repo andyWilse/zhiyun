@@ -100,7 +100,7 @@ public class DrawTransparentPic {
         g2d.dispose();
 
         // 保存文件
-        ImageIO.write(image, "png", new File("F:/test.png"));
+        //ImageIO.write(image, "png", new File("F:/test.png"));
         return image;
     }
 

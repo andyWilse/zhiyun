@@ -45,7 +45,8 @@
             HANDLE_TIME,
             EVENT_RESOURCE,
             EVENT_LEVEL,
-            PICTURES_PATH
+            PICTURES_PATH,
+            VIDEOS_PATH
         ) values (
             #{accessNumber},
             #{warnTime},
@@ -57,7 +58,8 @@
             #{handleTime},
             #{eventResource},
             #{eventLevel},
-            #{picturesPath}
+            #{picturesPath},
+            #{videosPath}
         )
     </insert>
     <insert id="addEventByNB" useGeneratedKeys="true" keyProperty="eventId">
@@ -325,7 +327,9 @@
             when '01' then 'AI预警'
             when '02' then '烟感'
             end as eventResourceCn,
-            ve.RELIGIOUS_SECT as sect
+            ve.RELIGIOUS_SECT as sect,
+            ev.PICTURES_PATH as picturesPathEvent,
+            ev.VIDEOS_PATH as videosPathEvent
         from rm_event_notified_info no
         left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
@@ -812,7 +816,9 @@
             case ev.EVENT_RESOURCE
             when '01' then 'AI预警'
             when '02' then '烟感'
-            end as eventResourceCn
+            end as eventResourceCn,
+            ev.PICTURES_PATH as picturesPathEvent,
+            ev.VIDEOS_PATH as videosPathEvent
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -820,7 +826,6 @@
         left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
         where ev.EVENT_ID = #{eventId}
     </select>
-
 
     <select id="findFillEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
         SELECT

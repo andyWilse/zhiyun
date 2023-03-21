@@ -3,9 +3,12 @@ package com.religion.zhiyun.sys.file.controller;
 import com.google.code.kaptcha.Producer;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.utils.fileutil.DrawTransparentPic;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -24,35 +27,24 @@ public class RmFileController {
     private Producer kaptchaProducer;
 
     @RequestMapping("/images/upload")
-    public RespPageBean uploadImage(HttpServletRequest request) {
-        return rmFileService.uploadImage(request);
+    public RespPageBean uploadImages( HttpServletRequest httpServletRequest) {
+        return rmFileService.uploadImage(httpServletRequest);
     }
 
     @GetMapping("/show")
-    @ResponseBody
-    public RespPageBean getSysDicts(@RequestParam("picture") String picture) throws IOException {
+    public RespPageBean getSysDicts(@RequestParam("picture") String picture){
         return rmFileService.showPicture(picture);
     }
 
     @RequestMapping("/buildUserPic")
-    public void buildUserPic(HttpServletResponse response, HttpSession session, @RequestHeader("token")String token) {
-        try {
-            String text = rmFileService.buildUserPic(token);
-            BufferedImage bufferedImage = DrawTransparentPic.drawTransparent(text);
-            session.setAttribute(" kaptcha", text);
-            response.setContentType("image/png");
-            ServletOutputStream outputStream = response.getOutputStream();
-            ImageIO.write(bufferedImage, "png", outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("响应验证码失败");
-        }
+    public AppResponse buildUserPic(@RequestHeader("token")String token) {
+        return  rmFileService.buildUserPic(token);
     }
 
     @RequestMapping("/buildErWei")
     public void buildErWei(HttpServletResponse response, HttpSession session, @RequestHeader("token")String token) {
         try {
-            String text = rmFileService.buildUserPic(token);
+            String text = "";
             //    生成验证码
             //String text= kaptchaProducer.createText();
             //    生成验证码图片
@@ -68,6 +60,11 @@ public class RmFileController {
             e.printStackTrace();
             System.out.println("响应验证码失败");
         }
+    }
+
+    @GetMapping("/getFile")
+    public PageResponse getFile(@RequestParam("picPath") String picPath){
+        return rmFileService.getFile(picPath);
     }
 
 }

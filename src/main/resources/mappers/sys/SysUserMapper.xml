@@ -18,10 +18,10 @@
         CREATE_TIME as createTime,
         VALID_IND as validInd,
         REL_VENUES_ID as relVenuesId,
-        PROVINCE,
-        CITY,
-        AREA,
-        TOWN
+        PROVINCE as province,
+        CITY as city,
+        AREA as area,
+        TOWN as town
     </sql>
 
     <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity" useGeneratedKeys="true" keyProperty="userId">
@@ -89,6 +89,13 @@
             <include refid="userColumn"/>
         from RM_SYS_USER_INFO
         where LOGIN_NM = #{loginNm} or USER_NM= #{loginNm} or USER_MOBILE= #{loginNm}
+    </select>
+
+    <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+             <include refid="userColumn"/>
+        from RM_SYS_USER_INFO
+        where USER_ID = #{userId}
     </select>
 
     <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -171,14 +178,16 @@
         update RM_SYS_USER_INFO
         set
             LOGIN_NM = #{loginNm},
-            PASSWORDS = #{passwords},
             USER_NM = #{userNm},
             USER_MOBILE = #{userMobile},
             USER_EMAIL = #{userEmail},
             USER_PHOTO_URL = #{userPhotoUrl},
             IDENTITY = #{identity},
-            USER_NBR = #{userNbr},
-            WEAK_PW_IND=#{weakPwInd},
+            REL_VENUES_ID = #{relVenuesId},
+            PROVINCE = #{province},
+            CITY = #{city},
+            AREA = #{area},
+            TOWN = #{town},
             LAST_MODIFY_TIME = #{lastModifyTime}
         WHERE USER_ID = #{userId}
     </update>
@@ -353,5 +362,12 @@
         or USER_NM LIKE CONCAT('%',#{search},'%')
     </select>
 
-
+    <select id="getVenuesNm" resultType="String">
+        select GROUP_CONCAT(VENUES_NAME) as name
+        from rm_venues_info
+        where VENUES_ID in
+        <foreach collection="venuesIdArr" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

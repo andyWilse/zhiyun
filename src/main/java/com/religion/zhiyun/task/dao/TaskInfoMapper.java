@@ -104,11 +104,28 @@ public interface TaskInfoMapper {
      */
     List<Map<String,Object>> getMyTask(@Param("vo") ParamsVo vo);
     Long getMyTaskTotal(@Param("vo") ParamsVo vo);
+
+    /**
+     * 任务详情
+     * @param procInstId
+     * @return
+     */
+    List<Map<String,Object>> getTaskDetail(@Param("procInstId") String procInstId);
     /**
      * 发起人
      * @param assignee
      * @param procInstId
      */
     void updateHiActinst(@Param("assignee") String assignee,@Param("procInstId") String procInstId);
+
+    /**
+     * 维修设备任务
+     * @param assignee
+     * @param type
+     * @param handleResults
+     * @return
+     */
+    List<Map<String,Object>> getRepairTask(@Param("assignee") String assignee,@Param("type") String type,
+                                           @Param("handleResults") String handleResults);
 
 }

@@ -150,7 +150,7 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             }
             //获取登录人
             String loginNm = this.getLogin(token);
-
+            Authentication.setAuthenticatedUserId(loginNm);
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {

@@ -17,6 +17,9 @@ public interface SysUserMapper {
     //根据用户名查询数据
     SysUserEntity queryByName(@Param("loginNm") String loginNm);
 
+    //根据用户名查询数据
+    SysUserEntity queryByUserId(@Param("userId") String userId);
+
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
 
@@ -35,7 +38,9 @@ public interface SysUserMapper {
      * @return
      * @throws IOException
      */
-    List<SysUserEntity>  getUsersByPage(@Param("vo") ParamsVo vo) throws IOException;
+    List<SysUserEntity>  getUsersByPage(@Param("vo") ParamsVo vo);
+    /**总条数**/
+    Long getTotal(@Param("vo") ParamsVo vo);
 
     /**
      * 获取客户编号
@@ -43,8 +48,7 @@ public interface SysUserMapper {
      */
     Long getMaxUserNbr();
 
-    /**总条数**/
-    Long getTotal(@Param("vo") ParamsVo vo);
+
 
     /**
      * 新增
@@ -151,5 +155,12 @@ public interface SysUserMapper {
      * @return
      */
     List<Map<String,Object>> getZuZhang(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+
+    /**
+     * 获取场所名称
+     * @param venuesIdArr
+     * @return
+     */
+    String getVenuesNm(@Param("venuesIdArr") String[] venuesIdArr);
 
 }

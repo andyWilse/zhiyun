@@ -168,17 +168,30 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
             managerMap = staffInfoMapper.getManagerById(ManagerId);
             //1.获取图片地址
             if (null!=managerMap&&managerMap.size()>0){
-                String imaPath = (String) managerMap.get("imapath");
+                String imaPath = (String) managerMap.get("managerPhotoPath");
                 if(imaPath!=null && !imaPath.isEmpty()){
                     //查询地图地址
                     String[] split = imaPath.split(",");
 
-                    pathsImg = rmFileMapper.getPath(split);
+                    pathsImg = rmFileMapper.getFileUrl(split);
                 }
-                managerMap.put("images",pathsImg.toArray());
+                managerMap.put("managerPhotoPath",pathsImg.toArray());
 
                 //2.关联场所
                 List<Map<String, Object>> venuesList = staffInfoMapper.getVenuesByManagerId(ManagerId);
+                if(null!=venuesList && venuesList.size()>0){
+                    for (int j=0;j<venuesList.size();j++){
+                        Map<String, Object> map = venuesList.get(j);
+                        String picturesPath = (String)map .get("picturesPath");
+                        List<Map<String, Object>> fileUrl =new ArrayList<>();
+                        if(picturesPath!=null && !picturesPath.isEmpty()){
+                            //查询地图地址
+                            String[] split = picturesPath.split(",");
+                            fileUrl = rmFileMapper.getFileUrl(split);
+                        }
+                        map.put("picturesPath",fileUrl.toArray());
+                    }
+                }
                 managerMap.put("venuesList",venuesList.toArray());
 
                 //关联活动

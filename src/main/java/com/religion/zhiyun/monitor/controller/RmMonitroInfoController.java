@@ -65,16 +65,9 @@ public class RmMonitroInfoController {
         return JsonUtils.objectTOJSONString(list);
     }
 
-    @GetMapping("/findpage")
-    public RespPageBean getMonitroByPage(@RequestParam Map<String, Object> map){
-
-        String accessNumber = (String)map.get("accessNumber");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-
-        return rmMonitroInfoService.getMonitrosByPage(page,size,accessNumber);
+    @GetMapping("/findPage")
+    public PageResponse getMonitorByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        return rmMonitroInfoService.getMonitorByPage(map,token);
     }
 
     @RequestMapping("/getMonitorURLByAccessNum/{accessNum}")

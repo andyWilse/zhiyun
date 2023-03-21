@@ -60,4 +60,35 @@ public class VenuesManagerEntity implements Serializable {
 
     @Column(name = "LAST_MODIFY_TIME")
     private Date lastModifyTime;//
+
+
+    @Column(name = "CERT_NBR")
+    private String certNbr;//'有效证件号码'
+    @Column(name = "CERT_TYPE_CD")
+    private String certTypeCd;//有效证件类型
+
+    @Column(name = "RELIGIOUS_TYPE")
+    private String religiousType;//'教派'
+    @Column(name = "SEX")
+    private String sex;//'性别'
+    @Column(name = "RELIGIOUS_SECT")
+    private String religiousSect;//'教别'
+    @Column(name = "NATION")
+    private String nation;//'民族'
+    @Column(name = "NATIVE_PLACE")
+    private String nativePlace;//'籍贯'
+    @Column(name = "RELIGIOUS_GROUP")
+    private String religiousGroup;//'所在团体'
+    @Column(name = "GROUP_POST")
+    private String groupPost;//'团体任职情况'
+    @Column(name = "VENUES_POST")
+    private String venuesPost;//'宗教场所任职情况'
+    @Column(name = "BIRTHDAY")
+    private String birthday;//'生日
+
+
+
+    private String picturesPathRemove;
+    private Object[] fileList;
+
 }

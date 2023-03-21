@@ -21,21 +21,21 @@ public class TimeTool {
         return format1;
     }
     //获取当前年
-    public static String getCurrentYear(Timestamp date){
+    public static String getCurrentYear(Date date){
         SimpleDateFormat format=new SimpleDateFormat(year);
         String formatYear = format.format(date);
         return formatYear;
     }
 
     //获取当前月
-    public static String getCurrentMonth(Timestamp date){
+    public static String getCurrentMonth(Date date){
         SimpleDateFormat format=new SimpleDateFormat(month);
         String formatMonth = format.format(date);
         return formatMonth;
     }
 
     //获取当前日
-    public static String getCurrentDay(Timestamp date){
+    public static String getCurrentDay(Date date){
         SimpleDateFormat format=new SimpleDateFormat(day);
         String formatDay= format.format(date);
         return formatDay;

@@ -13,6 +13,13 @@ import java.util.Map;
 public interface RmFileMapper {
     int add(FileEntity fileEntity);
 
+    /**
+     * 删除图片
+     * @param fileId
+     * @return
+     */
+    void delete(@Param("fileId") String fileId);
+
     List<FileEntity> queryPath(@Param("fileIds") String[] fileIds);
 
     /**
@@ -22,6 +29,17 @@ public interface RmFileMapper {
      */
     List<Map<String,Object>> getPath(@Param("fileIds") String[] fileIds);
 
+    /**
+     * url
+     * @param fileIds
+     * @return
+     */
+    List<Map<String,Object>> getFileUrl(@Param("fileIds") String[] fileIds);
 
-    List<Map<String,Object>> getPathByStaffId(@Param("fileIds") String fileIds);
+    /**
+     *获取用户水印
+     * @param loginNm
+     * @return
+     */
+    String getUserUrl(@Param("loginNm") String loginNm);
 }

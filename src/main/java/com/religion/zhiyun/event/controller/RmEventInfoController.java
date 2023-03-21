@@ -101,7 +101,7 @@ public class RmEventInfoController {
         return rmEventInfoService.getAllNum(type,token);
     }
 
-    @GetMapping("/findpage")
+    @GetMapping("/findPage")
     public RespPageBean getEventByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
 
         String accessNumber = (String)map.get("accessNumber");

@@ -18,7 +18,11 @@
         CREATOR as  creator,
         CREATE_TIME as createTime,
         LAST_MODIFIER as  lastModifier,
-        LAST_MODIFY_TIME as lastModifyTime
+        LAST_MODIFY_TIME as lastModifyTime,
+        CERT_NBR as certNbr,
+        CERT_TYPE_CD as certTypeCd,
+        RELIGIOUS_TYPE as religiousType
+
     </sql>
 
     <insert id="add">
@@ -36,7 +40,10 @@
         CREATOR,
         CREATE_TIME,
         LAST_MODIFIER,
-        LAST_MODIFY_TIME
+        LAST_MODIFY_TIME,
+        CERT_NBR,
+        CERT_TYPE_CD,
+        RELIGIOUS_TYPE
     ) values (
         #{managerCnNm},
         #{managerEnNm},
@@ -51,13 +58,22 @@
         #{creator},
         #{createTime},
         #{lastModifier},
-        #{lastModifyTime}
+        #{lastModifyTime},
+        #{certNbr},
+        #{certTypeCd},
+        #{religiousType}
     )
     </insert>
 
     <update id="update">
         update RM_VENUES_MANAGER_INFO
-            set MANAGER_EMAIL=#{managerEmail},
+            set
+                MANAGER_CN_NM=#{managerCnNm},
+                MANAGER_EN_NM=#{managerEnNm},
+                CERT_NBR=#{certNbr},
+                CERT_TYPE_CD=#{certTypeCd},
+                MANAGER_TYPE_CD=#{managerTypeCd},
+                MANAGER_EMAIL=#{managerEmail},
                 MANAGER_MOBILE=#{managerMobile},
                 MANAGER_PHOTO_PATH=#{managerPhotoPath},
                 PASSWORDS=#{passwords},
@@ -68,7 +84,9 @@
     </update>
 
     <update id="delete" >
-        update RM_VENUES_MANAGER_INFO set VALID_IND='0' where MANAGER_ID = #{managerId}
+        update RM_VENUES_MANAGER_INFO
+        set VALID_IND='0' ,LAST_MODIFIER=#{lastModifier}, LAST_MODIFY_TIME=#{lastModifyTime}
+        where MANAGER_ID = #{managerId}
     </update>
 
     <select id="query" resultType="com.religion.zhiyun.venues.entity.VenuesManagerEntity">
@@ -96,5 +114,37 @@
             where  MANAGER_ID = #{managerId}
         </if>
     </select>
+
+    <select id="findManager" resultType="map">
+        select
+            MANAGER_ID as managerId,
+            MANAGER_CN_NM as  managerCnNm,
+            MANAGER_MOBILE as managerMobile
+        from RM_VENUES_MANAGER_INFO ma
+        where VALID_IND='1'
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and   MANAGER_CN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        order by ma.LAST_MODIFY_TIME desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="findManagerTotal" resultType="long">
+        select
+            count(MANAGER_ID)
+        from RM_VENUES_MANAGER_INFO ma
+        where VALID_IND='1'
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and   MANAGER_CN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+    </select>
+
+    <select id="getByManagerId" resultType="com.religion.zhiyun.venues.entity.VenuesManagerEntity">
+        select
+             <include refid="VenuesManagerColumn"/>
+        from RM_VENUES_MANAGER_INFO ma
+        where ma.MANAGER_ID=#{managerId}
+    </select>
+
 
 </mapper>

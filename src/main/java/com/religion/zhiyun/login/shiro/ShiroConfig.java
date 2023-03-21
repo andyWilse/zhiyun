@@ -44,6 +44,8 @@ public class ShiroConfig {
         filterMap.put("/app/loginIn","anon");  //放行loginIn
         filterMap.put("/app/updatePassword","anon");  //放行updatePassword
 
+        filterMap.put("/file/images/upload","anon");
+
         filterMap.put("/event/addEvent","anon");  //放行AI预警
         filterMap.put("/event/addEventByNB","anon");  //放行烟感预警
 

@@ -4,9 +4,7 @@
 <mapper namespace="com.religion.zhiyun.sys.file.dao.RmFileMapper">
 
     <insert id="add" parameterType="com.religion.zhiyun.sys.file.entity.FileEntity"
-            keyColumn="fileId"
-            useGeneratedKeys="true" keyProperty="fileId"
-    >
+            keyColumn="fileId" useGeneratedKeys="true" keyProperty="fileId">
         insert into
             RM_FILE_INFO (
             FILE_NAME,
@@ -46,11 +44,28 @@
             #{fileIds}
         </foreach>
     </select>
-    <select id="getPathByStaffId" resultType="java.util.Map">
-        select CONCAT(FILE_PATH,FILE_NAME) as filePath
-        from RM_FILE_INFO
-        where FILE_ID =#{fileIds}
 
+    <select id="getFileUrl" resultType="java.util.Map">
+        select
+            FILE_ID as fileId,
+            FILE_NAME as name,
+            FILE_PATH as url
+        from RM_FILE_INFO
+        where FILE_ID in
+        <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">
+            #{fileIds}
+        </foreach>
+    </select>
+
+    <delete id="delete">
+        delete from RM_FILE_INFO where FILE_ID =#{fileId}
+    </delete>
+
+    <select id="getUserUrl" resultType="String">
+        select
+            FILE_PATH as url
+        from RM_FILE_INFO
+        where FILE_NAME = #{loginNm}
     </select>
 
 </mapper>

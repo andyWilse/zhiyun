@@ -57,7 +57,7 @@ public class FileUpDown {
         Date d = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String date = sdf.format(d);
-        String fileName = date + name + "." + type;
+        String fileName = date  + "." + type;
 
         //在指定路径下创建一个文件
         //String newpath="F:\\3filestore\\";

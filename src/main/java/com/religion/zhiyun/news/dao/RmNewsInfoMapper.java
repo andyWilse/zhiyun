@@ -29,11 +29,6 @@ public interface RmNewsInfoMapper {
      */
     void delete(int newsId);
 
-    /**
-     * 总条数
-     * @return
-     */
-    long getTotal();
 
     /**
      * 分页查询
@@ -43,6 +38,8 @@ public interface RmNewsInfoMapper {
      * @return
      * @throws IOException
      */
-    List<NewsEntity> getNewsByPage(Integer page, Integer size, String newsTitle) throws IOException;
+    List<NewsEntity> getNewsByPage(Integer page, Integer size, String newsTitle, String newsFor);
+    /**总条数**/
+    long getTotal(String newsTitle, String newsFor);
 
 }

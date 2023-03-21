@@ -1,5 +1,6 @@
 package com.religion.zhiyun.venues.controller;
 
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.PcResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -18,17 +19,29 @@ public class VenuesManagerController {
     private VenuesManagerService venuesManagerService;
 
 
-    @PostMapping("/getManager")
-    @ResponseBody
-    public PcResponse getManager(@RequestParam Map<String, Object> map, @RequestHeader("token")String token) {
-        String search = (String) map.get("search");
-        return venuesManagerService.getManager(search,token);
+    @GetMapping("/findManager")
+    public PageResponse findManager(@RequestParam Map<String, Object> map, @RequestHeader("token")String token) {
+        return venuesManagerService.findManager(map,token);
     }
 
     @PostMapping("/add")
-    @ResponseBody
-    public RespPageBean add(@RequestBody VenuesManagerEntity venuesManagerEntity, @RequestHeader("token")String token) {
+    public PageResponse add(@RequestBody VenuesManagerEntity venuesManagerEntity, @RequestHeader("token")String token) {
         return venuesManagerService.add(venuesManagerEntity,token);
+    }
+
+    @PostMapping("/updateManager")
+    public PageResponse updateManager(@RequestBody VenuesManagerEntity venuesManagerEntity, @RequestHeader("token")String token) {
+        return venuesManagerService.updateManager(venuesManagerEntity,token);
+    }
+
+    @PostMapping("/delete/{managerId}")
+    public PageResponse deleteManager(@PathVariable int managerId, @RequestHeader("token")String token) {
+        return venuesManagerService.delete(managerId,token);
+    }
+
+    @GetMapping("/getByManagerId")
+    public PageResponse getByManagerId(@RequestParam String managerId) {
+        return venuesManagerService.getByManagerId(managerId);
     }
 
 

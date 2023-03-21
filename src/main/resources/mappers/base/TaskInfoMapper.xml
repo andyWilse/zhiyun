@@ -19,7 +19,8 @@
             TASK_TYPE,
             PROC_INST_ID,
             FLOW_TYPE,
-            LAUNCH_TIME
+            LAUNCH_TIME,
+            REL_EVENT_ID
         )
         values (
             #{taskName},
@@ -36,7 +37,8 @@
             #{taskType},
             #{procInstId},
             #{flowType},
-            #{launchTime}
+            #{launchTime},
+            #{relEventId}
         )
     </insert>
 
@@ -172,10 +174,7 @@
             DATE_FORMAT(ta.LAUNCH_TIME ,'%Y-%m-%d %H:%i:%s') as launchTime,
             DATE_FORMAT(ta.HANDLE_TIME ,'%Y-%m-%d %H:%i:%s') as handleTime,
             ta.HANDLE_RESULTS as handleResults,
-            ta.PROC_INST_ID as procInstId,
-            ta.FLOW_TYPE as flowType,
-            ta.TASK_TYPE as taskType
-
+            ta.PROC_INST_ID as procInstId
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join rm_sys_user_info us on ta.LAUNCH_PERSON=us.USER_MOBILE
@@ -552,4 +551,47 @@
         and PROC_INST_ID_=#{procInstId}
     </update>
 
+    <select id="getTaskDetail" resultType="map">
+        SELECT
+            ta.TASK_NAME as taskName,
+            ve.VENUES_NAME as venuesName,
+            ve.VENUES_ADDRES as venuesAddres,
+            DATE_FORMAT(ac.START_TIME_,'%Y-%m-%d %H:%i:%s') as taskTime,
+            case when us.USER_NM is not null then us.USER_NM else ma.MANAGER_CN_NM end as launchPerson,
+            case when ta.HANDLE_RESULTS is null then '0' else ta.HANDLE_RESULTS end as handleResults,
+            ta.TASK_CONTENT  as taskContent,
+            case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+            ta.EMERGENCY_LEVEL as emeLevel
+        FROM rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID AND ac.ACT_TYPE_='startEvent'
+        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where 1=1
+        <if test="procInstId!=null and procInstId!=''">
+            and ta.PROC_INST_ID = #{procInstId}
+        </if>
+
+    </select>
+
+    <select id="getRepairTask" resultType="map">
+        SELECT  ve.VENUES_NAME as venuesName,
+                ve.VENUES_ADDRES as venuesAddres,
+                DATE_FORMAT(ac.START_TIME_,'%Y-%m-%d %H:%i:%s') as taskTime,
+                ev.ACCESS_NUMBER as accessNumber,
+                ta.PROC_INST_ID as procInstId,
+                ta.HANDLE_RESULTS as handleResults
+        FROM rm_task_info ta
+        join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.ASSIGNEE_=#{assignee}
+        left join rm_event_info ev on ta.REL_EVENT_ID=ev.EVENT_ID
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        where ta.FLOW_TYPE='07'
+        <if test="type!=null and type!=''">
+            and ta.HANDLE_TIME is null
+        </if>
+        <if test="handleResults!=null and handleResults!=''">
+            and ta.HANDLE_TIME is not null
+            and ta.HANDLE_RESULTS=#{handleResults}
+        </if>
+    </select>
 </mapper>

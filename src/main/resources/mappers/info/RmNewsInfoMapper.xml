@@ -13,6 +13,7 @@
         NEWS_REF as newsRef,
         NEWS_TYPE as newsType,
         NEWS_DOWN as newsDown,
+        NEWS_FOR as newsFor,
         NEWS_PICTURES_PATH as newsPicturesPath,
         CREATOR as creator,
         CREATE_TIME as createTime,
@@ -35,7 +36,9 @@
                  CREATOR,
                  CREATE_TIME,
                  LAST_MODIFIER,
-                 LAST_MODIFY_TIME)
+                 LAST_MODIFY_TIME,
+                 NEWS_FOR
+            )
              VALUES(
                  #{newsViews},
                  #{newsTitle},
@@ -49,7 +52,8 @@
                  #{creator},
                  #{createTime},
                  #{lastModifier},
-                 #{lastModifyTime}
+                 #{lastModifyTime},
+                 #{newsFor}
              );
     </insert>
 
@@ -66,21 +70,32 @@
             NEWS_DOWN as newsDown,
             NEWS_PICTURES_PATH as newsPicturesPath,
             CREATOR as creator,
-            CREATE_TIME as createTime,
-            LAST_MODIFIER as lastModifier,
-            LAST_MODIFY_TIME as lastModifyTim
+            DATE_FORMAT(CREATE_TIME,'%Y-%m-%d %H:%i:%s') as createTime,
+            NEWS_FOR as newsFor
         from RM_NEWS_INFO  news
         LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
         where NEWS_DOWN='1'
         <if test="newsTitle != null and newsTitle != ''">
             AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
         </if>
+        <if test="newsFor != null and newsFor != ''">
+            AND  NEWS_FOR =#{newsFor}
+        </if>
         order by LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(NEWS_ID) from RM_NEWS_INFO  where  NEWS_DOWN='1'
+        select
+            count(NEWS_ID)
+        from RM_NEWS_INFO
+        where NEWS_DOWN='1'
+        <if test="newsTitle != null and newsTitle != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        </if>
+        <if test="newsFor != null and newsFor != ''">
+            AND  NEWS_FOR =#{newsFor}
+        </if>
     </select>
 
     <update id="delete">
@@ -95,6 +110,7 @@
             NEWS_KEYWORD=#{newsKeyword},
             NEWS_CONTENT=#{newsContent},
             NEWS_FROM=#{newsFrom},
+            NEWS_FOR=#{newsFor},
             NEWS_REF=#{newsRef},
             NEWS_TYPE=#{newsType},
             NEWS_PICTURES_PATH=#{newsPicturesPath},

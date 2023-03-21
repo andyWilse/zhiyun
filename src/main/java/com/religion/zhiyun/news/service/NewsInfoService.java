@@ -1,6 +1,7 @@
 package com.religion.zhiyun.news.service;
 
 import com.religion.zhiyun.news.entity.NewsEntity;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
 import java.io.IOException;
@@ -30,5 +31,5 @@ public interface NewsInfoService {
      * @param map
      * @throws IOException
      */
-    RespPageBean getNewsByPage(Map<String, Object> map);
+    PageResponse getNewsByPage(Map<String, Object> map, String token);
 }

@@ -1,6 +1,8 @@
 package com.religion.zhiyun.user.service.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
+import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysRoleMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.dao.SysUserRoleRelMapper;
@@ -8,12 +10,9 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
-import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.utils.enums.RoleEnums;
-import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.base.HttpServletRequestReader;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.shiro.crypto.hash.Hash;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,26 +47,33 @@ public class SysUserServiceImpl implements SysUserService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private RmFileService rmFileService;
+    @Autowired
+    private RmFileMapper rmFileMapper;
+
     @Override
-    public RespPageBean getUsersByPage(Map<String, Object> map){
+    public PageResponse getUsersByPage(Map<String, Object> map,String token){
 
         long code= ResultCode.FAILED.getCode();
         String message="系统用户查询";
 
         List<SysUserEntity> dataList=new ArrayList<>();
-        Long total=0l;
+        long total=0l;
         try {
+            //参数
             String identity = (String)map.get("identity");
             String loginNm = (String)map.get("loginNm");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
+            //分页
             Integer page = Integer.valueOf(pages);
             Integer size = Integer.valueOf(sizes);
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
             //封装查询参数
-            ParamsVo vo = this.getAuth((String) map.get("token"));
+            ParamsVo vo = this.getAuth(token);
             vo.setPage(page);
             vo.setSize(size);
             vo.setSearchOne(loginNm);
@@ -78,9 +83,11 @@ public class SysUserServiceImpl implements SysUserService {
             if(null!=dataList && dataList.size()>0){
                 for(int i=0;i<dataList.size();i++){
                     SysUserEntity sysUserEntity = dataList.get(i);
+                    //身份信息转换
                     String ident = sysUserEntity.getIdentity();
                     String roleNm = sysRoleMapper.getRoleNm(ident);
                     sysUserEntity.setIdentity(roleNm);
+                    sysUserEntity.setIdentityType(ident);
                 }
             }
             //查询条数
@@ -91,16 +98,13 @@ public class SysUserServiceImpl implements SysUserService {
         } catch (RuntimeException r ){
             message=r.getMessage();
             r.printStackTrace();
-        }catch (IOException io) {
-            message=io.getMessage();
-            io.printStackTrace();
         }catch (Exception e) {
             message=e.getMessage();
             e.printStackTrace();
         }
         //rmUserLogsInfoService.savelogs( JsonUtils.objectTOJSONString(respPageBean), InfoEnums.USER_FIND.getName());
 
-        return new RespPageBean(code,message,total, dataList.toArray());
+        return new PageResponse(code,message,total, dataList.toArray());
     }
 
     @Override
@@ -110,27 +114,12 @@ public class SysUserServiceImpl implements SysUserService {
         Timestamp timestamp = null;
         try {
             timestamp = new Timestamp(new Date().getTime());
-            //查询组员数量
-            String relVenuesId = sysUserEntity.getRelVenuesId();
-            int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
-
-            String identity = sysUserEntity.getIdentity();
-            //只能两位组员
-            if(RoleEnums.ZU_YUAN.getCode().equals(identity) && yuanNum==2){
-                throw new RuntimeException("该场所内三人驻堂组员数量已满2人！");
-            }
-            //组长添加必须满足3个组员
-            if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
-                if(yuanNum!=2){
-                    message="该场所内三人驻堂组员数量不足2人，不能添加组长！";
-                    throw new RuntimeException(message);
-                }
-            }
             //电话不能重复
             long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
             if(numTel>0l){
                 throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
             }
+            message=this.checkData(sysUserEntity);
 
             sysUserEntity.setCreateTime(timestamp);
             sysUserEntity.setLastModifyTime(timestamp);
@@ -139,12 +128,33 @@ public class SysUserServiceImpl implements SysUserService {
             sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
             //密码加密
             String passwords = sysUserEntity.getPasswords();
+            String identity = sysUserEntity.getIdentity();
             //String loginNm = sysUserEntity.getLoginNm();
             String userMobile = sysUserEntity.getUserMobile();
             sysUserEntity.setWeakPwInd(passwords);
             //MD5加密,salt加密
             String pass = this.passwordSalt(userMobile,passwords,identity);
             sysUserEntity.setPasswords(pass);
+
+            //图片处理
+            String picturesPath = sysUserEntity.getUserPhotoUrl();
+            String picturesPathRemove = sysUserEntity.getPicturesPathRemove();
+            //清理图片
+            if(null!=picturesPathRemove && !picturesPathRemove.isEmpty()){
+                rmFileService.deletePicture(picturesPathRemove);
+                String[] split = picturesPathRemove.split(",");
+                if(null!=split && split.length>0 ){
+                    for (int i=0;i<split.length;i++){
+                        String re = split[i];
+                        if(picturesPath.contains(re)){
+                            String replace = picturesPath.replace(re+",",  "");
+                            picturesPath=replace;
+                        }
+                    }
+                    //保存图片
+                    sysUserEntity.setUserPhotoUrl(picturesPath);
+                }
+            }
             //新增用户
             sysUserMapper.add(sysUserEntity);
 
@@ -170,19 +180,57 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public RespPageBean update(SysUserEntity sysUserEntity) {
-        long code= ResultCode.SUCCESS.getCode();
+    public PageResponse update(SysUserEntity sysUserEntity) {
+        long code= ResultCode.FAILED.getCode();
+        String message="数据更新";
         try {
+            //电话校验
+            String userMobile = sysUserEntity.getUserMobile();
+            String userMobileOrigin = sysUserEntity.getUserMobileOrigin();
+            if(!userMobile.equals(userMobileOrigin)){
+                //电话不能重复
+                long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
+                if(numTel>0l){
+                    throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
+                }
+            }
+            message=this.checkData(sysUserEntity);
             Timestamp timestamp = new Timestamp(new Date().getTime());
             sysUserEntity.setLastModifyTime(timestamp);
+
+            //图片处理
+            String picturesPath = sysUserEntity.getUserPhotoUrl();
+            String picturesPathRemove = sysUserEntity.getPicturesPathRemove();
+            //清理图片
+            if(null!=picturesPathRemove && !picturesPathRemove.isEmpty()){
+                rmFileService.deletePicture(picturesPathRemove);
+                String[] split = picturesPathRemove.split(",");
+                if(null!=split && split.length>0 ){
+                    for (int i=0;i<split.length;i++){
+                        String re = split[i];
+                        if(picturesPath.contains(re)){
+                            String replace = picturesPath.replace(re+",",  "");
+                            picturesPath=replace;
+                        }
+                    }
+                    //保存图片
+                    sysUserEntity.setUserPhotoUrl(picturesPath);
+                }
+            }
             sysUserMapper.update(sysUserEntity);
             //保存日志
            //this.savelogs( "修改成功", InfoEnums.USER_UPDATE.getName());
-        } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
+
+            code= ResultCode.SUCCESS.getCode();
+            message="用户更新成功！";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="用户更新失败！";
             e.printStackTrace();
         }
-        return new RespPageBean(code);
+        return new PageResponse(code,message);
 
     }
 
@@ -271,6 +319,47 @@ public class SysUserServiceImpl implements SysUserService {
         return new PageResponse(code,message,list.toArray());
     }
 
+    @Override
+    public PageResponse getModifyUser(String userId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取登录用户信息";
+
+        List<SysUserEntity> list=new ArrayList<>();
+        try {
+            SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(userId);
+
+            if(null!=sysUserEntity){
+                //。图片回显
+                String picturesPath = sysUserEntity.getUserPhotoUrl();
+                if(null!=picturesPath && !picturesPath.isEmpty()){
+                    String[] split = picturesPath.split(",");
+                    List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
+                    sysUserEntity.setFileList(fileUrl.toArray());
+                }
+                //2.场所地址
+                String relVenuesId = sysUserEntity.getRelVenuesId();
+                if(null!=relVenuesId && !relVenuesId.isEmpty()){
+                    String[] split = relVenuesId.split(",");
+                    String venuesNm = sysUserMapper.getVenuesNm(split);
+                    sysUserEntity.setVenuesNm(venuesNm);
+                }
+            }else{
+                throw new RuntimeException("用户信息丢失！");
+            }
+
+            list.add(sysUserEntity);
+            code= ResultCode.SUCCESS.getCode();
+            message="获取登录用户信息成功";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="获取登录用户信息失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,list.toArray());
+    }
+
     /**
      * 密码加密
      * @param userName
@@ -325,6 +414,31 @@ public class SysUserServiceImpl implements SysUserService {
             vo.setVenuesArr(venuesArr);
         }
         return vo;
+    }
 
+    /**
+     * 数据校验
+     * @param sysUserEntity
+     * @return
+     */
+    public String checkData(SysUserEntity sysUserEntity){
+        String message="";
+        //查询组员数量
+        String relVenuesId = sysUserEntity.getRelVenuesId();
+        int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+
+        String identity = sysUserEntity.getIdentity();
+        //只能两位组员
+        if(RoleEnums.ZU_YUAN.getCode().equals(identity) && yuanNum==2){
+            throw new RuntimeException("该场所内三人驻堂组员数量已满2人！");
+        }
+        //组长添加必须满足3个组员
+        if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
+            if(yuanNum!=2){
+                message="该场所内三人驻堂组员数量不足2人，不能添加组长！";
+                throw new RuntimeException(message);
+            }
+        }
+        return message;
     }
 }

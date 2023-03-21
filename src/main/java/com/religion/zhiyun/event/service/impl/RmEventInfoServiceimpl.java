@@ -396,6 +396,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         List<Map<String, Object>> eventDetail = new ArrayList<>();
         try {
             eventDetail = rmEventInfoMapper.getEventDetail(eventId);
+
             code=ResultCode.SUCCESS.getCode();
             result="未完成预警详情查询成功！";
         } catch (RuntimeException e) {

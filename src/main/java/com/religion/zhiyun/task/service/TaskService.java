@@ -14,7 +14,10 @@ public interface TaskService {
     /*** 获取流程部署信息  **/
     RespPageBean getProcdef(Integer page,Integer size,String taskName);
 
-    /*** 获取流程部署信息  **/
+    /*** 获取维修设备任务 **/
+    PageResponse getRepairTask(Map<String, Object> map,String token);
+
+    /*** 获取维修设备详情  **/
     PageResponse getMonitorTask(String taskId);
 
     /**
@@ -45,4 +48,6 @@ public interface TaskService {
     /*** APP我的任务 **/
     public PageResponse getMyTask(Map<String, Object> map,String token);
 
+    /*** APP我的任务详情 **/
+    public PageResponse getTaskDetail(String procInstId);
 }

@@ -7,23 +7,30 @@ import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.fileutil.DrawTransparentPic;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.fileutil.FileToBase;
 import com.religion.zhiyun.utils.fileutil.FileUpDown;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Timestamp;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 public class RmFileServiceImple implements RmFileService {
 
@@ -76,6 +83,7 @@ public class RmFileServiceImple implements RmFileService {
             }
         }catch (Exception e){
             code=ResultCode.FAILED.getCode();
+            e.printStackTrace();
         }
         page.setCode(code);
         return  page;
@@ -107,15 +115,105 @@ public class RmFileServiceImple implements RmFileService {
     }
 
     @Override
-    public String buildUserPic(String token) {
-        //姓名+手机号码后四位
-        String loginNm = stringRedisTemplate.opsForValue().get(token);
-        SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-        String userNm = sysUserEntity.getUserNm();
-        String userMo = sysUserEntity.getUserMobile();
-        String userMobile = userMo.substring(7);
+    public AppResponse buildUserPic(String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="用户水印";
+        String pictureUrl="";
+        try {
+            //姓名+手机号码后四位
+            String loginNm = stringRedisTemplate.opsForValue().get(token);
+            //查询是否存在，存在直接返回
+            String userUrl = rmFileMapper.getUserUrl(loginNm);
+            if(null!=userUrl && !userUrl.isEmpty()){
+                pictureUrl=userUrl;
+            }else{
+                //不存在，则新增
+                SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+                String userNm = sysUserEntity.getUserNm();
+                String userMo = sysUserEntity.getUserMobile();
+                String userMobile = userMo.substring(7);
+                //生成图片
+                BufferedImage bufferedImage = DrawTransparentPic.drawTransparent(userNm+userMobile);
+                String filePath="user/"+userMo+".png";
+                pictureUrl=pathDown+filePath;//图片地址
+                //图片保存
+                ImageIO.write(bufferedImage, "png", new File(pathUpload +filePath));
+                //保存到数据库
+                FileEntity file=new FileEntity();
+                file.setFilePath(pictureUrl);
+                file.setFileType("03");//图片水印
+                file.setFileName(loginNm);
+                file.setCreator(loginNm);
+                file.setCreateTime(TimeTool.getYmdHms());
+                file.setFileTitle("用户水印");
+                rmFileMapper.add(file);
+            }
 
-        return userNm+userMobile;
+            code=ResultCode.SUCCESS.getCode();
+            message="用户水印成功！";
+
+        } catch (IOException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message,pictureUrl);
+    }
+
+    @Override
+    public void deletePicture(String pictures) {
+        //String resultInfo = null;
+        if(null!=pictures && !pictures.isEmpty()){
+            String[] split = pictures.split(",");
+            if(null!=split && split.length>0 ){
+                List<FileEntity> fileEntities = rmFileMapper.queryPath(split);
+                if(null!=fileEntities && fileEntities.size()>0) {
+                    for (int i = 0; i < split.length; i++) {
+                        //删除图片
+                        String filePaths = fileEntities.get(i).getFilePath();
+                        String[] supers = filePaths.split("super/");
+                        String aSuper = supers[1];
+                        String filePath =pathUpload+aSuper;
+                        int fileId = fileEntities.get(i).getFileId();
+                        File file = new File(filePath);
+                        if (file.exists()) {//文件是否存在
+                            if (file.delete()) {//存在就删了，返回1
+                                //数据库
+                                rmFileMapper.delete(Integer.toString(fileId));
+                                log.info("文件id:" + fileId + ";已删除文件:" + filePath + ";");
+                            } else {
+                                log.info(filePath + "文件未被清理！");
+                            }
+                        } else {
+                            log.info(filePath + "文件不存在！");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public PageResponse getFile(String picPath) {
+        long code=ResultCode.FAILED.getCode();
+        String message="获取图片地址";
+        List<Map<String, Object>> fileUrl=new ArrayList<>();
+        try {
+            if(null!=picPath && !picPath.isEmpty()){
+                String[] split = picPath.split(",");
+                fileUrl = rmFileMapper.getFileUrl(split);
+            }
+            code=ResultCode.SUCCESS.getCode();
+            message="获取图片地址成功！";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="获取图片地址失败！";
+            e.printStackTrace();
+        }
+
+        return new PageResponse(code,message,fileUrl.toArray());
     }
 
 

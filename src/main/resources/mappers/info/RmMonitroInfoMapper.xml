@@ -95,30 +95,61 @@
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(*) from RM_MONITOR_MANAGE_INFO
+        select count(r.MONITOR_ID)
+        from RM_MONITOR_MANAGE_INFO r
+        left join RM_VENUES_INFO ve on r.REL_VENUES_ID=ve.VENUES_ID
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  r.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
     </select>
 
-    <select id="getMonitrosByPage" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorByPage" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
         select
             MONITOR_ID as monitorId,
             ACCESS_NUMBER as accessNumber,
             MONITOR_URL as monitorUrl,
             CASE STATE WHEN '01' THEN '在线'  ELSE '报修' END as state,
             FUNCTION_TYPE as functionType,
-            v.VENUES_ADDRES as venuesAddres,
+            ve.VENUES_NAME as venuesAddres,
             r.CREATOR as creator,
             r.CREATE_TIME as createTime,
             r.LAST_MODIFIER as lastModifier,
             r.LAST_MODIFY_TIME as lastModifyTime
         from RM_MONITOR_MANAGE_INFO r
-        left join RM_VENUES_INFO v on r.REL_VENUES_ID=v.VENUES_ID
+        left join RM_VENUES_INFO ve on r.REL_VENUES_ID=ve.VENUES_ID
         where 1=1
-        <if test="accessNumber != null and accessNumber != ''">
-            AND  ACCESS_NUMBER LIKE CONCAT('%',#{accessNumber},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  r.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
         order by r.LAST_MODIFY_TIME desc
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
     </select>
+
     <select id="getMonitorURLByAccessNum" resultType="java.lang.String">
         SELECT monitor_url FROM rm_monitor_manage_info
         WHERE access_number=#{accessNumber}

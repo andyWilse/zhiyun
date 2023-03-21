@@ -379,7 +379,7 @@
             </foreach>
         </if>
         order by ve.LAST_MODIFY_TIME desc
-        limit #{pagepage},#{size}
+        limit #{page},#{size}
     </select>
 
     <update id="updateLngLat">

@@ -205,6 +205,7 @@ public class TaskReportServiceImpl implements TaskReportService {
         String loginNm ="";
         try {
             loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
             Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";

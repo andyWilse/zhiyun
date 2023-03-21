@@ -2,6 +2,7 @@ package com.religion.zhiyun.news.controller;
 
 import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,8 @@ public class NewsInfoController {
     }
 
     @GetMapping("/find")
-    public RespPageBean getEmpByPage(@RequestParam Map<String, Object> map){
-        return newsInfoService.getNewsByPage(map);
+    public PageResponse getNewsByPage(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
+        return newsInfoService.getNewsByPage(map,token);
     }
 
 

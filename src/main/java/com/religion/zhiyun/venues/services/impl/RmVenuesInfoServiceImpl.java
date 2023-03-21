@@ -3,7 +3,7 @@ package com.religion.zhiyun.venues.services.impl;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.login.api.ResultCode;
-import com.religion.zhiyun.sys.file.entity.FileEntity;
+import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
@@ -44,6 +44,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     private OperateRecordMapper userLogsInfoMapper;
     @Autowired
     private RmStaffInfoMapper staffInfoMapper;
+    @Autowired
+    private RmFileService rmFileService;
 
     long code= ResultCode.FAILED.getCode();
     String message="场所信息数据处理！";
@@ -67,7 +69,26 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             venuesEntity.setLastModifier(loginNm);
             venuesEntity.setLastModifyTime(TimeTool.getYmdHms());
             venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
+            //处理图片
+            String picturesPath = venuesEntity.getPicturesPath();
+            String picturesPathRemove = venuesEntity.getPicturesPathRemove();
+            //清理图片
+            if(null!=picturesPathRemove && !picturesPathRemove.isEmpty()){
+                rmFileService.deletePicture(picturesPathRemove);
+                String[] split = picturesPathRemove.split(",");
+                if(null!=split && split.length>0 ){
+                    for (int i=0;i<split.length;i++){
+                        String re = split[i];
+                        if(picturesPath.contains(re)){
+                            String replace = picturesPath.replace(re+",",  "");
+                            picturesPath=replace;
 
+                        }
+                    }
+                    //保存图片
+                    venuesEntity.setPicturesPath(picturesPath);
+                }
+            }
             //场所信息数据保存
             rmVenuesInfoMapper.add(venuesEntity);
 
@@ -101,6 +122,25 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         try {
             //数据校验
             VenuesEntity venuesEntity = this.checkVenuesData(venuesEnti);
+            //处理图片
+            String picturesPath = venuesEntity.getPicturesPath();
+            String picturesPathRemove = venuesEntity.getPicturesPathRemove();
+            //清理图片
+            if(null!=picturesPathRemove && !picturesPathRemove.isEmpty()){
+                rmFileService.deletePicture(picturesPathRemove);
+                String[] split = picturesPathRemove.split(",");
+                if(null!=split && split.length>0 ){
+                    for (int i=0;i<split.length;i++){
+                        String re = split[i];
+                        if(picturesPath.contains(re)){
+                            String replace = picturesPath.replace(re+",",  "");
+                            picturesPath=replace;
+                        }
+                    }
+                    //保存图片
+                    venuesEntity.setPicturesPath(picturesPath);
+                }
+            }
             //添加处理人
             String login = this.getLogin(token);
             venuesEntity.setLastModifyTime(TimeTool.getYmdHms());
@@ -210,7 +250,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 String picturesPath = venuesentity.getPicturesPath();
                 if(null!=picturesPath && !picturesPath.isEmpty()){
                     String[] split = picturesPath.split(",");
-                    List<FileEntity> fileEntities = rmFileMapper.queryPath(split);
+                    List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
+                    venuesentity.setFileList(fileUrl.toArray());
                 }
             }else{
                 throw new RuntimeException("场所信息丢失，请联系管理员！");
@@ -240,6 +281,27 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             r.printStackTrace();
         }catch (Exception e) {
             message="统计场所数量失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,list.toArray());
+    }
+
+    @Override
+    public PageResponse getVenueNum() {
+        long code=ResultCode.FAILED.getCode();
+        String message="地图统计场所数量";
+        List<Map<String, Object>> list=new ArrayList<>();
+        try {
+            ParamsVo auth = new ParamsVo();
+            Map<String, Object> allNum = rmVenuesInfoMapper.getAllNum(auth);
+            list.add(allNum);
+            code=ResultCode.SUCCESS.getCode();
+            message="地图统计场所数量成功";
+        }catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="地图统计场所数量失败！";
             e.printStackTrace();
         }
         return new PageResponse(code,message,list.toArray());

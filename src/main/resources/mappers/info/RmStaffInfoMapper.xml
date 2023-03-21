@@ -193,9 +193,9 @@
     </select>
     <select id="getManagerById" resultType="java.util.Map">
         select
-            m.MANAGER_CN_NM as name,
-            m.MANAGER_MOBILE as monile,
-            m.MANAGER_PHOTO_PATH as imapath,
+            m.MANAGER_CN_NM as managerCnNm,
+            m.MANAGER_MOBILE as managerMobile,
+            m.MANAGER_PHOTO_PATH as managerPhotoPath,
             d.DICT_CN_DESC as religiousSect,
             m.CERT_NBR as certNbr,
             case m.MANAGER_TYPE_CD
@@ -205,22 +205,23 @@
             end as managerType,
             m.MANAGER_TYPE_CD as managerTypeCd
         from rm_venues_manager_info m
-        left join rm_sys_dict d on d.DICT_CD=m.RELIGIOUS_TYPE
+        left join rm_sys_dict d on d.DICT_CD=m.RELIGIOUS_SECT
         where MANAGER_ID=#{ManagerId}
     </select>
     <select id="getVenuesByManagerId" resultType="java.util.Map">
 		select
-		VENUES_ID as id,
-		VENUES_NAME as name,
-		d.DICT_CN_DESC as type,
-		ORGANIZATION as address,
-        case m.MANAGER_TYPE_CD
-        when '01' then '负责人'
-        when '02' then '管理组成员'
-        when '03' then '紧急联系人'
-        end as managerType,
-        m.MANAGER_TYPE_CD as managerTypeCd,
-		m.MANAGER_CN_NM as person
+            VENUES_ID as id,
+            VENUES_NAME as name,
+            d.DICT_CN_DESC as type,
+            ORGANIZATION as address,
+            case m.MANAGER_TYPE_CD
+            when '01' then '负责人'
+            when '02' then '管理组成员'
+            when '03' then '紧急联系人'
+            end as managerType,
+            m.MANAGER_TYPE_CD as managerTypeCd,
+            m.MANAGER_CN_NM as person,
+            v.PICTURES_PATH as picturesPath
 		from rm_venues_info v
 		left join RM_SYS_DICT d on v.RELIGIOUS_SECT=d.DICT_CD
 		left join rm_venues_manager_info m on v.RESPONSIBLE_PERSON=m.MANAGER_ID

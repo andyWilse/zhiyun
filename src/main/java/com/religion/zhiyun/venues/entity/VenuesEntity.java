@@ -5,6 +5,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.List;
+import java.util.Map;
 
 
 @Data
@@ -93,4 +95,6 @@ public  class VenuesEntity implements Serializable {
 
     private String dictCd;
 
+    private String picturesPathRemove;
+    private Object[] fileList;
 }

@@ -209,6 +209,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
             taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("07");//设备维修
+            taskEntity.setHandleResults("0");//未解决
             taskInfoMapper.addTask(taskEntity);
 
             code=ResultCode.SUCCESS.getCode();
@@ -290,17 +291,42 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     }
 
     @Override
-    public RespPageBean getMonitrosByPage(Integer page, Integer size, String accessNumber) {
-        if(page!=null&&size!=null){
-            page=(page-1)*size;
+    public PageResponse getMonitorByPage(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="监控查询";
+
+        List<MonitroEntity> dataList=new ArrayList<>();
+        Long total=0l;
+        try {
+            String accessNumber = (String)map.get("accessNumber");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            //分页
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            //权限
+            ParamsVo auth = this.getAuth(token);
+            auth.setPage(page);
+            auth.setSize(size);
+            auth.setSearchOne(accessNumber);
+
+            dataList=rmMonitroInfoMapper.getMonitorByPage(auth);
+            total=rmMonitroInfoMapper.getTotal(auth);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="监控查询成功！";
+
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="监控查询失败！";
+            e.printStackTrace();
         }
-        List<MonitroEntity> dataList=rmMonitroInfoMapper.getMonitrosByPage(page,size,accessNumber);
-        Object[] objects = dataList.toArray();
-        Long total=rmMonitroInfoMapper.getTotal();
-        RespPageBean bean = new RespPageBean();
-        bean.setDatas(objects);
-        bean.setTotal(total);
-        return bean;
+        return new PageResponse(code,message,total,dataList.toArray());
     }
 
     @Override

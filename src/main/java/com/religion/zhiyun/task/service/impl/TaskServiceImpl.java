@@ -1,6 +1,7 @@
 package com.religion.zhiyun.task.service.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
@@ -15,14 +16,8 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RepositoryService;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +43,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     private SysUserMapper sysUserMapper;
+
+    @Autowired
+    private RmFileMapper rmFileMapper;
 
     @Autowired
     private org.activiti.engine.TaskService taskService;
@@ -90,6 +88,32 @@ public class TaskServiceImpl implements TaskService {
         List<ProcdefEntity> procdef = taskInfoMapper.getProcdef(page,size,taskName);
 
         return new RespPageBean(200l,procdef.toArray());
+    }
+
+    @Override
+    public PageResponse getRepairTask(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "报获取维修设备任务失败！";
+        List<Map<String, Object>> monitorTask =new ArrayList<>();
+        try {
+            String login = this.getLogin(token);
+            String type = (String) map.get("type");
+            if("01".equals(type)){//未完成
+                monitorTask = taskInfoMapper.getRepairTask(login,type,"");
+            }else if("02".equals(type)){//已完成未解决
+                monitorTask = taskInfoMapper.getRepairTask(login,"","0");
+            }else if("03".equals(type)){//已完成已解决
+                monitorTask = taskInfoMapper.getRepairTask(login,"","1");
+            }
+            message = "获取维修设备任务成功";
+            code= ResultCode.SUCCESS.getCode();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,monitorTask.toArray());
     }
 
     @Override
@@ -239,6 +263,7 @@ public class TaskServiceImpl implements TaskService {
         try {
             String procInstId = (String)map.get("procInstId");
             String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
             if(null==sysUserEntity){
                 throw new RuntimeException("用户信息丢失，请联系管理员！");
@@ -453,5 +478,63 @@ public class TaskServiceImpl implements TaskService {
             e.printStackTrace();
         }
         return new PageResponse(code,message,total,taskList.toArray());
+    }
+
+    @Override
+    public PageResponse getTaskDetail(String procInstId) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取任务详情";
+        List<Map<String,Object>> taskList = new ArrayList<>();
+        try {
+            //查询
+            taskList =taskInfoMapper.getTaskDetail(procInstId);
+            if(null!=taskList && taskList.size()>0){
+                //返回
+                Map<String, Object> taskMap = taskList.get(0);
+
+                //返回意见
+                List<Map<String, Object>> commentList = new ArrayList<>();
+                //获取意见
+                List<Map<String, Object>> mapList = taskInfoMapper.queryTaskCommon(procInstId);
+                //意见不为空，处理
+                if(null!=mapList && mapList.size()>0){
+                    for(int i=0;i<mapList.size();i++){
+                        Map<String, Object> map= mapList.get(i);
+                        //重新组装
+                        Map<String, Object> commentMap= new HashMap<>();
+                        //节点
+                        commentMap.put("jieDian",(String) map.get("jieDian"));
+                        //处理人
+                        commentMap.put("handlePerson",(String) map.get("taskNm"));
+                        //意见
+                        String messages = (String) map.get("message");
+                        if(null!=messages && !messages.isEmpty()){
+                            Map<String, Object> cmap = JsonUtils.jsonToMap(messages);
+                            commentMap.put("handleResults",cmap.get("handleResults"));
+                            commentMap.put("feedBack",cmap.get("feedBack"));
+                            //图片处理
+                            String picture = (String) cmap.get("picture");
+                            List<Map<String, Object>> fileUrl =new ArrayList<>();
+                            if(null!=picture && !picture.isEmpty()){
+                                fileUrl = rmFileMapper.getFileUrl(picture.split(","));
+                            }
+                            commentMap.put("picture",fileUrl.toArray());
+                        }
+                        //放入
+                        commentList.add(commentMap);
+                    }
+                }
+                taskMap.put("taskComment",commentList.toArray());
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取详情成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取详情失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,taskList.toArray());
     }
 }

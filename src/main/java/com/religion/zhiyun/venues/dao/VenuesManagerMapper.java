@@ -1,5 +1,6 @@
 package com.religion.zhiyun.venues.dao;
 
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.entity.VenuesManagerEntity;
 import org.apache.ibatis.annotations.Mapper;
@@ -29,7 +30,7 @@ public interface VenuesManagerMapper {
      * 删除
      * @param managerId
      */
-    int delete(int managerId);
+    int delete(int managerId, String lastModifier, String lastModifyTime);
 
     /**
      * 查询
@@ -52,6 +53,18 @@ public interface VenuesManagerMapper {
      */
     String getManagerById(@Param("managerId") String managerId);
 
+    /**
+     * 分页查询（pc）
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> findManager(@Param("vo") ParamsVo vo);
+    Long findManagerTotal(@Param("vo") ParamsVo vo);
 
-
+    /**
+     *
+     * @param managerId
+     * @return
+     */
+    List<VenuesManagerEntity> getByManagerId(@Param("managerId") String managerId);
 }

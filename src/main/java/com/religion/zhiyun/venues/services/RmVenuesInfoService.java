@@ -19,6 +19,13 @@ public interface RmVenuesInfoService {
      * @return
      */
     RespPageBean add(VenuesEntity venuesEntity,String token);
+
+    /**
+     * 场所修改
+     * @param venuesEntity
+     * @param token
+     * @return
+     */
     RespPageBean update(VenuesEntity venuesEntity,String token);
     int delete(int venuesId);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
@@ -46,6 +53,7 @@ public interface RmVenuesInfoService {
      * @return
      */
     PageResponse getAllNum(String token);
+    PageResponse getVenueNum();
 
     PageResponse getDialogVenue(Map<String, Object> map,String token);
 

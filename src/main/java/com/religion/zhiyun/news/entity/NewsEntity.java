@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -48,13 +49,16 @@ public class NewsEntity {
     private String creator;//发布者名称
 
     @Column(name = "CREATE_TIME")
-    private Timestamp createTime;//发布日期
+    private String createTime;//发布日期
 
     @Column(name = "LAST_MODIFIER")
     private String lastModifier;//最后修改人
 
     @Column(name = "LAST_MODIFY_TIME")
-    private Timestamp lastModifyTime;//最后修改时间
+    private String lastModifyTime;//最后修改时间
+
+    @Column(name = "NEWS_FOR")
+    private String newsFor;//阅读群体：01：监管人员；02：管理人员
 
     private String releaseYear;//发布日期(年)
     private String releaseMonth;//发布日期(月)

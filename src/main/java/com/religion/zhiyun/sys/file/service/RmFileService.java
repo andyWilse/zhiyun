@@ -2,6 +2,7 @@ package com.religion.zhiyun.sys.file.service;
 
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +23,19 @@ public interface RmFileService {
      * @param token
      * @return
      */
-    String buildUserPic(String token);
+    AppResponse buildUserPic(String token);
+
+    /**
+     * 图片清理
+     * @param pictures
+     */
+    void deletePicture(String pictures);
+
+    /**
+     * 获取图片地址
+     * @param picPath
+     * @return
+     */
+    PageResponse getFile(String picPath);
 
 }

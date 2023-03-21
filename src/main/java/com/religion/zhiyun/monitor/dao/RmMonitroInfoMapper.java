@@ -34,19 +34,16 @@ public interface RmMonitroInfoMapper {
 
     /**
      * 分页查询
-     * @param page
-     * @param size
-     * @param accessNumber
+     * @param vo
      * @return
      */
-    List<MonitroEntity> getMonitrosByPage(@Param("page") Integer page, @Param("size") Integer size,
-                                         @Param("accessNumber") String accessNumber);
+    List<MonitroEntity> getMonitorByPage(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数
      * @return
      */
-    Long getTotal();
+    Long getTotal(@Param("vo") ParamsVo vo);
 
     //根据设备编号返回监控url
     String getMonitorURLByAccessNum(String accessNum);
