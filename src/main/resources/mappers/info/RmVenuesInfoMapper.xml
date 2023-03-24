@@ -404,16 +404,28 @@
         where VENUES_STATUS='01'
         and ve.LONGITUDE is not null
         and ve.LATITUDE is not null
-        <if test="religiousSect!=null and religiousSect!=''">
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ve.RELIGIOUS_SECT in
-            <foreach collection="religiousSects" item="value" separator="," open="(" close=")">
+            <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
                 #{value}
             </foreach>
         </if>
-        <if test="search!=null and search!=''">
-            and (ve.RESPONSIBLE_PERSON LIKE concat('%',#{search},'%')
-            or ve.VENUES_ADDRES LIKE concat('%',#{search},'%')
-            or ve.VENUES_NAME LIKE concat('%',#{search},'%') )
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and (ve.RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_ADDRES LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_NAME LIKE concat('%',#{vo.searchOne},'%') )
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
         order by ve.VENUES_ID desc
     </select>
@@ -439,7 +451,11 @@
             lia.MANAGER_MOBILE as liaMo,
             ve.GROUP_MEMBERS as groId,
             gro.MANAGER_CN_NM as groNm,
-            gro.MANAGER_MOBILE as groMo
+            gro.MANAGER_MOBILE as groMo,
+            ve.PROVINCE as province,
+            ve.CITY as city,
+            ve.AREA as area,
+            ve.TOWN as  town
         from RM_VENUES_INFO ve
         left join rm_venues_manager_info res on res.MANAGER_ID=ve.RESPONSIBLE_PERSON and res.MANAGER_TYPE_CD='01'
         left join rm_venues_manager_info gro on gro.MANAGER_ID=ve.GROUP_MEMBERS and gro.MANAGER_TYPE_CD='02'

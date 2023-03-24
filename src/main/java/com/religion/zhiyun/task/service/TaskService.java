@@ -43,11 +43,11 @@ public interface TaskService {
     public PageResponse getTasking(Map<String, Object> map,String token);
 
     /*** 获取流程流转意见 **/
-    PageResponse getTaskCommon(String procInstId);
+    PageResponse getTaskCommon(String procInstId,String token);
 
     /*** APP我的任务 **/
     public PageResponse getMyTask(Map<String, Object> map,String token);
 
     /*** APP我的任务详情 **/
-    public PageResponse getTaskDetail(String procInstId);
+    public PageResponse getTaskDetail(String procInstId,String token);
 }

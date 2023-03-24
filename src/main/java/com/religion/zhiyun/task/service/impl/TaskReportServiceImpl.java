@@ -96,13 +96,17 @@ public class TaskReportServiceImpl implements TaskReportService {
                 }
             }
             //任务处理
-            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,taskEntity.getRelVenuesId());
             if(null==nextHandler){
                 throw new RuntimeException("下节点处理人信息丢失！");
             }
             List<String> userList = (List<String>) nextHandler.get("userList");
             Map<String, Object> variables = new HashMap<>();
-            variables.put("handleList2",userList );
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList2",userList );
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
 
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
@@ -149,9 +153,12 @@ public class TaskReportServiceImpl implements TaskReportService {
         String message="上报任务上报失败！";
         String loginNm ="";
         try {
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
             loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
-            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,"");
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";
                 throw new RuntimeException(message);
@@ -204,9 +211,12 @@ public class TaskReportServiceImpl implements TaskReportService {
         String message="任务处理";
         String loginNm ="";
         try {
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
             loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
-            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message);
+            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,"");
             if(null==nextHandler){
                 message="下节点处理人信息丢失！";
                 throw new RuntimeException(message);
@@ -449,7 +459,12 @@ public class TaskReportServiceImpl implements TaskReportService {
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("flag"+flagNo, flag);
-        variables.put("handleList"+assiNo, userList);
+        if(null!=userList && userList.size()>0){
+            variables.put("handleList"+assiNo, userList);
+        }else{
+            throw new RuntimeException("无相关处理人，请重新确认！");
+        }
+
         return variables;
     }
 
@@ -521,7 +536,7 @@ public class TaskReportServiceImpl implements TaskReportService {
      * @param message
      * @return
      */
-    public Map<String, Object> getNextHandler(String loginNm,String message){
+    public Map<String, Object> getNextHandler(String loginNm,String message,String venusId){
         List<Map<String, Object>> mapList=null;
         Map<String, Object> maps=new HashMap<>();
 
@@ -539,7 +554,10 @@ public class TaskReportServiceImpl implements TaskReportService {
 
         /**根据身份证，获取信息**/
         if(RoleEnums.ZU_YUAN.getCode().equals(identity)){
-            mapList = sysUserMapper.getZuZhang(userMobile, "");
+            if(venusId==null || venusId.isEmpty()){
+                throw new RuntimeException("请先选择场所！");
+            }
+            mapList = sysUserMapper.getZuZhang(userMobile, "",venusId);
         }else if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
             mapList = sysUserMapper.getJieGan(userMobile,"");
         }else if(RoleEnums.JIE_GAN.getCode().equals(identity)){

@@ -278,7 +278,7 @@
         <foreach collection="staffIds" item="item" index="index" open="(" close=")" separator=",">
             #{item}
         </foreach>
-        group by STAFF_CN_NM
+        order by STAFF_CN_NM
         limit #{page},#{size}
     </select>
 

@@ -23,8 +23,8 @@ public interface TaskInfoMapper {
     List<Map<String,Object>> queryTasks(@Param("vo") ParamsVo vo);
     Long queryTasksTotal(@Param("vo") ParamsVo vo);
     /**流转意见**/
-    List<Map<String,Object>> queryTaskCommon(String procInstId);
-
+    List<Map<String,Object>> queryTaskCommon(String procInstId,String loginNm);
+    List<Map<String,Object>> getTaskCommon(String procInstId);
     /** 任务数量统计 **/
     Map<String,Object> getTaskNum(String loginNm);
 

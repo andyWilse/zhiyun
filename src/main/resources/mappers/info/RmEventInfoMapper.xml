@@ -784,7 +784,8 @@
 
     <select id="getEventDetail" resultType="map">
         select
-            ev.WARN_TIME as warnTime,
+            DATE_FORMAT(ev.WARN_TIME ,'%Y-%m-%d %H:%i:%s') as warnTime,
+            DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
             case ev.EVENT_TYPE
             when '01' then '火灾预警'
             when '02' then '人脸识别'
@@ -818,12 +819,17 @@
             when '02' then '烟感'
             end as eventResourceCn,
             ev.PICTURES_PATH as picturesPathEvent,
-            ev.VIDEOS_PATH as videosPathEvent
+            ev.VIDEOS_PATH as videosPathEvent,
+            case when us.USER_NM is not null then us.USER_NM
+            else fzz.MANAGER_CN_NM
+            end as handlePerson
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
         left join rm_monitor_manage_info mo on ev.ACCESS_NUMBER=mo.ACCESS_NUMBER
         left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
+        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
         where ev.EVENT_ID = #{eventId}
     </select>
 
@@ -854,9 +860,16 @@
             when '04' then '人流聚集'
             else '其他'
             end as eventTypeNm,
-            ve.PICTURES_PATH as venuesPicture
+            ve.PICTURES_PATH as venuesPicture,
+            ev.EVENT_STATE as eventState,
+            DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
+            case when us.USER_NM is not null then us.USER_NM
+            else fzz.MANAGER_CN_NM
+            end as handlePerson
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
         where ev.EVENT_TYPE!='05'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and ev.EVENT_TYPE=#{vo.searchOne}

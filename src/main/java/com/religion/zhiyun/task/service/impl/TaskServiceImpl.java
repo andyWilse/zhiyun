@@ -262,6 +262,9 @@ public class TaskServiceImpl implements TaskService {
         String message="任务处理";
         try {
             String procInstId = (String)map.get("procInstId");
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
             String loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
@@ -370,7 +373,12 @@ public class TaskServiceImpl implements TaskService {
         }
         Map<String, Object> variables = new HashMap<>();
         variables.put("flag"+flagNo, flag);
-        variables.put("handleList"+assiNo, userList);
+
+        if(null!=userList && userList.size()>0){
+            variables.put("handleList"+assiNo, userList);
+        }else{
+            throw new RuntimeException("无相关处理人，请重新确认！");
+        }
         return variables;
     }
 
@@ -418,13 +426,18 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public PageResponse getTaskCommon(String procInstId) {
+    public PageResponse getTaskCommon(String procInstId,String token) {
         long code= ResultCode.FAILED.getCode();
         String message= "获取任务流转意见";
         List<Map<String,Object>> taskCommon = new ArrayList<>();
 
         try {
-            taskCommon= taskInfoMapper.queryTaskCommon(procInstId);
+            String login = this.getLogin(token);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户信息丢失");
+            }
+            taskCommon= taskInfoMapper.queryTaskCommon(procInstId,sysUserEntity.getUserNm());
             code= ResultCode.SUCCESS.getCode();
             message= "获取任务流转意见成功！";
         }catch (RuntimeException r){
@@ -481,7 +494,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public PageResponse getTaskDetail(String procInstId) {
+    public PageResponse getTaskDetail(String procInstId,String token) {
         long code= ResultCode.FAILED.getCode();
         String message= "获取任务详情";
         List<Map<String,Object>> taskList = new ArrayList<>();
@@ -495,7 +508,9 @@ public class TaskServiceImpl implements TaskService {
                 //返回意见
                 List<Map<String, Object>> commentList = new ArrayList<>();
                 //获取意见
-                List<Map<String, Object>> mapList = taskInfoMapper.queryTaskCommon(procInstId);
+                //List<Map<String, Object>> mapList = taskInfoMapper.queryTaskCommon(procInstId,sysUserEntity.getUserNm());
+                List<Map<String, Object>> mapList = taskInfoMapper.getTaskCommon(procInstId);
+
                 //意见不为空，处理
                 if(null!=mapList && mapList.size()>0){
                     for(int i=0;i<mapList.size();i++){
@@ -503,14 +518,25 @@ public class TaskServiceImpl implements TaskService {
                         //重新组装
                         Map<String, Object> commentMap= new HashMap<>();
                         //节点
-                        commentMap.put("jieDian",(String) map.get("jieDian"));
+                        //commentMap.put("jieDian",(String) map.get("jieDian"));
                         //处理人
                         commentMap.put("handlePerson",(String) map.get("taskNm"));
+                        commentMap.put("handleTime",(String) map.get("handleTime"));
                         //意见
                         String messages = (String) map.get("message");
                         if(null!=messages && !messages.isEmpty()){
                             Map<String, Object> cmap = JsonUtils.jsonToMap(messages);
-                            commentMap.put("handleResults",cmap.get("handleResults"));
+                            String handleResults = (String) cmap.get("handleResults");
+                            String results ="";
+                            if("1".equals(handleResults)){
+                                results ="已解决不";
+                            }else if("0".equals(handleResults)){
+                                results ="未解决";
+                            }else{
+                                results=handleResults;
+                            }
+
+                            commentMap.put("handleResults",results);
                             commentMap.put("feedBack",cmap.get("feedBack"));
                             //图片处理
                             String picture = (String) cmap.get("picture");

@@ -82,8 +82,8 @@ public class TaskController {
     }
 
     @RequestMapping("/getCommon")
-    public PageResponse getCommon(@RequestParam String procInstId) {
-        return taskService.getTaskCommon(procInstId);
+    public PageResponse getCommon(@RequestParam String procInstId,@RequestHeader("token")String token) {
+        return taskService.getTaskCommon(procInstId,token);
     }
 
     //APP我的任务
@@ -93,7 +93,7 @@ public class TaskController {
     }
 
     @RequestMapping("/app/getTaskDetail")
-    public PageResponse getTaskDetail(@RequestParam String procInstId) {
-        return taskService.getTaskDetail(procInstId);
+    public PageResponse getTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
+        return taskService.getTaskDetail(procInstId,token);
     }
 }

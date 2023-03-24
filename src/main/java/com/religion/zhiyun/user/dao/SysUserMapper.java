@@ -104,6 +104,8 @@ public interface SysUserMapper {
      * @return
      */
     int getYuanNum(@Param("relVenuesId") String relVenuesId);
+    int getZzhNum(@Param("relVenuesId") String relVenuesId);
+
 
     /**
      * 密码修改
@@ -154,7 +156,9 @@ public interface SysUserMapper {
      * @param loginNm
      * @return
      */
-    List<Map<String,Object>> getZuZhang(@Param("userMobile") String userMobile,@Param("loginNm") String loginNm);
+    List<Map<String,Object>> getZuZhang(@Param("userMobile") String userMobile,
+                                        @Param("loginNm") String loginNm,
+                                        @Param("relVenuesId") String relVenuesId);
 
     /**
      * 获取场所名称

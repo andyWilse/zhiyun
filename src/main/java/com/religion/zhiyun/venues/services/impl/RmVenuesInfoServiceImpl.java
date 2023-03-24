@@ -287,12 +287,17 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public PageResponse getVenueNum() {
+    public PageResponse getVenueNum(String type,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="地图统计场所数量";
         List<Map<String, Object>> list=new ArrayList<>();
         try {
             ParamsVo auth = new ParamsVo();
+            if("01".equals(type)){
+
+            }else if("02".equals(type)){
+                auth =this.getAuth(token);
+            }
             Map<String, Object> allNum = rmVenuesInfoMapper.getAllNum(auth);
             list.add(allNum);
             code=ResultCode.SUCCESS.getCode();
@@ -441,7 +446,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public AppDetailRes getMapVenuesDetail(String venuesId) {
+    public AppDetailRes getMapVenuesDetail(String venuesId,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="获取地图场所详情失败！";
         Map<String, Object> venuesMap =new HashMap<>();
@@ -522,13 +527,36 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 venuesMap.put("twoDirector",twoDirector);
                 venuesMap.put("workDirector",workDirector);
 
+                //监控查看权限
+                String inArea="0"; //1在辖区 0不在辖区
+                String login = this.getLogin(token);
+                SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+                if(null==sysUserEntity){
+                    throw  new RuntimeException("登录用户信息丢失！！");
+                }
+                String area = (String) venuesMap.get("area");
+                String town = (String) venuesMap.get("town");
+                String identity = sysUserEntity.getIdentity();
+                String areaUser = sysUserEntity.getArea();
+                String townUser  = sysUserEntity.getTown();
+                String relVenuesId = sysUserEntity.getRelVenuesId();
+                //venuesId
+                if(("10000002".equals(identity) || "10000003".equals(identity)) && area.equals(areaUser)){
+                    inArea="1";
+                }else if(("10000004".equals(identity) || "10000005".equals(identity)) && town.equals(townUser)){
+                    inArea="1";
+                }else if(("10000006".equals(identity) || "10000007".equals(identity)) && relVenuesId.contains(venuesId)){
+                    inArea="1";
+                }
+                venuesMap.put("inArea",inArea);
+
             }else{
-                message="获取地图场所详情失败！！";
-                throw  new RuntimeException(message);
+                throw  new RuntimeException("获取地图场所详情失败！！");
             }
             code= ResultCode.SUCCESS.getCode();
             message="获取地图场所详情成功！";
         } catch (RuntimeException r ){
+            message=r.getMessage();
             r.printStackTrace();
         } catch(Exception e) {
             message="获取地图场所详情失败！！";
@@ -539,17 +567,79 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public AppResponse getMapVenues(String search, String religiousSect) {
+    public AppResponse getMapVenues(Map<String, Object> map,String token) {
         long code = ResultCode.FAILED.getCode();
         String  message = "获取地图场所信息失败！";
         List<Map<String, Object>> mapVenues = new ArrayList<>();
         try {
-            String[] split ={};
+            String search = (String) map.get("search");
+            String religiousSect = (String) map.get("religiousSect");
+            String type = (String) map.get("type");
+            String[] religiousSectArr ={};
             if(null!=religiousSect && !religiousSect.isEmpty()){
-                split = religiousSect.split(",");
+                religiousSectArr = religiousSect.split(",");
             }
+            ParamsVo auth = new ParamsVo();
+            if("01".equals(type)){//全部
 
-            mapVenues = rmVenuesInfoMapper.getMapVenues(search, split,religiousSect);
+            }else if("02".equals(type)){//我的辖区
+                auth =this.getAuth(token);
+            }
+            auth.setSearchOne(search);
+            auth.setSearchTwo(religiousSect);
+            auth.setSearchArr(religiousSectArr);
+            mapVenues = rmVenuesInfoMapper.getMapVenues(auth);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取地图场所信息成功！";
+        } catch (RuntimeException r ){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message = "获取地图场所信息失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,mapVenues.toArray());
+    }
+
+    @Override
+    public AppResponse getMapsVenues(Map<String, Object> map, String token) {
+        long code = ResultCode.FAILED.getCode();
+        String  message = "获取地图场所信息失败！";
+        List<Map<String, Object>> mapVenues = new ArrayList<>();
+        try {
+            String search = (String) map.get("search");
+            String religiousSect = (String) map.get("religiousSect");
+            String type = (String) map.get("type");
+            String[] religiousSectArr ={};
+            if(null!=religiousSect && !religiousSect.isEmpty()){
+                religiousSectArr = religiousSect.split(",");
+            }
+            ParamsVo auth = new ParamsVo();
+            if("01".equals(type)){//全部
+
+            }else if("02".equals(type)){//我的辖区
+                auth =this.getAuth(token);
+            }
+            auth.setSearchOne(search);
+            auth.setSearchTwo(religiousSect);
+            auth.setSearchArr(religiousSectArr);
+            List<Map<String, Object>> mapVenue = rmVenuesInfoMapper.getMapVenues(auth);
+            if(null!=mapVenue && mapVenue.size()>0){
+                for(int i=0;i<mapVenue.size();i++){
+                    Map<String, Object> maps = mapVenue.get(i);
+                    String latitude = (String) maps.get("Latitude");
+                    String longitude = (String) maps.get("longitude");
+                    Integer venuesId = (Integer) maps.get("venuesId");
+                    String religiousSec = (String) maps.get("religiousSect");
+                    Map<String, Object> mapNew =new HashMap<>();
+                    Double[] jw={Double.valueOf(latitude),Double.valueOf(longitude)};
+                    mapNew.put("position",jw);
+                    mapNew.put("venuesId",venuesId);
+                    mapNew.put("religiousSec",religiousSec);
+                    mapVenues.add(mapNew);
+                }
+            }
 
             code= ResultCode.SUCCESS.getCode();
             message="获取地图场所信息成功！";

@@ -533,7 +533,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity ev=new EventEntity();
             ev.setEventId(Integer.parseInt(eventId));
             ev.setEventState(ParamCode.EVENT_STATE_04.getCode());
-            ev.setHandleResults("处理人："+this.getLogin(token));
+            ev.setHandleResults(this.getLogin(token));
             ev.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(ev);
             //更新通知
@@ -563,7 +563,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity ev=new EventEntity();
             ev.setEventId(Integer.parseInt(eventId));
             ev.setEventState(ParamCode.EVENT_STATE_03.getCode());
-            ev.setHandleResults("处理人："+this.getLogin(token));
+            ev.setHandleResults(this.getLogin(token));
             ev.setHandleTime(TimeTool.getYmdHms());
             //更新预警事件表
             rmEventInfoMapper.updateEventState(ev);
@@ -591,9 +591,22 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity event = this.checkEvent(eventId);
             //任务
             TaskEntity taskEntity=new TaskEntity();
-            taskEntity.setTaskType(event.getEventType());
-            taskEntity.setEndTime(TimeTool.strYmdHmsToDate(event.getWarnTime()));
-            taskEntity.setTaskName("预警事件：一键上报（场所管理人员）");
+            String eventType = event.getEventType();
+            taskEntity.setTaskType(eventType);
+            taskEntity.setEndTime(event.getWarnTime());
+            String tnm="预警事件：一键上报（监管）";
+            if("01".equals(eventType)){
+                tnm="火灾预警-上报";
+            }else if("02".equals(eventType)){
+                tnm="人脸识别-上报";
+            }else if("03".equals(eventType)){
+                tnm="任务预警-上报";
+            }else if("04".equals(eventType)){
+                tnm="人流聚集-上报";
+            }else if("05".equals(eventType)){
+                tnm="设备报修-上报";
+            }
+            taskEntity.setTaskName(tnm);
             taskEntity.setTaskContent("预警事件,请处理");
             taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
             taskEntity.setEmergencyLevel(event.getEventLevel());
@@ -619,7 +632,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity ev=new EventEntity();
             ev.setEventId(Integer.parseInt(eventId));
             ev.setEventState(ParamCode.EVENT_STATE_02.getCode());
-            ev.setHandleResults("处理人："+this.getLogin(token));
+            ev.setHandleResults(this.getLogin(token));
             ev.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(ev);
             //更新通知
@@ -646,9 +659,22 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity event = this.checkEvent(eventId);
             //任务
             TaskEntity taskEntity=new TaskEntity();
-            taskEntity.setTaskType(event.getEventType());
-            taskEntity.setEndTime(TimeTool.strYmdHmsToDate(event.getWarnTime()));
-            taskEntity.setTaskName("预警事件：一键上报（监管）");
+            String eventType = event.getEventType();
+            taskEntity.setTaskType(eventType);
+            taskEntity.setEndTime(event.getWarnTime());
+            String tnm="预警事件：一键上报（监管）";
+            if("01".equals(eventType)){
+                tnm="火灾预警-上报";
+            }else if("02".equals(eventType)){
+                tnm="人脸识别-上报";
+            }else if("03".equals(eventType)){
+                tnm="任务预警-上报";
+            }else if("04".equals(eventType)){
+                tnm="人流聚集-上报";
+            }else if("05".equals(eventType)){
+                tnm="设备报修-上报";
+            }
+            taskEntity.setTaskName(tnm);
             taskEntity.setTaskContent("预警事件,请处理");
             taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
             taskEntity.setEmergencyLevel(event.getEventLevel());
@@ -692,7 +718,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             EventEntity ev=new EventEntity();
             ev.setEventId(Integer.parseInt(eventId));
             ev.setEventState(ParamCode.EVENT_STATE_02.getCode());
-            ev.setHandleResults("处理人："+this.getLogin(token));
+            ev.setHandleResults(this.getLogin(token));
             ev.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(ev);
             //更新通知
@@ -813,6 +839,40 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         return new AppResponse(code,message,eventsGather.toArray());
     }
 
+    @Override
+    public AppResponse getEventsTrends(int num, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="动态统计事件";
+        List<Map<String, Object>> eventsTrends=new ArrayList<>();
+        try {
+            //权限参数
+            ParamsVo auth = this.getAuth(token);
+            auth.setSize(num);
+            //调用
+            auth.setSearchOne("01");
+            List<Map<String, Object>> eventsFir = rmEventInfoMapper.getEventsDay(auth);
+            auth.setSearchOne("02");
+            List<Map<String, Object>> eventsFace = rmEventInfoMapper.getEventsDay(auth);
+            auth.setSearchOne("04");
+            List<Map<String, Object>> eventsPerson = rmEventInfoMapper.getEventsDay(auth);
+            Map<String, Object> map=new HashMap<>();
+            map.put("fir",eventsFir.toArray());
+            map.put("face",eventsFace.toArray());
+            map.put("person",eventsPerson.toArray());
+
+            eventsTrends.add(map);
+            code= ResultCode.SUCCESS.getCode();
+            message="动态统计事件成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="动态统计事件件失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsTrends.toArray());
+    }
+
 
     /**
      * 预警通知保存
@@ -878,9 +938,14 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     public String launch(TaskEntity taskEntity,List<String> userList,String loginNm,String type) {
 
         Authentication.setAuthenticatedUserId(loginNm);
-        //inputUser就是在bpmn中Assignee配置的参数
         Map<String, Object> variables = new HashMap<>();
-        variables.put("handleList2",userList );
+        //inputUser就是在bpmn中Assignee配置的参数
+        if(null!=userList && userList.size()>0){
+            variables.put("handleList2",userList );
+        }else{
+            throw new RuntimeException("无相关处理人，请重新确认！");
+        }
+
         /**start**/
         //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
         ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
@@ -894,6 +959,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         String procInstId=tmp.getProcessInstanceId();
         //taskService.setAssignee("assignee2",userNbr);
         taskService.complete(tmp.getId(),variables);
+
+        //发起人
+        taskInfoMapper.updateHiActinst(loginNm,procInstId);
 
         //保存任务信息
         taskEntity.setLaunchPerson(loginNm);

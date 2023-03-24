@@ -186,4 +186,10 @@ public class RmEventInfoController {
         return rmEventInfoService.getEventsGather(-10,dateType,token);
     }
 
+    //折线图（动态）
+    @RequestMapping("/zxt/trends")
+    public AppResponse getEventsTrends(@RequestHeader("token")String token) {
+        return rmEventInfoService.getEventsTrends(-8,token);
+    }
+
 }

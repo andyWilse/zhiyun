@@ -125,4 +125,12 @@ public interface RmEventInfoService {
      */
     AppResponse getEventsGather(int num,String dateType,String token);
 
+    /**
+     * 动态
+     * @param num
+     * @param token
+     * @return
+     */
+    AppResponse getEventsTrends(@Param("num") int num,String token);
+
 }

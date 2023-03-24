@@ -145,7 +145,11 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             //根据身份获取具体下达人
             List<String> userList = taskInfoMapper.getIssuedUsers(loginNm, province, city, area, town, relVenuesId, identityArr);
             Map<String, Object> variables = new HashMap<>();
-            variables.put("handleList",userList );
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList",userList );
+            }else{
+                throw new RuntimeException("下达区域无相关处理人，请重新确认下达范围！");
+            }
 
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
@@ -177,9 +181,8 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             message="下达流程下达成功！流程id(唯一标识)procInstId:"+ tmp.getProcessInstanceId();
         } catch (RuntimeException e) {
             message=e.getMessage();
-            //throw new RuntimeException(message) ;
+            e.printStackTrace(); ;
         } catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
             message="下达流程下达失败！";
             e.printStackTrace();
         }
@@ -193,6 +196,9 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
         long code=ResultCode.FAILED.getCode();
         String message="任务下达处理";
         try {
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
             String loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
             //处理待办

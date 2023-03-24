@@ -81,7 +81,11 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             //根据登录人获取街镇干事 ab
             Map<String, Object> variables = new HashMap<>();
             List<String> userList = taskInfoMapper.getJieGanUsers(upFillEntity.getVenuesId());
-            variables.put("handleList",userList );
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList",userList );
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
 
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
@@ -141,6 +145,9 @@ public class TaskFilingServiceImpl implements TaskFilingService {
         String message="";
         try {
             String procInstId = (String) map.get("procInstId");
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
             String flowType = (String) map.get("flowType");
             String handleResults = (String)map.get("handleResults");
             if("03".equals(flowType)){

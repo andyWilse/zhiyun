@@ -53,7 +53,7 @@ public interface RmVenuesInfoService {
      * @return
      */
     PageResponse getAllNum(String token);
-    PageResponse getVenueNum();
+    PageResponse getVenueNum(String type,String token);
 
     PageResponse getDialogVenue(Map<String, Object> map,String token);
 
@@ -82,16 +82,16 @@ public interface RmVenuesInfoService {
      * @param venuesId
      * @return
      */
-    AppDetailRes getMapVenuesDetail(String venuesId);
+    AppDetailRes getMapVenuesDetail(String venuesId,String token);
 
     /**
      * 获取地图
-     * @param search
-     * @param religiousSect
+     * @param map
+     * @param token
      * @return
      */
-    AppResponse getMapVenues(String search,String religiousSect);
-
+    AppResponse getMapVenues(Map<String, Object> map,String token);
+    AppResponse getMapsVenues(Map<String, Object> map,String token);
     /**
      * 场所更新用：场所下拉(管理)
      * @param token

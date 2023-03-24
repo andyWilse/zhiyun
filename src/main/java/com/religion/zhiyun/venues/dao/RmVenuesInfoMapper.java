@@ -124,9 +124,7 @@ public interface RmVenuesInfoMapper {
     void updateLngLat(@Param("longitude") String longitude,@Param("Latitude") String Latitude,@Param("venuesId") Integer venuesId);
 
     //查询
-    public List<Map<String,Object>> getMapVenues(@Param("search") String search,
-                                                 @Param("religiousSects") String[] religiousSects,
-                                                 @Param("religiousSect") String religiousSect);
+    public List<Map<String,Object>> getMapVenues(@Param("vo") ParamsVo vo);
 
     /**
      * 获取备案信息

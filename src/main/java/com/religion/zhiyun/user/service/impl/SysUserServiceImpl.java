@@ -439,6 +439,12 @@ public class SysUserServiceImpl implements SysUserService {
                 throw new RuntimeException(message);
             }
         }
+
+        int zzhNum = sysUserMapper.getZzhNum(relVenuesId);
+        if(RoleEnums.ZU_ZHANG.getCode().equals(identity) && zzhNum==1){
+            throw new RuntimeException("该场所内已存在三人驻堂组长");
+        }
+
         return message;
     }
 }

@@ -85,8 +85,8 @@ public class RmVenuesInfoController {
 
     //统计场所数量（app地图）
     @RequestMapping("/map/getVeNum")
-    public PageResponse getVeNum(){
-        return rmVenuesInfoService.getVenueNum();
+    public PageResponse getVeNum(@RequestParam String type,@RequestHeader("token")String token){
+        return rmVenuesInfoService.getVenueNum(type,token);
     }
 
     //统计场所弹框（app首页）
@@ -123,14 +123,20 @@ public class RmVenuesInfoController {
 
     //地图(app用)
     @RequestMapping("/map/getVenues")
-    public AppResponse getMapVenues(@RequestParam String search,@RequestParam String religiousSect) {
-        return rmVenuesInfoService.getMapVenues(search,religiousSect);
+    public AppResponse getMapVenues(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.getMapVenues(map,token);
+    }
+
+    //地图(pc用)
+    @RequestMapping("/map/mapVenues")
+    public AppResponse getMapsVenues(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.getMapsVenues(map,token);
     }
 
     //地图场所详情（app用)
     @RequestMapping("/map/venuesDetail")
-    public AppDetailRes getMapVenuesDetail(@RequestParam String venuesId) {
-        AppDetailRes appResponse = rmVenuesInfoService.getMapVenuesDetail(venuesId);
+    public AppDetailRes getMapVenuesDetail(@RequestParam String venuesId,@RequestHeader("token")String token) {
+        AppDetailRes appResponse = rmVenuesInfoService.getMapVenuesDetail(venuesId,token);
         return appResponse;
     }
 

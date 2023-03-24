@@ -189,7 +189,7 @@
                 #{value}
             </foreach>
         </if>
-        group by ve.VENUES_ID desc
+        order by ve.VENUES_ID desc
         limit #{vo.page},#{vo.size}
     </select>
 
@@ -223,7 +223,6 @@
             ve.VENUES_NAME as venuesName,
             ve.VENUES_ADDRES as venuesAddres,
             m.CREATE_TIME as time
-
         from rm_monitor_manage_info m
         left join  RM_VENUES_INFO ve on ve.VENUES_ID=m.rel_venues_id
         where VENUES_STATUS!='02'
@@ -246,7 +245,7 @@
                 #{value}
             </foreach>
         </if>
-        group by m.LAST_MODIFY_TIME
+        order by m.LAST_MODIFY_TIME
         limit #{vo.page},#{vo.size}
     </select>
 

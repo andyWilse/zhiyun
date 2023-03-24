@@ -137,7 +137,9 @@
             AND  ve.AREA = #{vo.area}
         </if>
         <if test="vo.venues != null and vo.venues != ''">
-            AND ve.REL_VENUES_ID =#{vo.venues}
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                AND  ve.VENUES_ID LIKE CONCAT('%',#{value},'%')
+            </foreach>
         </if>
 
         order by LAST_MODIFY_TIME desc
@@ -252,7 +254,16 @@
         from RM_SYS_USER_INFO u
         where u.IDENTITY='10000007'
         and u.VALID_IND='1'
-        and u.REL_VENUES_ID=#{relVenuesId}
+        AND  u.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+    </select>
+
+    <select id="getZzhNum" resultType="int">
+        select
+        count(zz.USER_ID)
+        from RM_SYS_USER_INFO zz
+        where zz.IDENTITY='10000006'
+        and zz.VALID_IND='1'
+        and zz.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
     </select>
 
     <update id="updatePassword">
@@ -268,7 +279,7 @@
         SELECT
             zz.LOGIN_NM as loginNm,zz.USER_NM as userNm,zz.USER_MOBILE as userMobile
         FROM rm_sys_user_info zy,rm_sys_user_info zz
-        where zy.REL_VENUES_ID=zz.REL_VENUES_ID
+        where zz.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
         and zz.VALID_IND='1'
         and zz.IDENTITY='10000006'
         and zy.IDENTITY='10000007'

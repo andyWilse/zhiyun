@@ -181,7 +181,11 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             }
             //任务处理
             Map<String, Object> variables = new HashMap<>();
-            variables.put("handleList2",userList );
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList2",userList );
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
 
             /**start**/
             //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
@@ -473,16 +477,23 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
         SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
         String area="";
         String town ="";
+        String province="";
+        String city ="";
         String relVenuesId="";
         String[] venuesArr={};
         if(null!=sysUserEntity){
             relVenuesId = sysUserEntity.getRelVenuesId();
             town = sysUserEntity.getTown();
             area = sysUserEntity.getArea();
+            province =sysUserEntity.getProvince();
+            city =sysUserEntity.getCity();
+
         }else{
             throw new RuntimeException("用户已过期，请重新登录！");
         }
         ParamsVo vo=new ParamsVo();
+        vo.setProvince(province);
+        vo.setCity(city);
         vo.setArea(area);
         vo.setTown(town);
         vo.setVenues(relVenuesId);
