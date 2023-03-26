@@ -6,27 +6,23 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
-import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.RepositoryService;
-import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.DeploymentBuilder;
-import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Slf4j
@@ -169,10 +165,21 @@ public class TaskServiceImpl implements TaskService {
         String message="统计任务数量数据失败！";
         List<Map<String,Object>> list=new ArrayList<>();
         try {
-            Map<String,Object> map=new HashMap<>();
             //获取登录用户
             String login = this.getLogin(token);
-            list=taskInfoMapper.getTaskGather(num,login);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
+            String identity = sysUserEntity.getIdentity();
+            String identityArr ="10000002,10000003,10000004,10000005,10000006,10000007";
+            if(RoleEnums.ZU_YUAN.getCode().equals(identity) || RoleEnums.ZU_ZHANG.getCode().equals(identity)){
+                identityArr="10000006,10000007";
+            }else if(RoleEnums.JIE_GAN.getCode().equals(identity) || RoleEnums.JIE_WEI.getCode().equals(identity)){
+                identityArr="10000004,10000005";
+            }else if(RoleEnums.QU_GAN.getCode().equals(identity) || RoleEnums.QU_WEI.getCode().equals(identity)){
+                identityArr="10000002,10000003";
+            }
+           // list=taskInfoMapper.getTaskGather(num,login);
+            list= taskInfoMapper.getTaskAgvGather(num, login, identityArr.split(","));
+
             code= ResultCode.SUCCESS.getCode();
             message="统计任务数量数据成功！";
         } catch (RuntimeException e) {
@@ -184,137 +191,6 @@ public class TaskServiceImpl implements TaskService {
         }
         return new AppResponse(code,message,list.toArray());
     }
-
-    @Override
-    @Transactional
-    public AppResponse reportOneReport(Map<String, Object> map, String token) {
-        long code=ResultCode.FAILED.getCode();
-        String message="一键上报任务上报失败！";
-
-        try {
-            String procInstId = (String)map.get("procInstId");
-            String loginNm = this.getLogin(token);
-            //下节点处理人
-            List<String> userList=new ArrayList();
-            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-            if(null!=sysUserEntity){
-                String identify = sysUserEntity.getIdentity();
-                //根据用户身份，查询
-                if("10000006".equals(identify) || "10000007".equals(identify)){
-                    //查找街干事、街委员
-                    List<SysUserEntity> jie = sysUserMapper.getJie(loginNm, identify);
-                    if(jie.size()>0 && null!=jie){
-                        for(int i=0;i<jie.size();i++){
-                            String userMobile = jie.get(i).getUserMobile();
-                            userList.add(userMobile);
-                        }
-                    }
-                }else if("10000004".equals(identify) || "10000005".equals(identify)){
-                    //查找区干事、区委员
-                    List<SysUserEntity> qu = sysUserMapper.getQu(loginNm, identify);
-                    if(qu.size()>0 && null!=qu){
-                        for(int i=0;i<qu.size();i++){
-                            String userMobile = qu.get(i).getUserMobile();
-                            userList.add(userMobile);
-                        }
-                    }
-                }
-            }else{
-                throw new RuntimeException("系统中不存在下节点处理人，请先添加！");
-            }
-
-            //根据角色信息获取自己的待办 act_ru_task
-            //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
-            //处理自己的待办
-            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
-            if(!ObjectUtils.isEmpty(T)) {
-                for (Task item : T) {
-                    String assignee = item.getAssignee();
-                    if(assignee.equals(loginNm)){
-                        Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "go", userList, procInstId);
-                        variables.put("isSuccess", true);
-                        //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
-                        taskService.setVariableLocal(item.getId(),"isSuccess",false);
-                        //增加审批备注
-                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
-                        //完成此次审批。由下节点审批
-                        taskService.complete(item.getId(), variables);
-                    }
-                }
-            }
-            log.info("任务id："+procInstId+" 上报");
-            code= ResultCode.SUCCESS.getCode();
-            message="一键上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
-        }catch (RuntimeException r){
-            message=r.getMessage();
-            r.printStackTrace();
-        }catch (Exception e) {
-            message="上报流程上报失败！";
-            e.printStackTrace();
-        }
-        return new AppResponse(code,message);
-    }
-
-    @Override
-    @Transactional
-    public AppResponse reportOneHandle(Map<String, Object> map, String token) {
-        long code=ResultCode.FAILED.getCode();
-        String message="任务处理";
-        try {
-            String procInstId = (String)map.get("procInstId");
-            if(null==procInstId || procInstId.isEmpty()){
-                throw new RuntimeException("流程id丢失，请联系管理员！");
-            }
-            String loginNm = this.getLogin(token);
-            Authentication.setAuthenticatedUserId(loginNm);
-            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-            if(null==sysUserEntity){
-                throw new RuntimeException("用户信息丢失，请联系管理员！");
-            }
-            //处理待办
-            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
-            if(!ObjectUtils.isEmpty(T)) {
-                for (Task item : T) {
-                    String assignee = item.getAssignee();
-                    if(assignee.equals(loginNm)){
-                        Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "end",null,procInstId);
-                        variables.put("nrOfCompletedInstances", 1);
-                        variables.put("isSuccess", true);
-
-                        //设置本地参数。在myListener1监听中获取。
-                        taskService.setVariableLocal(item.getId(),"isSuccess",true);
-                        //增加审批备注
-                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
-                        //完成此次审批。如果下节点为endEvent。结束流程
-                        taskService.complete(item.getId(), variables);
-                        log.info("任务id："+procInstId+" 已处理，流程结束！");
-
-                        //更新处理结果
-                        TaskEntity taskEntity=new TaskEntity();
-                        taskEntity.setHandlePerson(loginNm);
-                        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-                        taskEntity.setHandleTime(new Date());
-                        taskEntity.setHandleResults((String) map.get("handleResults"));
-                        taskEntity.setProcInstId(procInstId);
-                        taskInfoMapper.updateTask(taskEntity);
-                    }
-                }
-            }
-
-            code= ResultCode.SUCCESS.getCode();
-            message="上报流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
-        }catch (RuntimeException r){
-            message=r.getMessage();
-            //throw new RuntimeException(message) ;
-        } catch (Exception e) {
-            code= ResultCode.FAILED.getCode();
-            message="上报流程处理失败！";
-            e.printStackTrace();
-        }
-        log.info("任务已处理，数据更新！");
-        return new AppResponse(code,message);
-    }
-
 
     /**
      * 获取登录人
@@ -373,12 +249,14 @@ public class TaskServiceImpl implements TaskService {
         }
         Map<String, Object> variables = new HashMap<>();
         variables.put("flag"+flagNo, flag);
-
-        if(null!=userList && userList.size()>0){
-            variables.put("handleList"+assiNo, userList);
-        }else{
-            throw new RuntimeException("无相关处理人，请重新确认！");
+        if("go".equals(flag)){
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList"+assiNo, userList);
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
         }
+
         return variables;
     }
 

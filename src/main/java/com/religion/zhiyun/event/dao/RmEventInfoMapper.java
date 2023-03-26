@@ -2,6 +2,7 @@ package com.religion.zhiyun.event.dao;
 
 
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -207,4 +208,11 @@ public interface RmEventInfoMapper {
      * @return
      */
     List<EventEntity> findFillEvent(String day,String hour,String minute);
+
+    /**
+     * 保存一键上报 上报人信息
+     * @param ev
+     */
+    void addEventReportMen(EventReportMenEntity ev);
+    long queryEventReportMen(@Param("login") String login,@Param("procInstId") String procInstId);
 }

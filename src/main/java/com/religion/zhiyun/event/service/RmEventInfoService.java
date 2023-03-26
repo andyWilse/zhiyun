@@ -75,6 +75,12 @@ public interface RmEventInfoService {
      */
     AppResponse dismissEvent(String eventId,String token);
 
+    /** 提交申请(上报) **/
+    public AppResponse reportOneReport(Map<String, Object> map, String token);
+
+    /** 流程结束 **/
+    public AppResponse reportOneHandle(Map<String, Object> map,String token);
+
     /**
      * 拨打119
      * @param eventId
@@ -83,18 +89,11 @@ public interface RmEventInfoService {
     AppResponse callFire(String eventId,String token);
 
     /**
-     * 一键上报（管理）
+     * 一键上报（通知）
      * @param eventId
      * @return
      */
     AppResponse reportOne(String eventId,String token);
-
-    /**
-     * 一键上报（监管）
-     * @param eventId
-     * @return
-     */
-    AppResponse reportOneJg(String eventId,String token);
 
     /**
      * 月（10个月，传-9）

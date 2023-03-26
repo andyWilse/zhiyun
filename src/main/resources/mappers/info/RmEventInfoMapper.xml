@@ -333,7 +333,7 @@
         from rm_event_notified_info no
         left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        where no.NOTIFIED_FLAG='01'
+        where no.NOTIFIED_FLAG='03'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
@@ -822,7 +822,8 @@
             ev.VIDEOS_PATH as videosPathEvent,
             case when us.USER_NM is not null then us.USER_NM
             else fzz.MANAGER_CN_NM
-            end as handlePerson
+            end as handlePerson,
+            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -830,6 +831,7 @@
         left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
         left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
         left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
         where ev.EVENT_ID = #{eventId}
     </select>
 
@@ -865,11 +867,13 @@
             DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
             case when us.USER_NM is not null then us.USER_NM
             else fzz.MANAGER_CN_NM
-            end as handlePerson
+            end as handlePerson,
+            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
         left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
         where ev.EVENT_TYPE!='05'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and ev.EVENT_TYPE=#{vo.searchOne}
@@ -924,6 +928,28 @@
                 #{value}
             </foreach>
         </if>
+    </select>
+
+    <insert id="addEventReportMen">
+        insert into rm_event_report_men (
+            REPORT_MEN,
+            REPORT_TIME,
+            REF_EVENT_ID,
+            PROC_INST_ID
+        ) values (
+            #{reportMen},
+            #{reportTime},
+            #{refEventId},
+            #{procInstId}
+        )
+    </insert>
+
+    <select id="queryEventReportMen" resultType="long">
+        select
+            count(men_id)
+        from rm_event_report_men
+        where PROC_INST_ID=#{procInstId}
+        and REPORT_MEN =#{login}
     </select>
 
 </mapper>

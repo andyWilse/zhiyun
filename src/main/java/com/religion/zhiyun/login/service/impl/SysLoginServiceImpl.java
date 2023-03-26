@@ -115,12 +115,6 @@ public class SysLoginServiceImpl implements SysLoginService {
             code=ResultCode.SUCCESS.getCode();
             message="登录成功！";
 
-            //登录
-            /*Subject subject = SecurityUtils.getSubject();
-            token = new UsernamePasswordToken(username, password);
-            subject.login(token);
-            loginInfo = this.getLoginInfo(username);*/
-            //return new AppResponse(code,message,loginInfo,direct);// 将用户的角色和权限发送到前台
         } catch (IncorrectCredentialsException e) {
             code=ResultCode.FAILED.getCode();
             message="密码错误!";

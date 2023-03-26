@@ -22,7 +22,7 @@ public interface EventNotifiedMapper {
      * @param eventId
      * @return
      */
-    void updateNotifiedFlag(String eventId, Date ymdHms,String notifiedFlag);
-
+    void updateNotifiedFlag(String eventId, String ymdHms,String notifiedFlag);
+    void updateNotifiedUser(String eventId, String ymdHms,String notifiedUser);
 
 }

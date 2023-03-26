@@ -218,6 +218,46 @@
         </if>
     </select>
 
+    <select id="getJgByVenues" resultType="java.util.Map">
+        select distinct
+            jg.USER_NBR as userNbr,
+            jg.USER_MOBILE as userMobile,
+            jg.USER_NM as userNm
+        from rm_sys_user_info jg
+        left join rm_sys_user_info zy on jg.town=zy.town and zy.IDENTITY='10000007'
+        where jg.VALID_IND='1'
+        <if test="relVenuesId != null and relVenuesId != ''">
+            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        </if>
+    </select>
+
+    <select id="getJWVenues" resultType="java.util.Map">
+        select distinct
+            jw.USER_NBR as userNbr,
+            jw.USER_MOBILE as userMobile,
+            jw.USER_NM as userNm
+        from rm_sys_user_info jw
+        left join rm_sys_user_info zy on jw.town=zy.town and zy.IDENTITY='10000007'
+        where jw.VALID_IND='1'
+        and jw.IDENTITY='10000004'
+        <if test="relVenuesId != null and relVenuesId != ''">
+            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        </if>
+    </select>
+
+    <select id="getAllByVenues" resultType="java.util.Map">
+        select distinct
+            al.USER_NBR as userNbr,
+            al.USER_MOBILE as userMobile,
+            al.USER_NM as userNm
+        from rm_sys_user_info al
+        left join rm_sys_user_info zy on al.area=zy.area and zy.IDENTITY='10000007'
+        where al.VALID_IND='1'
+        <if test="relVenuesId != null and relVenuesId != ''">
+            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        </if>
+    </select>
+
     <select id="getJie" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             jie.USER_NM as userNm,

@@ -138,13 +138,13 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             event.setEventResource(ParamCode.EVENT_TYPE_05.getCode());
             event.setLocation(locationName);
             event.setPicturesPath(picturePath);
-            event.setEventState(ParamCode.EVENT_STATE_00.getCode());
+            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             event.setHandleResults("0");
             event.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.addEvent(event);
 
             //4.添加通知
-            String nextHandler = this.addNotifiedParty("05", Integer.parseInt(venuesId), event.getEventId(), locationName);
+            String nextHandler = this.addNotifiedParty(ParamCode.EVENT_TYPE_05.getCode(), Integer.parseInt(venuesId), event.getEventId(), locationName);
             //5.发起任务
             this.launch(event,nextHandler);
 
@@ -209,7 +209,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             taskEntity.setRelEventId(String.valueOf(entity.getEventId()));
             taskEntity.setRelVenuesId(String.valueOf(entity.getRelVenuesId()));
             taskEntity.setLaunchPerson("系统发起");
-            taskEntity.setLaunchTime(new Date());
+            taskEntity.setLaunchTime(TimeTool.getYmdHms());
             taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
             taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("07");//设备维修

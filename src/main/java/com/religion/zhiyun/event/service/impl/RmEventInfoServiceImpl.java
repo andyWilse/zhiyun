@@ -3,6 +3,7 @@ package com.religion.zhiyun.event.service.impl;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
@@ -12,11 +13,13 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -36,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -43,7 +47,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-public class RmEventInfoServiceimpl implements RmEventInfoService {
+public class RmEventInfoServiceImpl implements RmEventInfoService {
     @Autowired
     private RmEventInfoMapper rmEventInfoMapper;
 
@@ -161,24 +165,31 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 event.setEventType(ParamCode.EVENT_TYPE_02.getCode());
             }else if("CROWDS_GATHER".equals(alarmCode)){//人群聚集
                 event.setEventType(ParamCode.EVENT_TYPE_04.getCode());
+            }else if("FIR".equals(alarmCode)){//人群聚集
+                event.setEventType(ParamCode.EVENT_TYPE_01.getCode());
             }else{
                 event.setEventType(ParamCode.EVENT_TYPE_03.getCode());
             }
             //程度
+            String emergencyLevel="02";
             if("轻微".equals(alarmLevelName)){
-                event.setEventLevel("1");
+                event.setEventLevel("1");//普通
             }else if("一般".equals(alarmLevelName)){
-                event.setEventLevel("2");
+                event.setEventLevel("2");//普通
+            }else if("严重".equals(alarmLevelName)){
+                event.setEventLevel("3");//紧急
+                emergencyLevel="01";
             }else{
-                event.setEventLevel("0");
+                event.setEventLevel("0");//普通
             }
-            event.setEventState(ParamCode.EVENT_STATE_00.getCode());
+            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             event.setRelVenuesId(relVenuesId);
             event.setHandleResults("0");
             event.setHandleTime(timeStamp);
             //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
             int eventId =0;
+
             if(null!=eventEntity){
                 //更新
                 eventId = eventEntity.getEventId();
@@ -187,10 +198,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 //新增
                 rmEventInfoMapper.addEvent(event);
                 eventId = event.getEventId();
+                //3.短信通知，新增通知任务发起
+                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,locationName,emergencyLevel);
             }
-
-            //3.短信通知，新增通知
-            this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,locationName);
 
             code=ResultCode.SUCCESS.getCode();
             message="AI告警,数据处理成功！";
@@ -257,11 +267,11 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             auth.setSearchTwo(type);
             if("01".equals(type)){
                 message="AI预警";
-                searchArr=new String[]{"00","02"};
+                searchArr=new String[]{"02","03"};
                 auth.setSearchArr(searchArr);
             }else if("02".equals(type)){
                 message="历史预警";
-                searchArr=new String[]{"01","03","04"};
+                searchArr=new String[]{"01","04"};
                 auth.setSearchArr(searchArr);
             }
             //mapList = rmEventInfoMapper.getByType(auth);
@@ -303,10 +313,10 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             auth.setSearchTwo(type);
             if("01".equals(type)){
                 message="AI预警";
-                auth.setSearchArr(new String[]{"00","02"});
+                auth.setSearchArr(new String[]{"01"});
             }else if("02".equals(type)){
                 message="历史预警";
-                auth.setSearchArr(new String[]{"01","03","04"});
+                auth.setSearchArr(new String[]{"02","03"});
             }
             allNum = rmEventInfoMapper.getAllNum(auth);
 
@@ -364,7 +374,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             ParamsVo auth = new ParamsVo();
             auth.setPage(page);
             auth.setSize(size);
-            auth.setSearchOne(ParamCode.EVENT_STATE_00.getCode());
+            //auth.setSearchOne(ParamCode.EVENT_STATE_02.getCode());
             auth.setSearchTwo("");
             String login = this.getLogin(token);
             auth.setSearchThree(login);
@@ -420,11 +430,12 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         String message="接受NB烟感器的数据:"+eventEntity;
         System.out.println(message);
         int relVenuesId=10000001;//后期提供
+        String emergencyLevel="02";
         try {
 
             //数据解析
             Map<String, Object> map = JsonUtils.jsonToMap(eventEntity);
-            EventEntity event = new EventEntity();
+
             String deviceType = (String) map.get("deviceType");//设备类型
             String deviceId = (String) map.get("deviceId");
             String deviceName = (String) map.get("deviceName");//设备名字
@@ -432,7 +443,10 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             String type = (String) map.get("type");//事件类型   "alarm": 告警；"clean": 告警清除；"reset": 设备重置；"dat": 数据上报
             String data = (String) map.get("data");//消息内容
             double level = (double) map.get("level");//消息  事件=0,次要=1,重要=2,严重=3, 不填为严重。（火警默认严重)
-            int intValue = (int) level;
+            String sValue = String.valueOf((int)level);
+            if("3".equals(sValue)){
+                emergencyLevel="01";
+            }
             String location = (String) map.get("location");//位置
             String rawData = (String) map.get("rawData");//原始数据
             //获取场所
@@ -443,6 +457,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 relVenuesId = Integer.parseInt(venuesId);
             }
             //数据封装
+            EventEntity event = new EventEntity();
             event.setDeviceName(deviceName);
             event.setAccessNumber(deviceId);
             event.setDeviceType(deviceType);
@@ -452,7 +467,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             event.setEventData(data);
             event.setEventLevel("3");//火警默认严重
             event.setLocation(location);
-            event.setEventState("00");
+            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             event.setHandleResults("待处理");
             event.setRelVenuesId(relVenuesId);
 
@@ -464,8 +479,9 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             rmEventInfoMapper.addEventByNB(event);
 
             //2.发送短信通知
+
             //火警全员通知
-            this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),location);
+            this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),location,emergencyLevel);
 
             code=ResultCode.SUCCESS.getCode();
             message="NB烟感器数据处理成功！";
@@ -528,17 +544,23 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         String message="误报解除失败！";
         try {
             //数据校验
-            this.checkEvent(eventId);
-            //更新预警事件表
-            EventEntity ev=new EventEntity();
-            ev.setEventId(Integer.parseInt(eventId));
-            ev.setEventState(ParamCode.EVENT_STATE_04.getCode());
-            ev.setHandleResults(this.getLogin(token));
-            ev.setHandleTime(TimeTool.getYmdHms());
-            rmEventInfoMapper.updateEventState(ev);
-            //更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_04.getCode());
-
+            //this.checkEvent(eventId);
+            //任一人解除误报后预警任务结束，在预警信息展示解除误报人和解除时间、上报人
+            //查询任务，如果存在做结束处理
+            List<TaskEntity> taskByEventId = taskInfoMapper.getTaskByEventId(eventId);
+            if(null!=taskByEventId && taskByEventId.size()>0){
+                for(int i=0;i<taskByEventId.size();i++){
+                    TaskEntity taskEntity = taskByEventId.get(i);
+                    String procInstId = taskEntity.getProcInstId();
+                    Map<String, Object> map =new HashMap<>();
+                    map.put("procInstId",procInstId);
+                    map.put("handleResults","1");
+                    map.put("feedBack","误报解除");
+                    map.put("picture","");
+                    map.put("eventSta",ParamCode.NOTIFIED_FLAG_04.getCode());
+                    this.reportOneHandle(map,token);
+                }
+            }
             code= ResultCode.SUCCESS.getCode();
             message="误报解除成功";
         } catch (RuntimeException e) {
@@ -557,7 +579,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
         long code= ResultCode.FAILED.getCode();
         String message="拨打119";
         try {
-            //数据校验
+            /*//数据校验
             this.checkEvent(eventId);
             //更新预警事件表
             EventEntity ev=new EventEntity();
@@ -568,7 +590,7 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             //更新预警事件表
             rmEventInfoMapper.updateEventState(ev);
             //更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_03.getCode());
+            eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_03.getCode());*/
             message="拨打119成功";
             code= ResultCode.SUCCESS.getCode();
         } catch (RuntimeException e) {
@@ -582,159 +604,41 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
     }
 
     @Override
-    @Transactional
-    public AppResponse reportOne(String eventId,String token) {
+    public AppResponse reportOne(String eventId, String token) {
         long code= ResultCode.FAILED.getCode();
-        String message="一键上报（场所管理人员）";
+        String message="一键上报失败！";
         try {
-            //数据校验
-            EventEntity event = this.checkEvent(eventId);
-            //任务
-            TaskEntity taskEntity=new TaskEntity();
-            String eventType = event.getEventType();
-            taskEntity.setTaskType(eventType);
-            taskEntity.setEndTime(event.getWarnTime());
-            String tnm="预警事件：一键上报（监管）";
-            if("01".equals(eventType)){
-                tnm="火灾预警-上报";
-            }else if("02".equals(eventType)){
-                tnm="人脸识别-上报";
-            }else if("03".equals(eventType)){
-                tnm="任务预警-上报";
-            }else if("04".equals(eventType)){
-                tnm="人流聚集-上报";
-            }else if("05".equals(eventType)){
-                tnm="设备报修-上报";
-            }
-            taskEntity.setTaskName(tnm);
-            taskEntity.setTaskContent("预警事件,请处理");
-            taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
-            taskEntity.setEmergencyLevel(event.getEventLevel());
-            taskEntity.setRelEventId(eventId);
-            //获取登录用户信息
-            String login = this.getLogin(token);
-            List<String> userList =new ArrayList<>();
-            //获取下节点处理人
-            //1.2.管理人员,根据场所找三人组组员
-            List<Map<String, Object>> sanByVenues = sysUserMapper.getSanByVenues(event.getRelVenuesId());
-            if(null!=sanByVenues && sanByVenues.size()>0){
-                for(int i=0;i<sanByVenues.size();i++){
-                    Map<String, Object> map = sanByVenues.get(i);
-                    String userMobile = (String) map.get("userMobile");
-                    userList.add(userMobile);
-                }
-            }
-
-            //发起流程-发起任务
-            this.launch(taskEntity,userList,login,"06");
-
-            //更新预警事件表
-            EventEntity ev=new EventEntity();
-            ev.setEventId(Integer.parseInt(eventId));
-            ev.setEventState(ParamCode.EVENT_STATE_02.getCode());
-            ev.setHandleResults(this.getLogin(token));
-            ev.setHandleTime(TimeTool.getYmdHms());
-            rmEventInfoMapper.updateEventState(ev);
-            //更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_02.getCode());
-
-            message="一键上报成功";
-            code= ResultCode.SUCCESS.getCode();
-        } catch (RuntimeException r) {
-            message=r.getMessage();
-            r.printStackTrace();
-        }catch (Exception e) {
-            message="一键上报失败";
-            e.printStackTrace();
-        }
-        return new AppResponse(code,message);
-    }
-
-    @Override
-    public AppResponse reportOneJg(String eventId, String token) {
-        long code= ResultCode.FAILED.getCode();
-        String message="一键上报（监管）";
-        try {
-            //数据校验
-            EventEntity event = this.checkEvent(eventId);
-            //任务
-            TaskEntity taskEntity=new TaskEntity();
-            String eventType = event.getEventType();
-            taskEntity.setTaskType(eventType);
-            taskEntity.setEndTime(event.getWarnTime());
-            String tnm="预警事件：一键上报（监管）";
-            if("01".equals(eventType)){
-                tnm="火灾预警-上报";
-            }else if("02".equals(eventType)){
-                tnm="人脸识别-上报";
-            }else if("03".equals(eventType)){
-                tnm="任务预警-上报";
-            }else if("04".equals(eventType)){
-                tnm="人流聚集-上报";
-            }else if("05".equals(eventType)){
-                tnm="设备报修-上报";
-            }
-            taskEntity.setTaskName(tnm);
-            taskEntity.setTaskContent("预警事件,请处理");
-            taskEntity.setRelVenuesId(String.valueOf(event.getRelVenuesId()));
-            taskEntity.setEmergencyLevel(event.getEventLevel());
-            taskEntity.setRelEventId(eventId);
-            //获取登录用户信息
-            String login = this.getLogin(token);
-            List<String> userList =new ArrayList<>();
-            //获取下节点处理人
-            //1.1.监管
-            SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
-            if(null!=sysUserEntity){
-                String identify = sysUserEntity.getIdentity();
-                //根据用户身份，查询
-                if("10000006".equals(identify) || "10000007".equals(identify)){
-                    //查找街干事、街委员
-                    List<SysUserEntity> jie = sysUserMapper.getJie(login, identify);
-                    if(jie.size()>0 && null!=jie){
-                        for(int i=0;i<jie.size();i++){
-                            String userMobile = jie.get(i).getUserMobile();
-                            userList.add(userMobile);
-                        }
-                    }
-                }else if("10000004".equals(identify) || "10000005".equals(identify)){
-                    //查找区干事、区委员
-                    List<SysUserEntity> qu = sysUserMapper.getQu(login, identify);
-                    if(qu.size()>0 && null!=qu){
-                        for(int i=0;i<qu.size();i++){
-                            String userMobile = qu.get(i).getUserMobile();
-                            userList.add(userMobile);
-                        }
-                    }
-                }
+            String procInstId="";
+            List<TaskEntity> taskByEventId = taskInfoMapper.getTaskByEventId(eventId);
+            if(null!=taskByEventId && taskByEventId.size()>0){
+                procInstId=taskByEventId.get(0).getProcInstId();
             }else{
-                throw new RuntimeException("系统中不存在下节点处理人，请先添加！");
+                throw new RuntimeException("预警事件任务信息丢失，请联系管理员！");
             }
 
-            //发起流程-发起任务
-            this.launch(taskEntity,userList,login,"05");
+            String login = this.getLogin(token);
+            long le= rmEventInfoMapper.queryEventReportMen(login, procInstId);
+            if(le==0l){
+                //确认是否已上报
+                EventReportMenEntity ev=new EventReportMenEntity();
+                ev.setRefEventId(eventId);
+                ev.setProcInstId(procInstId);
+                ev.setReportMen(login);
+                ev.setReportTime(TimeTool.getYmdHms());
+                rmEventInfoMapper.addEventReportMen(ev);
+            }
 
-            //更新预警事件表
-            EventEntity ev=new EventEntity();
-            ev.setEventId(Integer.parseInt(eventId));
-            ev.setEventState(ParamCode.EVENT_STATE_02.getCode());
-            ev.setHandleResults(this.getLogin(token));
-            ev.setHandleTime(TimeTool.getYmdHms());
-            rmEventInfoMapper.updateEventState(ev);
-            //更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,new Date(),ParamCode.NOTIFIED_FLAG_02.getCode());
-
-            message="一键上报成功";
+            message="一键上报成功！";
             code= ResultCode.SUCCESS.getCode();
-        } catch (RuntimeException r) {
-            message=r.getMessage();
-            r.printStackTrace();
+        }catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
         }catch (Exception e) {
-            message="一键上报失败";
             e.printStackTrace();
         }
         return new AppResponse(code,message);
     }
+
 
     @Override
     public AppResponse getEventsMonth(int num,String type,String token) {
@@ -876,21 +780,35 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
 
     /**
      * 预警通知保存
-     * @param eventType
+     * @param emergencyLevel
      * @param relVenuesId
      * @param relEventId
+     *
+     *ai预警推送，监管人员按紧急普通区分，紧急的默认推送所有监管人员，普通的默认推送给街镇、三人驻堂
+     *教职人员，按预警的类别进行推送，比如火警可以推送教职人员，但是人脸不一定推送，具体推送什么类型的等跟业主进行确认
      * @return
      */
-    public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String location) {
+    public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String location,String emergencyLevel) {
 
         String contents="【云监控中心】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
         String user="";//监管
         String manager="";// 管理
-
         NotifiedEntity notifiedEntity=new NotifiedEntity();
-        //1.根据场所获取场所三人驻堂的成员
-        List<Map<String, Object>> userList = sysUserMapper.getSanByVenues(relVenuesId);
-
+        List<String> userNextList=new ArrayList<>();
+        List<Map<String, Object>> userList =new ArrayList<>();
+        List<Map<String, Object>> nextList =new ArrayList<>();
+        //获取通知对象
+        if("01".equals(emergencyLevel) || "01".equals(eventType)){
+            //1.根据场所获取场所有相关人员
+            userList =sysUserMapper.getAllByVenues(relVenuesId);
+            nextList=userList;
+        }else{
+            //根据场所获取场所三人驻堂、街镇
+            userList = sysUserMapper.getJgByVenues(relVenuesId);
+            //nextList=sysUserMapper.getJWVenues(relVenuesId);
+            nextList=userList;
+        }
+        //1.监管人员处理
         if(null!=userList && userList.size()>0){
             for(int i=0;i<userList.size();i++){
                 Map<String, Object> map = userList.get(i);
@@ -906,8 +824,8 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             throw new RuntimeException("该场所内尚未添加三人驻堂成员！");
         }
 
-        //2.火灾预警全员推送，火警信息默认推送给该场所相关的所有工作人员，（工作人员包含三人驻堂的成员，和该场所相关的管理人员）
-        if(ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+        //2.教职人员
+        if("01".equals(eventType)){
             //根据场所获取场所相关的教职人员
             manager = rmStaffInfoMapper.getManagerByVenuesId(relVenuesId);
             if(null!=manager && !manager.isEmpty()){
@@ -924,18 +842,51 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
                 throw new RuntimeException("该场所内尚未添加职员信息！");
             }
         }
+
         //保存
         notifiedEntity.setRefEventId(relEventId);
-        notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_01.getCode());
+        notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_03.getCode());
         notifiedEntity.setNotifiedTime(new Date());
         eventNotifiedMapper.addNotified(notifiedEntity);
         //普通预警仅上报才给领导推送
+        //任务发起
+        TaskEntity taskEntity=new TaskEntity();
+        //String eventType = event.getEventType();
+        taskEntity.setTaskType(eventType);
+        taskEntity.setEndTime("");
+        String tnm="预警事件：一键上报（监管）";
+        if("01".equals(eventType)){
+            tnm="火灾预警-上报";
+        }else if("02".equals(eventType)){
+            tnm="人脸识别-上报";
+        }else if("03".equals(eventType)){
+            tnm="任务预警-上报";
+        }else if("04".equals(eventType)){
+            tnm="人流聚集-上报";
+        }else if("05".equals(eventType)){
+            tnm="设备报修-上报";
+        }
+        taskEntity.setTaskName(tnm);
+        taskEntity.setTaskContent("预警事件,请处理");
+        taskEntity.setRelVenuesId(String.valueOf(relVenuesId));
+        taskEntity.setEmergencyLevel(emergencyLevel);
+        taskEntity.setRelEventId(String.valueOf(relEventId));
+        //任务处理人
+        if(null!=nextList && nextList.size()>0){
+            for(int i=0;i<nextList.size();i++){
+                Map<String, Object> stringObjectMap = nextList.get(i);
+                String userMobile = (String) stringObjectMap.get("userMobile");
+                userNextList.add(userMobile);//下节点流程处理人员
+            }
+        }
+        //任务发起
+        this.launch(taskEntity,userNextList,"预警平台");
 
-        log.info(relEventId+"预警信息已通知：三人驻堂的成员（"+user+");管理人员（"+manager+")");
+        log.info(relEventId+"预警信息已通知：监管人员（"+user+");管理人员（"+manager+")");
     }
 
     @Transactional
-    public String launch(TaskEntity taskEntity,List<String> userList,String loginNm,String type) {
+    public String launch(TaskEntity taskEntity,List<String> userList,String loginNm) {
 
         Authentication.setAuthenticatedUserId(loginNm);
         Map<String, Object> variables = new HashMap<>();
@@ -965,19 +916,218 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
 
         //保存任务信息
         taskEntity.setLaunchPerson(loginNm);
-        taskEntity.setLaunchTime(new Date());
+        taskEntity.setLaunchTime(TimeTool.getYmdHms());
         taskEntity.setProcInstId(procInstId);
-        if("05".equals(type)){
-            taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_05.getName());
-            taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode());
-        }else if("06".equals(type)){
-            taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_06.getName());
-            taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_06.getCode());
-        }
+        taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_05.getName());
+        taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode());
         taskInfoMapper.addTask(taskEntity);
         log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
 
         return "流程id(唯一标识)procInstId:"+procInstId;
+    }
+    @Override
+    @Transactional
+    public AppResponse reportOneReport(Map<String, Object> map, String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="一键上报任务上报失败！";
+        String identify ="";
+        try {
+            String procInstId = (String)map.get("procInstId");
+            if(null==procInstId && procInstId.isEmpty()){
+                throw new RuntimeException("流程id为空，请联系管理员！");
+            }
+            String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
+
+            //下节点处理人
+            List<String> userList=new ArrayList();
+            String notifiedUser="";
+            List<Map<String, Object>> mapList=new ArrayList<>();
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            if(null!=sysUserEntity){
+                identify = sysUserEntity.getIdentity();
+                //根据用户身份，查询
+                if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
+                    mapList = sysUserMapper.getQuGan(loginNm,"");
+                }else if(RoleEnums.QU_GAN.getCode().equals(identify)){//查找区委员
+                    mapList = sysUserMapper.getQuWei(loginNm,"");
+                }
+                if(null!=mapList && mapList.size()>0){
+                    for(int i=0;i<mapList.size();i++){
+                        Map<String, Object> mapNext = mapList.get(i);
+                        String userMobile = (String) mapNext.get("userMobile");
+                        userList.add(userMobile);
+                        notifiedUser=notifiedUser+userMobile+",";
+                    }
+                }
+            }else{
+                throw new RuntimeException("操作员信息丢失，请联系管理员！");
+            }
+
+            if(null==userList && userList.size()<1){
+                throw new RuntimeException("系统中不存在下节点处理人，请先添加！");
+            }
+
+            //根据角色信息获取自己的待办 act_ru_task
+            //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
+            //处理自己的待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    String assignee = item.getAssignee();
+                    if(assignee.equals(loginNm)){
+                        //Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "go", userList, procInstId);
+                        Map<String, Object> variables = new HashMap<>();
+                        if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
+                            variables.put("flag2", "go");
+                            variables.put("handleList3", userList);
+                        }else if(RoleEnums.QU_GAN.getCode().equals(identify)){//查找区委员
+                            variables.put("flag3", "go");
+                            variables.put("handleList4", userList);
+                        }
+                        variables.put("isSuccess", true);
+                        //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
+                        taskService.setVariableLocal(item.getId(),"isSuccess",false);
+                        //增加审批备注
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
+                        //完成此次审批。由下节点审批
+                        taskService.complete(item.getId(), variables);
+                    }
+                }
+            }
+            //1.更新事件
+            Map<String, Object> evTaDetail = taskInfoMapper.getEvTaDetail(procInstId);
+            String eventId =String.valueOf((Integer) evTaDetail.get("eventId")) ;
+            EventEntity event=new EventEntity();
+            event.setEventId(Integer.parseInt(eventId));
+            event.setEventState(ParamCode.EVENT_STATE_02.getCode());
+            event.setHandleResults("上报");
+            event.setHandleTime(TimeTool.getYmdHms());
+            rmEventInfoMapper.updateEventState(event);
+            //2.更新通知
+            eventNotifiedMapper.updateNotifiedUser(eventId,TimeTool.getYmdHms(),notifiedUser);
+
+            log.info("任务id："+procInstId+" 上报");
+            code= ResultCode.SUCCESS.getCode();
+            message="一键上报流程上报成功！流程id(唯一标识)procInstId:"+ procInstId;
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="一键上报流程上报失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+    }
+
+    @Override
+    @Transactional
+    public AppResponse reportOneHandle(Map<String, Object> map, String token) {
+        long code=ResultCode.FAILED.getCode();
+        String message="一键上报任务处理";
+        try {
+            String procInstId = (String)map.get("procInstId");
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("流程id丢失，请联系管理员！");
+            }
+            String loginNm = this.getLogin(token);
+            Authentication.setAuthenticatedUserId(loginNm);
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
+            if(null==sysUserEntity){
+                throw new RuntimeException("用户信息丢失，请联系管理员！");
+            }
+            String identify = sysUserEntity.getIdentity();
+            //数据封装
+            String eventSta= (String)map.get("eventSta");
+            String eventState ="";
+            String eventId ="";
+            String notice ="";
+            String eventType ="";
+            String eventLevel ="";
+            //根据 procInstId 获取任务
+            Map<String, Object> evTaDetail = taskInfoMapper.getEvTaDetail(procInstId);
+            if(null!=evTaDetail){
+                eventId= String.valueOf((Integer )evTaDetail.get("eventId"));
+                eventType= (String) evTaDetail.get("eventType");
+                eventLevel= (String) evTaDetail.get("eventLevel");
+            }else{
+                throw  new RuntimeException("关联事件信息丢失，请联系管理员！");
+            }
+
+            //处理待办
+            List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
+            if(!ObjectUtils.isEmpty(T)) {
+                for (Task item : T) {
+                    String assignee = item.getAssignee();
+                    if(assignee.equals(loginNm)){
+                        Map<String, Object> variables =new HashMap<>();
+                        if("3".equals(eventLevel) || "01".equals(eventType)){
+                            variables.put("flag2", "end");
+                        }else{
+                            //variables = this.setFlag(sysUserEntity.getIdentity(), "end",null,procInstId);
+                            if(RoleEnums.JIE_WEI.getCode().equals(identify)){
+                                variables.put("flag2", "end");
+                            }else if(RoleEnums.QU_GAN.getCode().equals(identify)) {//查找区委员
+                                variables.put("flag3", "end");
+                            }else if(RoleEnums.QU_WEI.getCode().equals(identify)){//查找区干
+                                variables.put("flag4", "end");
+                            }else{
+                                variables.put("flag2", "end");
+                            }
+                        }
+                        variables.put("nrOfCompletedInstances", 1);
+                        variables.put("isSuccess", true);
+
+                        //设置本地参数。在myListener1监听中获取。
+                        taskService.setVariableLocal(item.getId(),"isSuccess",true);
+                        //增加审批备注
+                        taskService.addComment(item.getId(),item.getProcessInstanceId(),this.getComment(map));
+                        //完成此次审批。如果下节点为endEvent。结束流程
+                        taskService.complete(item.getId(), variables);
+                        log.info("任务id："+procInstId+" 已处理，流程结束！");
+
+                        //更新处理结果
+                        TaskEntity taskEntity=new TaskEntity();
+                        taskEntity.setHandlePerson(loginNm);
+                        taskEntity.setHandleTime(TimeTool.getYmdHms());
+                        taskEntity.setHandleResults((String) map.get("handleResults"));
+                        taskEntity.setProcInstId(procInstId);
+                        taskInfoMapper.updateTask(taskEntity);
+                    }
+                }
+            }
+
+            //修改事件表
+            if(ParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
+                eventState=ParamCode.EVENT_STATE_04.getCode();
+                notice =ParamCode.NOTIFIED_FLAG_04.getCode();
+            }else{
+                eventState=ParamCode.EVENT_STATE_01.getCode();
+                notice =ParamCode.NOTIFIED_FLAG_01.getCode();
+            }
+            //修改通知表
+            //更新预警事件表
+            EventEntity ev=new EventEntity();
+            ev.setEventId(Integer.parseInt(eventId));
+            ev.setEventState(eventState);
+            ev.setHandleResults(this.getLogin(token));
+            ev.setHandleTime(TimeTool.getYmdHms());
+            rmEventInfoMapper.updateEventState(ev);
+            //更新通知
+            eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(),notice);
+            
+            code= ResultCode.SUCCESS.getCode();
+            message="一键上报流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            //throw new RuntimeException(message) ;
+        } catch (Exception e) {
+            code= ResultCode.FAILED.getCode();
+            message="一键上报上报流程处理失败！";
+            e.printStackTrace();
+        }
+        log.info("一键上报任务已处理，数据更新！");
+        return new AppResponse(code,message);
     }
 
 
@@ -1046,6 +1196,74 @@ public class RmEventInfoServiceimpl implements RmEventInfoService {
             vo.setVenuesArr(venuesArr);
         }
         return vo;
+
+    }
+
+
+    /**
+     * 流程走向定义
+     * @param identity
+     * @param flag
+     * @param userList
+     * @param procInstId
+     * @return
+     */
+    public Map<String, Object>  setFlag(String identity,String flag,List<String> userList ,String procInstId) {
+        String identi = sysUserMapper.queryStarter(procInstId);
+        int no=0;
+        if("10000007".equals(identi) || "10000006".equals(identi)){
+            no=1;
+        }else{
+            no=2;
+        }
+        int flagNo=0;
+        int assiNo=0;
+        if("10000007".equals(identity) || "10000006".equals(identity)){
+            flagNo=no;
+            assiNo=no+1;
+        }else if("10000005".equals(identity) || "10000004".equals(identity)){
+            flagNo=no+1;
+            assiNo=no+2;
+        }else if("10000003".equals(identity) || "10000002".equals(identity)){
+            flagNo=no+2;
+            assiNo=no+3;
+        }
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("flag"+flagNo, flag);
+        if("go".equals(flag)){
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList"+assiNo, userList);
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
+        }
+
+        return variables;
+    }
+
+    /**
+     * 封装意见
+     * @param map
+     * @return
+     */
+    public String getComment(Map<String, Object> map){
+        CommentEntity en =new CommentEntity();
+        String handleResults = (String)map.get("handleResults");
+        String feedBack = (String)map.get("feedBack");
+        String picture = (String)map.get("picture");
+        en.setFeedBack(feedBack);
+        en.setHandleResults(handleResults);
+        en.setPicture(picture);
+        return JsonUtils.beanToJson(en);
+    }
+
+    /**
+     * 更新预警事件表/通知表
+     * @param eventState
+     * @param notifiedFlag
+     */
+    public void update(String eventId,String eventState,String notifiedFlag){
+
 
     }
 

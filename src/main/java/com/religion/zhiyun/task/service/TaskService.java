@@ -33,12 +33,6 @@ public interface TaskService {
      */
     AppResponse getTaskGather(int num,String token);
 
-    /** 提交申请(上报) **/
-    public AppResponse reportOneReport(Map<String, Object> map, String token);
-
-    /** 流程结束 **/
-    public AppResponse reportOneHandle(Map<String, Object> map,String token);
-
     /** 获取未完成任务 **/
     public PageResponse getTasking(Map<String, Object> map,String token);
 

@@ -1,14 +1,11 @@
 package com.religion.zhiyun.login.controller;
 
-import com.religion.zhiyun.login.service.LoginService;
 import com.religion.zhiyun.login.entity.LoginResp;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,8 +23,6 @@ import java.util.concurrent.TimeUnit;
  */
 @RestController
 public class LoginUserController {
-    @Autowired
-    private LoginService loginService;
 
     @Autowired
     private SysUserService sysUserService;
@@ -60,7 +55,7 @@ public class LoginUserController {
             if(!passwords.equals(pass)){
                 throw new RuntimeException("密码错误!");
             }
-            // LoginInfo loginInfo = loginService.getLoginInfo(username);
+
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             String token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
             stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);

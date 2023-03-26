@@ -46,7 +46,7 @@ public class TaskEntity implements Serializable {
     private String launchPerson;//'发起人'
 
     @Column(name = "LAUNCH_TIME")
-    private Date launchTime;//'发起时间'
+    private String launchTime;//'发起时间'
 
     @Column(name = "HANDLE_RESULTS")
     private String handleResults;//'处理结果'
@@ -55,7 +55,7 @@ public class TaskEntity implements Serializable {
     private String handlePerson;//'处理人'
 
     @Column(name = "HANDLE_TIME")
-    private Date handleTime;//'处理时间'
+    private String handleTime;//'处理时间'
 
     @Column(name = "TASK_TYPE")
     private String taskType;//'任务'

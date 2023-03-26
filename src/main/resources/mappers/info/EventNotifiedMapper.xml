@@ -25,4 +25,8 @@
         update RM_EVENT_NOTIFIED_INFO set NOTIFIED_FLAG=#{notifiedFlag},REPORT_TIME=#{ymdHms} where REF_EVENT_ID=#{eventId}
     </update>
 
+    <update id="updateNotifiedUser">
+        update RM_EVENT_NOTIFIED_INFO set NOTIFIED_USER=#{notifiedUser},REPORT_TIME=#{ymdHms} where REF_EVENT_ID=#{eventId}
+    </update>
+
 </mapper>

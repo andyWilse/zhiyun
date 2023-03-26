@@ -96,6 +96,9 @@ public interface TaskInfoMapper {
      * @return
      */
     List<Map<String,Object>> getTaskGather(@Param("num") int num,@Param("handle") String handle);
+    List<Map<String,Object>> getTaskAgvGather(@Param("num") int num,
+                                              @Param("handle") String handle,
+                                              @Param("identityArr") String[] identityArr);
 
     /**
      *获取我的任务（app）
@@ -127,5 +130,20 @@ public interface TaskInfoMapper {
      */
     List<Map<String,Object>> getRepairTask(@Param("assignee") String assignee,@Param("type") String type,
                                            @Param("handleResults") String handleResults);
+
+    /**
+     * 根据事件id获取任务信息
+     * @param eventId
+     * @return
+     */
+    List<TaskEntity> getTaskByEventId(@Param("eventId") String eventId);
+
+    /**
+     * 根据流程获取事件信息
+     * @param procInstId
+     * @return
+     */
+    Map<String,Object> getEvTaDetail(@Param("procInstId") String procInstId);
+
 
 }

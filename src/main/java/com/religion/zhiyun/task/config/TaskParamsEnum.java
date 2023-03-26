@@ -13,9 +13,8 @@ public enum TaskParamsEnum {
     TASK_FLOW_TYPE_02("02","", "任务下达"),
     TASK_FLOW_TYPE_03("03","", "活动备案"),
     TASK_FLOW_TYPE_04("04","", "场所更新"),
-    TASK_FLOW_TYPE_05("05","", "一键上报(监管)"),
-    TASK_FLOW_TYPE_06("06","", "一键上报（管理）"),
-    TASK_FLOW_TYPE_07("07","", "自动上报"),
+    TASK_FLOW_TYPE_05("05","", "预警事件"),
+    TASK_FLOW_TYPE_07("07","", "设备报修"),
     ;
 
     private String code;

@@ -135,6 +135,21 @@ public class RmEventInfoController {
         return rmEventInfoService.getEventsByState(page,size,eventState,token);
     }
 
+    //一键上报（处理）
+    @RequestMapping("/reportOne/handle")
+    @ResponseBody
+    public AppResponse reportOneHandle(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        AppResponse report = rmEventInfoService.reportOneHandle(map,token);
+        return report;
+    }
+
+    //一键上报（上报）
+    @RequestMapping("/reportOne/report")
+    @ResponseBody
+    public AppResponse reportOneReport(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        AppResponse report = rmEventInfoService.reportOneReport(map,token);
+        return report;
+    }
     //解除误报
     @RequestMapping("/zlb/dismiss")
     public AppResponse dismissEvents(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
@@ -150,16 +165,11 @@ public class RmEventInfoController {
     }
 
     //一键上报（管理）
-    @RequestMapping("/zlb/reportOne")
+    @RequestMapping("/reportOne/notice")
     public AppResponse reportOne(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         String eventId = (String)map.get("eventId");
+        //String procInstId = (String)map.get("procInstId");
         return rmEventInfoService.reportOne(eventId,token);
-    }
-    //一键上报（监管）
-    @RequestMapping("/jg/reportOne")
-    public AppResponse reportOneJg(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
-        String eventId = (String)map.get("eventId");
-        return rmEventInfoService.reportOneJg(eventId,token);
     }
 
     //折线图（月）

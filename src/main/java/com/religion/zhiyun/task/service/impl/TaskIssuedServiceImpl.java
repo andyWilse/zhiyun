@@ -10,6 +10,7 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.TokenUtils;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -100,11 +101,8 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                 town=taskEntity.getTown();
                 relVenuesIds=town;
             }
-            if(null!=taskEntity.getRelVenuesId() && !taskEntity.getRelVenuesId().isEmpty()){
-                relVenuesId=taskEntity.getRelVenuesId();
-                relVenuesIds=relVenuesId;
-            }
-            taskEntity.setRelVenuesId(relVenuesIds);
+
+            //taskEntity.setRelVenuesId(relVenuesIds);
             //获取登录人身份信息
             String loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
@@ -141,44 +139,54 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                 }
             }
             String[] identityArr = identityStr.split(",");
+            if(null!=taskEntity.getRelVenuesId() && !taskEntity.getRelVenuesId().isEmpty()){
+                String[] splitArr = taskEntity.getRelVenuesId().split(",");
+                if(null!=splitArr && splitArr.length>0){
+                    for(int j=0;j<splitArr.length;j++){
+                        String relVenue = splitArr[j];
+                        //根据身份获取具体下达人
+                        List<String> userList = taskInfoMapper.getIssuedUsers(loginNm, province, city, area, town, relVenue, identityArr);
+                        Map<String, Object> variables = new HashMap<>();
+                        if(null!=userList && userList.size()>0){
+                            variables.put("handleList",userList );
+                        }else{
+                            throw new RuntimeException("下达区域无相关处理人，请重新确认下达范围！");
+                        }
 
-            //根据身份获取具体下达人
-            List<String> userList = taskInfoMapper.getIssuedUsers(loginNm, province, city, area, town, relVenuesId, identityArr);
-            Map<String, Object> variables = new HashMap<>();
-            if(null!=userList && userList.size()>0){
-                variables.put("handleList",userList );
-            }else{
-                throw new RuntimeException("下达区域无相关处理人，请重新确认下达范围！");
+                        /**start**/
+                        //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
+                        ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+                        RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
+                        ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode(),variables);
+                        processInstanceId = processInstance.getProcessInstanceId();
+                        /**end**/
+
+                        //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
+                        TaskQuery taskQuery = taskService.createTaskQuery();
+                        tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+                        //taskService.setAssignee("assignee2",userNbr);
+                        taskService.complete(tmp.getId(),variables);
+
+                        //发起人
+                        taskInfoMapper.updateHiActinst(loginNm,processInstanceId);
+                        taskEntity.setRelVenuesId(relVenue);
+                        taskEntity.setLaunchPerson(loginNm);
+                        taskEntity.setLaunchTime(TimeTool.getYmdHms());
+                        taskEntity.setTaskType(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getName());
+                        taskEntity.setProcInstId(tmp.getProcessInstanceId());
+                        taskEntity.setFlowType("02");
+                        //保存任务信息
+                        taskInfoMapper.addTask(taskEntity);
+                    }
+                }else{
+                    throw new RuntimeException("场所信息为空，请先选择场所！");
+                }
+
             }
 
-            /**start**/
-            //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
-            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-            RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
-            ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getCode(),variables);
-            processInstanceId = processInstance.getProcessInstanceId();
-            /**end**/
-
-            //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
-            TaskQuery taskQuery = taskService.createTaskQuery();
-            tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
-            //taskService.setAssignee("assignee2",userNbr);
-            taskService.complete(tmp.getId(),variables);
-
-            //发起人
-            taskInfoMapper.updateHiActinst(loginNm,processInstanceId);
-
-            taskEntity.setLaunchPerson(loginNm);
-            taskEntity.setLaunchTime(new Date());
-            taskEntity.setTaskType(TaskParamsEnum.ZY_ISSUED_TASK_KEY.getName());
-            taskEntity.setProcInstId(tmp.getProcessInstanceId());
-            taskEntity.setFlowType("02");
-            //保存任务信息
-            taskInfoMapper.addTask(taskEntity);
-
-            log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
+            log.info("下达任务发起申请，任务开始！");
             code= ResultCode.SUCCESS.getCode();
-            message="下达流程下达成功！流程id(唯一标识)procInstId:"+ tmp.getProcessInstanceId();
+            message="下达流程下达成功！";
         } catch (RuntimeException e) {
             message=e.getMessage();
             e.printStackTrace(); ;
@@ -229,7 +237,7 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             //更新处理结果
             TaskEntity taskEntity=new TaskEntity();
             taskEntity.setHandlePerson(loginNm);
-            taskEntity.setHandleTime(new Date());
+            taskEntity.setHandleTime(TimeTool.getYmdHms());
             taskEntity.setHandleResults(handleResults);
             taskEntity.setProcInstId(procInstId);
             taskInfoMapper.updateTask(taskEntity);

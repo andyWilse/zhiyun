@@ -81,6 +81,12 @@ public interface SysUserMapper {
      * @return
      */
     List<Map<String,Object>> getSanByVenues(@Param("relVenuesId") Integer relVenuesId);
+    //所有
+    List<Map<String,Object>> getAllByVenues(@Param("relVenuesId") Integer relVenuesId);
+    //街镇、三人驻堂
+    List<Map<String,Object>> getJgByVenues(@Param("relVenuesId") Integer relVenuesId);
+    //街委
+    List<Map<String,Object>> getJWVenues(@Param("relVenuesId") Integer relVenuesId);
 
     /**
      * 街

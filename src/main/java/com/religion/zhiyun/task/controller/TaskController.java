@@ -58,22 +58,6 @@ public class TaskController {
         return taskService.getTaskGather(-7,token);
     }
 
-    //一键上报（处理）
-    @RequestMapping("/reportOne/handle")
-    @ResponseBody
-    public AppResponse reportOneHandle(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-        AppResponse report = taskService.reportOneHandle(map,token);
-        return report;
-    }
-
-    //一键上报（上报）
-    @RequestMapping("/reportOne/report")
-    @ResponseBody
-    public AppResponse reportOneReport(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-        AppResponse report = taskService.reportOneReport(map,token);
-        return report;
-    }
-
     //获取所有任务
     //@RequiresPermissions("task:tasking")
     @RequestMapping("/getTasks")

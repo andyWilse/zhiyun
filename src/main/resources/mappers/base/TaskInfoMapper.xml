@@ -539,7 +539,7 @@
     <select id="getTaskGather" resultType="map">
         select tm.tmDate,
                 tm.REMARK as remarkDate,
-                IFNULL(tt.total,0) as ouHai,
+                TRUNCATE(IFNULL(tt.total,0)/IFNULL(tt.avg,0),2) as ouHai,
                 IFNULL(tt.dd,0) as myTotal
 
         FROM(
@@ -549,11 +549,45 @@
             select
                 DATE_FORMAT(co.TIME_,'%Y-%m-%d') as evDate,
                 count(co.ID_) as total,
+                count(distinct co.USER_ID_) as avg,
                 SUM(case when co.USER_ID_= #{handle}  then 1 else 0 END )as dd
             from act_hi_comment  co
             group by evDate
         ) tt on tm.tmDate= tt.evDate
+    </select>
 
+    <select id="getTaskAgvGather" resultType="map">
+        SELECT  tm.tmDate as date,
+                IFNULL(TRUNCATE(IFNULL(comm.commTotal,0)/IFNULL(comm.avg,0),2) ,0)as ouHai,
+                IFNULL(comm.dd,0) as myTotal
+        FROM (
+            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            FROM num a where a.i >#{num} and type='month'
+        ) tm
+        left join(
+            select
+                DATE_FORMAT(co.TIME_,'%Y-%m') as evDate,
+                (select count(u.USER_ID)
+                    from rm_sys_user_info u
+                    where u.area='330304'
+                    and u.IDENTITY in
+                    <foreach collection="identityArr" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                ) as avg,
+                count(co.ID_) as commTotal,
+                SUM(case when co.USER_ID_=#{handle} then 1 else 0 END )as dd
+            from act_hi_comment  co
+            left join rm_sys_user_info us on co.USER_ID_=us.USER_MOBILE
+            where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            and us.area='330304'
+            and us.IDENTITY in
+            <foreach collection="identityArr" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            group by evDate
+        ) comm on comm.evDate=tm.tmDate
+        ORDER BY tm.tmDate
     </select>
 
     <select id="getMyTask" resultType="map">
@@ -577,7 +611,7 @@
             end as launchPerson,
             '330000' as province,
             '330300' as city,
-            u.area as area,
+            ve.area as area,
             case  ta.REL_VENUES_ID!=u.area
             when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
             when ve.VENUES_ID is null then ta.REL_VENUES_ID
@@ -635,7 +669,8 @@
             when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
             when ve.VENUES_ID is null then ta.REL_VENUES_ID
             else ''
-            end as town
+            end as town,
+            ta.REL_EVENT_ID as eventId
 
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
@@ -669,4 +704,22 @@
             and ta.HANDLE_RESULTS=#{handleResults}
         </if>
     </select>
+
+    <select id="getTaskByEventId" resultType="com.religion.zhiyun.task.entity.TaskEntity">
+        select
+             <include refid="taskColumn"/>
+        FROM rm_task_info ta
+        where ta.REL_EVENT_ID =#{eventId}
+    </select>
+
+    <select id="getEvTaDetail" resultType="map">
+        select
+            ev.EVENT_ID as eventId,
+            ev.EVENT_LEVEL as eventLevel,
+            ev.EVENT_TYPE as eventType
+        from rm_task_info ta
+        left join rm_event_info ev on ta.REL_EVENT_ID=ev.EVENT_ID
+        where ta.PROC_INST_ID=#{procInstId}
+    </select>
+
 </mapper>

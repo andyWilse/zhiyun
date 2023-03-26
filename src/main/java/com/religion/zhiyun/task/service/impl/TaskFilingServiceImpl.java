@@ -105,7 +105,7 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             tasksEntity.setRelVenuesId(upFillEntity.getVenuesId());
             tasksEntity.setTaskPicture(upFillEntity.getPicturesPath());
             tasksEntity.setLaunchPerson(loginNm);
-            tasksEntity.setLaunchTime(new Date());
+            tasksEntity.setLaunchTime(TimeTool.getYmdHms());
             tasksEntity.setTaskType(TaskParamsEnum.ZY_FILING_TASK_KEY.getName());
             tasksEntity.setProcInstId(tmp.getProcessInstanceId());
 
@@ -181,7 +181,7 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             //流程更新处理结果
             TaskEntity taskEntity=new TaskEntity();
             taskEntity.setHandlePerson(loginNm);
-            taskEntity.setHandleTime(new Date());
+            taskEntity.setHandleTime(TimeTool.getYmdHms());
             taskEntity.setHandleResults(handleResults);
             taskEntity.setProcInstId(procInstId);
             taskInfoMapper.updateTask(taskEntity);

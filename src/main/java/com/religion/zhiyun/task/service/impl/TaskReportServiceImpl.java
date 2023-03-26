@@ -11,6 +11,7 @@ import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -95,45 +96,54 @@ public class TaskReportServiceImpl implements TaskReportService {
                     throw new RuntimeException("请先选择用户管辖街道！");
                 }
             }
-            //任务处理
-            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,taskEntity.getRelVenuesId());
-            if(null==nextHandler){
-                throw new RuntimeException("下节点处理人信息丢失！");
-            }
-            List<String> userList = (List<String>) nextHandler.get("userList");
-            Map<String, Object> variables = new HashMap<>();
-            if(null!=userList && userList.size()>0){
-                variables.put("handleList2",userList );
+            String relVenuesId = taskEntity.getRelVenuesId();
+            if(null!=relVenuesId && !relVenuesId.isEmpty()){
+                String[] relVenues = relVenuesId.split(",");
+                for(int i=0;i<relVenues.length;i++){
+                    String relVenue = relVenues[i];
+                    //任务处理
+                    Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,relVenue);
+                    if(null==nextHandler){
+                        throw new RuntimeException("下节点处理人信息丢失！");
+                    }
+                    List<String> userList = (List<String>) nextHandler.get("userList");
+                    Map<String, Object> variables = new HashMap<>();
+                    if(null!=userList && userList.size()>0){
+                        variables.put("handleList2",userList );
+                    }else{
+                        throw new RuntimeException("无相关处理人，请重新确认！");
+                    }
+
+                    /**start**/
+                    //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
+                    ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
+                    RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
+                    ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode(),variables);
+                    String processInstanceId = processInstance.getProcessInstanceId();
+                    /**end**/
+                    //taskService.setAssignee("assignee1",loginNm);
+                    //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
+                    TaskQuery taskQuery = taskService.createTaskQuery();
+                    Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
+                    procInstId=tmp.getProcessInstanceId();
+                    taskService.complete(tmp.getId(),variables);
+                    //发起人
+                    taskInfoMapper.updateHiActinst(loginNm,procInstId);
+
+                    //保存任务信息
+                    taskEntity.setRelVenuesId(relVenue);
+                    taskEntity.setLaunchPerson(loginNm);
+                    taskEntity.setLaunchTime(TimeTool.getYmdHms());
+                    taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
+                    taskEntity.setProcInstId(procInstId);
+                    taskEntity.setFlowType("01");
+                    taskInfoMapper.addTask(taskEntity);
+                }
             }else{
-                throw new RuntimeException("无相关处理人，请重新确认！");
+                throw new RuntimeException("场所信息为空，请先选择场所！");
             }
-
-            /**start**/
-            //开启流程。myProcess_2为流程名称。获取方式把bpmn改为xml文件就可以看到流程名
-            ProcessEngine defaultProcessEngine = ProcessEngines.getDefaultProcessEngine();
-            RuntimeService runtimeService = defaultProcessEngine.getRuntimeService();
-            ProcessInstance processInstance =runtimeService.startProcessInstanceByKey(TaskParamsEnum.ZY_REPORT_TASK_KEY.getCode(),variables);
-            String processInstanceId = processInstance.getProcessInstanceId();
-            /**end**/
-            //taskService.setAssignee("assignee1",loginNm);
-            //完成此节点。由下一节点审批。完成后act_ru_task会创建一条由下节点审批的数据
-            TaskQuery taskQuery = taskService.createTaskQuery();
-            Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
-            procInstId=tmp.getProcessInstanceId();
-            taskService.complete(tmp.getId(),variables);
-            //发起人
-            taskInfoMapper.updateHiActinst(loginNm,procInstId);
-
-            //保存任务信息
-            taskEntity.setLaunchPerson(loginNm);
-            taskEntity.setLaunchTime(new Date());
-            taskEntity.setTaskType(TaskParamsEnum.ZY_REPORT_TASK_KEY.getName());
-            taskEntity.setProcInstId(procInstId);
-            taskEntity.setFlowType("01");
-            taskInfoMapper.addTask(taskEntity);
-
             code=ResultCode.SUCCESS.getCode();
-            message="任务id："+processInstanceId+" 发起申请，任务开始！";
+            message="任务发起申请，任务开始！";
             log.info(message);
 
         } catch (RuntimeException e) {
@@ -252,8 +262,7 @@ public class TaskReportServiceImpl implements TaskReportService {
                         //更新处理结果
                         TaskEntity taskEntity=new TaskEntity();
                         taskEntity.setHandlePerson(loginNm);
-                        SimpleDateFormat format=new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
-                        taskEntity.setHandleTime(new Date());
+                        taskEntity.setHandleTime(TimeTool.getYmdHms());
                         taskEntity.setHandleResults(handleResults);
                         taskEntity.setProcInstId(procInstId);
                         taskInfoMapper.updateTask(taskEntity);
@@ -459,12 +468,13 @@ public class TaskReportServiceImpl implements TaskReportService {
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("flag"+flagNo, flag);
-        if(null!=userList && userList.size()>0){
-            variables.put("handleList"+assiNo, userList);
-        }else{
-            throw new RuntimeException("无相关处理人，请重新确认！");
+        if("go".equals(flag)){
+            if(null!=userList && userList.size()>0){
+                variables.put("handleList"+assiNo, userList);
+            }else{
+                throw new RuntimeException("无相关处理人，请重新确认！");
+            }
         }
-
         return variables;
     }
 
@@ -537,7 +547,7 @@ public class TaskReportServiceImpl implements TaskReportService {
      * @return
      */
     public Map<String, Object> getNextHandler(String loginNm,String message,String venusId){
-        List<Map<String, Object>> mapList=null;
+        List<Map<String, Object>> mapList=new ArrayList<>();
         Map<String, Object> maps=new HashMap<>();
 
         /**根据手机号，获取信息**/
