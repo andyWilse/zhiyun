@@ -25,7 +25,9 @@ import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
+import com.religion.zhiyun.venues.entity.VenuesEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngines;
@@ -71,6 +73,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     TaskInfoMapper taskInfoMapper;
+    @Autowired
+    RmVenuesInfoMapper RmVenuesInfoMapper;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -855,16 +859,20 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         taskEntity.setTaskType(eventType);
         taskEntity.setEndTime("");
         String tnm="预警事件：一键上报（监管）";
+
+        //查询场所名称
+        VenuesEntity venueByID = RmVenuesInfoMapper.getVenueByID(String.valueOf(relVenuesId));
+        String venuesName = venueByID.getVenuesName();
         if("01".equals(eventType)){
-            tnm="火灾预警-上报";
+            tnm=venuesName+"-火灾预警";
         }else if("02".equals(eventType)){
-            tnm="人脸识别-上报";
+            tnm=venuesName+"-人脸识别";
         }else if("03".equals(eventType)){
-            tnm="任务预警-上报";
+            tnm=venuesName+"-任务预警";
         }else if("04".equals(eventType)){
-            tnm="人流聚集-上报";
+            tnm=venuesName+"-人流聚集";
         }else if("05".equals(eventType)){
-            tnm="设备报修-上报";
+            tnm=venuesName+"-设备报修";
         }
         taskEntity.setTaskName(tnm);
         taskEntity.setTaskContent("预警事件,请处理");

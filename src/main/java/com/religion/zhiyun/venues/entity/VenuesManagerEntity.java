@@ -86,6 +86,44 @@ public class VenuesManagerEntity implements Serializable {
     @Column(name = "BIRTHDAY")
     private String birthday;//'生日
 
+    @Column(name = "MAILING_ADDRESS")
+    private String mailingAddress;//通信地址
+
+    @Column(name = "REGISTERED_RESIDENCE")
+    private String registeredResidence;//户籍所在地
+
+    @Column(name = "POLITICAL")
+    private String political;//政治安排
+
+    @Column(name = "SOCIETY_CULTURE")
+    private String societyCulture;//社会文化程度
+
+    @Column(name = "SOCIETY_SCHOOL")
+    private String societySchool;//社会毕业院校
+
+    @Column(name = "RELIGIOUS_CULTURE")
+    private String religiousCulture;//宗教文化程度
+
+    @Column(name = "RELIGIOUS_SCHOOL")
+    private String religiousSchool;//宗教毕业院校
+
+    @Column(name = "COMPANY")
+    private String company;//所在单位
+
+    @Column(name = "STAFF_POST")
+    private String staffPost;//教职身份
+
+    @Column(name = "POSTTION")
+    private String posttion;//职位
+
+    @Column(name = "CERTIFICATE_UNIT")
+    private String certificateUnit;//证书颁发单位
+
+    @Column(name = "CERTIFICATE_TIME")
+    private String certificateTime;//证书颁发时间
+
+    @Column(name = "CERTIFICATE_NUMBER")
+    private String certificateNumber;//证书编号
 
 
     private String picturesPathRemove;

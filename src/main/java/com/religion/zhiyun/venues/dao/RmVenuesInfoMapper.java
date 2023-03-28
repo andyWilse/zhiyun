@@ -153,6 +153,7 @@ public interface RmVenuesInfoMapper {
      * @return
      */
     public List<Map<String,Object>> getStaffs(@Param("relVenuesId") String relVenuesId);
+    public List<Map<String,Object>> getVenuesStaffs(@Param("venuesStaffArr") String[] venuesStaffArr);
 
     /**
      * 根据场所名获取信息

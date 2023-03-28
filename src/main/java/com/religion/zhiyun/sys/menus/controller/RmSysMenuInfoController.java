@@ -49,5 +49,10 @@ public class RmSysMenuInfoController {
         return rmSysMenuInfoService.getMenuByUser(userId);
     }
 
+    @GetMapping("/getGrand/{menuId}")
+    public PageResponse getGrandByMenu(@RequestHeader("token")String token,@PathVariable ("menuId")String menuId){
+        return rmSysMenuInfoService.getGrandByMenu(token,menuId);
+    }
+
 
 }

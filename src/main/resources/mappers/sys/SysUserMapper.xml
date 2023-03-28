@@ -136,11 +136,6 @@
         <if test="vo.area != null and vo.area != ''">
             AND  ve.AREA = #{vo.area}
         </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                AND  ve.VENUES_ID LIKE CONCAT('%',#{value},'%')
-            </foreach>
-        </if>
 
         order by LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}

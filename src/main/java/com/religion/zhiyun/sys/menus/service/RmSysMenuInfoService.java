@@ -26,5 +26,7 @@ public interface RmSysMenuInfoService {
     //获取角色下所有菜单
     PageResponse getMenuByUser(String roleId);
 
+    PageResponse getGrandByMenu(String token,String menuId);
+
 
 }

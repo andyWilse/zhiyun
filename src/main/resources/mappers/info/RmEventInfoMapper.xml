@@ -615,7 +615,7 @@
                 IFNULL(ev.face,0) as face,
                 IFNULL(ev.crowd,0) as crowd
         FROM (
-            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i+2 month),7) AS tmDate
             FROM num a where a.i &gt; #{vo.size} and type='month'
         ) tm
         LEFT JOIN (

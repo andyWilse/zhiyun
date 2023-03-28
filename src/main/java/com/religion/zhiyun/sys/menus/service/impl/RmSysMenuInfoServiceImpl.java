@@ -233,7 +233,9 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
             //新增数据
             if(null!=split && split.length>0){
                 for (String postCd : split) {
-                    rolePesnMapper.addUserGrand(postCd,userId);
+                    if(!"1".equals(postCd)){
+                        rolePesnMapper.addUserGrand(postCd,userId);
+                    }
                 }
             }
             code = ResultCode.SUCCESS.getCode();
@@ -259,6 +261,12 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
             e.printStackTrace();
         }
         return new PageResponse(code,message,menuByUser.toArray());
+    }
+
+    @Override
+    public PageResponse getGrandByMenu(String token, String menuId) {
+        String login = this.getLogin(token);
+        return null;
     }
 
     /**

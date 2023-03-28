@@ -203,7 +203,24 @@
             when '02' then '管理组成员'
             when '03' then '紧急联系人'
             end as managerType,
-            m.MANAGER_TYPE_CD as managerTypeCd
+            m.MANAGER_TYPE_CD as managerTypeCd,
+            m.RELIGIOUS_GROUP as religiousGroup,
+            m.GROUP_POST as   groupPost,
+            m.VENUES_POST as   venuesPost,
+            m.BIRTHDAY as   birthday,
+            m.MAILING_ADDRESS as   mailingAddress,
+            m.REGISTERED_RESIDENCE as   registeredResidence,
+            m.POLITICAL as   political,
+            m.SOCIETY_CULTURE as   societyCulture,
+            m.SOCIETY_SCHOOL as   societySchool,
+            m.RELIGIOUS_CULTURE as   religiousCulture,
+            m.RELIGIOUS_SCHOOL as   religiousSchool,
+            m.COMPANY as   company,
+            m.STAFF_POST as   staffPost,
+            m.POSTTION as   posttion,
+            m.CERTIFICATE_UNIT as   certificateUnit,
+            m.CERTIFICATE_TIME as   certificateTime,
+            m.CERTIFICATE_NUMBER as   certificateNumber
         from rm_venues_manager_info m
         left join rm_sys_dict d on d.DICT_CD=m.RELIGIOUS_SECT
         where MANAGER_ID=#{ManagerId}

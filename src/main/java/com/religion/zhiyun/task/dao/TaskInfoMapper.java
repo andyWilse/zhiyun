@@ -25,6 +25,8 @@ public interface TaskInfoMapper {
     /**流转意见**/
     List<Map<String,Object>> queryTaskCommon(String procInstId,String loginNm);
     List<Map<String,Object>> getTaskCommon(String procInstId);
+    /**一键上报人**/
+    String getReportMen(String procInstId);
     /** 任务数量统计 **/
     Map<String,Object> getTaskNum(String loginNm);
 

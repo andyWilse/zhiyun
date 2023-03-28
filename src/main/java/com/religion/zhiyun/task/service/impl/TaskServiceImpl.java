@@ -355,7 +355,9 @@ public class TaskServiceImpl implements TaskService {
             }
             //用户
             String login = this.getLogin(token);
-            vo.setSearchTwo(login);
+            if(!"admin".equals(login)){
+                vo.setSearchTwo(login);
+            }
             //查询
             taskList =taskInfoMapper.getMyTask(vo);
             total =taskInfoMapper.getMyTaskTotal(vo);
@@ -376,7 +378,11 @@ public class TaskServiceImpl implements TaskService {
         long code= ResultCode.FAILED.getCode();
         String message= "获取任务详情";
         List<Map<String,Object>> taskList = new ArrayList<>();
+
         try {
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("任务id不能为空！");
+            }
             //查询
             taskList =taskInfoMapper.getTaskDetail(procInstId);
             if(null!=taskList && taskList.size()>0){
@@ -402,6 +408,8 @@ public class TaskServiceImpl implements TaskService {
                         commentMap.put("handleTime",(String) map.get("handleTime"));
                         //意见
                         String messages = (String) map.get("message");
+                        String handleTime = (String) map.get("handleTime");
+                        String pictures="";
                         if(null!=messages && !messages.isEmpty()){
                             Map<String, Object> cmap = JsonUtils.jsonToMap(messages);
                             String handleResults = (String) cmap.get("handleResults");
@@ -417,18 +425,26 @@ public class TaskServiceImpl implements TaskService {
                             commentMap.put("handleResults",results);
                             commentMap.put("feedBack",cmap.get("feedBack"));
                             //图片处理
-                            String picture = (String) cmap.get("picture");
-                            List<Map<String, Object>> fileUrl =new ArrayList<>();
-                            if(null!=picture && !picture.isEmpty()){
-                                fileUrl = rmFileMapper.getFileUrl(picture.split(","));
-                            }
-                            commentMap.put("picture",fileUrl.toArray());
+                            pictures= (String) cmap.get("picture");
+                        }else if(null!=handleTime && !handleTime.isEmpty()  ){
+                            pictures= (String) taskMap.get("taskPicture");
                         }
+                        List<Map<String, Object>> fileUrl =new ArrayList<>();
+                        if(null!=pictures && !pictures.isEmpty()){
+                            fileUrl = rmFileMapper.getFileUrl(pictures.split(","));
+                        }
+                        commentMap.put("picture",fileUrl.toArray());
                         //放入
                         commentList.add(commentMap);
                     }
                 }
                 taskMap.put("taskComment",commentList.toArray());
+
+
+                //一键上报人
+                String reportMen = taskInfoMapper.getReportMen(procInstId);
+                taskMap.put("reportMen",reportMen==null?"":reportMen);
+
             }
             code= ResultCode.SUCCESS.getCode();
             message= "获取详情成功！";

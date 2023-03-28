@@ -455,7 +455,8 @@
             ve.PROVINCE as province,
             ve.CITY as city,
             ve.AREA as area,
-            ve.TOWN as  town
+            ve.TOWN as  town,
+            ve.VENUES_STAFF as venuesStaff
         from RM_VENUES_INFO ve
         left join rm_venues_manager_info res on res.MANAGER_ID=ve.RESPONSIBLE_PERSON and res.MANAGER_TYPE_CD='01'
         left join rm_venues_manager_info gro on gro.MANAGER_ID=ve.GROUP_MEMBERS and gro.MANAGER_TYPE_CD='02'
@@ -477,11 +478,13 @@
         SELECT
             IDENTITY as type,
             USER_NM as name,
-            USER_MOBILE as phone
+            USER_MOBILE as phone,
+            IDENTITY as identity
         FROM rm_sys_user_info
         where VALID_IND='1'
+        and IDENTITY in ('10000007','10000006')
         <if test="relVenuesId!=null and relVenuesId!=''">
-            and REL_VENUES_ID = #{relVenuesId}
+            and REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
         </if>
     </select>
 
@@ -501,13 +504,25 @@
     <select id="getStaffs" resultType="map">
         select
             s.STAFF_ID as id,
-            s.STAFF_CN_NM name,
+            s.STAFF_CN_NM as name,
             s.STAFF_TELPHONE as phone
         from rm_staff_info s
         where 1=1
         <if test="relVenuesId!=null and relVenuesId!=''">
             and REL_VENUES_ID = #{relVenuesId}
         </if>
+    </select>
+
+    <select id="getVenuesStaffs" resultType="map">
+        select
+            s.STAFF_ID as id,
+            s.STAFF_CN_NM as name,
+            s.STAFF_TELPHONE as phone
+        from rm_staff_info s
+        where s.STAFF_ID in
+        <foreach collection="venuesStaffArr" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
     </select>
 
     <select id="getVenuesByNm" resultType="map">

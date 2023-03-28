@@ -21,7 +21,24 @@
         LAST_MODIFY_TIME as lastModifyTime,
         CERT_NBR as certNbr,
         CERT_TYPE_CD as certTypeCd,
-        RELIGIOUS_TYPE as religiousType
+        RELIGIOUS_TYPE as religiousType,
+        RELIGIOUS_GROUP as religiousGroup,
+        GROUP_POST as   groupPost,
+        VENUES_POST as   venuesPost,
+        BIRTHDAY as   birthday,
+        MAILING_ADDRESS as   mailingAddress,
+        REGISTERED_RESIDENCE as   registeredResidence,
+        POLITICAL as   political,
+        SOCIETY_CULTURE as   societyCulture,
+        SOCIETY_SCHOOL as   societySchool,
+        RELIGIOUS_CULTURE as   religiousCulture,
+        RELIGIOUS_SCHOOL as   religiousSchool,
+        COMPANY as   company,
+        STAFF_POST as   staffPost,
+        POSTTION as   posttion,
+        CERTIFICATE_UNIT as   certificateUnit,
+        CERTIFICATE_TIME as   certificateTime,
+        CERTIFICATE_NUMBER as   certificateNumber
 
     </sql>
 
@@ -43,7 +60,24 @@
         LAST_MODIFY_TIME,
         CERT_NBR,
         CERT_TYPE_CD,
-        RELIGIOUS_TYPE
+        RELIGIOUS_TYPE,
+        RELIGIOUS_GROUP,
+        GROUP_POST,
+        VENUES_POST,
+        BIRTHDAY,
+        MAILING_ADDRESS,
+        REGISTERED_RESIDENCE,
+        POLITICAL,
+        SOCIETY_CULTURE,
+        SOCIETY_SCHOOL,
+        RELIGIOUS_CULTURE,
+        RELIGIOUS_SCHOOL,
+        COMPANY,
+        STAFF_POST,
+        POSTTION,
+        CERTIFICATE_UNIT,
+        CERTIFICATE_TIME,
+        CERTIFICATE_NUMBER
     ) values (
         #{managerCnNm},
         #{managerEnNm},
@@ -61,7 +95,24 @@
         #{lastModifyTime},
         #{certNbr},
         #{certTypeCd},
-        #{religiousType}
+        #{religiousType},
+        #{religiousGroup},
+        #{groupPost},
+        #{venuesPost},
+        #{birthday},
+        #{mailingAddress},
+        #{registeredResidence},
+        #{political},
+        #{societyCulture},
+        #{societySchool},
+        #{religiousCulture},
+        #{religiousSchool},
+        #{company},
+        #{staffPost},
+        #{posttion},
+        #{certificateUnit},
+        #{certificateTime},
+        #{certificateNumber}
     )
     </insert>
 

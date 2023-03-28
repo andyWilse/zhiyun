@@ -103,43 +103,45 @@
         handleTime,message,taskNm
         from
         ((select
-        DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
-        '' as message,
-        case when us.USER_NM is not null then us.USER_NM
-        else u.MANAGER_CN_NM
-        end as taskNm,
-        ti.PROC_INST_ID_ as id,
-        ti.START_TIME_
+            DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
+            '' as message,
+            case when us.USER_NM is not null then us.USER_NM
+            else u.MANAGER_CN_NM
+            end as taskNm,
+            ti.PROC_INST_ID_ as id,
+            ti.START_TIME_
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
-        where ti.ACT_TYPE_='startEvent')
+        where ti.ACT_TYPE_='startEvent'
+        and ti.PROC_INST_ID_=#{procInstId})
         union all
         (select
-        DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
-        co.MESSAGE_ as message,
-        case when us.USER_NM is not null then us.USER_NM
-        else u.MANAGER_CN_NM
-        end as taskNm,
-        ti.PROC_INST_ID_ as id,
-        ti.START_TIME_
+            DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
+            co.MESSAGE_ as message,
+            case when us.USER_NM is not null then us.USER_NM
+            else u.MANAGER_CN_NM
+            end as taskNm,
+            ti.PROC_INST_ID_ as id,
+            ti.START_TIME_
         from act_hi_actinst ti
         join act_hi_comment  co on ti.ASSIGNEE_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
-        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_)
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
+        where ti.PROC_INST_ID_=#{procInstId})
         union all
         (select
-        DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
-        '' as message,
-        GROUP_CONCAT(us.USER_NM) as taskNm,
-        ti.PROC_INST_ID_ as id,
-        ti.START_TIME_
+            DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
+            '' as message,
+            GROUP_CONCAT(us.USER_NM) as taskNm,
+            ti.PROC_INST_ID_ as id,
+            ti.START_TIME_
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
-        where ti.END_TIME_ is null)
+        where ti.END_TIME_ is null
+        and ti.PROC_INST_ID_=#{procInstId})
         ) task
-        where task.id=#{procInstId}
         order by START_TIME_ asc
     </select>
     <select id="queryTasks" resultType="map">
@@ -591,7 +593,7 @@
     </select>
 
     <select id="getMyTask" resultType="map">
-        SELECT
+        SELECT distinct
             ta.TASK_NAME as taskName,
             case when ve.VENUES_NAME is not null then ve.VENUES_NAME
             else ''
@@ -602,13 +604,11 @@
             case when(select count(ti.ID_) from act_hi_actinst ti where ti.PROC_INST_ID_=ta.PROC_INST_ID  and ti.ACT_TYPE_='endEvent')>0
             then  '已完成' else '待完成' end as statTask,
             ta.PROC_INST_ID as procInstId,
-            DATE_FORMAT(ac.START_TIME_,'%Y-%m-%d %H:%i:%s') as taskTime,
+            DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
             case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
             ta.EMERGENCY_LEVEL as emeLevel,
             ta.FLOW_TYPE as flowType,
-            case when u.USER_NM is not null then u.USER_NM
-            else m.MANAGER_CN_NM
-            end as launchPerson,
+            if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
             '330000' as province,
             '330300' as city,
             ve.area as area,
@@ -616,27 +616,34 @@
             when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
             when ve.VENUES_ID is null then ta.REL_VENUES_ID
             else ''
-            end as town
+            end as town,
+            TASK_CONTENT as taskContent
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
         left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
         left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
-        where ac.ASSIGNEE_ = #{vo.searchTwo}
+        where 1=1
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and ac.ASSIGNEE_ = #{vo.searchTwo}
+        </if>
         <if test="vo.searchOne!=null and vo.searchOne!=''">
             and ac.ACT_TYPE_ = #{vo.searchOne}
         </if>
-        order by statTask desc,taskTime asc
+        order by statTask desc,ta.EMERGENCY_LEVEL ,taskTime desc
         limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getMyTaskTotal" resultType="long">
         SELECT
-            count(ta.PROC_INST_ID)
+            count(distinct ta.PROC_INST_ID)
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
-        where ac.ASSIGNEE_ = #{vo.searchTwo}
+        where 1=1
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and ac.ASSIGNEE_ = #{vo.searchTwo}
+        </if>
         <if test="vo.searchOne!=null and vo.searchOne!=''">
             and ac.ACT_TYPE_ = #{vo.searchOne}
         </if>
@@ -670,7 +677,8 @@
             when ve.VENUES_ID is null then ta.REL_VENUES_ID
             else ''
             end as town,
-            ta.REL_EVENT_ID as eventId
+            ta.REL_EVENT_ID as eventId,
+            ta.TASK_PICTURE as taskPicture
 
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
@@ -720,6 +728,20 @@
         from rm_task_info ta
         left join rm_event_info ev on ta.REL_EVENT_ID=ev.EVENT_ID
         where ta.PROC_INST_ID=#{procInstId}
+    </select>
+
+
+    <select id="getReportMen" resultType="String">
+        select
+            GROUP_CONCAT(dis.unm) as reportMens
+        from
+            (select
+                case when us.USER_NM is not null then us.USER_NM  else ma.MANAGER_CN_NM end as unm
+            from rm_event_report_men me
+            left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE
+            left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=us.USER_MOBILE
+            where me.PROC_INST_ID=#{procInstId}
+        ) dis
     </select>
 
 </mapper>

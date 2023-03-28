@@ -476,15 +476,21 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 List<Map<String, Object>> users = rmVenuesInfoMapper.getUsers(venuesId);
                 venuesMap.put("garrison",users.toArray());
 
-                //监管干部
+                /*//监管干部
                 List<Map<String, Object>> ganUsers = rmVenuesInfoMapper.getGanUsers(venuesId);
-                venuesMap.put("janGan",ganUsers.toArray());
+                venuesMap.put("janGan",ganUsers.toArray());*/
 
                 //教职人员
+                List<Map<String, Object>> venuesStaffs =new ArrayList<>();
+                String venuesStaff = (String) venuesMap.get("venuesStaff");
+                if(null!=venuesStaff && !venuesStaff.isEmpty()){
+                    venuesStaffs = rmVenuesInfoMapper.getVenuesStaffs(venuesStaff.split(","));
+                }
+                venuesMap.put("venuesStaff",venuesStaffs.toArray());
+               /* List<Map<String, Object>> staffs = rmVenuesInfoMapper.getStaffs(venuesId);
                 Map<String, Object> oneStaffDirector=new HashMap<>();
                 Map<String, Object> twoStaffDirector=new HashMap<>();
                 Map<String, Object> refStaffDirector=new HashMap<>();
-                List<Map<String, Object>> staffs = rmVenuesInfoMapper.getStaffs(venuesId);
                 if(null!=staffs && staffs.size()>0){
                     for(int i=0;i<staffs.size();i++){
                         if(i==0){
@@ -498,7 +504,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 }
                 venuesMap.put("oneStaffDirector",oneStaffDirector);
                 venuesMap.put("twoStaffDirector",twoStaffDirector);
-                venuesMap.put("refStaffDirector",refStaffDirector);
+                venuesMap.put("refStaffDirector",refStaffDirector);*/
 
                 //负责人
                 Map<String, Object> oneDirector=new HashMap<>();
@@ -587,6 +593,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
             auth.setSearchOne(search);
             auth.setSearchTwo(religiousSect);
+
             auth.setSearchArr(religiousSectArr);
             mapVenues = rmVenuesInfoMapper.getMapVenues(auth);
 
