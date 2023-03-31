@@ -80,26 +80,30 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                 throw new RuntimeException("任务信息为空！");
             }
 
+            if(null==taskEntity.getRelVenuesId() || taskEntity.getRelVenuesId().isEmpty()){
+                throw new RuntimeException("场所信息为空，请先选择场所！");
+            }
+
             //获取下达范围
             if(null!=taskEntity.getProvince() && !taskEntity.getProvince().isEmpty()){
                 province=taskEntity.getProvince();
-                relVenuesIds=province;
             }else{
                 throw new RuntimeException("省不能为空！");
             }
             if(null!=taskEntity.getCity() && !taskEntity.getCity().isEmpty()){
                 city=taskEntity.getCity();
-                relVenuesIds=city;
             }else{
                 throw new RuntimeException("市不能为空！");
             }
             if(null!=taskEntity.getArea() && !taskEntity.getArea().isEmpty()){
                 area=taskEntity.getArea();
-                relVenuesIds=area;
+            }else{
+                throw new RuntimeException("区不能为空！");
             }
             if(null!=taskEntity.getTown() && !taskEntity.getTown().isEmpty()){
                 town=taskEntity.getTown();
-                relVenuesIds=town;
+            }else{
+                throw new RuntimeException("街镇不能为空！");
             }
 
             //taskEntity.setRelVenuesId(relVenuesIds);
@@ -118,25 +122,17 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             //根据身份封装参数
             String identityStr="";
             if(RoleEnums.QU_WEI.getCode().equals(identity)){
-                identityStr="10000002";
-                if(area.isEmpty()){
-                    throw new RuntimeException("区不能为空！");
-                }
+                identityStr="10000003,10000004,10000005";
+                town="";
             }else if(RoleEnums.QU_GAN.getCode().equals(identity)){
-                identityStr = "10000002,10000003";
-                if(area.isEmpty()){
-                    throw new RuntimeException("区不能为空！");
-                }
-            }else if(RoleEnums.JIE_WEI.getCode().equals(identity)){
-                identityStr = "10000004";
-                if(town.isEmpty()){
-                    throw new RuntimeException("街道不能为空！");
-                }
-            }else if(RoleEnums.JIE_GAN.getCode().equals(identity)){
                 identityStr = "10000004,10000005";
-                if(town.isEmpty()){
-                    throw new RuntimeException("街道不能为空！");
-                }
+                town="";
+            }else if(RoleEnums.JIE_WEI.getCode().equals(identity)){
+                identityStr = "10000005";
+
+            }else if(RoleEnums.JIE_GAN.getCode().equals(identity)){
+                identityStr = "100000000001";
+
             }
             String[] identityArr = identityStr.split(",");
             if(null!=taskEntity.getRelVenuesId() && !taskEntity.getRelVenuesId().isEmpty()){
@@ -182,6 +178,8 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                     throw new RuntimeException("场所信息为空，请先选择场所！");
                 }
 
+            }else{
+                throw new RuntimeException("场所信息为空，请先选择场所！");
             }
 
             log.info("下达任务发起申请，任务开始！");

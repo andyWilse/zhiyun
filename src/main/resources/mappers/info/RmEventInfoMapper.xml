@@ -18,7 +18,8 @@
         LOCATION as location,
         EVENT_STATE as eventState,
         HANDLE_RESULTS as handleResults,
-        HANDLE_TIME as handleTime
+        HANDLE_TIME as handleTime,
+        DEVICE_CODE as deviceCode
     </sql>
     <sql id="infoColumn">
         rm_event_info.ACCESS_NUMBER as accessNumber,
@@ -46,7 +47,8 @@
             EVENT_RESOURCE,
             EVENT_LEVEL,
             PICTURES_PATH,
-            VIDEOS_PATH
+            VIDEOS_PATH,
+            DEVICE_CODE
         ) values (
             #{accessNumber},
             #{warnTime},
@@ -59,7 +61,8 @@
             #{eventResource},
             #{eventLevel},
             #{picturesPath},
-            #{videosPath}
+            #{videosPath},
+            #{deviceCode}
         )
     </insert>
     <insert id="addEventByNB" useGeneratedKeys="true" keyProperty="eventId">
@@ -77,7 +80,8 @@
             HANDLE_RESULTS,
             HANDLE_TIME,
             REL_VENUES_ID,
-            EVENT_RESOURCE
+            EVENT_RESOURCE,
+            DEVICE_CODE
         ) values (
             #{deviceName},
             #{accessNumber},
@@ -92,7 +96,8 @@
             #{handleResults},
             #{handleTime},
             #{relVenuesId},
-            #{eventResource}
+            #{eventResource},
+            #{deviceCode}
         )
 
     </insert>
@@ -318,8 +323,8 @@
             ve.VENUES_NAME as venuesName,
             ve.PICTURES_PATH as  path,
             ev.EVENT_LEVEL as eventLevel,
-            case ev.EVENT_TYPE
-            when '01' then '紧急'
+            case ev.EVENT_LEVEL
+            when '3' then '紧急'
             else '普通'
             end as eventLevelCn,
             ev.EVENT_RESOURCE as eventResource,
@@ -346,7 +351,7 @@
             or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
             )
         </if>
-        ORDER BY ev.EVENT_TYPE
+        ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
         limit #{vo.page},#{vo.size}
     </select>
 
@@ -398,51 +403,40 @@
                 v.VENUES_NAME as venuesName,
                 ev.event_level as eventLevel,
                 case event_level
-                when '0' then '事件'
-                when '1' then '次要'
-                when '2' then '重要'
-                when '3' then '严重'
-                else '其他'
-                end as eventLevelNm
+                when '0' then '普通'
+                when '1' then '普通'
+                when '2' then '普通'
+                when '3' then '紧急'
+                else '普通'
+                end as eventLevelNm,
+                v.PICTURES_PATH as venuesPicture
 
         from RM_EVENT_NOTIFIED_INFO no
         left join RM_EVENT_INFO ev on no.ref_event_id=ev.EVENT_ID
         left join RM_VENUES_INFO v on ev.REL_VENUES_ID=v.VENUES_ID
-        where 1=1
+        where ev.EVENT_STATE in
+        <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
+            #{value}
+        </foreach>
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  ev.EVENT_STATE=#{vo.searchOne}
+            AND no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
-        <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  ev.EVENT_STATE !=#{vo.searchTwo}
-        </if>
-        <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND  (
-            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
-            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
-            )
-        </if>
-        ORDER BY ev.WARN_TIME DESC
+        ORDER BY ev.event_level desc,ev.WARN_TIME desc
         limit #{vo.page},#{vo.size}
 
     </select>
 
     <select id="getTotalByState" resultType="java.lang.Long">
         select
-            count(EVENT_ID)
+            count(distinct EVENT_ID)
         from RM_EVENT_NOTIFIED_INFO no
         left join RM_EVENT_INFO ev on no.ref_event_id=ev.EVENT_ID
-        where 1=1
+        where ev.EVENT_STATE in
+        <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
+            #{value}
+        </foreach>
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  ev.EVENT_STATE=#{vo.searchOne}
-        </if>
-        <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  ev.EVENT_STATE !=#{vo.searchTwo}
-        </if>
-        <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND  (
-            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
-            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
-            )
+            AND no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
     </select>
 
@@ -823,7 +817,8 @@
             case when us.USER_NM is not null then us.USER_NM
             else fzz.MANAGER_CN_NM
             end as handlePerson,
-            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
+            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId,
+            ev.DEVICE_CODE as deviceCode
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -868,7 +863,13 @@
             case when us.USER_NM is not null then us.USER_NM
             else fzz.MANAGER_CN_NM
             end as handlePerson,
-            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
+            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId,
+            ta.EMERGENCY_LEVEL as emergencyLevel,
+            case ta.EMERGENCY_LEVEL
+            when '01' then '紧急'
+            when '02' then '普通'
+            else ta.EMERGENCY_LEVEL
+            end as emergencyLevelCn
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
@@ -896,7 +897,7 @@
                 #{value}
             </foreach>
         </if>
-        ORDER BY ev.WARN_TIME DESC
+        ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
         limit #{vo.page},#{vo.size}
     </select>
 
@@ -950,6 +951,25 @@
         from rm_event_report_men
         where PROC_INST_ID=#{procInstId}
         and REPORT_MEN =#{login}
+    </select>
+
+    <select id="getEventReportMen" resultType="map">
+        select
+            case when us.USER_NM is not null then us.USER_NM
+            else ma.MANAGER_CN_NM
+            end as reportMen,
+            DATE_FORMAT(REPORT_TIME,'%Y-%m-%d %H:%i:%s') as reportTime
+        from rm_event_report_men men
+        left join rm_sys_user_info us on men.REPORT_MEN=us.USER_MOBILE
+        left join rm_venues_manager_info ma on men.REPORT_MEN=ma.MANAGER_MOBILE
+        where REF_EVENT_ID=#{eventId}
+    </select>
+
+    <select id="getEventState" resultType="String">
+        select
+            EVENT_STATE as eventState
+        from rm_event_info
+        where EVENT_ID=#{eventId}
     </select>
 
 </mapper>

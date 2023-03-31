@@ -347,5 +347,22 @@
         </if>
     </select>
 
+    <select id="getMonitorInstList" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+        SELECT distinct
+            mo.MONITOR_ID as monitorId,
+            mo.ACCESS_NUMBER as accessNumber,
+            mo.FUNCTION_TYPE as functionType,
+            mo.REL_VENUES_ID as relVenuesId,
+            mo.STATE,
+            mo.MONITOR_URL as monitorUrl
+        from rm_task_info ta
+        left join rm_event_info ev on ta.REL_EVENT_ID=ev.EVENT_ID
+        left join rm_monitor_manage_info mo on ev.ACCESS_NUMBER=mo.ACCESS_NUMBER
+        where 1=1
+        <if test="procInstId != null and procInstId != ''">
+            AND  ta.PROC_INST_ID =#{procInstId}
+        </if>
+    </select>
+
 
 </mapper>

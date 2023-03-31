@@ -12,7 +12,7 @@ public interface RmSysMenuInfoService {
     RespPage findAll(String token);
 
     //查询
-    RespPageBean findTreeMenus();
+    RespPageBean findTreeMenus(String token);
 
     //保存
     RespPageBean saveRoleMenus(Map<String,String> map);

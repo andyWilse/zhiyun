@@ -132,4 +132,12 @@ public interface RmEventInfoService {
      */
     AppResponse getEventsTrends(@Param("num") int num,String token);
 
+    /**
+     * 获取状态
+     * @param eventId
+     * @param token
+     * @return
+     */
+    AppResponse alertEvent(String eventId,String token);
+
 }

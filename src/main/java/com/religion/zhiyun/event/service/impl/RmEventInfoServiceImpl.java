@@ -73,8 +73,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     TaskInfoMapper taskInfoMapper;
+
     @Autowired
-    RmVenuesInfoMapper RmVenuesInfoMapper;
+    RmVenuesInfoMapper rmVenuesInfoMapper;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -190,6 +191,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setRelVenuesId(relVenuesId);
             event.setHandleResults("0");
             event.setHandleTime(timeStamp);
+            event.setDeviceCode(cameraId);//设备编码
             //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
             int eventId =0;
@@ -317,10 +319,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             auth.setSearchTwo(type);
             if("01".equals(type)){
                 message="AI预警";
-                auth.setSearchArr(new String[]{"01"});
+                auth.setSearchArr(new String[]{"02","03"});
             }else if("02".equals(type)){
                 message="历史预警";
-                auth.setSearchArr(new String[]{"02","03"});
+                auth.setSearchArr(new String[]{"01","04"});
             }
             allNum = rmEventInfoMapper.getAllNum(auth);
 
@@ -410,6 +412,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         List<Map<String, Object>> eventDetail = new ArrayList<>();
         try {
             eventDetail = rmEventInfoMapper.getEventDetail(eventId);
+            if(null!=eventDetail && eventDetail.size()>0){
+                Map<String, Object> map = eventDetail.get(0);
+                List<Map<String, Object>> eventReportMen = rmEventInfoMapper.getEventReportMen(eventId);
+                map.put("reportMen",eventReportMen.toArray());
+            }
 
             code=ResultCode.SUCCESS.getCode();
             result="未完成预警详情查询成功！";
@@ -474,6 +481,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             event.setHandleResults("待处理");
             event.setRelVenuesId(relVenuesId);
+            event.setDeviceCode(deviceId);
 
             Timestamp timestamp = new Timestamp(new Date().getTime());
             String format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
@@ -508,8 +516,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         AppResponse bean = new AppResponse();
         List<Map<String, Object>> mapList=new ArrayList<>();
         try {
-
-
             //参数封装
             ParamsVo auth = new ParamsVo();
             if(page!=null&&size!=null){
@@ -517,15 +523,32 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
             auth.setPage(page);
             auth.setSize(size);
-            if("00".equals(eventState)){//通知
-                auth.setSearchOne("00");
-            }else if("01".equals(eventState)){//历史推送
-                auth.setSearchTwo("00");
+            String[]  searchArr={};
+            if("01".equals(eventState)){
+                message="通知预警";
+                searchArr=new String[]{"02","03"};
+                auth.setSearchArr(searchArr);
+            }else if("02".equals(eventState)){
+                message="历史预警";
+                searchArr=new String[]{"01","04"};
+                auth.setSearchArr(searchArr);
             }
             String login = this.getLogin(token);
-            auth.setSearchThree(login);
-
+            auth.setSearchOne(login);
             mapList = rmEventInfoMapper.getEventsByState(auth);
+            if(null!=mapList && mapList.size()>0){
+                for(int i=0;i<mapList.size();i++){
+                    Map<String, Object> maps = mapList.get(i);
+                    String venuesPictures = (String) maps.get("venuesPicture");
+                    if(null!=venuesPictures && !venuesPictures.isEmpty()){
+                        List<Map<String, Object>> path = rmFileMapper.getPath(venuesPictures.split(","));
+                        if(null!=path && path.size()>0){
+                            maps.put("venuesPicture",path.get(0).get("filePath"));
+                        }
+                    }
+                }
+            }
+
             Object[] objects = mapList.toArray();
             Long total=rmEventInfoMapper.getTotalByState(auth);
             bean.setResult(objects);
@@ -781,6 +804,25 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         return new AppResponse(code,message,eventsTrends.toArray());
     }
 
+    @Override
+    public AppResponse alertEvent(String eventId, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="预警状态查询！";
+        String eventState ="";
+        try {
+            eventState = rmEventInfoMapper.getEventState(eventId);
+            code= ResultCode.SUCCESS.getCode();
+            message="预警状态查询成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="预警状态查询失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventState);
+    }
+
 
     /**
      * 预警通知保存
@@ -807,25 +849,27 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             userList =sysUserMapper.getAllByVenues(relVenuesId);
             nextList=userList;
         }else{
-            //根据场所获取场所三人驻堂、街镇
+            //根据场所获取场所三人驻堂、街干
             userList = sysUserMapper.getJgByVenues(relVenuesId);
-            //nextList=sysUserMapper.getJWVenues(relVenuesId);
             nextList=userList;
         }
-        //1.监管人员处理
-        if(null!=userList && userList.size()>0){
-            for(int i=0;i<userList.size();i++){
-                Map<String, Object> map = userList.get(i);
-                String userMobile = (String) map.get("userMobile");
-                user=user+userMobile+",";
-                //短信通知
-                //String message = SendMassage.sendSms(contents, userMobile);
-                String message ="";
-                System.out.println(userMobile+message+"，共发送"+(i+1)+"条短信");
+        //火警、人员
+        if("01".equals(eventType) || "01".equals(eventType)){
+            //1.监管人员处理
+            if(null!=userList && userList.size()>0){
+                for(int i=0;i<userList.size();i++){
+                    Map<String, Object> map = userList.get(i);
+                    String userMobile = (String) map.get("userMobile");
+                    user=user+userMobile+",";
+                    //短信通知
+                    //String message = SendMassage.sendSms(contents, userMobile);
+                    String message ="";
+                    System.out.println(userMobile+message+"，共发送"+(i+1)+"条短信");
+                }
+                notifiedEntity.setNotifiedUser(user);
+            }else{
+                throw new RuntimeException("该场所内尚未添加相关成员！");
             }
-            notifiedEntity.setNotifiedUser(user);
-        }else{
-            throw new RuntimeException("该场所内尚未添加三人驻堂成员！");
         }
 
         //2.教职人员
@@ -861,7 +905,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String tnm="预警事件：一键上报（监管）";
 
         //查询场所名称
-        VenuesEntity venueByID = RmVenuesInfoMapper.getVenueByID(String.valueOf(relVenuesId));
+        VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(String.valueOf(relVenuesId));
         String venuesName = venueByID.getVenuesName();
         if("01".equals(eventType)){
             tnm=venuesName+"-火灾预警";
@@ -955,7 +999,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             if(null!=sysUserEntity){
                 identify = sysUserEntity.getIdentity();
                 //根据用户身份，查询
-                if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
+                if(RoleEnums.JIE_GAN.getCode().equals(identify)){//查找街委
+                    mapList = sysUserMapper.getJieWei(loginNm,"");
+                }else if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
                     mapList = sysUserMapper.getQuGan(loginNm,"");
                 }else if(RoleEnums.QU_GAN.getCode().equals(identify)){//查找区委员
                     mapList = sysUserMapper.getQuWei(loginNm,"");
@@ -986,12 +1032,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     if(assignee.equals(loginNm)){
                         //Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "go", userList, procInstId);
                         Map<String, Object> variables = new HashMap<>();
-                        if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
+                        if(RoleEnums.JIE_GAN.getCode().equals(identify)){//查找街委
                             variables.put("flag2", "go");
                             variables.put("handleList3", userList);
-                        }else if(RoleEnums.QU_GAN.getCode().equals(identify)){//查找区委员
+                        }else if(RoleEnums.JIE_WEI.getCode().equals(identify)){//查找区干
                             variables.put("flag3", "go");
                             variables.put("handleList4", userList);
+                        }else if(RoleEnums.QU_GAN.getCode().equals(identify)){//查找区委员
+                            variables.put("flag4", "go");
+                            variables.put("handleList5", userList);
                         }
                         variables.put("isSuccess", true);
                         //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
@@ -1074,11 +1123,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         }else{
                             //variables = this.setFlag(sysUserEntity.getIdentity(), "end",null,procInstId);
                             if(RoleEnums.JIE_WEI.getCode().equals(identify)){
-                                variables.put("flag2", "end");
-                            }else if(RoleEnums.QU_GAN.getCode().equals(identify)) {//查找区委员
                                 variables.put("flag3", "end");
-                            }else if(RoleEnums.QU_WEI.getCode().equals(identify)){//查找区干
+                            }else if(RoleEnums.QU_GAN.getCode().equals(identify)) {//查找区委员
                                 variables.put("flag4", "end");
+                            }else if(RoleEnums.QU_WEI.getCode().equals(identify)){//查找区干
+                                variables.put("flag5", "end");
                             }else{
                                 variables.put("flag2", "end");
                             }

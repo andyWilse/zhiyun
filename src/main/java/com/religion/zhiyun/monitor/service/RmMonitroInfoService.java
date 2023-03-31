@@ -1,6 +1,7 @@
 package com.religion.zhiyun.monitor.service;
 
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 
@@ -58,5 +59,19 @@ public interface RmMonitroInfoService {
      */
     PageResponse getMoDetail(String search,String type);
 
+    /**
+     * 设备报修上报
+     * @param map
+     * @param token
+     * @return
+     */
+    AppResponse monitRepairReport(Map<String, Object> map, String token);
+    /**
+     * 设备报修处理
+     * @param map
+     * @param token
+     * @return
+     */
+    AppResponse monitRepairHandle(Map<String, Object> map, String token);
 
 }

@@ -299,32 +299,40 @@
 
     <select id="getIssuedUsers" resultType="String">
         select
-            f.USER_MOBILE AS loginNm
-        FROM rm_sys_user_info f
-        left join rm_sys_user_info u on u.province=f.province
-        where f.VALID_IND='1'
-        and u.USER_MOBILE=#{loginNm}
-        and f.IDENTITY  not in
-        <foreach collection="identityArr" item="identity" index="index" open="(" close=")" separator=",">
-            #{identity}
-        </foreach>
-        <if test="province != null and province != ''">
-            and f.province=#{province}
-        </if>
-        <if test="city != null and city != ''">
-            and f.city=#{city}
-        </if>
-        <if test="area != null and area != ''">
-            and f.area=#{area}
-        </if>
-        <if test="town != null and town != ''">
-            and f.town=#{town}
-        </if>
-        <if test="relVenuesId != null and relVenuesId != ''">
-            and f.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
-        </if>
-
-        order by f.IDENTITY
+            loginNm
+        from
+        (
+            (select
+                f.USER_MOBILE AS loginNm,IDENTITY
+            from rm_sys_user_info f
+            where f.VALID_IND='1'
+            and f.IDENTITY in
+            <foreach collection="identityArr" item="identity" index="index" open="(" close=")" separator=",">
+                #{identity}
+            </foreach>
+            <if test="province != null and province != ''">
+                and f.province=#{province}
+            </if>
+            <if test="city != null and city != ''">
+                and f.city=#{city}
+            </if>
+            <if test="area != null and area != ''">
+                and f.area=#{area}
+            </if>
+            <if test="town != null and town != ''">
+                and f.town=#{town}
+            </if>
+        )union all(
+            select
+                f.USER_MOBILE AS loginNm,IDENTITY
+            from rm_sys_user_info f
+            where f.VALID_IND='1'
+            and f.IDENTITY in ('10000006','10000007')
+            <if test="relVenuesId != null and relVenuesId != ''">
+                and f.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            </if>
+            )
+        ) uu order by uu.IDENTITY
     </select>
 
     <select id="getJieGanUsers" resultType="String">
@@ -408,7 +416,9 @@
                 DATE_FORMAT(co.TIME_,'%Y-%m') as evDate,
                 count(co.ID_) as commTotal
             from act_hi_comment  co
+            left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            and ta.HANDLE_TIME is not null
             <if test="login!=null and login!=''">
                 and co.USER_ID_= #{login}
             </if>
@@ -418,8 +428,10 @@
             select DATE_FORMAT(ac.END_TIME_,'%Y-%m') as evDate,
                 count(ac.ID_) as actTotal
             FROM act_hi_actinst ac
+            left join rm_task_info ta on ac.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
             and ac.ACT_TYPE_='startEvent'
+            and ta.HANDLE_TIME is not null
             <if test="login!=null and login!=''">
                 and ac.ASSIGNEE_=#{login}
             </if>
@@ -440,7 +452,9 @@
                 DATE_FORMAT(co.TIME_,'%Y-%m-%d') as evDate,
                 count(co.ID_) as commTotal
             from act_hi_comment  co
+            left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
+            and ta.HANDLE_TIME is not null
             <if test="login!=null and login!=''">
                 and co.USER_ID_= #{login}
             </if>
@@ -450,8 +464,10 @@
             select DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') as evDate,
                 count(ac.ID_) as actTotal
             FROM act_hi_actinst ac
+            left join rm_task_info ta on ac.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval #{num} day)
             and ac.ACT_TYPE_='startEvent'
+            and ta.HANDLE_TIME is not null
             <if test="login!=null and login!=''">
                 and ac.ASSIGNEE_=#{login}
             </if>
@@ -475,8 +491,10 @@
                     select  WEEK(co.TIME_,3) -(WEEK(CURDATE(),3)) as weeks,
                             count(co.ID_) as tot
                     from act_hi_comment  co
+                    left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
                     where DATE_FORMAT(co.TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
                     and DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
+                    and ta.HANDLE_TIME is not null
                     <if test="login!=null and login!=''">
                         and co.USER_ID_= #{login}
                     </if>
@@ -486,8 +504,10 @@
                     select (WEEK(co.TIME_,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
                             count(co.ID_) as tot
                     from act_hi_comment  co
+                    left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
                     where   DATE_FORMAT(co.TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
-                        and DATE_FORMAT(co.TIME_,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    and DATE_FORMAT(co.TIME_,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
+                    and ta.HANDLE_TIME is not null
                     <if test="login!=null and login!=''">
                         and co.USER_ID_= #{login}
                     </if>
@@ -504,9 +524,11 @@
                     select  WEEK(ac.END_TIME_,3) -(WEEK(CURDATE(),3)) as weeks,
                         count(ac.ID_) as tot
                     from act_hi_actinst  ac
+                    left join rm_task_info ta on ac.PROC_INST_ID_=ta.PROC_INST_ID
                     where DATE_FORMAT(ac.END_TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')
                     and DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval (#{num}+1)*7 day)
                     and ac.ACT_TYPE_='startEvent'
+                    and ta.HANDLE_TIME is not null
                     <if test="login!=null and login!=''">
                         and ac.ASSIGNEE_= #{login}
                     </if>
@@ -516,9 +538,11 @@
                     select (WEEK(ac.END_TIME_,3) -(select WEEK(num.REMARK,3) as h from num where type='lastYear') - (WEEK(CURDATE(),3))) as weeks,
                             count(ac.ID_) as tot
                     from act_hi_actinst  ac
-                    where   DATE_FORMAT(ac.END_TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
+                    left join rm_task_info ta on ac.PROC_INST_ID_=ta.PROC_INST_ID
+                    where DATE_FORMAT(ac.END_TIME_,'%Y')=DATE_FORMAT(CURDATE(),'%Y')-1
                     and DATE_FORMAT(ac.END_TIME_,'%Y-%m-%d') > (select date_add(subdate(curdate(),date_format(curdate(),'%w')-1),interval 7*(#{num}+1)-1 day)from dual)
                     and ac.ACT_TYPE_='startEvent'
+                    and ta.HANDLE_TIME is not null
                     <if test="login!=null and login!=''">
                         and ac.ASSIGNEE_= #{login}
                     </if>
@@ -581,7 +605,9 @@
                 SUM(case when co.USER_ID_=#{handle} then 1 else 0 END )as dd
             from act_hi_comment  co
             left join rm_sys_user_info us on co.USER_ID_=us.USER_MOBILE
+            left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
+            and ta.HANDLE_TIME is not null
             and us.area='330304'
             and us.IDENTITY in
             <foreach collection="identityArr" item="item" index="index" open="(" close=")" separator=",">
@@ -678,11 +704,12 @@
             else ''
             end as town,
             ta.REL_EVENT_ID as eventId,
-            ta.TASK_PICTURE as taskPicture
+            ta.TASK_PICTURE as taskPicture,
+            case when ac.END_TIME_ is null then '0' else '1' end as handleFlag
 
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID AND ac.ACT_TYPE_='startEvent'
+        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID AND ac.ASSIGNEE_=#{login}
         left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
         left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
         where 1=1

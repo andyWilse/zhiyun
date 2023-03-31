@@ -213,17 +213,33 @@
         </if>
     </select>
 
-    <select id="getJgByVenues" resultType="java.util.Map">
-        select distinct
-            jg.USER_NBR as userNbr,
-            jg.USER_MOBILE as userMobile,
-            jg.USER_NM as userNm
-        from rm_sys_user_info jg
-        left join rm_sys_user_info zy on jg.town=zy.town and zy.IDENTITY='10000007'
-        where jg.VALID_IND='1'
-        <if test="relVenuesId != null and relVenuesId != ''">
-            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
-        </if>
+    <select id="getJgByVenues" resultType="map">
+        select
+            distinct	zz.userMobile
+        from(
+            (select zy.USER_NBR as userNbr,
+                    zy.USER_MOBILE as userMobile,
+                    zy.USER_NM as userNm
+                from rm_sys_user_info zy
+                where zy.VALID_IND='1'
+                <if test="relVenuesId != null and relVenuesId != ''">
+                    AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                </if>
+            )union all
+            (select jg.USER_NBR as userNbr,
+                    jg.USER_MOBILE as userMobile,
+                    jg.USER_NM as userNm
+                from rm_sys_user_info jg
+                left join rm_sys_user_info zy on jg.town=zy.town
+                where jg.VALID_IND='1'
+                and jg.IDENTITY='10000005'
+                and zy.IDENTITY='10000007'
+                <if test="relVenuesId != null and relVenuesId != ''">
+                    AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                </if>
+            )
+        ) zz
+
     </select>
 
     <select id="getJWVenues" resultType="java.util.Map">

@@ -115,7 +115,7 @@ public interface TaskInfoMapper {
      * @param procInstId
      * @return
      */
-    List<Map<String,Object>> getTaskDetail(@Param("procInstId") String procInstId);
+    List<Map<String,Object>> getTaskDetail(@Param("login") String login,@Param("procInstId") String procInstId);
     /**
      * 发起人
      * @param assignee

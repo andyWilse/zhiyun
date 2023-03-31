@@ -118,7 +118,7 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
         return respons;
     }
     @Override
-    public RespPageBean findTreeMenus() {
+    public RespPageBean findTreeMenus(String token) {
 
         List<Map<String, Object>> menusTree = null;
         long code = ResultCode.FAILED.getCode();
@@ -127,9 +127,13 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
             MenuList  list=new MenuList();
             menusTree = new ArrayList<>();
             Map<String, Object> map=new HashMap<>();
-            //获取一级菜单
-            List<Map<String, Object>> oneTree = rmSysMenuInfoMapper.findOneTree();
+            List<Map<String, Object>> oneTree =new ArrayList<>();
+            /*String login = this.getLogin(token);
+            if(!"admin".equals(login)){
 
+            }*/
+            //获取一级菜单
+            oneTree = rmSysMenuInfoMapper.findOneTree();
             if(null!=oneTree && oneTree.size()>0){
                 for (int i=0;i<oneTree.size();i++){
                     Map<String, Object> oneTreeMap = oneTree.get(i);

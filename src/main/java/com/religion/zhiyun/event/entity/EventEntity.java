@@ -74,4 +74,7 @@ public class EventEntity implements Serializable {
     @Column(name = "VIDEOS_PATH")
     private String videosPath;//视频
 
+    @Column(name = "DEVICE_CODE")
+    private String deviceCode;//设备编号
+
 }

@@ -306,6 +306,12 @@ public class SysUserServiceImpl implements SysUserService {
             if(null==sysUserEntity || sysUserEntity.size()<1){
                 throw new RuntimeException("用户信息丢失！");
             }
+            String userPhotoUrl = (String) sysUserEntity.get("userPhotoUrl");
+            List<Map<String, Object>> fileUrl =new ArrayList<>();
+            if(null!=userPhotoUrl && !userPhotoUrl.isEmpty()){
+                fileUrl = rmFileMapper.getFileUrl(userPhotoUrl.split(","));
+            }
+            sysUserEntity.put("userPhotoUrl",fileUrl.toArray());
             list.add(sysUserEntity);
             code= ResultCode.SUCCESS.getCode();
             message="获取登录用户信息成功";

@@ -383,8 +383,9 @@ public class TaskServiceImpl implements TaskService {
             if(null==procInstId || procInstId.isEmpty()){
                 throw new RuntimeException("任务id不能为空！");
             }
+            String login = this.getLogin(token);
             //查询
-            taskList =taskInfoMapper.getTaskDetail(procInstId);
+            taskList =taskInfoMapper.getTaskDetail(login,procInstId);
             if(null!=taskList && taskList.size()>0){
                 //返回
                 Map<String, Object> taskMap = taskList.get(0);

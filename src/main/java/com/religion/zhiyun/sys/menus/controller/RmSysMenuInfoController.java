@@ -19,8 +19,8 @@ public class RmSysMenuInfoController {
     private RmSysMenuInfoService rmSysMenuInfoService;
 
     @GetMapping("/getTreeMenus")
-    public RespPageBean getTreeMenus(){
-        return rmSysMenuInfoService.findTreeMenus();
+    public RespPageBean getTreeMenus(@RequestHeader("token")String token){
+        return rmSysMenuInfoService.findTreeMenus(token);
     }
 
     @GetMapping("/find")

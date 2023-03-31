@@ -22,7 +22,13 @@ public class RmEventInfoController {
     @Autowired
     private RmEventInfoService rmEventInfoService;
 
-    @PostMapping("/addEvent")
+ /*   @PostMapping("/addEvent")
+    @ResponseBody
+    public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
+        return rmEventInfoService.addEvent(eventJson);
+    }*/
+
+    @PostMapping("/pushAiEvent")
     @ResponseBody
     public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addEvent(eventJson);
@@ -200,6 +206,12 @@ public class RmEventInfoController {
     @RequestMapping("/zxt/trends")
     public AppResponse getEventsTrends(@RequestHeader("token")String token) {
         return rmEventInfoService.getEventsTrends(-8,token);
+    }
+
+    //预警状态查询
+    @RequestMapping("/alertEvent")
+    public AppResponse alertEvent(@RequestParam String eventId,@RequestHeader("token")String token) {
+        return rmEventInfoService.alertEvent(eventId,token);
     }
 
 }

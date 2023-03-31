@@ -215,4 +215,17 @@ public interface RmEventInfoMapper {
      */
     void addEventReportMen(EventReportMenEntity ev);
     long queryEventReportMen(@Param("login") String login,@Param("procInstId") String procInstId);
+
+    /**
+     * 预警详情展示上报人
+     */
+    List<Map<String,Object>> getEventReportMen(@Param("eventId") String eventId);
+
+    /**
+     * 获取预警当前状态
+     * @param eventId
+     * @return
+     */
+    String getEventState(@Param("eventId") String eventId);
+
 }

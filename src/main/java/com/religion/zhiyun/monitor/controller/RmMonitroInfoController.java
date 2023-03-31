@@ -4,6 +4,7 @@ package com.religion.zhiyun.monitor.controller;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +105,16 @@ public class RmMonitroInfoController {
     @GetMapping("/getJzMoDetail")
     public PageResponse getJzMoDetail(@RequestParam String accessNumber) {
         return rmMonitroInfoService.getMoDetail(accessNumber,"02");
+    }
+
+    @RequestMapping("/monitorReport")
+    public AppResponse monitRepairReport(@RequestParam Map<String, Object> map, @RequestHeader("token")String token) {
+        return rmMonitroInfoService.monitRepairReport(map,token);
+    }
+
+    @RequestMapping("/monitorHandle")
+    public AppResponse monitRepairHandle(@RequestParam Map<String, Object> map, @RequestHeader("token")String token) {
+        return rmMonitroInfoService.monitRepairHandle(map,token);
     }
 
 }
