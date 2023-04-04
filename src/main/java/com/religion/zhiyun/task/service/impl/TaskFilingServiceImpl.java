@@ -161,8 +161,10 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     if (item.getAssignee().equals(loginNm)) {
+                        flag=false;
                         Map<String, Object> variables = new HashMap<>();
                         variables.put("nrOfCompletedInstances", 1);
                         variables.put("isSuccess", true);
@@ -173,10 +175,14 @@ public class TaskFilingServiceImpl implements TaskFilingService {
                         //完成此次审批。如果下节点为endEvent。结束流程
                         taskService.complete(item.getId(), variables);
                         log.info("任务id：" + procInstId + " 已处理，流程结束！");
-                    }else{
-                        throw new RuntimeException("");
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人处理，流程已结束！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！");
             }
             //流程更新处理结果
             TaskEntity taskEntity=new TaskEntity();

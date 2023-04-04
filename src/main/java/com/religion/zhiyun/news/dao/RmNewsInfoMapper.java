@@ -2,6 +2,7 @@ package com.religion.zhiyun.news.dao;
 
 import com.religion.zhiyun.news.entity.NewsEntity;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
@@ -24,6 +25,18 @@ public interface RmNewsInfoMapper {
     void update(NewsEntity newsEntity);
 
     /**
+     * 根据id获取
+     * @param newsId
+     */
+    NewsEntity getNewsById(int newsId);
+
+    /**
+     * 新闻上下架
+     * @param newsEntity
+     */
+    void updateNewsDown(NewsEntity newsEntity);
+
+    /**
      * 下架
      * @param newsId
      */
@@ -38,8 +51,20 @@ public interface RmNewsInfoMapper {
      * @return
      * @throws IOException
      */
-    List<NewsEntity> getNewsByPage(Integer page, Integer size, String newsTitle, String newsFor);
+    List<NewsEntity> getNewsByPage(Integer page, Integer size, String newsTitle, String newsFor,String newsRefType);
     /**总条数**/
-    long getTotal(String newsTitle, String newsFor);
+    long getTotal(String newsTitle, String newsFor,String newsRefType);
+
+    /**
+     * 分页查询(pc)
+     * @param page
+     * @param size
+     * @param newsTitle
+     * @return
+     * @throws IOException
+     */
+    List<NewsEntity> getPcNewsPage(@Param("page")Integer page, @Param("size")Integer size, @Param("newsTitle")String newsTitle);
+    /**总条数**/
+    long getPcNewsTotal(@Param("newsTitle")String newsTitle);
 
 }

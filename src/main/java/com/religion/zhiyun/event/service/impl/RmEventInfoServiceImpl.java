@@ -1027,9 +1027,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //处理自己的待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
+                        flag=false;
                         //Map<String, Object> variables = this.setFlag(sysUserEntity.getIdentity(), "go", userList, procInstId);
                         Map<String, Object> variables = new HashMap<>();
                         if(RoleEnums.JIE_GAN.getCode().equals(identify)){//查找街委
@@ -1051,6 +1053,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         taskService.complete(item.getId(), variables);
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人上报！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！！");
             }
             //1.更新事件
             Map<String, Object> evTaDetail = taskInfoMapper.getEvTaDetail(procInstId);
@@ -1114,9 +1122,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
+                        flag=false;
                         Map<String, Object> variables =new HashMap<>();
                         if("3".equals(eventLevel) || "01".equals(eventType)){
                             variables.put("flag2", "end");
@@ -1152,6 +1162,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         taskInfoMapper.updateTask(taskEntity);
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人处理，流程已结束！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！");
             }
 
             //修改事件表

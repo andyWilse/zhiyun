@@ -182,9 +182,11 @@ public class TaskReportServiceImpl implements TaskReportService {
             //处理自己的待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
+                        flag=false;
                         Map<String, Object> variables = this.setFlag(identity, "go", userList, procInstId);
                         variables.put("isSuccess", true);
                         //设置本地参数。在myListener1监听中获取。防止审核通过进行驳回
@@ -199,6 +201,12 @@ public class TaskReportServiceImpl implements TaskReportService {
                         taskService.complete(item.getId(), variables);
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人上报！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！！");
             }
             log.info("任务id："+procInstId+" 上报");
             code= ResultCode.SUCCESS.getCode();
@@ -240,9 +248,11 @@ public class TaskReportServiceImpl implements TaskReportService {
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
+                        flag=false;
                         Map<String, Object> variables = this.setFlag(identity, "end",userList,procInstId);
                         variables.put("nrOfCompletedInstances", 1);
                         variables.put("isSuccess", true);
@@ -268,6 +278,12 @@ public class TaskReportServiceImpl implements TaskReportService {
                         taskInfoMapper.updateTask(taskEntity);
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人处理，流程已结束！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！");
             }
 
             code= ResultCode.SUCCESS.getCode();

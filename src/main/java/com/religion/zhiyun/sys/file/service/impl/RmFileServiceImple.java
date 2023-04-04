@@ -216,5 +216,10 @@ public class RmFileServiceImple implements RmFileService {
         return new PageResponse(code,message,fileUrl.toArray());
     }
 
+    @Override
+    public List<Map<String, Object>> getFileUrl(String[] fileIds) {
+        return rmFileMapper.getFileUrl(fileIds);
+    }
+
 
 }

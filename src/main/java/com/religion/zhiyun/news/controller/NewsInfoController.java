@@ -18,13 +18,18 @@ public class NewsInfoController {
 
     @PostMapping("/add")
     @ResponseBody
-    public RespPageBean add(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
+    public PageResponse add(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
         return  newsInfoService.add(newsEntity,token);
     }
 
     @PostMapping("/update")
-    public RespPageBean update(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
+    public PageResponse update(@RequestBody NewsEntity newsEntity,@RequestHeader("token")String token) {
         return newsInfoService.update(newsEntity,token);
+    }
+
+    @GetMapping("/getNewsById/{newsId}")
+    public PageResponse getNewsById(@PathVariable int newsId) {
+        return newsInfoService.getNewsById(newsId);
     }
 
     @PostMapping("/delete/{newsId}")
@@ -32,10 +37,18 @@ public class NewsInfoController {
         newsInfoService.delete(newsId);
     }
 
+    @PostMapping("/newsDown")
+    public PageResponse newsDown(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
+        return newsInfoService.newsDown(map,token);
+    }
+
     @GetMapping("/find")
     public PageResponse getNewsByPage(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
         return newsInfoService.getNewsByPage(map,token);
     }
 
-
+    @GetMapping("/getPcNews")
+    public PageResponse getNewsPage(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
+        return newsInfoService.getNewsPage(map,token);
+    }
 }

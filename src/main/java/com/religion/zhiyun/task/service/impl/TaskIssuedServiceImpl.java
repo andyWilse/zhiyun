@@ -210,8 +210,10 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                Boolean flag=true;
                 for (Task item : T) {
                     if (item.getAssignee().equals(loginNm)) {
+                        flag=false;
                         Map<String, Object> variables = new HashMap<>();
                         variables.put("nrOfCompletedInstances", 1);
                         variables.put("isSuccess", true);
@@ -231,6 +233,12 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
                         log.info("任务id：" + procInstId + " 已处理，流程结束！");
                     }
                 }
+                //任务已被处理
+                if(flag){
+                    throw new RuntimeException("任务已被他人处理，流程已结束！");
+                }
+            }else{
+                throw new RuntimeException("任务已被他人处理，流程已结束！！");
             }
             //更新处理结果
             TaskEntity taskEntity=new TaskEntity();

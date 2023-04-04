@@ -18,7 +18,8 @@
         CREATOR as creator,
         CREATE_TIME as createTime,
         LAST_MODIFIER as lastModifier,
-        LAST_MODIFY_TIME as lastModifyTime
+        LAST_MODIFY_TIME as lastModifyTime,
+        NEWS_REF_TYPE as  newsRefType
     </sql>
 
     <insert id="add" parameterType="com.religion.zhiyun.news.entity.NewsEntity">
@@ -37,7 +38,8 @@
                  CREATE_TIME,
                  LAST_MODIFIER,
                  LAST_MODIFY_TIME,
-                 NEWS_FOR
+                 NEWS_FOR,
+                 NEWS_REF_TYPE
             )
              VALUES(
                  #{newsViews},
@@ -53,7 +55,8 @@
                  #{createTime},
                  #{lastModifier},
                  #{lastModifyTime},
-                 #{newsFor}
+                 #{newsFor},
+                 #{newsRefType}
              );
     </insert>
 
@@ -70,8 +73,11 @@
             NEWS_DOWN as newsDown,
             NEWS_PICTURES_PATH as newsPicturesPath,
             CREATOR as creator,
-            DATE_FORMAT(CREATE_TIME,'%Y-%m-%d %H:%i:%s') as createTime,
-            NEWS_FOR as newsFor
+            NEWS_FOR as newsFor,
+            DATE_FORMAT(news.CREATE_TIME,'%Y-%m-%d %H:%i:%s') as createTime,
+            DATE_FORMAT(news.CREATE_TIME,'%Y') as releaseYear,
+            DATE_FORMAT(news.CREATE_TIME,'%m') as releaseMonth,
+            DATE_FORMAT(news.CREATE_TIME,'%d') as releaseDay
         from RM_NEWS_INFO  news
         LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
         where NEWS_DOWN='1'
@@ -79,9 +85,12 @@
             AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
         </if>
         <if test="newsFor != null and newsFor != ''">
-            AND  NEWS_FOR =#{newsFor}
+            AND  NEWS_FOR !=#{newsFor}
         </if>
-        order by LAST_MODIFY_TIME desc
+        <if test="newsRefType != null and newsRefType != ''">
+            AND  NEWS_REF_TYPE =#{newsRefType}
+        </if>
+        order by CREATE_TIME desc
         limit #{page},#{size}
     </select>
 
@@ -94,12 +103,24 @@
             AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
         </if>
         <if test="newsFor != null and newsFor != ''">
-            AND  NEWS_FOR =#{newsFor}
+            AND  NEWS_FOR !=#{newsFor}
+        </if>
+        <if test="newsRefType != null and newsRefType != ''">
+            AND  NEWS_REF_TYPE =#{newsRefType}
         </if>
     </select>
 
-    <update id="delete">
-        update RM_NEWS_INFO set NEWS_DOWN='0' where NEWS_ID = #{newsId}
+    <delete id="delete">
+        delete from RM_NEWS_INFO where NEWS_ID = #{newsId}
+    </delete>
+
+    <update id="updateNewsDown" parameterType="com.religion.zhiyun.news.entity.NewsEntity">
+        update RM_NEWS_INFO
+        set
+            NEWS_DOWN=#{newsDown},
+            LAST_MODIFIER=#{lastModifier},
+            LAST_MODIFY_TIME=#{lastModifyTime}
+        WHERE NEWS_ID=#{newsId}
     </update>
 
     <update id="update" parameterType="com.religion.zhiyun.news.entity.NewsEntity">
@@ -119,5 +140,49 @@
 
         WHERE NEWS_ID=#{newsId}
     </update>
+
+
+    <select id="getPcNewsPage" resultType="com.religion.zhiyun.news.entity.NewsEntity">
+        select
+            NEWS_ID as newsId,
+            NEWS_VIEWS as newsViews,
+            NEWS_TITLE as newsTitle,
+            NEWS_KEYWORD as newsKeyword,
+            NEWS_CONTENT as newsContent,
+            NEWS_FROM as newsFrom,
+            NEWS_REF as newsRef,
+            dict.DICT_CN_DESC as newsType,
+            NEWS_DOWN as newsDown,
+            NEWS_PICTURES_PATH as newsPicturesPath,
+            CREATOR as creator,
+            NEWS_FOR as newsFor,
+            DATE_FORMAT(news.CREATE_TIME,'%Y-%m-%d %H:%i:%s') as createTime,
+            NEWS_DOWN as newsDown
+        from RM_NEWS_INFO  news
+        LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
+        where 1=1
+        <if test="newsTitle != null and newsTitle != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        </if>
+        order by NEWS_DOWN desc,CREATE_TIME desc
+        limit #{page},#{size}
+    </select>
+
+    <select id="getPcNewsTotal" resultType="java.lang.Long">
+        select
+        count(NEWS_ID)
+        from RM_NEWS_INFO
+        where 1=1
+        <if test="newsTitle != null and newsTitle != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        </if>
+    </select>
+
+    <select id="getNewsById" resultType="com.religion.zhiyun.news.entity.NewsEntity">
+        select
+            <include refid="newsColumn"/>
+        from RM_NEWS_INFO
+        where NEWS_ID=#{newsId}
+    </select>
 
 </mapper>

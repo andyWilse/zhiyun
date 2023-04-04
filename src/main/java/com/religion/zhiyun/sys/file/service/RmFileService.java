@@ -4,8 +4,11 @@ import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import org.springframework.data.repository.query.Param;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 public interface RmFileService {
 
@@ -37,5 +40,12 @@ public interface RmFileService {
      * @return
      */
     PageResponse getFile(String picPath);
+
+    /**
+     * 获取图片url
+     * @param fileIds
+     * @return
+     */
+    List<Map<String,Object>> getFileUrl(String[] fileIds);
 
 }

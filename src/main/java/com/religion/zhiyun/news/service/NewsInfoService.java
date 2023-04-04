@@ -12,13 +12,20 @@ public interface NewsInfoService {
      * 新增
      * @param newsEntity
      */
-    RespPageBean add(NewsEntity newsEntity,String token);
+    PageResponse add(NewsEntity newsEntity,String token);
 
     /**
      * 修改
      * @param newsEntity
      */
-    RespPageBean update(NewsEntity newsEntity,String token);
+    PageResponse update(NewsEntity newsEntity,String token);
+
+    /**
+     * 获取修改信息
+     * @param newsId
+     * @return
+     */
+    PageResponse getNewsById(int newsId);
 
     /**
      * 下架
@@ -27,9 +34,22 @@ public interface NewsInfoService {
     void delete(int newsId);
 
     /**
+     * 上下架
+     * @param map
+     */
+    PageResponse newsDown(Map<String, Object> map, String token);
+
+    /**
      * 分页查询
      * @param map
      * @throws IOException
      */
     PageResponse getNewsByPage(Map<String, Object> map, String token);
+
+    /**
+     * 分页查询(pc)
+     * @param map
+     * @throws IOException
+     */
+    PageResponse getNewsPage(Map<String, Object> map, String token);
 }

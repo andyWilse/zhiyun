@@ -60,8 +60,13 @@ public class NewsEntity {
     @Column(name = "NEWS_FOR")
     private String newsFor;//阅读群体：01：监管人员；02：管理人员
 
+    @Column(name = "NEWS_REF_TYPE")
+    private String newsRefType;//链接类型 01：一般新闻；02：图片新闻
+
     private String releaseYear;//发布日期(年)
     private String releaseMonth;//发布日期(月)
     private String releaseDay;//发布日期(日)
 
+    private String picturesPathRemove;
+    private Object[] fileList;
 }
