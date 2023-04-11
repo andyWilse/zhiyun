@@ -618,8 +618,8 @@
         ORDER BY tm.tmDate
     </select>
 
-    <select id="getMyTask" resultType="map">
-        SELECT distinct
+    <select id="getMyLaunchTask" resultType="map">
+        SELECT
             ta.TASK_NAME as taskName,
             case when ve.VENUES_NAME is not null then ve.VENUES_NAME
             else ''
@@ -627,7 +627,7 @@
             case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
             else ''
             end as venuesAddres,
-            case when(select count(ti.ID_) from act_hi_actinst ti where ti.PROC_INST_ID_=ta.PROC_INST_ID  and ti.ACT_TYPE_='endEvent')>0
+            case when ta.HANDLE_TIME is not null
             then  '已完成' else '待完成' end as statTask,
             ta.PROC_INST_ID as procInstId,
             DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
@@ -646,33 +646,257 @@
             TASK_CONTENT as taskContent
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
         left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
         left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
         where 1=1
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
-            and ac.ASSIGNEE_ = #{vo.searchTwo}
-        </if>
-        <if test="vo.searchOne!=null and vo.searchOne!=''">
-            and ac.ACT_TYPE_ = #{vo.searchOne}
+            and ta.LAUNCH_PERSON = #{vo.searchTwo}
         </if>
         order by statTask desc,ta.EMERGENCY_LEVEL ,taskTime desc
         limit #{vo.page},#{vo.size}
     </select>
 
-    <select id="getMyTaskTotal" resultType="long">
-        SELECT
-            count(distinct ta.PROC_INST_ID)
-        FROM rm_task_info ta
-        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID
+    <select id="getMyLaunchTaskTotal" resultType="long">
+        select COUNT(ta.TASK_ID) from rm_task_info ta
         where 1=1
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and ta.LAUNCH_PERSON = #{vo.searchTwo}
+        </if>
+    </select>
+
+    <select id="getMyHandleTask" resultType="map">
+        select al.*
+        from
+        ((
+            SELECT
+                ta.TASK_NAME as taskName,
+                case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+                else ''
+                end as venuesName,
+                case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+                else ''
+                end as venuesAddres,
+                case when ta.HANDLE_TIME is not null
+                then  '已完成' else '待完成' end as statTask,
+                ta.PROC_INST_ID as procInstId,
+                DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+                case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+                ta.EMERGENCY_LEVEL as emeLevel,
+                ta.FLOW_TYPE as flowType,
+                if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+                '330000' as province,
+                '330300' as city,
+                ve.area as area,
+                case  ta.REL_VENUES_ID!=u.area
+                when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+                when ve.VENUES_ID is null then ta.REL_VENUES_ID
+                else ''
+                end as town,
+                TASK_CONTENT as taskContent
+            FROM rm_task_info ta
+            left join act_hi_comment co on ta.PROC_INST_ID=co.PROC_INST_ID_
+            left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and co.USER_ID_ = #{vo.searchTwo}
+            </if>
+        )UNION ALL(
+            SELECT
+                ta.TASK_NAME as taskName,
+                case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+                else ''
+                end as venuesName,
+                case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+                else ''
+                end as venuesAddres,
+                case when ta.HANDLE_TIME is not null
+                then  '已完成' else '待完成' end as statTask,
+                ta.PROC_INST_ID as procInstId,
+                DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+                case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+                ta.EMERGENCY_LEVEL as emeLevel,
+                ta.FLOW_TYPE as flowType,
+                if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+                '330000' as province,
+                '330300' as city,
+                ve.area as area,
+                case  ta.REL_VENUES_ID!=u.area
+                when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+                when ve.VENUES_ID is null then ta.REL_VENUES_ID
+                else ''
+                end as town,
+                TASK_CONTENT as taskContent
+            FROM rm_task_info ta
+            left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
+            left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+               and ac.ASSIGNEE_ = #{vo.searchTwo}
+            </if>
+            )
+        )al
+        order by al.statTask desc,al.emeLevel ,al.taskTime desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getMyHandleTotal" resultType="long">
+        select count(al.PROC_INST_ID_)
+        from (
+            (select co.PROC_INST_ID_ from act_hi_comment co
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and co.USER_ID_ = #{vo.searchTwo}
+            </if>
+            )union all
+            (select ac.PROC_INST_ID_ from act_hi_actinst ac
+            where  ac.END_TIME_ is null
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and ac.ASSIGNEE_ = #{vo.searchTwo}
+            </if>
+            )
+        ) al
+    </select>
+
+    <select id="getMyTask" resultType="map">
+        SELECT al.*
+        FROM (
+            (
+            SELECT
+                ta.TASK_NAME as taskName,
+                case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+                else ''
+                end as venuesName,
+                case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+                else ''
+                end as venuesAddres,
+                case when ta.HANDLE_TIME is not null
+                then  '已完成' else '待完成' end as statTask,
+                ta.PROC_INST_ID as procInstId,
+                DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+                case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+                ta.EMERGENCY_LEVEL as emeLevel,
+                ta.FLOW_TYPE as flowType,
+                if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+                '330000' as province,
+                '330300' as city,
+                ve.area as area,
+                case  ta.REL_VENUES_ID!=u.area
+                when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+                when ve.VENUES_ID is null then ta.REL_VENUES_ID
+                else ''
+                end as town,
+                TASK_CONTENT as taskContent
+            FROM rm_task_info ta
+            left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and ta.LAUNCH_PERSON = #{vo.searchTwo}
+            </if>
+        )union all(
+            SELECT
+                ta.TASK_NAME as taskName,
+                case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+                else ''
+                end as venuesName,
+                case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+                else ''
+                end as venuesAddres,
+                case when ta.HANDLE_TIME is not null
+                then  '已完成' else '待完成' end as statTask,
+                ta.PROC_INST_ID as procInstId,
+                DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+                case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+                ta.EMERGENCY_LEVEL as emeLevel,
+                ta.FLOW_TYPE as flowType,
+                if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+                '330000' as province,
+                '330300' as city,
+                ve.area as area,
+                case  ta.REL_VENUES_ID!=u.area
+                when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+                when ve.VENUES_ID is null then ta.REL_VENUES_ID
+                else ''
+                end as town,
+                TASK_CONTENT as taskContent
+            FROM rm_task_info ta
+            left join act_hi_comment co on ta.PROC_INST_ID=co.PROC_INST_ID_
+            left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and co.USER_ID_ = #{vo.searchTwo}
+            </if>
+        )union all(
+            SELECT
+                ta.TASK_NAME as taskName,
+                case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+                else ''
+                end as venuesName,
+                case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+                else ''
+                end as venuesAddres,
+                case when ta.HANDLE_TIME is not null
+                then  '已完成' else '待完成' end as statTask,
+                ta.PROC_INST_ID as procInstId,
+                DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+                case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+                ta.EMERGENCY_LEVEL as emeLevel,
+                ta.FLOW_TYPE as flowType,
+                if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+                '330000' as province,
+                '330300' as city,
+                ve.area as area,
+                case  ta.REL_VENUES_ID!=u.area
+                when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+                when ve.VENUES_ID is null then ta.REL_VENUES_ID
+                else ''
+                end as town,
+                TASK_CONTENT as taskContent
+            FROM rm_task_info ta
+            left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
+            left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            where 1=1
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and ac.ASSIGNEE_ = #{vo.searchTwo}
+            </if>
+        )
+        )al
+        order by al.statTask desc,al.emeLevel ,al.taskTime desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getMyTaskTotal" resultType="long">
+        select count(al.id)
+        from (
+        (select PROC_INST_ID as id from rm_task_info ta
+        where 1=1
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and ta.LAUNCH_PERSON = #{vo.searchTwo}
+        </if>
+        )
+        union all
+        (select co.PROC_INST_ID_ as id from act_hi_comment co
+        where 1=1
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and co.USER_ID_ = #{vo.searchTwo}
+        </if>
+        )union all
+        (select ac.PROC_INST_ID_ as id from act_hi_actinst ac
+        where  ac.END_TIME_ is null
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ac.ASSIGNEE_ = #{vo.searchTwo}
         </if>
-        <if test="vo.searchOne!=null and vo.searchOne!=''">
-            and ac.ACT_TYPE_ = #{vo.searchOne}
-        </if>
+        )
+        ) al
     </select>
 
     <update id="updateHiActinst">
@@ -686,7 +910,7 @@
             ta.TASK_NAME as taskName,
             ve.VENUES_NAME as venuesName,
             ve.VENUES_ADDRES as venuesAddres,
-            DATE_FORMAT(ac.START_TIME_,'%Y-%m-%d %H:%i:%s') as taskTime,
+            DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
             DATE_FORMAT(ta.END_TIME,'%Y-%m-%d %H:%i:%s') as endTime,
             FLOW_TYPE as flowType,
             case when us.USER_NM is not null then us.USER_NM else ma.MANAGER_CN_NM end as launchPerson,

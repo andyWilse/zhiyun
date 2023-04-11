@@ -225,6 +225,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             taskEntity.setProcInstId(procInstId);
             taskEntity.setFlowType("07");//设备报修
             taskEntity.setHandleResults("0");//未解决
+            taskEntity.setEmergencyLevel("02");//默认普通
             taskInfoMapper.addTask(taskEntity);
 
             code=ResultCode.SUCCESS.getCode();

@@ -107,8 +107,16 @@ public interface TaskInfoMapper {
      * @param vo
      * @return
      */
+    //我发起的
+    List<Map<String,Object>> getMyLaunchTask(@Param("vo") ParamsVo vo);
+    Long getMyLaunchTaskTotal(@Param("vo") ParamsVo vo);
+    //我执行的
+    List<Map<String,Object>> getMyHandleTask(@Param("vo") ParamsVo vo);
+    Long getMyHandleTotal(@Param("vo") ParamsVo vo);
+    //全部
     List<Map<String,Object>> getMyTask(@Param("vo") ParamsVo vo);
     Long getMyTaskTotal(@Param("vo") ParamsVo vo);
+
 
     /**
      * 任务详情

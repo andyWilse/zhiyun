@@ -346,21 +346,24 @@ public class TaskServiceImpl implements TaskService {
             }
             vo.setPage(page);
             vo.setSize(size);
-            //类型
-            String type = (String)map.get("type");
-            if("01".equals(type)){
-                vo.setSearchOne("startEvent");
-            }else if("02".equals(type)){
-                vo.setSearchOne("userTask");
-            }
             //用户
             String login = this.getLogin(token);
             if(!"admin".equals(login)){
                 vo.setSearchTwo(login);
             }
+            //类型
+            String type = (String)map.get("type");
+            if("01".equals(type)){//我发起的
+                taskList =taskInfoMapper.getMyLaunchTask(vo);
+                total =taskInfoMapper.getMyLaunchTaskTotal(vo);
+            }else if("02".equals(type)){//我执行的
+                taskList =taskInfoMapper.getMyHandleTask(vo);
+                total =taskInfoMapper.getMyHandleTotal(vo);
+            }else{
+                taskList =taskInfoMapper.getMyTask(vo);
+                total =taskInfoMapper.getMyTaskTotal(vo);
+            }
             //查询
-            taskList =taskInfoMapper.getMyTask(vo);
-            total =taskInfoMapper.getMyTaskTotal(vo);
             code= ResultCode.SUCCESS.getCode();
             message= "获取我的任务成功！";
         }catch (RuntimeException r){

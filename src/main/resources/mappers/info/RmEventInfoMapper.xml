@@ -788,10 +788,9 @@
             end as eventTypeCn,
             ev.EVENT_TYPE as eventType,
             case ev.EVENT_STATE
-            when '00' then '待查实'
-            when '01' then '已完成'
-            when '02' then '一键上报'
-            when '03' then '拨打119'
+            when '01' then '已处理'
+            when '02' then '已上报'
+            when '03' then '已通知'
             when '04' then '误报解除'
             end as eventStateCn,
             ev.EVENT_STATE as eventState,
@@ -897,7 +896,13 @@
                 #{value}
             </foreach>
         </if>
-        ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            ORDER BY ev.WARN_TIME  desc
+        </if>
+
         limit #{vo.page},#{vo.size}
     </select>
 

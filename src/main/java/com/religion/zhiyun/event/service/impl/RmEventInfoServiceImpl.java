@@ -275,10 +275,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 message="AI预警";
                 searchArr=new String[]{"02","03"};
                 auth.setSearchArr(searchArr);
+                auth.setSearchThree("01");
             }else if("02".equals(type)){
                 message="历史预警";
                 searchArr=new String[]{"01","04"};
                 auth.setSearchArr(searchArr);
+                auth.setSearchFour("02");
             }
             //mapList = rmEventInfoMapper.getByType(auth);
             //total=rmEventInfoMapper.getTotal(auth);
