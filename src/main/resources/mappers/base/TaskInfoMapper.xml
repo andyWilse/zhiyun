@@ -197,11 +197,34 @@
 
     <select id="getTaskNum" resultType="map">
         select
-            count(USER_ID_) as allSum,
-            ifnull(SUM(CASE WHEN d.TYPE_ = 'starter' THEN 1 ELSE 0 END),0) AS startSum,
-            ifnull(SUM(CASE WHEN d.TYPE_ = 'participant' THEN 1 ELSE 0 END),0) AS executeNum
-        from act_hi_identitylink d
-        where user_id_ =#{loginNm}
+            sum(allSum) as allSum,sum(startSum) as startSum,sum(executeNum) as executeNum
+        from (
+            (
+                select
+                    count(ta.PROC_INST_ID)  as allSum,count(PROC_INST_ID) AS startSum, 0 AS executeNum
+                from rm_task_info ta
+                where 1=1
+                <if test="loginNm!=null and loginNm!=''">
+                    and ta.LAUNCH_PERSON = #{loginNm}
+                </if>
+            )union all(
+                select
+                    count(co.PROC_INST_ID_) as allSum, 0 AS startSum  ,count(co.PROC_INST_ID_) AS executeNum
+                from act_hi_comment co
+                where 1=1
+                <if test="loginNm!=null and loginNm!=''">
+                    and co.USER_ID_ = #{loginNm}
+                </if>
+            )union all(
+                select
+                    count(ac.PROC_INST_ID_) as allSum, 0 AS startSum   ,count(ac.PROC_INST_ID_) AS executeNum
+                from act_hi_actinst ac
+                where  ac.END_TIME_ is null
+                <if test="loginNm!=null and loginNm!=''">
+                    and ac.ASSIGNEE_ = #{loginNm}
+                </if>
+            )
+        ) al
     </select>
     <select id="queryByInstId" resultType="map">
         select

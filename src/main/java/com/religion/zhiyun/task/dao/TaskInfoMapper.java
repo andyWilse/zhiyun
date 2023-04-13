@@ -28,7 +28,7 @@ public interface TaskInfoMapper {
     /**一键上报人**/
     String getReportMen(String procInstId);
     /** 任务数量统计 **/
-    Map<String,Object> getTaskNum(String loginNm);
+    Map<String,Object> getTaskNum(@Param("loginNm")String loginNm);
 
     /** 根据任务id查询 **/
     List<Map<String,Object>> queryByInstId(@Param("page") Integer page,

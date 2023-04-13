@@ -1,7 +1,8 @@
 package com.religion.zhiyun.utils.fileutil;
 
 import com.religion.zhiyun.sys.file.entity.FileEntity;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -14,7 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class FileUpDown {
-    private static Logger logger = Logger.getLogger(FileUpDown.class);
+    private static Logger logger = LoggerFactory.getLogger(FileUpDown.class);
 
     public static List<FileEntity> imagesUpload(HttpServletRequest request,String pathUpload){
 
