@@ -105,9 +105,7 @@
         ((select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
-            case when us.USER_NM is not null then us.USER_NM
-            else u.MANAGER_CN_NM
-            end as taskNm,
+            if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_
         from act_hi_actinst ti
@@ -119,9 +117,7 @@
         (select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             co.MESSAGE_ as message,
-            case when us.USER_NM is not null then us.USER_NM
-            else u.MANAGER_CN_NM
-            end as taskNm,
+            if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_  )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_
         from act_hi_actinst ti
@@ -133,7 +129,7 @@
         (select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
-            GROUP_CONCAT(us.USER_NM) as taskNm,
+            GROUP_CONCAT(if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ ))) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_
         from act_hi_actinst ti
@@ -142,6 +138,7 @@
         where ti.END_TIME_ is null
         and ti.PROC_INST_ID_=#{procInstId})
         ) task
+        where task.taskNm is not null
         order by START_TIME_ asc
     </select>
     <select id="queryTasks" resultType="map">
@@ -675,15 +672,29 @@
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ta.LAUNCH_PERSON = #{vo.searchTwo}
         </if>
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
         order by statTask desc,ta.EMERGENCY_LEVEL ,taskTime desc
         limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getMyLaunchTaskTotal" resultType="long">
-        select COUNT(ta.TASK_ID) from rm_task_info ta
+        select COUNT(ta.TASK_ID)
+        from rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         where 1=1
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ta.LAUNCH_PERSON = #{vo.searchTwo}
+        </if>
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
     </select>
 
@@ -821,6 +832,12 @@
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and ta.LAUNCH_PERSON = #{vo.searchTwo}
             </if>
+            <if test="vo.venues!=null and vo.venues!=''">
+                and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+            </if>
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+            </if>
         )union all(
             SELECT
                 ta.TASK_NAME as taskName,
@@ -855,6 +872,12 @@
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and co.USER_ID_ = #{vo.searchTwo}
+            </if>
+            <if test="vo.venues!=null and vo.venues!=''">
+                and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+            </if>
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
             </if>
         )union all(
             SELECT
@@ -891,6 +914,12 @@
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and ac.ASSIGNEE_ = #{vo.searchTwo}
             </if>
+            <if test="vo.venues!=null and vo.venues!=''">
+                and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+            </if>
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+            </if>
         )
         )al
         order by al.statTask desc,al.emeLevel ,al.taskTime desc
@@ -900,24 +929,52 @@
     <select id="getMyTaskTotal" resultType="long">
         select count(al.id)
         from (
-        (select PROC_INST_ID as id from rm_task_info ta
-        where 1=1
-        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
-            and ta.LAUNCH_PERSON = #{vo.searchTwo}
-        </if>
-        )
-        union all
-        (select co.PROC_INST_ID_ as id from act_hi_comment co
-        where 1=1
-        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
-            and co.USER_ID_ = #{vo.searchTwo}
-        </if>
-        )union all
-        (select ac.PROC_INST_ID_ as id from act_hi_actinst ac
-        where  ac.END_TIME_ is null
-        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
-            and ac.ASSIGNEE_ = #{vo.searchTwo}
-        </if>
+            (
+                select PROC_INST_ID as id
+                from rm_task_info ta
+                left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+                where 1=1
+                <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                    and ta.LAUNCH_PERSON = #{vo.searchTwo}
+                </if>
+                <if test="vo.venues!=null and vo.venues!=''">
+                    and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+                </if>
+                <if test="vo.searchOne!=null and vo.searchOne!=''">
+                    and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+                </if>
+            )
+            union all
+            (
+                select co.PROC_INST_ID_ as id
+                from act_hi_comment co
+                left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
+                left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+                where 1=1
+                <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                    and co.USER_ID_ = #{vo.searchTwo}
+                </if>
+                <if test="vo.venues!=null and vo.venues!=''">
+                    and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+                </if>
+                <if test="vo.searchOne!=null and vo.searchOne!=''">
+                    and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+                </if>
+            )union all(
+                select ac.PROC_INST_ID_ as id
+                from act_hi_actinst ac
+                left join rm_task_info ta on ac.PROC_INST_ID_=ta.PROC_INST_ID
+                left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+                where  ac.END_TIME_ is null
+                <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                    and ac.ASSIGNEE_ = #{vo.searchTwo}
+                </if>
+                <if test="vo.venues!=null and vo.venues!=''">
+                    and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+                </if>
+                <if test="vo.searchOne!=null and vo.searchOne!=''">
+                    and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+                </if>
         )
         ) al
     </select>

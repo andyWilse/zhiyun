@@ -342,7 +342,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Override
     public RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber,String token) {
-        List<EventEntity> dataList = new ArrayList<>();
+        List<Map<String,Object>> dataList = new ArrayList<>();
         Long total=0l;
         long code= ResultCode.FAILED.getCode();
         String result="预警查询pc！";
@@ -844,16 +844,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         NotifiedEntity notifiedEntity=new NotifiedEntity();
         List<String> userNextList=new ArrayList<>();
         List<Map<String, Object>> userList =new ArrayList<>();
-        List<Map<String, Object>> nextList =new ArrayList<>();
         //获取通知对象
         if("01".equals(emergencyLevel) || "01".equals(eventType)){
             //1.根据场所获取场所有相关人员
             userList =sysUserMapper.getAllByVenues(relVenuesId);
-            nextList=userList;
         }else{
             //根据场所获取场所三人驻堂、街干
             userList = sysUserMapper.getJgByVenues(relVenuesId);
-            nextList=userList;
         }
         //火警、人员
         if("01".equals(eventType) || "01".equals(eventType)){
@@ -862,6 +859,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 for(int i=0;i<userList.size();i++){
                     Map<String, Object> map = userList.get(i);
                     String userMobile = (String) map.get("userMobile");
+                    userNextList.add(userMobile);//下节点流程处理人员
                     user=user+userMobile+",";
                     //短信通知
                     //String message = SendMassage.sendSms(contents, userMobile);
@@ -884,6 +882,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 String[] split = manager.split(",");
                 for(int i=0;i<split.length;i++){
                     String managerMobile = split[i];
+                    userNextList.add(managerMobile);//下节点流程处理人员
                     //String message = SendMassage.sendSms(contents, managerMobile);
                     String message ="";
                     System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
@@ -925,14 +924,14 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         taskEntity.setRelVenuesId(String.valueOf(relVenuesId));
         taskEntity.setEmergencyLevel(emergencyLevel);
         taskEntity.setRelEventId(String.valueOf(relEventId));
-        //任务处理人
+        /*//任务处理人
         if(null!=nextList && nextList.size()>0){
             for(int i=0;i<nextList.size();i++){
                 Map<String, Object> stringObjectMap = nextList.get(i);
                 String userMobile = (String) stringObjectMap.get("userMobile");
                 userNextList.add(userMobile);//下节点流程处理人员
             }
-        }
+        }*/
         //任务发起
         this.launch(taskEntity,userNextList,"预警平台");
 
@@ -1100,10 +1099,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(loginNm);
-            if(null==sysUserEntity){
-                throw new RuntimeException("用户信息丢失，请联系管理员！");
+            String identify ="1001";//教职人员
+            if(null!=sysUserEntity){
+                identify = sysUserEntity.getIdentity();
             }
-            String identify = sysUserEntity.getIdentity();
+
             //数据封装
             String eventSta= (String)map.get("eventSta");
             String eventState ="";

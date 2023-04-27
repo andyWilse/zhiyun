@@ -210,50 +210,56 @@
 
     </select>
 
-    <select id="getEventsByPage" resultType="com.religion.zhiyun.event.entity.EventEntity">
-        select
-            e.EVENT_ID as eventId,
-            e.ACCESS_NUMBER as accessNumber,
-            e.DEVICE_NAME as deviceName,
-            e.WARN_TIME as warnTime,
-            ve.VENUES_ADDRES as venuesAddres,
-            e.RESPONSIBLE_PERSON as responsiblePerson,
-            case e.EVENT_TYPE
-                when '01' then '火灾预警'
-                when '02' then '人脸识别'
-                when '03' then '任务预警'
-                when '04' then '人流聚集'
-                else '其他'
-            end as eventType,
-            e.EVENT_DATA as eventData,
-            e.LOCATION as location,
-            case e.EVENT_STATE
-                when '00' then '待查实'
-                when '01' then '已完成'
-                when '02' then '误报'
-                else '其他'
-            end as eventState,
-            e.HANDLE_RESULTS as handleResults,
-            e.HANDLE_TIME as handleTime
-        from RM_EVENT_INFO e
-        left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
-        where ve.VENUES_STATUS!='02'
-        <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  e.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
-        </if>
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
-        </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
-        </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
-        </if>
-        order by HANDLE_TIME desc
+    <select id="getEventsByPage" resultType="map">
+        select al.* from
+            (select
+                e.EVENT_ID as eventId,
+                e.ACCESS_NUMBER as accessNumber,
+                e.DEVICE_NAME as deviceName,
+                e.WARN_TIME as warnTime,
+                ve.VENUES_ADDRES as venuesAddres,
+                ve.VENUES_NAME as venuesName,
+                e.RESPONSIBLE_PERSON as responsiblePerson,
+                case e.EVENT_TYPE
+                    when '01' then '火灾预警'
+                    when '02' then '人脸识别'
+                    when '03' then '任务预警'
+                    when '04' then '人流聚集'
+                    else '其他'
+                end as eventType,
+                e.EVENT_DATA as eventData,
+                e.LOCATION as location,
+                case when e.EVENT_STATE ='01' or e.EVENT_STATE='04' then '已完成'
+                else '未完成'
+                end as eventState,
+                ta.HANDLE_RESULTS as handleResults,
+                DATE_FORMAT(ta.HANDLE_TIME ,'%Y-%m-%d %H:%i:%s') as handleTime,
+                case when us.USER_NM is not null then us.USER_NM
+                else ma.MANAGER_CN_NM
+                end as handlePerson
+            from RM_EVENT_INFO e
+            left join rm_task_info ta on ta.REL_EVENT_ID=e.EVENT_ID
+            left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
+            left join rm_sys_user_info us on us.USER_MOBILE=ta.HANDLE_PERSON
+            left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.HANDLE_PERSON
+            where ve.VENUES_STATUS!='02'
+            <if test="vo.searchOne != null and vo.searchOne != ''">
+                AND  e.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
+            </if>
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
+        )al
+        order by  al.eventState desc,al.handleTime desc,al.warnTime
         limit #{vo.page},#{vo.size}
     </select>
 

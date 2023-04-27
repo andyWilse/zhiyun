@@ -309,6 +309,7 @@
     <select id="getTotal" resultType="java.lang.Long">
         select count(VENUES_ID)
         from RM_VENUES_INFO ve
+        left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01' and fz.VALID_IND='1'
         where VENUES_STATUS!='02'
         <if test="venue.venuesName != null and venue.venuesName != ''">
             AND  ve.VENUES_NAME LIKE CONCAT('%',#{venue.venuesName},'%')

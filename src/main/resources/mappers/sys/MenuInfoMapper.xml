@@ -22,13 +22,14 @@
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
         where RESOURCE_TYPE is not null
+        and VALID_IND='1'
     </select>
 
     <select id="findMenus" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">
         select
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
-        where 1=1
+        where VALID_IND='1'
         <if test="_parameter != null and _parameter != ''">
             and RESOURCE_TYPE = #{resourceType}
         </if>
@@ -38,7 +39,8 @@
         select
         <include refid="menuColumn"/>
         from RM_SYS_MENU_INFO
-        where MENU_ID in
+        where VALID_IND='1'
+        and MENU_ID in
         <foreach collection="array" item="menuPrtIds" index="index" open="(" close=")" separator=",">
             #{menuPrtIds}
         </foreach>
@@ -51,6 +53,7 @@
             RESOURCE_TYPE as type
         from RM_SYS_MENU_INFO
         where RESOURCE_TYPE  in ('01','02')
+        and VALID_IND='1'
         order by SORT_LVL
     </select>
 
@@ -61,6 +64,7 @@
             RESOURCE_TYPE as type
         from RM_SYS_MENU_INFO
         where RESOURCE_TYPE  in ('03','04')
+        and VALID_IND='1'
         <if test="_parameter != null and _parameter != ''">
             and PARENT_ID = #{parentId}
         </if>
@@ -74,6 +78,7 @@
             RESOURCE_TYPE as type
         from RM_SYS_MENU_INFO
         where RESOURCE_TYPE  ='05'
+        and VALID_IND='1'
         <if test="_parameter != null and _parameter != ''">
             and PARENT_ID = #{parentId}
         </if>
@@ -96,7 +101,7 @@
         left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
         ) me where me.userId =#{userId}
         ) men
-        join RM_SYS_MENU_INFO f on men.menu=f.MENU_ID
+        join RM_SYS_MENU_INFO f on men.menu=f.MENU_ID and VALID_IND='1'
         where f.RESOURCE_TYPE in ('02','05')
         order by f.MENU_ID,f.SORT_LVL
     </select>
@@ -121,9 +126,9 @@
             left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
             ) me   where  me.userId =#{userId}
             ) men
-            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='05'
-            join RM_SYS_MENU_INFO fz on f.PARENT_ID=fz.MENU_ID
-            join RM_SYS_MENU_INFO s on s.MENU_ID=fz.PARENT_ID
+            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='05' and f.VALID_IND='1'
+            join RM_SYS_MENU_INFO fz on f.PARENT_ID=fz.MENU_ID and fz.VALID_IND='1'
+            join RM_SYS_MENU_INFO s on s.MENU_ID=fz.PARENT_ID and s.VALID_IND='1'
             group by fz.PARENT_ID)
         union all
             (select
@@ -142,11 +147,9 @@
             left join rm_sys_user_role_rel rel on rel.ROLE_ID=pe.ROLE_ID)
             ) me   where me.userId =#{userId}
             ) men
-            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='04'
-            join RM_SYS_MENU_INFO s on s.MENU_ID=f.PARENT_ID )
+            left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='04' and f.VALID_IND='1'
+            join RM_SYS_MENU_INFO s on s.MENU_ID=f.PARENT_ID and s.VALID_IND='1')
         ) ch group by ch.parentId
     </select>
-
-
 
 </mapper>

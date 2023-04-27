@@ -170,6 +170,12 @@
         select
             MANAGER_ID as managerId,
             MANAGER_CN_NM as  managerCnNm,
+            case MANAGER_TYPE_CD
+            when '01' then '负责人'
+            when '02' then '管理组成员'
+            when '03' then '工作联络员'
+            else MANAGER_TYPE_CD
+            end as  managerTypeCd,
             MANAGER_MOBILE as managerMobile
         from RM_VENUES_MANAGER_INFO ma
         where VALID_IND='1'

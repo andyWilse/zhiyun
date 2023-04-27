@@ -71,7 +71,7 @@ public interface RmEventInfoMapper {
      * @param vo
      * @return
      */
-    List<EventEntity> getEventsByPage(@Param("vo") ParamsVo vo);
+    List<Map<String,Object>> getEventsByPage(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数
