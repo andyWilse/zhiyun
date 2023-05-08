@@ -81,17 +81,20 @@
         from RM_NEWS_INFO  news
         LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
         where NEWS_DOWN='1'
-        <if test="newsTitle != null and newsTitle != ''">
-            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
-        <if test="newsFor != null and newsFor != ''">
-            AND  NEWS_FOR !=#{newsFor}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  NEWS_REF_TYPE =#{vo.searchTwo}
         </if>
-        <if test="newsRefType != null and newsRefType != ''">
-            AND  NEWS_REF_TYPE =#{newsRefType}
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  NEWS_FOR !=#{vo.searchThree}
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            AND  NEWS_TYPE =#{vo.searchFour}
         </if>
         order by CREATE_TIME desc
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
@@ -99,14 +102,17 @@
             count(NEWS_ID)
         from RM_NEWS_INFO
         where NEWS_DOWN='1'
-        <if test="newsTitle != null and newsTitle != ''">
-            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
-        <if test="newsFor != null and newsFor != ''">
-            AND  NEWS_FOR !=#{newsFor}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  NEWS_REF_TYPE =#{vo.searchTwo}
         </if>
-        <if test="newsRefType != null and newsRefType != ''">
-            AND  NEWS_REF_TYPE =#{newsRefType}
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  NEWS_FOR !=#{vo.searchThree}
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            AND  NEWS_TYPE =#{vo.searchFour}
         </if>
     </select>
 
@@ -157,15 +163,34 @@
             CREATOR as creator,
             NEWS_FOR as newsFor,
             DATE_FORMAT(news.CREATE_TIME,'%Y-%m-%d %H:%i:%s') as createTime,
-            NEWS_DOWN as newsDown
+            case NEWS_REF_TYPE
+            when '01' then '一般新闻'
+            when '02' then '图片新闻'
+            else NEWS_REF_TYPE
+            end as newsRefType,
+            case NEWS_TYPE
+            when '01' then '宗教文化'
+            when '02' then '政策学习'
+            when '03' then '瓯海动态'
+            else NEWS_TYPE
+            end as newsType
         from RM_NEWS_INFO  news
         LEFT JOIN rm_sys_dict dict on news.NEWS_TYPE=dict.DICT_CD
         where 1=1
-        <if test="newsTitle != null and newsTitle != ''">
-            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  NEWS_REF_TYPE =#{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  NEWS_FOR =#{vo.searchThree}
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            AND  NEWS_TYPE =#{vo.searchFour}
         </if>
         order by NEWS_DOWN desc,CREATE_TIME desc
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getPcNewsTotal" resultType="java.lang.Long">
@@ -173,8 +198,17 @@
         count(NEWS_ID)
         from RM_NEWS_INFO
         where 1=1
-        <if test="newsTitle != null and newsTitle != ''">
-            AND  NEWS_TITLE LIKE CONCAT('%',#{newsTitle},'%')
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND  NEWS_TITLE LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  NEWS_REF_TYPE =#{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  NEWS_FOR =#{vo.searchThree}
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            AND  NEWS_TYPE =#{vo.searchFour}
         </if>
     </select>
 

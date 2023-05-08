@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.sys.feedback.dao.FeedbackMapper">
+    <insert id="add">
+        insert into RM_FEEDBACK_INFO
+        (
+            FEEDBACK_TYPE,
+            FEEDBACK_CONTENT,
+            FEEDBACK_PICTURE,
+            REL_VENUES_ID,
+            MAP_PICTURE,
+            LATITUDE_LONGITUDE_ORIGIN,
+            LATITUDE_LONGITUDE_NEW,
+            FEEDBACK_OPERATOR,
+            FEEDBACK_TIME
+        )
+        values(
+            #{feedbackType},
+            #{feedbackContent},
+            #{feedbackPicture},
+            #{relVenuesId},
+            #{mapPicture},
+            #{latitudeLongitudeOrigin},
+            #{latitudeLongitudeNew},
+            #{feedbackOperator},
+            #{feedbackTime}
+        )
+    </insert>
+
+</mapper>

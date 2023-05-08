@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.dao;
 
+import com.religion.zhiyun.interfaces.entity.SubmitEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -117,7 +118,17 @@ public interface TaskInfoMapper {
     List<Map<String,Object>> getMyTask(@Param("vo") ParamsVo vo);
     Long getMyTaskTotal(@Param("vo") ParamsVo vo);
 
-
+    /**
+     *获取我的任务（PC）
+     * @param vo
+     * @return
+     */
+    //待完成
+    List<Map<String,Object>> getUnHandleTask(@Param("vo") ParamsVo vo);
+    Long getUnHandleTaskTotal(@Param("vo") ParamsVo vo);
+    //我经手的
+    List<Map<String,Object>> getHandTask(@Param("vo") ParamsVo vo);
+    Long getHandTaskTotal(@Param("vo") ParamsVo vo);
     /**
      * 任务详情
      * @param procInstId
@@ -154,6 +165,14 @@ public interface TaskInfoMapper {
      * @return
      */
     Map<String,Object> getEvTaDetail(@Param("procInstId") String procInstId);
+
+    /**
+     * 获取上报数据
+     * @param procInstId
+     * @param login
+     * @return
+     */
+    SubmitEntity getSubmitEvent(@Param("procInstId") String procInstId,@Param("login") String login);
 
 
 }

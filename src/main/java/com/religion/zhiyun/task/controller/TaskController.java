@@ -76,6 +76,12 @@ public class TaskController {
         return taskService.getMyTask(map,token);
     }
 
+    //PC任务
+    @RequestMapping("/pc/getMyTask")
+    public PageResponse getPcTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return taskService.getPcTask(map,token);
+    }
+
     @RequestMapping("/app/getTaskDetail")
     public PageResponse getTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
         return taskService.getTaskDetail(procInstId,token);

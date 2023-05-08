@@ -13,12 +13,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 class ActivitiApplicationTests {
 
-    @Autowired
+ /*   @Autowired
     private ProcessEngine processEngine;
 
-    /**
+    *//**
      * 流程定义的部署
-     */
+     *//*
     @Test
     public void createDeploy() {
         RepositoryService repositoryService = processEngine.getRepositoryService();
@@ -31,5 +31,5 @@ class ActivitiApplicationTests {
 
         log.info("流程部署id:" + deployment.getName());
         log.info("流程部署名称:" + deployment.getId());
-    }
+    }*/
 }

@@ -42,6 +42,9 @@ public interface TaskService {
     /*** APP我的任务 **/
     public PageResponse getMyTask(Map<String, Object> map,String token);
 
+    /*** PC任务 **/
+    public PageResponse getPcTask(Map<String, Object> map,String token);
+
     /*** APP我的任务详情 **/
     public PageResponse getTaskDetail(String procInstId,String token);
 }

@@ -234,15 +234,14 @@ public class TaskReportServiceImpl implements TaskReportService {
             }
             loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
-            Map<String, Object> nextHandler = this.getNextHandler(loginNm, message,"");
-            if(null==nextHandler){
-                message="下节点处理人信息丢失！";
+
+            /**根据手机号，获取信息**/
+            SysUserEntity user = sysUserMapper.queryByName(loginNm);
+            if(null==user){
+                message="用户信息失效，请重新登录！";
                 throw new RuntimeException(message);
             }
-            //String loginNm = (String) nextHandler.get("loginNm");
-            String identity = (String) nextHandler.get("identity");
-            List<String> userList = (List<String>) nextHandler.get("userList");
-
+            String identity = user.getIdentity();
             //根据角色信息获取自己的待办
             //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
             //处理待办
@@ -253,7 +252,7 @@ public class TaskReportServiceImpl implements TaskReportService {
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
                         flag=false;
-                        Map<String, Object> variables = this.setFlag(identity, "end",userList,procInstId);
+                        Map<String, Object> variables = this.setFlag(identity, "end",null,procInstId);
                         variables.put("nrOfCompletedInstances", 1);
                         variables.put("isSuccess", true);
 

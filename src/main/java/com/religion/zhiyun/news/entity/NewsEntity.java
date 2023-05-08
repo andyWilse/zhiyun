@@ -37,7 +37,7 @@ public class NewsEntity {
     private String newsRef;//链接
 
     @Column(name = "NEWS_TYPE")
-    private String newsType;//新闻分类：01-社会新闻；02-政治新闻,
+    private String newsType;//新闻分类：01-宗教文化；02-政策学习;03-瓯海动态
 
     @Column(name = "NEWS_DOWN")
     private String newsDown;

@@ -100,6 +100,8 @@ public class TaskFilingServiceImpl implements TaskFilingService {
             Task tmp = taskQuery.processInstanceId(processInstanceId).singleResult();
             taskService.complete(tmp.getId(),variables);
 
+            //发起人
+            taskInfoMapper.updateHiActinst(loginNm,processInstanceId);
             //保存任务信息
             tasksEntity.setTaskContent(taskJson);
             tasksEntity.setRelVenuesId(upFillEntity.getVenuesId());

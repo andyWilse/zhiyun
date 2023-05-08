@@ -11,6 +11,7 @@ import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -201,6 +202,7 @@ public class NewsInfoServiceImpl implements NewsInfoService {
         try {
             String newsTitle = (String)map.get("newsTitle");
             String newsRefType = (String)map.get("newsRefType");
+            String newsType = (String)map.get("newsType");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
             Integer page = Integer.valueOf(pages);
@@ -221,8 +223,15 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             }else{
                 newsFor="01";
             }
+            ParamsVo vo=new ParamsVo();
+            vo.setPage(page);
+            vo.setSize(size);
+            vo.setSearchOne(newsTitle);
+            vo.setSearchTwo(newsRefType);
+            vo.setSearchThree(newsFor);
+            vo.setSearchFour(newsType);
             //查询
-            dataList = rmNewsInfoMapper.getNewsByPage(page, size, newsTitle,newsFor,newsRefType);
+            dataList = rmNewsInfoMapper.getNewsByPage(vo);
             if("02".equals(newsRefType)){
                 if(null!=dataList && dataList.size()>0){
                     for(int i=0;i<dataList.size();i++){
@@ -237,7 +246,7 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             }
 
             //总条数
-            total=rmNewsInfoMapper.getTotal(newsTitle,newsFor,newsRefType);
+            total=rmNewsInfoMapper.getTotal(vo);
 
             code=ResultCode.SUCCESS.getCode();
             message="新闻信息查询成功";
@@ -259,6 +268,9 @@ public class NewsInfoServiceImpl implements NewsInfoService {
         long total=0l;
         try {
             String newsTitle = (String)map.get("newsTitle");
+            String newsRefType = (String)map.get("newsRefType");
+            String newsFor = (String)map.get("newsFor");
+            String newsType = (String)map.get("newsType");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
             Integer page = Integer.valueOf(pages);
@@ -268,9 +280,16 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             }
             //获取登录用户
             //查询
-            dataList = rmNewsInfoMapper.getPcNewsPage(page, size, newsTitle);
+            ParamsVo vo=new ParamsVo();
+            vo.setPage(page);
+            vo.setSize(size);
+            vo.setSearchOne(newsTitle);
+            vo.setSearchTwo(newsRefType);
+            vo.setSearchThree(newsFor);
+            vo.setSearchFour(newsType);
+            dataList = rmNewsInfoMapper.getPcNewsPage(vo);
             //总条数
-            total=rmNewsInfoMapper.getPcNewsTotal(newsTitle);
+            total=rmNewsInfoMapper.getPcNewsTotal(vo);
 
             code=ResultCode.SUCCESS.getCode();
             message="新闻信息查询成功";

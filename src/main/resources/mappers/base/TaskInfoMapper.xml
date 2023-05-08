@@ -357,13 +357,13 @@
 
     <select id="getJieGanUsers" resultType="String">
         select
-           distinct g.USER_MOBILE as userMobile
+           g.USER_MOBILE as userMobile
         from rm_sys_user_info  g
-        left join rm_sys_user_info u on g.town=u.town
+        left join rm_sys_user_info u on g.town=u.town and u.IDENTITY='10000006'
         where g.VALID_IND='1'
         and g.IDENTITY ='10000005'
         <if test="relVenuesId!=null and relVenuesId!=''">
-            and u.REL_VENUES_ID = #{relVenuesId}
+            and u.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
         </if>
         order by g.user_id
     </select>
@@ -1073,6 +1073,136 @@
             left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=us.USER_MOBILE
             where me.PROC_INST_ID=#{procInstId}
         ) dis
+    </select>
+
+    <select id="getSubmitEvent" resultType="com.religion.zhiyun.interfaces.entity.SubmitEntity">
+        SELECT
+            ta.TASK_NAME as title,
+            #{login} as reporterPhone,
+            (select us.USER_NM from rm_sys_user_info us where us.USER_MOBILE=#{login}) as reporterName,
+            ve.Latitude as latitude,
+            ve.longitude as longitude,
+            ve.CITY as citycode,
+            ve.AREA as adcode,
+            ve.TOWN as towncode,
+            ve.VENUES_ADDRES as detailedAddress,
+            ta.LAUNCH_TIME as occurTime,
+            ta.FLOW_TYPE as flowType
+        FROM rm_task_info ta
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        where ta.PROC_INST_ID =#{procInstId}
+    </select>
+
+    <select id="getUnHandleTask" resultType="map">
+        SELECT
+        ta.TASK_NAME as taskName,
+        case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+        else ''
+        end as venuesName,
+        case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+        else ''
+        end as venuesAddres,
+        '待完成' as statTask,
+        ta.PROC_INST_ID as procInstId,
+        DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+        case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+        if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+        TASK_CONTENT as taskContent
+        FROM rm_task_info ta
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null and ac.ASSIGNEE_= #{vo.searchTwo}
+        </if>
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where ta.HANDLE_TIME is null
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        order by ta.EMERGENCY_LEVEL ,ta.LAUNCH_TIME desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getUnHandleTaskTotal" resultType="long">
+        select COUNT(ta.TASK_ID)
+        FROM rm_task_info ta
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null and ac.ASSIGNEE_= #{vo.searchTwo}
+        </if>
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where ta.HANDLE_TIME is null
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+    </select>
+
+    <select id="getHandTask" resultType="map">
+        SELECT
+        ta.TASK_NAME as taskName,
+        case when ve.VENUES_NAME is not null then ve.VENUES_NAME
+        else ''
+        end as venuesName,
+        case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES
+        else ''
+        end as venuesAddres,
+        case when ta.HANDLE_TIME is null then '未结束'
+        else '已结束'
+        end as statTask,
+        ta.PROC_INST_ID as procInstId,
+        DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+        case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+        if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+        TASK_CONTENT as taskContent
+        FROM rm_task_info ta
+        left join act_hi_comment  co on  ta.PROC_INST_ID=co.PROC_INST_ID_
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where  (ta.LAUNCH_PERSON=#{vo.searchTwo} or co.USER_ID_=#{vo.searchTwo})
+        <if test="vo.searchThree!=null and vo.searchThree!=''">
+            and ta.HANDLE_TIME is null
+        </if>
+        <if test="vo.searchFour!=null and vo.searchFour!=''">
+            and ta.HANDLE_TIME is not null
+        </if>
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        order by ta.EMERGENCY_LEVEL ,ta.LAUNCH_TIME desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getHandTaskTotal" resultType="long">
+        select COUNT(ta.TASK_ID)
+        FROM rm_task_info ta
+        left join act_hi_comment  co on  ta.PROC_INST_ID=co.PROC_INST_ID_
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where  (ta.LAUNCH_PERSON=#{vo.searchTwo} or co.USER_ID_=#{vo.searchTwo})
+        <if test="vo.searchThree!=null and vo.searchThree!=''">
+            and ta.HANDLE_TIME is null
+        </if>
+        <if test="vo.searchFour!=null and vo.searchFour!=''">
+            and ta.HANDLE_TIME is not null
+        </if>
+        <if test="vo.venues!=null and vo.venues!=''">
+            and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
     </select>
 
 </mapper>

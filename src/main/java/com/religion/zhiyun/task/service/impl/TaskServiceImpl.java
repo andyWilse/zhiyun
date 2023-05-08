@@ -386,6 +386,66 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    public PageResponse getPcTask(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取我的任务";
+        List<Map<String,Object>> taskList = new ArrayList<>();
+        long total=0l;
+        try {
+            ParamsVo vo=new ParamsVo();
+            //分页
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            vo.setPage(page);
+            vo.setSize(size);
+            //条件查询
+            String taskName = (String) map.get("taskName");
+            String venues = (String) map.get("venues");
+            vo.setSearchOne(taskName);
+            vo.setVenues(venues);
+            //用户
+            String login = this.getLogin(token);
+            if(!"admin".equals(login)){
+                vo.setSearchTwo(login);
+            }
+            //类型
+            String type = (String)map.get("type");
+            if("00".equals(type)){//待完成
+                taskList=taskInfoMapper.getUnHandleTask(vo);
+                total=taskInfoMapper.getUnHandleTaskTotal(vo);
+            }else if("01".equals(type)){//经手未结束
+                vo.setSearchThree("01");
+                vo.setSearchFour("");
+                taskList=taskInfoMapper.getHandTask(vo);
+                total=taskInfoMapper.getHandTaskTotal(vo);
+            }else if("02".equals(type)){//经手已结束
+                vo.setSearchThree("");
+                vo.setSearchFour("02");
+                taskList=taskInfoMapper.getHandTask(vo);
+                total=taskInfoMapper.getHandTaskTotal(vo);
+            }
+
+
+
+            //查询
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取我的任务成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取我的任务失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,total,taskList.toArray());
+    }
+
+    @Override
     public PageResponse getTaskDetail(String procInstId,String token) {
         long code= ResultCode.FAILED.getCode();
         String message= "获取任务详情";
