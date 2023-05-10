@@ -125,7 +125,7 @@
         from RM_SYS_USER_INFO ve
         where VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  LOGIN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            AND  USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  IDENTITY = #{vo.searchTwo}
@@ -147,7 +147,7 @@
         from RM_SYS_USER_INFO ve
         where  VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  LOGIN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            AND  USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  IDENTITY = #{vo.searchTwo}
@@ -257,16 +257,41 @@
     </select>
 
     <select id="getAllByVenues" resultType="java.util.Map">
-        select distinct
-            al.USER_NBR as userNbr,
-            al.USER_MOBILE as userMobile,
-            al.USER_NM as userNm
-        from rm_sys_user_info al
-        left join rm_sys_user_info zy on al.area=zy.area and zy.IDENTITY='10000007'
-        where al.VALID_IND='1'
-        <if test="relVenuesId != null and relVenuesId != ''">
-            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
-        </if>
+        (
+            select
+                zy.USER_NBR as userNbr,
+                zy.USER_MOBILE as userMobile,
+                zy.USER_NM as userNm
+            from rm_sys_user_info zy
+            where zy.VALID_IND='1'
+            <if test="relVenuesId != null and relVenuesId != ''">
+                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            </if>
+        ) union all (
+            select distinct
+                al.USER_NBR as userNbr,
+                al.USER_MOBILE as userMobile,
+                al.USER_NM as userNm
+            from rm_sys_user_info al
+            left join rm_sys_user_info zy on al.town=zy.town and zy.IDENTITY='10000007'
+            where al.VALID_IND='1'
+            and al.IDENTITY in ('10000004','10000005')
+            <if test="relVenuesId != null and relVenuesId != ''">
+                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            </if>
+        ) union all (
+            select distinct
+                al.USER_NBR as userNbr,
+                al.USER_MOBILE as userMobile,
+                al.USER_NM as userNm
+            from rm_sys_user_info al
+            left join rm_sys_user_info zy on al.area=zy.area and zy.IDENTITY='10000007'
+            where al.VALID_IND='1'
+            and al.IDENTITY in ('10000002','10000003')
+            <if test="relVenuesId != null and relVenuesId != ''">
+                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            </if>
+        )
     </select>
 
     <select id="getJie" resultType="com.religion.zhiyun.user.entity.SysUserEntity">

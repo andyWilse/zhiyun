@@ -2,6 +2,7 @@ package com.religion.zhiyun.event.controller;
 
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
@@ -127,7 +128,19 @@ public class RmEventInfoController {
     @PostMapping("/addEventByNB")
     @ResponseBody
     public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
-        return rmEventInfoService.addEventByNB(eventJson);
+        log.info("NB烟感器的数据已接收:"+eventJson);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.info("新线程内逻辑执行..." + System.currentTimeMillis());
+                rmEventInfoService.addEventByNB(eventJson);
+                log.info("执行完毕 " + System.currentTimeMillis());
+            }
+        }).start();
+
+        return new OutInterfaceResponse(200,"NB烟感器的数据已接收。");
+
     }
 
     //根据登录人不同，通知不同

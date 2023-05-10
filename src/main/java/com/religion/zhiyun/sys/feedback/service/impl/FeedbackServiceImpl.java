@@ -4,6 +4,7 @@ import com.religion.zhiyun.sys.feedback.dao.FeedbackMapper;
 import com.religion.zhiyun.sys.feedback.entity.FeedbackEntity;
 import com.religion.zhiyun.sys.feedback.entity.FeedbackEnums;
 import com.religion.zhiyun.sys.feedback.service.FeedbackService;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
@@ -65,6 +66,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     public AppResponse axisUpdate(Map<String, Object> map, String token) {
         long code= ResultCode.ERROR.code();
         String message="坐标修改失败！";
+        String latitudeLongitudeOrigin="";
 
         try {
             String feedbackContent = (String) map.get("feedbackContent");
@@ -78,35 +80,36 @@ public class FeedbackServiceImpl implements FeedbackService {
             }
             String mapPicture = (String) map.get("mapPicture");
             String latitudeLongitudeNew = (String) map.get("latitudeLongitudeNew");
-            if(latitudeLongitudeNew.isEmpty()){
+            /*if(latitudeLongitudeNew.isEmpty()){
                 throw new RuntimeException("请输入新的经纬度！");
-            }
+            }*/
             //1.修改场所经纬度
-            String latitudeLongitudeOrigin="";
-            VenuesEntity venue = rmVenuesInfoMapper.getVenueByID(relVenuesId);
-            if(null==venue){
-                throw new RuntimeException("场所信息丢失，请联系管理员！");
-            }
-            String longitude = venue.getLongitude();
-            String latitude = venue.getLatitude();
-            latitudeLongitudeOrigin=longitude+","+latitude;
-            String[] split = latitudeLongitudeNew.split(",");
-            if(split.length>1&& split!=null){
-                if(!split[0].isEmpty()){
-                    longitude=split[0];
-                }else{
-                    throw new RuntimeException("经度数据丢失，请确认数据后重新提交！");
+            if(!GeneTool.isEmpty(latitudeLongitudeNew)){
+                VenuesEntity venue = rmVenuesInfoMapper.getVenueByID(relVenuesId);
+                if(null==venue){
+                    throw new RuntimeException("场所信息丢失，请联系管理员！");
                 }
-                if(!split[1].isEmpty()){
-                    latitude=split[1];
+                String longitude = venue.getLongitude();
+                String latitude = venue.getLatitude();
+                latitudeLongitudeOrigin=longitude+","+latitude;
+                String[] split = latitudeLongitudeNew.split(",");
+                if(split.length>1&& split!=null){
+                    if(!split[0].isEmpty()){
+                        longitude=split[0];
+                    }else{
+                        throw new RuntimeException("经度数据丢失，请确认数据后重新提交！");
+                    }
+                    if(!split[1].isEmpty()){
+                        latitude=split[1];
+                    }else{
+                        throw new RuntimeException("纬度数据丢失，请确认数据后重新提交！");
+                    }
                 }else{
-                    throw new RuntimeException("纬度数据丢失，请确认数据后重新提交！");
+                    throw new RuntimeException("请按照格式（120.630091,27.999600）正确输入经纬度！");
                 }
-            }else{
-                throw new RuntimeException("请按照格式（120.630091,27.999600）正确输入经纬度！");
+                rmVenuesInfoMapper.updateLngLat(longitude,latitude,Integer.parseInt(relVenuesId));
             }
 
-            rmVenuesInfoMapper.updateLngLat(longitude,latitude,Integer.parseInt(relVenuesId));
 
             //2.保存反馈信息
             FeedbackEntity vo=new FeedbackEntity();

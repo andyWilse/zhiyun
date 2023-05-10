@@ -25,6 +25,7 @@ import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.sms.SendMassage;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -838,7 +839,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
      */
     public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String location,String emergencyLevel) {
 
-        String contents="【云监控中心】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
+        String contents="【瓯海宗教智治】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
         String user="";//监管
         String manager="";// 管理
         NotifiedEntity notifiedEntity=new NotifiedEntity();
@@ -862,8 +863,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     userNextList.add(userMobile);//下节点流程处理人员
                     user=user+userMobile+",";
                     //短信通知
-                    //String message = SendMassage.sendSms(contents, userMobile);
-                    String message ="";
+                    String message = SendMassage.sendSms(contents, userMobile);
+                    //String message ="";
                     System.out.println(userMobile+message+"，共发送"+(i+1)+"条短信");
                 }
                 notifiedEntity.setNotifiedUser(user);
@@ -883,8 +884,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 for(int i=0;i<split.length;i++){
                     String managerMobile = split[i];
                     userNextList.add(managerMobile);//下节点流程处理人员
-                    //String message = SendMassage.sendSms(contents, managerMobile);
-                    String message ="";
+                    String message = SendMassage.sendSms(contents, managerMobile);
+                    //String message ="";
                     System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
                 }
             }else{

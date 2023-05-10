@@ -736,6 +736,9 @@
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and co.USER_ID_ = #{vo.searchTwo}
             </if>
+            <if test="vo.searchThree!=null and vo.searchThree!=''">
+                and co.USER_ID_ = #{vo.searchThree}
+            </if>
         )UNION ALL(
             SELECT
                 ta.TASK_NAME as taskName,
@@ -784,6 +787,9 @@
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and co.USER_ID_ = #{vo.searchTwo}
+            </if>
+            <if test="vo.searchThree!=null and vo.searchThree!=''">
+                and co.USER_ID_ = #{vo.searchThree}
             </if>
             )union all
             (select ac.PROC_INST_ID_ from act_hi_actinst ac

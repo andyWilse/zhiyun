@@ -11,7 +11,7 @@ public class sendMSM {
     @Test
     void contextLoads() throws UnsupportedEncodingException {
         SendMassage a=new SendMassage();
-        String contents="【云监控中心】尊敬的消防智慧云用户，请及时妥善处理";
+        String contents="【瓯海宗教智治】尊敬的消防智慧云用户，请及时妥善处理";
         a.sendSms(contents,"18514260203");
 
         //String md5Password = DigestUtils.md5DigestAsHex("1234562013-01-01 12:00:00".getBytes());

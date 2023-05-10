@@ -355,6 +355,10 @@ public class TaskServiceImpl implements TaskService {
             String login = this.getLogin(token);
             //类型
             String type = (String)map.get("type");
+            String stat = (String) map.get("stat");
+            if("00".equals(stat)){
+                vo.setSearchThree(stat);
+            }
             if("admin".equals(login)){
                 taskList =taskInfoMapper.getMyLaunchTask(vo);
                 total =taskInfoMapper.getMyLaunchTaskTotal(vo);

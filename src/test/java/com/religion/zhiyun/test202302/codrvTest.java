@@ -26,7 +26,7 @@ public class codrvTest {
         params.put("templateParams", templateParams);
         String result = client.send(params);*/
 
-            String contents="【云监控中心】"+code+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
+            String contents="【瓯海宗教智治】"+code+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
             SendVerifyCode send=new SendVerifyCode();
             //String s = send.sendVerifyCode(contents, "18514260203");
             //json = JSONObject.parseObject(s);

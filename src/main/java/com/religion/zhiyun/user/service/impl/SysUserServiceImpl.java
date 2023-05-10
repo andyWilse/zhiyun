@@ -63,7 +63,7 @@ public class SysUserServiceImpl implements SysUserService {
         try {
             //参数
             String identity = (String)map.get("identity");
-            String loginNm = (String)map.get("loginNm");
+            String userNm = (String)map.get("userNm");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
             //分页
@@ -76,7 +76,7 @@ public class SysUserServiceImpl implements SysUserService {
             ParamsVo vo = this.getAuth(token);
             vo.setPage(page);
             vo.setSize(size);
-            vo.setSearchOne(loginNm);
+            vo.setSearchOne(userNm);
             vo.setSearchTwo(identity);
             dataList=sysUserMapper.getUsersByPage(vo);
             //转为中文

@@ -464,7 +464,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
      */
     public String addNotifiedParty(String eventType,int relVenuesId,int relEventId,String location) {
 
-        String contents="【云监控中心】您好！您位于"+location+"的设备报修，请您尽快处理！！";
+        String contents="【瓯海宗教智治】您好！您位于"+location+"的设备报修，请您尽快处理！！";
         String user="";//监管
 
         //1.根据场所获取场所三人驻堂\街干的成员

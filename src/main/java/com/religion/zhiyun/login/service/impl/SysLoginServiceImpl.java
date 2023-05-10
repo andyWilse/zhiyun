@@ -184,15 +184,17 @@ public class SysLoginServiceImpl implements SysLoginService {
     @Override
     public AppResponse sendVerifyCode(String username) {
         long code= ResultCode.FAILED.getCode();
-        String message="";
+        String message="验证码发送失败";
         String verifyCode="";
         try {
             //随机生成验证码存入redis
             verifyCode = this.saveCodeRedis(username);
             code=ResultCode.SUCCESS.getCode();
             message="验证码发送成功！";
-        } catch (Exception e) {
-            code=ResultCode.FAILED.getCode();
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
             message="验证码发送失败！";
             e.printStackTrace();
         }
@@ -226,11 +228,11 @@ public class SysLoginServiceImpl implements SysLoginService {
                 id= (int) managerMap.get("id");
             }
             //验证码验证
-            /*AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
+            AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
             //验证码不正确
             if(ResultCode.FAILED.getCode()==appResponse.getCode()){
                 return appResponse;
-            }*/
+            }
             //salt加密
             Hash hash = this.transSalt(username,password,identity);
             String pass=String.valueOf(hash);
@@ -257,10 +259,10 @@ public class SysLoginServiceImpl implements SysLoginService {
      * 随机生成验证码存入redis
      * @param username
      */
-    public String saveCodeRedis (String username){
+    public String saveCodeRedis (String username) throws Exception {
         //随机生成验证码存入redis
         String verifyCode = String.valueOf(new Random().nextInt(999999));
-        String contents="【云监控中心】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
+        String contents="【瓯海宗教智治】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
         //发送
         SendVerifyCode.sendVerifyCode(contents, username);
         //封装参数
