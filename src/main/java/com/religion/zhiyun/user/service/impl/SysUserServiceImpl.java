@@ -291,7 +291,11 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public SysUserEntity queryByTel(String userMobile) {
-        return sysUserMapper.queryByTel(userMobile);
+        List<SysUserEntity> sysUserList = sysUserMapper.queryByTel(userMobile);
+        if(null==sysUserList || sysUserList.size()<1){
+            throw new RuntimeException("用户信息丢失！");
+        }
+        return sysUserList.get(0);
     }
 
     @Override

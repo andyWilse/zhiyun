@@ -45,6 +45,9 @@ public class NewsEntity {
     @Column(name = "NEWS_PICTURES_PATH")
     private String newsPicturesPath;//新闻照片地址
 
+    @Column(name = "NEWS_VIDEOS_PATH")
+    private String newsVideosPath;//新闻视频地址
+
     @Column(name = "CREATOR")
     private String creator;//发布者名称
 
@@ -69,4 +72,8 @@ public class NewsEntity {
 
     private String picturesPathRemove;
     private Object[] fileList;
+
+    private Object[] videoList;
+
+    private String newsOpera;
 }

@@ -8,6 +8,7 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.fileutil.DrawTransparentPic;
+import com.religion.zhiyun.utils.fileutil.VideoUpDown;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.util.StringUtils;
 
 import javax.imageio.ImageIO;
@@ -26,13 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
-public class RmFileServiceImple implements RmFileService {
+public class RmFileServiceImpl implements RmFileService {
 
     @Value("${images.upload.url}")
     private String  pathUpload;
@@ -87,6 +87,80 @@ public class RmFileServiceImple implements RmFileService {
         }
         page.setCode(code);
         return  page;
+    }
+
+    @Override
+    public PageResponse uploadVideo(MultipartFile file, HttpServletRequest request){
+        long code= ResultCode.FAILED.getCode();
+        String message="视频上传失败！";
+        Map<String, Object> resultMap=new HashMap<String, Object>();
+
+        String basePath = request.getScheme() + "://" + request.getServerName()
+                + ":" + request.getServerPort()+"/mimi/upload/video/";
+
+        try {
+            Long time = new Date().getTime();
+
+            String fileName = file.getOriginalFilename();//文件原始名称
+            String suffixName = fileName.substring(fileName.lastIndexOf("."));//从最后一个.开始截取。截取fileName的后缀名
+            String newFileName = time+suffixName; //文件新名称
+            //设置文件存储路径，可以存放在你想要指定的路径里面
+            //String rootPath="D:/mimi/"+File.separator+"upload/video/"; //上传视频存放位置
+            String rootPath=pathUpload+File.separator+"/upload/video/";
+            ;
+            String filePath = rootPath+newFileName;
+            File newFile = new File(filePath);
+            //判断目标文件所在目录是否存在
+            if(!newFile.getParentFile().exists()){
+                //如果目标文件所在的目录不存在，则创建父目录
+                newFile.getParentFile().mkdirs();
+            }
+
+            //将内存中的数据写入磁盘
+            file.transferTo(newFile);
+            //视频上传保存url
+            String videoUrl = basePath + newFileName;
+
+            //视频封面图处理
+            String newImgName = time+".jpg";
+            String framefile = rootPath + newImgName;
+            String imgUrlSave = basePath+newImgName;//图片最终位置路径
+            videoUrl="http://zszjmobile.860577.net:8808/super/mm.mp4";
+            imgUrlSave="http://zszjmobile.860577.net:8808/super/1.jpg";
+            //视频截取封面图
+            String imgUrl= VideoUpDown.getVedioImg(videoUrl, framefile, imgUrlSave);
+
+            //保存文件信息
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setFileName(newFileName);
+            fileEntity.setFilePath(videoUrl);
+            fileEntity.setFileType(ParamCode.FILE_TYPE_03.getCode());
+            fileEntity.setCreateTime(TimeTool.getYmdHms());
+            String nbr = request.getHeader("login-name");
+            fileEntity.setCreator("admin");
+            rmFileMapper.add(fileEntity);
+            String fileId="";
+            if(null!=fileEntity){
+                fileId+=fileEntity.getFileId();
+            }
+
+            resultMap.put("videoLink", videoUrl);
+            resultMap.put("url", "");
+            resultMap.put("fileId", fileId);
+            resultMap.put("isShowPopup", true);
+            resultMap.put("imgUrl", imgUrl);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="视频上传成功！";
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,resultMap);
+
     }
 
     @Override
@@ -220,6 +294,16 @@ public class RmFileServiceImple implements RmFileService {
     public List<Map<String, Object>> getFileUrl(String[] fileIds) {
         return rmFileMapper.getFileUrl(fileIds);
     }
-
+    /**
+     * 获取登录人
+     * @return
+     */
+    public String getLogin(String token){
+        String loginNm = stringRedisTemplate.opsForValue().get(token);
+        if(loginNm.isEmpty()){
+            throw new RuntimeException("登录过期，请重新登陆！");
+        }
+        return loginNm;
+    }
 
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Mapper
@@ -61,5 +62,7 @@ public interface RmNewsInfoMapper {
     List<NewsEntity> getPcNewsPage(@Param("vo") ParamsVo vo);
     /**总条数**/
     long getPcNewsTotal(@Param("vo") ParamsVo vo);
+
+    List<NewsEntity> getNewsContent(@Param("newId") int newId);
 
 }

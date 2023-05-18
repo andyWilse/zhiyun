@@ -51,4 +51,8 @@ public class NewsInfoController {
     public PageResponse getNewsPage(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
         return newsInfoService.getNewsPage(map,token);
     }
+    @GetMapping("/getNewsContent")
+    public PageResponse getNewsContent(@RequestParam String newsId){
+        return newsInfoService.getNewsContent(Integer.parseInt(newsId));
+    }
 }

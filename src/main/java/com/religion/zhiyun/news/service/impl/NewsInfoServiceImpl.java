@@ -7,6 +7,7 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -69,6 +70,13 @@ public class NewsInfoServiceImpl implements NewsInfoService {
                 }
             }
             rmNewsInfoMapper.add(newsEntity);
+            //添加链接
+            if(newsEntity.getNewsOpera().equals("01")){
+                int newsId = newsEntity.getNewsId();
+                newsEntity.setNewsRef("http://localhost:8081/detail?aid="+newsId);
+                rmNewsInfoMapper.update(newsEntity);
+
+            }
             code=ResultCode.SUCCESS.getCode();
             message= "新闻信息保存成功！";
         } catch (RuntimeException r) {
@@ -301,6 +309,45 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             ex.printStackTrace();
         }
         return new PageResponse(code,message,total,dataList.toArray());
+    }
+
+    @Override
+    public PageResponse getNewsContent(int newId) {
+
+        long code= ResultCode.FAILED.getCode();
+        String message="获取新闻内容失败";
+        List<NewsEntity> dataList =new ArrayList<>();
+        try {
+            dataList = rmNewsInfoMapper.getNewsContent(newId);
+
+            if(null!=dataList && dataList.size()>0){
+                NewsEntity enti = dataList.get(0);
+                String newsPicturesPath = enti.getNewsPicturesPath();
+                if(!GeneTool.isEmpty(newsPicturesPath)){
+                    String[] split = newsPicturesPath.split(",");
+                    List<Map<String, Object>> fileUrl = rmFileService.getFileUrl(split);
+                    enti.setFileList(fileUrl.toArray());
+                }
+                String newsVideosPath = enti.getNewsVideosPath();
+                if(!GeneTool.isEmpty(newsVideosPath)){
+                    String[] split = newsVideosPath.split(",");
+                    List<Map<String, Object>> fileUrl = rmFileService.getFileUrl(split);
+                    enti.setVideoList(fileUrl.toArray());
+                }
+                //String replace = enti.getNewsContent().replace("\t", "  ");
+                //enti.setNewsContent(replace);
+
+            }
+            code=ResultCode.SUCCESS.getCode();
+            message="获取新闻内容成功";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception ex){
+            message="获取新闻内容失败";
+            ex.printStackTrace();
+        }
+        return new PageResponse(code,message,dataList.toArray());
     }
 
     /**

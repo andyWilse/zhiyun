@@ -79,13 +79,15 @@ public class SysLoginServiceImpl implements SysLoginService {
         String validInd="";
         try {
             //查询
-            SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
+            List<SysUserEntity>  sysUserList = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
-            if(null!=sysUser && null!=manager && manager.size()>0){
+            int num=sysUserList.size()+manager.size();
+            if(num>1){
                 throw new RuntimeException("用户身份重复，请联系管理员！");
-            }else if(null==sysUser && 0==manager.size()){
+            }else if(num==0){
                 throw new RuntimeException("该手机号未在系统添加使用，请添加后登录！");
-            }else if(null!=sysUser){//01-监管人员
+            }else if(null!=sysUserList && sysUserList.size()>0){//01-监管人员
+                SysUserEntity sysUser=sysUserList.get(0);
                 //username=sysUser.getLoginNm();
                 passWordSys=sysUser.getPasswords();
                 identity=sysUser.getIdentity();
@@ -210,19 +212,21 @@ public class SysLoginServiceImpl implements SysLoginService {
             //查询
             String identity="";
             int id=0;
-            SysUserEntity sysUser = userMapper.queryByTel(username);//监管人员
+            List<SysUserEntity> sysUserList = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//神职人员
             //String loginNm="";
-            if(null!=sysUser && manager.size()>0){
-                message="用户身份重复，请联系管理员！";
+            int num=sysUserList.size()+manager.size();
+            if(num>1){
+                message="用户手机号重复，请联系管理员！";
                 throw new RuntimeException(message);
-            }else if(null==sysUser && 0==manager.size()){
+            }else if(num==0){
                 message="该手机号未在系统添加使用，请添加后登录！";
                 throw new RuntimeException(message);
-            }else if(null!=sysUser){
+            }else if(null!=sysUserList && sysUserList.size()>0){
+                SysUserEntity sysUser =sysUserList.get(0);
                 identity=sysUser.getIdentity();
                 id=sysUser.getUserId();
-            }else if(manager.size()>0){
+            }else if(null!=manager && manager.size()>0){
                 Map<String, Object> managerMap = manager.get(0);
                 identity= (String) managerMap.get("type");
                 id= (int) managerMap.get("id");
@@ -237,9 +241,9 @@ public class SysLoginServiceImpl implements SysLoginService {
             Hash hash = this.transSalt(username,password,identity);
             String pass=String.valueOf(hash);
             //修改密码
-            if(null!=sysUser){//修改监管人员
+            if((null!=sysUserList && sysUserList.size()>0)){//修改监管人员
                 userMapper.updatePassword(pass,password,id,TimeTool.getYmdHms());
-            }else if(null!=manager){//修改神职人员
+            }else if(null!=manager && manager.size()>0){//修改神职人员
                 rmStaffInfoMapper.updatePassword(pass,password,id,username,TimeTool.getYmdHms());
             }
 

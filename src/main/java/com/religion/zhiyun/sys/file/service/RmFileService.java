@@ -5,6 +5,7 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.data.repository.query.Param;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -17,6 +18,13 @@ public interface RmFileService {
 
     //图片上传
     RespPageBean uploadImage(HttpServletRequest request);
+
+    /**
+     * 视频文件上传
+     * @param request
+     * @return
+     */
+    public PageResponse uploadVideo(MultipartFile file, HttpServletRequest request);
 
     //图片展示
     RespPageBean showPicture(String picture);

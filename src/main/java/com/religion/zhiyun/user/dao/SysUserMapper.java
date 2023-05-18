@@ -24,7 +24,7 @@ public interface SysUserMapper {
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
 
     //根据电话查询用户
-    SysUserEntity queryByTel(@Param("userMobile") String userMobile);
+    List<SysUserEntity> queryByTel(@Param("userMobile") String userMobile);
 
     //用户查询
     Map<String,Object> queryBySearch(@Param("search") String search);

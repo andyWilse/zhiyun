@@ -46,11 +46,11 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
         try {
             //获取用户
             String login = this.getLogin(token);
-            SysUserEntity sysUserEntity = sysUserMapper.queryByTel(login);
-            if(null==sysUserEntity){
+            List<SysUserEntity> sysUserList = sysUserMapper.queryByTel(login);
+            if(null==sysUserList || sysUserList.size()<1){
                 throw new RuntimeException("用户信息丢失！");
             }
-            int userId = sysUserEntity.getUserId();
+            int userId = sysUserList.get(0).getUserId();
 
             //获取菜单
             List<MenuEntity> parentMenus =new ArrayList<>();

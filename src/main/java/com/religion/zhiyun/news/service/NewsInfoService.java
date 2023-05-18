@@ -52,4 +52,11 @@ public interface NewsInfoService {
      * @throws IOException
      */
     PageResponse getNewsPage(Map<String, Object> map, String token);
+
+    /**
+     * 新闻链接
+     * @param newId
+     * @return
+     */
+    PageResponse getNewsContent(int newId);
 }

@@ -1,6 +1,7 @@
 package com.religion.zhiyun.sys.file.controller;
 
 import com.google.code.kaptcha.Producer;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.utils.fileutil.DrawTransparentPic;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -8,8 +9,10 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -18,6 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -68,5 +74,26 @@ public class RmFileController {
     public PageResponse getFile(@RequestParam("picPath") String picPath){
         return rmFileService.getFile(picPath);
     }
+
+    /**
+     * 视频文件上传
+     * @param httpServletRequest
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value ="/uploadVideo")
+    public PageResponse uploadVideo(HttpServletRequest httpServletRequest) throws Exception{
+        MultipartFile multipartFile =null;
+        MultipartHttpServletRequest mulReq = (MultipartHttpServletRequest) httpServletRequest;
+        Map<String, MultipartFile> map = mulReq.getFileMap();
+        Set set = map.keySet();
+        Iterator iterator = set.iterator();
+        while (iterator.hasNext()){
+            Object next = iterator.next();
+            multipartFile = map.get(next);
+        }
+        return rmFileService.uploadVideo(multipartFile,httpServletRequest);
+    }
+
 
 }
