@@ -173,5 +173,7 @@ public interface RmVenuesInfoMapper {
     List<Map<String,Object>> getvenuesByType(@Param("Type")String Type);
 
 
+    List<Map<String,Object>> getVenuesScore(@Param("num")Integer num);
+
 
 }

@@ -50,7 +50,7 @@ public interface RmMonitroInfoMapper {
 
     /** 根据场所名字查看监控  **/
     List<Map<String,Object>> getVenuesMonitor(@Param("vo") ParamsVo vo);
-
+    List<Map<String,Object>> getMonitUrl(@Param("venuesName") String venuesName);
     /**
      * 总条数
      * @return

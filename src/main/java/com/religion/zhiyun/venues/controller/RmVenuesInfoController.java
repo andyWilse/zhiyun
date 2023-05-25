@@ -147,4 +147,10 @@ public class RmVenuesInfoController {
         return appResponse;
     }
 
+    //场所综合得分
+    @RequestMapping("/daPing/score")
+    public AppResponse getVenuesScore() {
+        return rmVenuesInfoService.getVenuesScore();
+    }
+
 }

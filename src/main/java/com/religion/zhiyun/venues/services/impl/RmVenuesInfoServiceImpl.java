@@ -827,4 +827,33 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         return new AppResponse(code,message,list.toArray());
     }
 
+    @Override
+    public AppResponse getVenuesScore() {
+        long code=ResultCode.FAILED.getCode();
+        String message="场所综合得分获取失败！";
+        List<Map<String,Object>> list=new ArrayList<>();
+        try {
+            List<Map<String,Object>> listArr=rmVenuesInfoMapper.getVenuesScore(10);
+            if(null!=listArr && listArr.size()>0){
+                for(int i=0;i<listArr.size();i++){
+                    Map<String, Object> map = listArr.get(i);
+                    Map<String, Object> mapNew=new HashMap<>() ;
+                    mapNew.put("name",map.get("venuesName"));
+                    mapNew.put("value",map.get("score"));
+                    list.add(mapNew);
+                }
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="场所综合得分获取成功！";
+        } catch (RuntimeException r){
+            message=r.getMessage();
+        } catch (Exception e) {
+            message="场所综合得分获取失败！";
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message,list.toArray());
+    }
+
 }

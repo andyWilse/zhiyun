@@ -43,6 +43,8 @@ public interface RmMonitroInfoService {
     /** 场所（监控）  **/
     RespPageBean getVenuesMonitor(Integer page, Integer size,String venuesName,String token);
 
+    PageResponse getMoDaPing(String venuesName);
+
     /**
      * 监控设备查询(app监控)
      * @param map
@@ -73,5 +75,7 @@ public interface RmMonitroInfoService {
      * @return
      */
     AppResponse monitRepairHandle(Map<String, Object> map, String token);
+
+
 
 }

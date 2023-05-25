@@ -227,4 +227,17 @@ public class RmEventInfoController {
         return rmEventInfoService.alertEvent(eventId,token);
     }
 
+
+    //折线图（日）
+    @GetMapping("/daPing/day")
+    public AppResponse getDaPingDay(@RequestParam String eventType) {
+        return rmEventInfoService.getEventsDay(-5,eventType);
+    }
+
+    //折线图（总图）
+    @RequestMapping("/daPing/gather")
+    public AppResponse getDaPingGather(@RequestParam String dateType) {
+        return rmEventInfoService.getDaPingGather(-5,dateType);
+    }
+
 }

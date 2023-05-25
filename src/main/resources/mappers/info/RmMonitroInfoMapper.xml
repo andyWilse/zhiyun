@@ -365,4 +365,16 @@
     </select>
 
 
+    <select id="getMonitUrl" resultType="map">
+        select
+            m.MONITOR_URL as monitorUrl
+        from rm_monitor_manage_info m
+        left join  RM_VENUES_INFO ve on ve.VENUES_ID=m.rel_venues_id
+        where m.STATE='01'
+        <if test="venuesName != null and venuesName != ''">
+            AND  ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+        </if>
+    </select>
+
+
 </mapper>

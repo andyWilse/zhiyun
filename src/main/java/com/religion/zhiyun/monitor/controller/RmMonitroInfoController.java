@@ -117,4 +117,10 @@ public class RmMonitroInfoController {
         return rmMonitroInfoService.monitRepairHandle(map,token);
     }
 
+    //监控详情查询（地图）
+    @GetMapping("/getMoDaPing")
+    public PageResponse getMoDaPing(@RequestParam String venuesName) {
+        return rmMonitroInfoService.getMoDaPing(venuesName);
+    }
+
 }

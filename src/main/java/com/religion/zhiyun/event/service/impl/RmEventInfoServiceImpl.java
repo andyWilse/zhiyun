@@ -719,6 +719,30 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     }
 
     @Override
+    public AppResponse getEventsDay(int num, String type) {
+        long code= ResultCode.FAILED.getCode();
+        String message="天统计事件";
+        List<Map<String, Object>> eventsDay=new ArrayList<>();
+        try {
+            //权限参数
+            ParamsVo auth = new ParamsVo();
+            auth.setSearchOne(type);
+            auth.setSize(num);
+            //调用
+            eventsDay = rmEventInfoMapper.getEventsDay(auth);
+            code= ResultCode.SUCCESS.getCode();
+            message="天统计事件成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="天统计事件失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsDay.toArray());
+    }
+
+    @Override
     public AppResponse getEventsWeek(int num, int dayNum,String type,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="周统计事件";
@@ -750,6 +774,37 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         try {
             //权限参数
             ParamsVo auth = this.getAuth(token);
+            //auth.setSearchOne(dateType);
+            auth.setSize(num);
+            //调用
+            if("month".equals(dateType)){
+                eventsGather = rmEventInfoMapper.getEventsMonthGather(auth);
+            }else if("week".equals(dateType)){
+                //int dayNum=7*(num+1)-1;
+                eventsGather = rmEventInfoMapper.getEventsWeekGather(auth);
+            }else if("day".equals(dateType)){
+                eventsGather = rmEventInfoMapper.getEventsDayGather(auth);
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="统计事件汇总获取成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        }catch (Exception e) {
+            message="统计事件汇总获取失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,eventsGather.toArray());
+    }
+
+    @Override
+    public AppResponse getDaPingGather(int num, String dateType) {
+        long code= ResultCode.FAILED.getCode();
+        String message="统计事件汇总获取失败！";
+        List<Map<String, Object>> eventsGather=new ArrayList<>();
+        try {
+            //权限参数
+            ParamsVo auth = new ParamsVo();
             //auth.setSearchOne(dateType);
             auth.setSize(num);
             //调用

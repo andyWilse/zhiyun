@@ -19,6 +19,7 @@ import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
@@ -607,6 +608,29 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             e.printStackTrace();
         }
         return new RespPageBean(code,message,total,list.toArray());
+    }
+
+    @Override
+    public PageResponse getMoDaPing(String venuesName) {
+        long code= ResultCode.FAILED.getCode();
+        String message="场所监控查询";
+        List<Map<String,Object>> list=new ArrayList<>();
+        try {
+            if(GeneTool.isEmpty(venuesName)){
+                throw new RuntimeException("请填写场所名称后，查看监控！");
+            }
+            list=rmMonitroInfoMapper.getMonitUrl(venuesName);
+            code= ResultCode.SUCCESS.getCode();
+            message="场所监控查询成功";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message="场所监控查询失败";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,0l,list.toArray());
+
     }
 
     @Override

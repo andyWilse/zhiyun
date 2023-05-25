@@ -107,5 +107,11 @@ public interface RmVenuesInfoService {
      */
     AppResponse getvenuesByType(String Type);
 
+    /**
+     * 场所综合得分
+     * @return
+     */
+    AppResponse getVenuesScore();
+
 
 }

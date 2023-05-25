@@ -568,4 +568,12 @@
         where REL_VENUES_ID = #{relVenuesId}
     </select>
 
+    <select id="getVenuesScore" resultType="map">
+        SELECT  v.VENUES_NAME as venuesName,
+                FLOOR(rand()*100) as score
+        FROM RM_VENUES_INFO v
+        order by score desc
+        limit 0,#{num}
+    </select>
+
 </mapper>

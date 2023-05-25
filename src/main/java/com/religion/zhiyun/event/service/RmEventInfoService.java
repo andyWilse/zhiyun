@@ -108,7 +108,7 @@ public interface RmEventInfoService {
      * @return
      */
     AppResponse getEventsDay(@Param("num") int num,String type,String token);
-
+    AppResponse getEventsDay(@Param("num") int num,String type);
     /**
      * 周
      * @param num（10周，传-10）
@@ -123,7 +123,7 @@ public interface RmEventInfoService {
      * @return
      */
     AppResponse getEventsGather(int num,String dateType,String token);
-
+    AppResponse getDaPingGather(int num,String dateType);
     /**
      * 动态
      * @param num
