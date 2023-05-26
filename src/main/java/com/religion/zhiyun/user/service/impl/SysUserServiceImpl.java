@@ -10,10 +10,13 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
+import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -51,6 +54,9 @@ public class SysUserServiceImpl implements SysUserService {
     private RmFileService rmFileService;
     @Autowired
     private RmFileMapper rmFileMapper;
+
+    @Autowired
+    private RmVenuesInfoMapper rmVenuesInfoMapper;
 
     @Override
     public PageResponse getUsersByPage(Map<String, Object> map,String token){
@@ -189,7 +195,7 @@ public class SysUserServiceImpl implements SysUserService {
             String userMobileOrigin = sysUserEntity.getUserMobileOrigin();
             if(!userMobile.equals(userMobileOrigin)){
                 //电话不能重复
-                long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
+                long numTel = sysUserMapper.queryTelNum(userMobile);
                 if(numTel>0l){
                     throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
                 }
@@ -197,7 +203,12 @@ public class SysUserServiceImpl implements SysUserService {
             message=this.checkData(sysUserEntity);
             Timestamp timestamp = new Timestamp(new Date().getTime());
             sysUserEntity.setLastModifyTime(timestamp);
-
+            //密码处理
+            String passwords =sysUserEntity.getWeakPwInd();
+            String identity = sysUserEntity.getIdentity();
+            //MD5加密,salt加密
+            String pass = this.passwordSalt(userMobile,passwords,identity);//密码加密
+            sysUserEntity.setPasswords(pass);
             //图片处理
             String picturesPath = sysUserEntity.getUserPhotoUrl();
             String picturesPathRemove = sysUserEntity.getPicturesPathRemove();
@@ -353,6 +364,8 @@ public class SysUserServiceImpl implements SysUserService {
                     String venuesNm = sysUserMapper.getVenuesNm(split);
                     sysUserEntity.setVenuesNm(venuesNm);
                 }
+
+                sysUserEntity.setIdentityInt(Integer.valueOf(sysUserEntity.getIdentity()));
             }else{
                 throw new RuntimeException("用户信息丢失！");
             }
@@ -434,25 +447,34 @@ public class SysUserServiceImpl implements SysUserService {
     public String checkData(SysUserEntity sysUserEntity){
         String message="";
         //查询组员数量
-        String relVenuesId = sysUserEntity.getRelVenuesId();
-        int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
-
+        String relVenuesIds = sysUserEntity.getRelVenuesId();
         String identity = sysUserEntity.getIdentity();
-        //只能两位组员
-        if(RoleEnums.ZU_YUAN.getCode().equals(identity) && yuanNum==2){
-            throw new RuntimeException("该场所内三人驻堂组员数量已满2人！");
-        }
-        //组长添加必须满足3个组员
-        if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
-            if(yuanNum!=2){
-                message="该场所内三人驻堂组员数量不足2人，不能添加组长！";
-                throw new RuntimeException(message);
+        if(!GeneTool.isEmpty(relVenuesIds)){
+            String[] split = relVenuesIds.split(",");
+            for(int i=0;i<split.length;i++){
+                String relVenuesId=split[i];
+                //获取场所名称
+                VenuesEntity ve = rmVenuesInfoMapper.getVenueByID(relVenuesId);
+                String venuesName = ve.getVenuesName();
+                if(RoleEnums.ZU_YUAN.getCode().equals(identity)){
+                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+                    //只能两位组员
+                    if(yuanNum==2){
+                        throw new RuntimeException(venuesName+":该场所内三人驻堂组员数量已满2人！");
+                    }
+                }else if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
+                    //组长添加必须满足3个组员
+                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+                    if(yuanNum!=2){
+                        message=venuesName+":该场所内三人驻堂组员数量不足2人，不能添加组长！";
+                        throw new RuntimeException(message);
+                    }
+                    int zzhNum = sysUserMapper.getZzhNum(relVenuesId);
+                    if(zzhNum==1){
+                        throw new RuntimeException(venuesName+":该场所内已存在三人驻堂组长");
+                    }
+                }
             }
-        }
-
-        int zzhNum = sysUserMapper.getZzhNum(relVenuesId);
-        if(RoleEnums.ZU_ZHANG.getCode().equals(identity) && zzhNum==1){
-            throw new RuntimeException("该场所内已存在三人驻堂组长");
         }
 
         return message;

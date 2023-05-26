@@ -5,6 +5,7 @@ import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.PcResponse;
@@ -13,6 +14,7 @@ import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesManagerEntity;
 import com.religion.zhiyun.venues.services.VenuesManagerService;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
@@ -44,10 +46,20 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
         String message="添加数据！";
 
         try {
+            String managerTypeCd = venuesManagerEntity.getManagerTypeCd();
+            String certTypeCd = venuesManagerEntity.getCertTypeCd();
+            if(GeneTool.isEmpty(certTypeCd)){
+                throw new RuntimeException("证件类型不能为空！");
+            }
             String managerMobile = venuesManagerEntity.getManagerMobile();
+            long numTel = sysUserMapper.queryTelNum(managerMobile);
+            if(numTel>0l){
+                throw new RuntimeException("电话号码："+managerMobile+"已被占用");
+            }
             String passwords = venuesManagerEntity.getPasswords();
-            String pass = this.passwordSalt(managerMobile, passwords, managerMobile);
+            String pass = this.passwordSalt(managerMobile, passwords, managerTypeCd);
             venuesManagerEntity.setPasswords(pass);
+            venuesManagerEntity.setPasswordsOrigin(passwords);
 
             String login = this.getLogin(token);
             venuesManagerEntity.setValidInd("1");//有效
@@ -95,6 +107,29 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
         String message="修改数据！";
 
         try {
+            String managerMobile = venuesManagerEntity.getManagerMobile();
+            String certTypeCd = venuesManagerEntity.getCertTypeCd();
+            if(GeneTool.isEmpty(certTypeCd)){
+                throw new RuntimeException("证件类型不能为空！");
+            }
+
+            //电话号码重复性校验
+            String originMobile = venuesManagerEntity.getOriginMobile();
+            if(!managerMobile.equals(originMobile)){
+                long numTel = sysUserMapper.queryTelNum(managerMobile);
+                if(numTel>0l){
+                    throw new RuntimeException("电话号码："+managerMobile+"已被占用");
+                }
+            }
+
+            //密码重置
+            String managerTypeCd = venuesManagerEntity.getManagerTypeCd();
+            String passwordsOrigin = venuesManagerEntity.getPasswordsOrigin();
+            String pass = this.passwordSalt(managerMobile, passwordsOrigin, managerTypeCd);
+            venuesManagerEntity.setPasswords(pass);
+            venuesManagerEntity.setPasswordsOrigin(passwordsOrigin);
+
+            //修改记录
             String login = this.getLogin(token);
             venuesManagerEntity.setLastModifier(login);
             venuesManagerEntity.setLastModifyTime(new Date());

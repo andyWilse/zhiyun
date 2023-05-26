@@ -30,5 +30,8 @@ public class UpFillEntity {
      private String taskContent;//活动内容,
      private String taskTime;//活动时间,
      private String partNum;//参与人数,
+     private Object[] picturesUrl ;//  图片
+     private String taskPicture;
+
 
 }

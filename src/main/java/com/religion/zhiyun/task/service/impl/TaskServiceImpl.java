@@ -6,10 +6,12 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
+import com.religion.zhiyun.task.entity.UpFillEntity;
 import com.religion.zhiyun.task.service.TaskService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -465,6 +467,19 @@ public class TaskServiceImpl implements TaskService {
             if(null!=taskList && taskList.size()>0){
                 //返回
                 Map<String, Object> taskMap = taskList.get(0);
+                String taskContent= (String) taskMap.get("taskContent");
+                String flowType= (String) taskMap.get("flowType");
+                if(!GeneTool.isEmpty(taskContent) && (flowType.equals("03") || flowType.equals("04"))){
+                    UpFillEntity upFillEntity = JsonUtils.jsonTOBean(taskContent, UpFillEntity.class);
+                    String picturesPath = upFillEntity.getTaskPicture();
+                    if(!GeneTool.isEmpty(picturesPath)){
+                        String[] split = picturesPath.split(",");
+                        List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
+                        upFillEntity.setPicturesUrl(fileUrl.toArray());
+                        String con = JsonUtils.beanToJson(upFillEntity);
+                        taskMap.put("taskContent",con);
+                    }
+                }
 
                 //返回意见
                 List<Map<String, Object>> commentList = new ArrayList<>();

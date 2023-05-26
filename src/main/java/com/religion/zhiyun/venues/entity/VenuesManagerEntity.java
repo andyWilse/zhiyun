@@ -128,5 +128,6 @@ public class VenuesManagerEntity implements Serializable {
 
     private String picturesPathRemove;
     private Object[] fileList;
+    private String originMobile;
 
 }

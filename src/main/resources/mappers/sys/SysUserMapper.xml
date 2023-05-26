@@ -114,9 +114,11 @@
     </select>
 
     <select id="queryTelNum" resultType="java.lang.Long">
-        select
-            COUNT(USER_ID)
-        from RM_SYS_USER_INFO where  USER_MOBILE= #{userMobile}
+
+        select SUM(num) from(
+            (select COUNT(USER_ID) as num from RM_SYS_USER_INFO where  USER_MOBILE= #{userMobile})
+        union all (select COUNT(MANAGER_ID) as num from rm_venues_manager_info where  MANAGER_MOBILE= #{userMobile})
+        ) as total
     </select>
 
     <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
@@ -185,6 +187,7 @@
             CITY = #{city},
             AREA = #{area},
             TOWN = #{town},
+            PASSWORDS = #{passwords},
             LAST_MODIFY_TIME = #{lastModifyTime}
         WHERE USER_ID = #{userId}
     </update>
