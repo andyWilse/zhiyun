@@ -1,9 +1,9 @@
 package com.religion.zhiyun.interfaces.service;
 
-import com.religion.zhiyun.interfaces.entity.AuthorEntity;
-import com.religion.zhiyun.interfaces.entity.DictBizEntity;
-import com.religion.zhiyun.interfaces.entity.SceneEntity;
-import com.religion.zhiyun.interfaces.entity.TokenEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.AuthorEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.DictBizEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.SceneEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.TokenEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 
 public interface MinZonService {

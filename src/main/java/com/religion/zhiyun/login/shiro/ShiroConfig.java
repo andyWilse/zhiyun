@@ -49,10 +49,12 @@ public class ShiroConfig {
 
         filterMap.put("/event/addEvent","anon");  //放行AI预警
         filterMap.put("/event/addEventByNB","anon");  //放行烟感预警
+
         filterMap.put("/event/daPing/day","anon");
         filterMap.put("/event/daPing/gather","anon");
         filterMap.put("/monitor/getMoDaPing","anon");  //放行大屏监控
         filterMap.put("/venues/daPing/score","anon");
+        filterMap.put("/play/sync","anon");
         //filterMap.put("/venues/find","perms[venues:get]");
 
         filterMap.put("/**","auth");    //拦截所有路径, 它自动会跑到 AuthFilter这个自定义的过滤器里面

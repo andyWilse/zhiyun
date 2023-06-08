@@ -1,5 +1,6 @@
-package com.religion.zhiyun.interfaces.entity;
+package com.religion.zhiyun.interfaces.entity.minzong;
 
+import com.religion.zhiyun.interfaces.entity.minzong.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 

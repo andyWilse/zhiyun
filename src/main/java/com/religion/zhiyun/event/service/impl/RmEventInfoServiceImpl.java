@@ -6,6 +6,7 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
@@ -18,6 +19,7 @@ import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -79,6 +81,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     RmVenuesInfoMapper rmVenuesInfoMapper;
 
     @Autowired
+    MonitorBaseMapper monitorBaseMapper;
+
+    @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
@@ -86,45 +91,52 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     public OutInterfaceResponse addEvent(String eventJson) {
         System.out.println("AI告警:"+eventJson);
         //log.info("AI告警:"+eventJson);
-        long code=ResultCode.SUCCESS.getCode();
+        long code=ResultCode.FAILED.getCode();
         String message="AI告警,数据处理！";
 
         EventEntity event=new EventEntity();
-        int relVenuesId=10000004;//需要场所名称，获取场所信息
+        int relVenuesId=0;//需要场所名称，获取场所信息
         try{
             Map<String, Object> map = JsonUtils.jsonToMap(eventJson);
+
+            Double id= (Double) map.get("id");
             String alarmName= (String) map.get("alarmName");//预警类型名称
             String alarmCode= (String) map.get("alarmCode");//预警类型编码
             String alarmLevelName= (String) map.get("alarmLevelName");//程度：（一般）
             String durationTime= (String) map.get("durationTime");
 
             String cameraId= (String) map.get("cameraId");//摄像id
-            String cameraName= (String) map.get("cameraName");//摄像名称
-            String videoUrl= (String) map.get("videoUrl");
-            String timeStamp= (String) map.get("timeStamp");
+            String locationName= (String) map.get("locationName");//位置
 
             String picture= (String) map.get("picture");
             List<String> pictures= (List<String>) map.get("pictures");
             String pictureRec= (String) map.get("pictureRec");
             List<String> pictureRecs= (List<String>) map.get("pictureRecs");//图片地址
 
-            String locationName= (String) map.get("locationName");//位置
+            String videoUrl= (String) map.get("videoUrl");
+            String timeStamp= (String) map.get("timeStamp");
+
             String streetName= (String) map.get("streetName");//街道
             String latLong= (String) map.get("latLong");//经纬度
-
             String infoSource= (String) map.get("infoSource");//信息来源（移动通信）
-            String algoUuid= (String) map.get("algoUuid");
-            String algoName= (String) map.get("algoName");
 
-            String extType= (String) map.get("extType");
-            String extData= (String) map.get("extData");
-            Double id= (Double) map.get("id");
+            //后增
+            String deviceName=(String) map.get("deviceName");//设备名称
+            String deviceId=(String) map.get("deviceId");//设备编码
+            String alarmId=(String) map.get("alarmId");//告警事件ID
+
+            //String cameraName= (String) map.get("cameraName");//摄像名称
+            //String algoUuid= (String) map.get("algoUuid");
+            //String algoName= (String) map.get("algoName");
+            //String extType= (String) map.get("extType");
+            //String extData= (String) map.get("extData");
+
             //获取场所
-            String venuesId= (String) map.get("venuesId");
-            if(null==venuesId || venuesId.isEmpty()){
-
+            String venue = monitorBaseMapper.getVenue(deviceId);
+            if(GeneTool.isEmpty(venue)){
+                throw  new RuntimeException("未找到关联场所，请联系管理员！");
             }else{
-                relVenuesId = Integer.parseInt(venuesId);
+                relVenuesId = Integer.parseInt(venue);
             }
 
             //1.摄像设备处理
@@ -218,7 +230,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             message="AI告警,数据处理失败！";
             e.printStackTrace();
         }
-
 
         return new OutInterfaceResponse(code,message);
 

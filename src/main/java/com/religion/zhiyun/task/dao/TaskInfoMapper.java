@@ -1,6 +1,6 @@
 package com.religion.zhiyun.task.dao;
 
-import com.religion.zhiyun.interfaces.entity.SubmitEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.SubmitEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.venues.entity.ParamsVo;

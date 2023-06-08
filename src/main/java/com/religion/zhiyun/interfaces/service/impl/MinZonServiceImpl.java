@@ -1,6 +1,6 @@
 package com.religion.zhiyun.interfaces.service.impl;
 
-import com.religion.zhiyun.interfaces.entity.*;
+import com.religion.zhiyun.interfaces.entity.minzong.*;
 import com.religion.zhiyun.interfaces.service.MinZonService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
@@ -174,7 +174,7 @@ public class MinZonServiceImpl implements MinZonService {
     }
 
     @Override
-    public SceneEntity getScene(String code,String type) throws Exception {
+    public SceneEntity getScene(String code, String type) throws Exception {
         String sceneUrl=baseUrl+"/open/v1/scene";
         HttpHeader header = this.getHttpHeader();
         HttpParamers params=new HttpParamers(HttpMethod.GET);

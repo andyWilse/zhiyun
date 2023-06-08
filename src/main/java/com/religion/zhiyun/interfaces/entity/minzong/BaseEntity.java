@@ -1,4 +1,4 @@
-package com.religion.zhiyun.interfaces.entity;
+package com.religion.zhiyun.interfaces.entity.minzong;
 
 import lombok.Getter;
 import lombok.Setter;
