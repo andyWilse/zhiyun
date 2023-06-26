@@ -1,7 +1,6 @@
 package com.religion.zhiyun.monitor.dao;
 
-import com.religion.zhiyun.monitor.entity.MoVenuesEntity;
-import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.monitor.entity.MonitorEntity;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,11 +12,11 @@ import java.util.Map;
 @Mapper
 @Repository
 public interface RmMonitroInfoMapper {
-    List<MonitroEntity> allMonitro();
+    List<MonitorEntity> allMonitro();
 
-    void addMonitro(MonitroEntity monitroEntity);
+    void addMonitro(MonitorEntity monitroEntity);
 
-    void updateMonitro(MonitroEntity monitroEntity);
+    void updateMonitro(MonitorEntity monitroEntity);
 
     void deleteMonitro(String monitroId);
 
@@ -28,16 +27,16 @@ public interface RmMonitroInfoMapper {
      */
     List<Map<String,Object>> getAllNum(@Param("vo")ParamsVo vo );
 
-    List<MonitroEntity> getMonitorByState(String state);
+    List<MonitorEntity> getMonitorByState(String state);
 
-    List<MonitroEntity> getMonitorByVenuesId(String state);
+    List<MonitorEntity> getMonitorByVenuesId(String state);
 
     /**
      * 分页查询
      * @param vo
      * @return
      */
-    List<MonitroEntity> getMonitorByPage(@Param("vo") ParamsVo vo);
+    List<MonitorEntity> getMonitorByPage(@Param("vo") ParamsVo vo);
 
     /**
      * 总条数
@@ -84,7 +83,7 @@ public interface RmMonitroInfoMapper {
      * @param accessNumber
      * @return
      */
-    List<MonitroEntity> getMonitorsList( @Param("accessNumber") String accessNumber);
-    List<MonitroEntity> getMonitorInstList( @Param("procInstId") String procInstId);
+    List<MonitorEntity> getMonitorsList(@Param("accessNumber") String accessNumber);
+    List<MonitorEntity> getMonitorInstList(@Param("procInstId") String procInstId);
 
 }

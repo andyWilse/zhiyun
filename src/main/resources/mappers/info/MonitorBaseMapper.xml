@@ -20,5 +20,10 @@
         </if>
     </select>
 
+    <select id="getAllMonitors" resultType="map">
+        select
+        <include refid="monitColumn"/>
+        from RM_MONITOR_BASE_INFO
+    </select>
 
 </mapper>

@@ -23,13 +23,13 @@ import java.util.Random;
 @Service
 public class MinZonServiceImpl implements MinZonService {
 
-    @Value("min.zon.baseUrl")
+    @Value("${min.zon.baseUrl}")
     private String baseUrl;
 
-    @Value("min.zon.appId")
+    @Value("${min.zon.appId}")
     private String appId;
 
-    @Value("min.zon.appSecret")
+    @Value("${min.zon.appSecret}")
     private String appSecret;
 
     @Autowired

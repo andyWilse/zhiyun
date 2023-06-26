@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 @Setter
 @Entity
 @Table(name = "rm_monitor_manage_info")
-public class MonitroEntity implements Serializable {
+public class MonitorEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

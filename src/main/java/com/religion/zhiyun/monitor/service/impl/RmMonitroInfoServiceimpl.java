@@ -3,10 +3,8 @@ package com.religion.zhiyun.monitor.service.impl;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
-import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
-import com.religion.zhiyun.monitor.entity.MoVenuesEntity;
-import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.monitor.entity.MonitorEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
@@ -15,7 +13,6 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
-import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -70,12 +67,12 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     TaskInfoMapper taskInfoMapper;
 
     @Override
-    public List<MonitroEntity> allMonitro() {
+    public List<MonitorEntity> allMonitro() {
         return rmMonitroInfoMapper.allMonitro();
     }
 
     @Override
-    public void addMonitro(MonitroEntity monitroEntity) {
+    public void addMonitro(MonitorEntity monitroEntity) {
         if(!monitroEntity.getMonitorUrl().isEmpty() && !monitroEntity.getAccessNumber().isEmpty()){
             rmMonitroInfoMapper.addMonitro(monitroEntity);
         }
@@ -112,11 +109,11 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             }
 
             //1.更新监控状态
-            List<MonitroEntity> monitorsList = rmMonitroInfoMapper.getMonitorsList(repairAccessNumber);
+            List<MonitorEntity> monitorsList = rmMonitroInfoMapper.getMonitorsList(repairAccessNumber);
             if(null==monitorsList || monitorsList.size()<1){
                 throw new RuntimeException("报修设备"+repairAccessNumber+"填写错误，请确认设备编号后重新填写！");
             }
-            MonitroEntity monitroEntity = monitorsList.get(0);
+            MonitorEntity monitroEntity = monitorsList.get(0);
             monitroEntity.setState("02");
             monitroEntity.setLastModifyTime(TimeTool.getYmdHms());
             monitroEntity.setLastModifier("设备报修");
@@ -409,11 +406,11 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
                         //2.更新监控
                         //1.更新监控状态
                         if("1".equals(handleResults)){
-                            List<MonitroEntity> monitorsList = rmMonitroInfoMapper.getMonitorInstList(procInstId);
+                            List<MonitorEntity> monitorsList = rmMonitroInfoMapper.getMonitorInstList(procInstId);
                             if(null==monitorsList || monitorsList.size()<1){
                                 throw new RuntimeException("报修设备信息丢失，请联系管理员！");
                             }
-                            MonitroEntity monitroEntity = monitorsList.get(0);
+                            MonitorEntity monitroEntity = monitorsList.get(0);
                             monitroEntity.setState("01");
                             monitroEntity.setLastModifyTime(TimeTool.getYmdHms());
                             monitroEntity.setLastModifier("设备报修已解决");
@@ -520,12 +517,12 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
     }
 
     @Override
-    public List<MonitroEntity> getMonitorByState(String state) {
+    public List<MonitorEntity> getMonitorByState(String state) {
         return rmMonitroInfoMapper.getMonitorByState(state);
     }
 
     @Override
-    public List<MonitroEntity> getMonitorByVenuesId(String state) {
+    public List<MonitorEntity> getMonitorByVenuesId(String state) {
         return rmMonitroInfoMapper.getMonitorByVenuesId(state);
     }
 
@@ -534,7 +531,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
         long code= ResultCode.FAILED.getCode();
         String message="监控查询";
 
-        List<MonitroEntity> dataList=new ArrayList<>();
+        List<MonitorEntity> dataList=new ArrayList<>();
         Long total=0l;
         try {
             String accessNumber = (String)map.get("accessNumber");

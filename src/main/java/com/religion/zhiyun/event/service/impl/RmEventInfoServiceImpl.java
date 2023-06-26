@@ -8,7 +8,6 @@ import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
-import com.religion.zhiyun.monitor.entity.MonitroEntity;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
@@ -90,7 +89,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     @Transactional
     public OutInterfaceResponse addEvent(String eventJson) {
         System.out.println("AI告警:"+eventJson);
-        //log.info("AI告警:"+eventJson);
+        log.info("AI告警:"+eventJson);
         long code=ResultCode.FAILED.getCode();
         String message="AI告警,数据处理！";
 
@@ -99,25 +98,23 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         try{
             Map<String, Object> map = JsonUtils.jsonToMap(eventJson);
 
-            Double id= (Double) map.get("id");
-            String alarmName= (String) map.get("alarmName");//预警类型名称
+            Long id= (Long) map.get("id");
+            String taskId= (String) map.get("taskId");//任务id
+            String alarmName= (String) map.get("alarmName");//告警名称
             String alarmCode= (String) map.get("alarmCode");//预警类型编码
-            String alarmLevelName= (String) map.get("alarmLevelName");//程度：（一般）
-            String durationTime= (String) map.get("durationTime");
+            String alarmLevelName= (String) map.get("alarmLevelName");//告警等级 程度：（一般）
+            String algoUuid= (String) map.get("algoUuid");//算法uuid
 
-            String cameraId= (String) map.get("cameraId");//摄像id
-            String locationName= (String) map.get("locationName");//位置
+            String cameraId= (String) map.get("cameraId");//摄像头编号
+            String cameraName= (String) map.get("cameraName");//摄像头名称
+            String locationName= (String) map.get("locationName");//摄像头位置
 
-            String picture= (String) map.get("picture");
-            List<String> pictures= (List<String>) map.get("pictures");
-            String pictureRec= (String) map.get("pictureRec");
-            List<String> pictureRecs= (List<String>) map.get("pictureRecs");//图片地址
-
-            String videoUrl= (String) map.get("videoUrl");
-            String timeStamp= (String) map.get("timeStamp");
-
-            String streetName= (String) map.get("streetName");//街道
-            String latLong= (String) map.get("latLong");//经纬度
+            List<String> pictureRecs= (List<String>) map.get("pictureRecs");//所有带框图⽚地址
+            String timeStamp= (String) map.get("timeStamp");//告警产⽣时间
+            String videoSource= (String) map.get("videoSource");//告警来源
+            String latLong= (String) map.get("latLong");//经纬度信息（不存在则为空串）
+            String extType= (String) map.get("extType");//只有机动⻋超时违停和⼈流检测存在这个字段
+            //String extData= (String) map.get("extData");//只有机动⻋超时违停和⼈流检测存在这个字段
             String infoSource= (String) map.get("infoSource");//信息来源（移动通信）
 
             //后增
@@ -125,11 +122,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String deviceId=(String) map.get("deviceId");//设备编码
             String alarmId=(String) map.get("alarmId");//告警事件ID
 
-            //String cameraName= (String) map.get("cameraName");//摄像名称
-            //String algoUuid= (String) map.get("algoUuid");
-            //String algoName= (String) map.get("algoName");
-            //String extType= (String) map.get("extType");
-            //String extData= (String) map.get("extData");
+            /*String picture= (String) map.get("picture");
+            List<String> pictures= (List<String>) map.get("pictures");
+            String pictureRec= (String) map.get("pictureRec");
+            String videoUrl= (String) map.get("videoUrl");
+            String streetName= (String) map.get("streetName");//街道
+            String algoName= (String) map.get("algoName");*/
+            //String durationTime= (String) map.get("durationTime");
 
             //获取场所
             String venue = monitorBaseMapper.getVenue(deviceId);
@@ -142,7 +141,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //1.摄像设备处理
             if(null!=pictureRecs && !pictureRecs.isEmpty()){
                 event.setEventResource(ParamCode.EVENT_FILE_00.getCode());
-            }else if(null!=videoUrl && !videoUrl.isEmpty() && null!=cameraId && !cameraId.isEmpty()){
+            }/*else if(null!=videoUrl && !videoUrl.isEmpty() && null!=cameraId && !cameraId.isEmpty()){
                 event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
                 //判断数据库是否存在
                 List<MonitroEntity> monitorsList = rmMonitroInfoMapper.getMonitorsList(cameraId);
@@ -162,7 +161,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     rmMonitroInfoMapper.addMonitro(mo);
                 }else{
                     //存在，更新
-                   /* monitorsList.get(0)
+                   *//* monitorsList.get(0)
                     monitors.setMonitorUrl(videoUrl);
                     monitors.setVenuesAddres(locationName);
                     //需要场所名称，获取场所信息
@@ -171,9 +170,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     monitors.setFunctionType(infoSource);
                     monitors.setLastModifier("AI告警");
                     monitors.setLastModifyTime(timeStamp);
-                    rmMonitroInfoMapper.updateMonitro(monitors);*/
+                    rmMonitroInfoMapper.updateMonitro(monitors);*//*
                 }
-            }
+            }*/
 
             //2.预警信息处理
             event.setAccessNumber(cameraId);

@@ -405,6 +405,9 @@
         where VENUES_STATUS='01'
         and ve.LONGITUDE is not null
         and ve.LATITUDE is not null
+        <if test="vo.searchThree!=null and vo.searchThree!=''">
+            AND  ve.TOWN = #{vo.searchThree}
+        </if>
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ve.RELIGIOUS_SECT in
             <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">

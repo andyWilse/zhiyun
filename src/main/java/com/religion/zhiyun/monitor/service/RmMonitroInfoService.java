@@ -1,6 +1,6 @@
 package com.religion.zhiyun.monitor.service;
 
-import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.monitor.entity.MonitorEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface RmMonitroInfoService {
-    List<MonitroEntity> allMonitro();
+    List<MonitorEntity> allMonitro();
 
-    void addMonitro(MonitroEntity monitroEntity);
+    void addMonitro(MonitorEntity monitroEntity);
 
     /**
      * 维修设备保存
@@ -27,8 +27,8 @@ public interface RmMonitroInfoService {
      */
     PageResponse getAllNum(String token);
 
-    List<MonitroEntity> getMonitorByState(String state);
-    List<MonitroEntity> getMonitorByVenuesId(String state);
+    List<MonitorEntity> getMonitorByState(String state);
+    List<MonitorEntity> getMonitorByVenuesId(String state);
 
     /**
      * 分页查询

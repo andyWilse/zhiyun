@@ -1,7 +1,7 @@
 package com.religion.zhiyun.monitor.controller;
 
 
-import com.religion.zhiyun.monitor.entity.MonitroEntity;
+import com.religion.zhiyun.monitor.entity.MonitorEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -21,14 +21,14 @@ public class RmMonitroInfoController {
 
     @RequestMapping("/allMonitor")
     public String allMonitor(){
-        List<MonitroEntity> list = rmMonitroInfoService.allMonitro();
+        List<MonitorEntity> list = rmMonitroInfoService.allMonitro();
         return JsonUtils.objectTOJSONString(list);
     }
 
     @ResponseBody
     @PostMapping("/addMonitro")
     public String addMonitro(@RequestBody String monitroJson){
-        MonitroEntity monitroEntity = JsonUtils.jsonTOBean(monitroJson, MonitroEntity.class);
+        MonitorEntity monitroEntity = JsonUtils.jsonTOBean(monitroJson, MonitorEntity.class);
         rmMonitroInfoService.addMonitro(monitroEntity);
         return "添加成功！";
     }
@@ -56,13 +56,13 @@ public class RmMonitroInfoController {
      */
     @RequestMapping("/getMonitorByState")
     public String getMonitorByState(String state){
-        List<MonitroEntity> list = rmMonitroInfoService.getMonitorByState(state);
+        List<MonitorEntity> list = rmMonitroInfoService.getMonitorByState(state);
         return JsonUtils.objectTOJSONString(list);
     }
 
     @RequestMapping("/getMonitorByVenuesId")//有问题
     public String getMonitorByVenuesId(String state){
-        List<MonitroEntity> list = rmMonitroInfoService.getMonitorByVenuesId(state);
+        List<MonitorEntity> list = rmMonitroInfoService.getMonitorByVenuesId(state);
         return JsonUtils.objectTOJSONString(list);
     }
 

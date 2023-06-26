@@ -581,6 +581,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             String search = (String) map.get("search");
             String religiousSect = (String) map.get("religiousSect");
             String type = (String) map.get("type");
+            String town = (String) map.get("town");
             String[] religiousSectArr ={};
             if(null!=religiousSect && !religiousSect.isEmpty()){
                 religiousSectArr = religiousSect.split(",");
@@ -593,6 +594,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
             auth.setSearchOne(search);
             auth.setSearchTwo(religiousSect);
+            auth.setSearchThree(town);
 
             auth.setSearchArr(religiousSectArr);
             mapVenues = rmVenuesInfoMapper.getMapVenues(auth);

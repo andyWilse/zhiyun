@@ -56,7 +56,7 @@
         delete from rm_monitor_manage_info
         where MONITOR_ID=#{monitorId}
     </delete>
-    <select id="allMonitro" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="allMonitro" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         select
         <include refid="monitroColumn"/>
         from rm_monitor_manage_info
@@ -83,12 +83,12 @@
         </if>
     </select>
 
-    <select id="getMonitorByState" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorByState" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         select <include refid="monitroColumn"/> from rm_monitor_manage_info
         where state=#{state}
         ORDER BY MONITOR_ID DESC
     </select>
-    <select id="getMonitorByVenuesId" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorByVenuesId" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         SELECT <include refid="monitroColumn"/>FROM rm_monitor_manage_info
         INNER JOIN rm_venues_info ON rm_venues_info.VENUES_ID=rm_monitor_manage_info.REL_VENUES_ID
         WHERE state=#{state}
@@ -116,7 +116,7 @@
         </if>
     </select>
 
-    <select id="getMonitorByPage" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorByPage" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         select
             MONITOR_ID as monitorId,
             ACCESS_NUMBER as accessNumber,
@@ -332,7 +332,7 @@
     </select>
 
 
-    <select id="getMonitorsList" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorsList" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         SELECT
             MONITOR_ID as monitorId,
             ACCESS_NUMBER as accessNumber,
@@ -347,7 +347,7 @@
         </if>
     </select>
 
-    <select id="getMonitorInstList" resultType="com.religion.zhiyun.monitor.entity.MonitroEntity">
+    <select id="getMonitorInstList" resultType="com.religion.zhiyun.monitor.entity.MonitorEntity">
         SELECT distinct
             mo.MONITOR_ID as monitorId,
             mo.ACCESS_NUMBER as accessNumber,
