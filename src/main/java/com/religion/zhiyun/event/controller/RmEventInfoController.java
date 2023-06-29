@@ -23,11 +23,40 @@ public class RmEventInfoController {
     @Autowired
     private RmEventInfoService rmEventInfoService;
 
-    @PostMapping("/addEvent")
+    /**
+     * 接受NB烟感器的数据转化为实体
+     * @param eventJson
+     * @return
+     */
+  /*  @PostMapping("/addEventByNB")
+    @ResponseBody
+    public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
+        log.info("NB烟感器的数据已接收:"+eventJson);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.info("新线程内逻辑执行..." + System.currentTimeMillis());
+                rmEventInfoService.addEventByNB(eventJson);
+                log.info("执行完毕 " + System.currentTimeMillis());
+            }
+        }).start();
+
+        return new OutInterfaceResponse(200,"NB烟感器的数据已接收。");
+
+    }*/
+
+  /*  @PostMapping("/addAiEvent")
+    @ResponseBody
+    public AppResponse addAiEvent(@RequestBody String eventJson) {
+        return rmEventInfoService.addAiEvent(eventJson);
+    }
+*/
+  /*  @PostMapping("/addEvent")
     @ResponseBody
     public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addEvent(eventJson);
-    }
+    }*/
 
    /* @PostMapping("/pushAiEvent")
     @ResponseBody
@@ -117,30 +146,6 @@ public class RmEventInfoController {
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
         return rmEventInfoService.getEventsByPage(page,size,accessNumber,token);
-    }
-
-
-    /**
-     * 接受NB烟感器的数据转化为实体
-     * @param eventJson
-     * @return
-     */
-    @PostMapping("/addEventByNB")
-    @ResponseBody
-    public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
-        log.info("NB烟感器的数据已接收:"+eventJson);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.info("新线程内逻辑执行..." + System.currentTimeMillis());
-                rmEventInfoService.addEventByNB(eventJson);
-                log.info("执行完毕 " + System.currentTimeMillis());
-            }
-        }).start();
-
-        return new OutInterfaceResponse(200,"NB烟感器的数据已接收。");
-
     }
 
     //根据登录人不同，通知不同

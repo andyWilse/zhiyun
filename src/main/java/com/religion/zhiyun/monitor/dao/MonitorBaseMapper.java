@@ -1,6 +1,8 @@
 package com.religion.zhiyun.monitor.dao;
 
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,4 +17,7 @@ public interface MonitorBaseMapper {
 
     /**获取所有监控**/
     List<Map<String,Object>> getAllMonitors();
+
+    /**获取所有监控**/
+    List<Map<String,Object>> queryMonitors(@Param("vo") ParamsVo vo);
 }

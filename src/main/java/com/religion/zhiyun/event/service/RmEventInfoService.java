@@ -11,6 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public interface RmEventInfoService {
+    /**
+     * 接收ai预警
+     * @param eventJson
+     * @return
+     */
+    AppResponse addAiEvent(String eventJson);
 
     OutInterfaceResponse addEvent(String eventEntity);
 

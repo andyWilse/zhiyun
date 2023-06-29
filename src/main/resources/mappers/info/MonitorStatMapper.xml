@@ -7,12 +7,16 @@
         (
         CODE,
         MSG,
-        DATA
+        DATA,
+        CHANNEL_ID,
+        RECORD_DATE
         )
         values(
         #{code},
         #{msg},
-        #{data}
+        #{data},
+        #{channelId},
+        #{recordDate}
         )
     </insert>
 

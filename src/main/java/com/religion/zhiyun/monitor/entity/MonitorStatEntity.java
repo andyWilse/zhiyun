@@ -29,4 +29,10 @@ public class MonitorStatEntity implements Serializable {
     @Column(name = "DATA")
     private String data;//结果
 
+    @Column(name = "CHANNEL_ID")
+    private String channelId;//通道编码
+
+    @Column(name = "RECORD_DATE")
+    private String recordDate;//记录时间
+
 }

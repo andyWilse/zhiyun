@@ -47,7 +47,7 @@ public class SendVerifyCode {
             Double doubleValueObject = new Double(result);
             int code=doubleValueObject.intValue();
             //解码
-            String decode = URLDecoder.decode(description, "UTF-8");
+            String decode = URLDecoder.decode(description, "GB2312");
             if(0==code){
                 message="发送验证码成功";
             }else{

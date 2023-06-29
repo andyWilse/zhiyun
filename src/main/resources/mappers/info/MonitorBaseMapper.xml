@@ -4,17 +4,17 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.religion.zhiyun.monitor.dao.MonitorBaseMapper">
     <sql id="monitColumn">
-        MONIT_ID as monitId,
-        CHANNEL_ID as channelId,
-        CHANNEL_NAME as channelName,
-        CASE MONIT_STATE WHEN '01' THEN '在线'  ELSE '报修' END as monitState,
-        REL_VENUES_ID as relVenuesId
+        mo.MONIT_ID as monitId,
+        mo.CHANNEL_ID as channelId,
+        mo.CHANNEL_NAME as channelName,
+        CASE mo.MONIT_STATE WHEN '01' THEN '在线'  ELSE '报修' END as monitState,
+        mo.REL_VENUES_ID as relVenuesId
     </sql>
 
     <select id="getVenue" resultType="string">
         select
             REL_VENUES_ID as relVenuesId
-        from RM_MONITOR_BASE_INFO
+        from RM_MONITOR_BASE_INFO mo
         <if test="channelId != null and channelId != ''">
             where  CHANNEL_ID = #{channelId}
         </if>
@@ -23,7 +23,27 @@
     <select id="getAllMonitors" resultType="map">
         select
         <include refid="monitColumn"/>
-        from RM_MONITOR_BASE_INFO
+        from RM_MONITOR_BASE_INFO mo
+    </select>
+
+    <select id="queryMonitors" resultType="map">
+        select
+        <include refid="monitColumn"/>
+        from RM_MONITOR_BASE_INFO mo
+        left join RM_VENUES_INFO ve on mo.REL_VENUES_ID=ve.VENUES_ID
+        where 1=1
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            AND ve.VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            AND  ve.VENUES_ID = #{vo.venues}
+        </if>
     </select>
 
 </mapper>

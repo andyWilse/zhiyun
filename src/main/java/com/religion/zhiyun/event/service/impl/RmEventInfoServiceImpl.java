@@ -2,6 +2,7 @@ package com.religion.zhiyun.event.service.impl;
 
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
+import com.religion.zhiyun.event.entity.AiEntity;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
@@ -84,6 +85,63 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Override
+    public AppResponse addAiEvent(String eventJson) {
+        System.out.println("AI告警:"+eventJson);
+        log.info("AI告警:"+eventJson);
+        long code=ResultCode.FAILED.getCode();
+        String message="AI告警,数据处理失败！";
+
+        try {
+            EventEntity event=new EventEntity();
+            AiEntity aiEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
+            String eventPlaceName = aiEntity.getEventPlaceName();//地址
+            String deviceId = aiEntity.getDeviceId();//监控通道编码
+
+            event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
+            //2.预警信息处理
+            event.setAccessNumber(deviceId);
+            event.setWarnTime(TimeTool.getYmdHms());
+            //预警类型
+            //event.setEventType(ParamCode.EVENT_TYPE_01.getCode());
+            //程度
+            event.setEventLevel("1");//普通
+            String emergencyLevel="02";
+
+            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            //获取场所id
+            String venue = monitorBaseMapper.getVenue(deviceId);
+            int relVenuesId = Integer.parseInt(venue);
+            event.setRelVenuesId(relVenuesId);
+            event.setHandleResults("0");
+            event.setHandleTime(TimeTool.getYmdHms());
+            event.setDeviceCode(deviceId);//设备编码
+            //查询数据库数据是否存在，不存在新增；存在，修改
+            EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
+            int eventId =0;
+            if(null!=eventEntity){
+                //更新
+                eventId = eventEntity.getEventId();
+                //rmEventInfoMapper.updateEvent(eventEntity);
+            }else{
+                //新增
+                rmEventInfoMapper.addEvent(event);
+                eventId = event.getEventId();
+                //3.短信通知，新增通知任务发起
+                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,eventPlaceName,emergencyLevel);
+            }
+
+            code=ResultCode.FAILED.getCode();
+            message="AI告警,数据处理成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+    }
 
     @Override
     @Transactional
