@@ -28,7 +28,7 @@ public class RmEventInfoController {
      * @param eventJson
      * @return
      */
-  /*  @PostMapping("/addEventByNB")
+    @PostMapping("/addEventByNB")
     @ResponseBody
     public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
         log.info("NB烟感器的数据已接收:"+eventJson);
@@ -44,7 +44,7 @@ public class RmEventInfoController {
 
         return new OutInterfaceResponse(200,"NB烟感器的数据已接收。");
 
-    }*/
+    }
 
   /*  @PostMapping("/addAiEvent")
     @ResponseBody

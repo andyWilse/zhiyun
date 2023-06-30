@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.religion.zhiyun.monitor.dao.MonitorSmokerMapper">
+
+    <select id="getVenue" resultType="string">
+        select
+            REL_VENUES_ID as relVenuesId
+        from RM_MONITOR_SMOKER_INFO smo
+        <if test="smokerId != null and smokerId != ''">
+            where  SMOKER_ID = #{smokerId}
+        </if>
+    </select>
+
+</mapper>

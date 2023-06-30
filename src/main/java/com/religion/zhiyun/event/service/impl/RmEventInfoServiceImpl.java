@@ -8,9 +8,12 @@ import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
+import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
+import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
@@ -85,6 +88,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    SysBaseMapper sysBaseMapper;
+
+    @Autowired
+    MonitorSmokerMapper monitorSmokerMapper;
 
     @Override
     public AppResponse addAiEvent(String eventJson) {
@@ -523,51 +532,58 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String deviceName = (String) map.get("deviceName");//设备名字
             String at = (String) map.get("at");//事发时间
             String type = (String) map.get("type");//事件类型   "alarm": 告警；"clean": 告警清除；"reset": 设备重置；"dat": 数据上报
+            String streamId=(String) map.get("streamId");
             String data = (String) map.get("data");//消息内容
             double level = (double) map.get("level");//消息  事件=0,次要=1,重要=2,严重=3, 不填为严重。（火警默认严重)
             String sValue = String.valueOf((int)level);
-            if("3".equals(sValue)){
+            if("2".equals(sValue)){
                 emergencyLevel="01";
             }
             String location = (String) map.get("location");//位置
             String rawData = (String) map.get("rawData");//原始数据
+
             //获取场所
-            String venuesId= (String) map.get("venuesId");
-            if(null==venuesId || venuesId.isEmpty()){
-
-            }else{
+            String venuesId = monitorSmokerMapper.getVenue(deviceId);
+            if(!GeneTool.isEmpty(venuesId)){
                 relVenuesId = Integer.parseInt(venuesId);
+            }else{
+                throw new RuntimeException("该场所烟感信息未配置，请联系烟感系统处理！");
             }
+
             //数据封装
-            EventEntity event = new EventEntity();
-            event.setDeviceName(deviceName);
-            event.setAccessNumber(deviceId);
-            event.setDeviceType(deviceType);
-            event.setWarnTime(TimeTool.getYmdHms());
-            event.setEventType(ParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
-            event.setRawData(rawData);
-            event.setEventData(data);
-            event.setEventLevel("3");//火警默认严重
-            event.setLocation(location);
-            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
-            event.setHandleResults("待处理");
-            event.setRelVenuesId(relVenuesId);
-            event.setDeviceCode(deviceId);
+            if("alarm".equals(type) && "fireAlarm".equals(streamId) && "2".equals(level)){
+                EventEntity event = new EventEntity();
+                event.setDeviceName(deviceName);
+                event.setAccessNumber(deviceId);
+                event.setDeviceType(deviceType);
+                event.setWarnTime(TimeTool.getYmdHms());
+                event.setEventType(ParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
+                event.setRawData(rawData);
+                event.setEventData(data);
+                event.setEventLevel("2");//火警默认严重
+                event.setLocation(location);
+                event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+                event.setHandleResults("待处理");
+                event.setRelVenuesId(relVenuesId);
+                event.setDeviceCode(streamId);
 
-            Timestamp timestamp = new Timestamp(new Date().getTime());
-            String format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
-            event.setHandleTime(format);
-            event.setEventResource(ParamCode.EVENT_FILE_02.getCode());//烟感
-            //1.事件数据保存
-            rmEventInfoMapper.addEventByNB(event);
+                Timestamp timestamp = new Timestamp(new Date().getTime());
+                String format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
+                event.setHandleTime(format);
+                event.setEventResource(ParamCode.EVENT_FILE_02.getCode());//烟感
+                //1.事件数据保存
+                rmEventInfoMapper.addEventByNB(event);
 
-            //2.发送短信通知
+                //2.发送短信通知:火警全员通知
+                this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),location,emergencyLevel);
 
-            //火警全员通知
-            this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),location,emergencyLevel);
+                code=ResultCode.SUCCESS.getCode();
+                message="NB烟感器数据处理成功！";
+            }else{
+                code=ResultCode.SUCCESS.getCode();
+                message="type:"+type+";streamId"+streamId+";level:"+level+"：NB烟感器数据不处理！";
+            }
 
-            code=ResultCode.SUCCESS.getCode();
-            message="NB烟感器数据处理成功！";
         }catch (RuntimeException e){
             message=e.getMessage();
             e.printStackTrace();
@@ -986,9 +1002,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     userNextList.add(userMobile);//下节点流程处理人员
                     user=user+userMobile+",";
                     //短信通知
-                    String message = SendMassage.sendSms(contents, userMobile);
-                    //String message ="";
-                    System.out.println(userMobile+message+"，共发送"+(i+1)+"条短信");
+                    //短信开关
+                    String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
+                    if("1".equals(openFlag)){//1-开；0-关
+                        String message = SendMassage.sendSms(contents, userMobile);
+                        //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
+                    }
                 }
                 notifiedEntity.setNotifiedUser(user);
             }else{
@@ -1007,10 +1026,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 for(int i=0;i<split.length;i++){
                     String managerMobile = split[i];
                     userNextList.add(managerMobile);//下节点流程处理人员
-                    String message = SendMassage.sendSms(contents, managerMobile);
-                    //String message ="";
-                    System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
+                    //短信开关
+                    String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
+                    if("1".equals(openFlag)){//1-开；0-关
+                        String message = SendMassage.sendSms(contents, managerMobile);
+                        //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
+                    }
                 }
+                System.out.println(contents+":共发送"+(split.length)+"条短信");
+
             }else{
                 throw new RuntimeException("该场所内尚未添加职员信息！");
             }
