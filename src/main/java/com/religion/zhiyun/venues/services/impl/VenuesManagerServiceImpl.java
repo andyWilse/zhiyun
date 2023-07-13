@@ -57,6 +57,9 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
                 throw new RuntimeException("电话号码："+managerMobile+"已被占用");
             }
             String passwords = venuesManagerEntity.getPasswords();
+            if(null==passwords){
+                passwords="Zhi!@#123";
+            }
             String pass = this.passwordSalt(managerMobile, passwords, managerTypeCd);
             venuesManagerEntity.setPasswords(pass);
             venuesManagerEntity.setPasswordsOrigin(passwords);
@@ -125,6 +128,9 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
             //密码重置
             String managerTypeCd = venuesManagerEntity.getManagerTypeCd();
             String passwordsOrigin = venuesManagerEntity.getPasswordsOrigin();
+            if(null==passwordsOrigin){
+                passwordsOrigin="Zhi!@#123";
+            }
             String pass = this.passwordSalt(managerMobile, passwordsOrigin, managerTypeCd);
             venuesManagerEntity.setPasswords(pass);
             venuesManagerEntity.setPasswordsOrigin(passwordsOrigin);

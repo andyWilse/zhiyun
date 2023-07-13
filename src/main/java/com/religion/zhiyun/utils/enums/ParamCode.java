@@ -29,10 +29,14 @@ public enum ParamCode {
     EVENT_LEVEL_0("0", "事件"),
     EVENT_LEVEL_1("1", "次要"),
     //事件类型
-    EVENT_TYPE_01("01", "火灾预警"),
+    /*EVENT_TYPE_01("01", "火灾预警"),
     EVENT_TYPE_02("02", "人脸识别"),
     EVENT_TYPE_03("03", "任务预警"),
-    EVENT_TYPE_04("04", "人流聚集"),
+    EVENT_TYPE_04("04", "人流聚集"),*/
+    EVENT_TYPE_01("01", "明火"),
+    EVENT_TYPE_02("02", "超限"),
+    EVENT_TYPE_03("03", "重点"),
+    EVENT_TYPE_04("04", "集聚"),
     EVENT_TYPE_05("05", "设备报修"),
     //事件状态
     EVENT_STATE_01("01", "已处理"),

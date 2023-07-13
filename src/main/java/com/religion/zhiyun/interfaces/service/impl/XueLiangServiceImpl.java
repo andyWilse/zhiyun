@@ -208,7 +208,6 @@ public class XueLiangServiceImpl implements XueLiangService {
                             if(!GeneTool.isEmpty(data)){
                                 PlayEntity da= JsonUtils.jsonTOBean(data, PlayEntity.class);
                                 flv=da.getFlv();
-                                //flv=da.getHttpsFlv();
                                 msg =da.getMsg();
                                 if(GeneTool.isEmpty(flv)){
                                     msg ="视频地址为空！";

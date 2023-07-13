@@ -153,10 +153,10 @@
             e.RESPONSIBLE_PERSON as responsiblePerson,
             EVENT_TYPE as eventType,
             case EVENT_TYPE
-            when '01' then '火灾预警'
-            when '02' then '人脸识别'
-            when '03' then '任务预警'
-            when '04' then '人流聚集'
+            when '01' then '明火'
+            when '02' then '超限'
+            when '03' then '重点'
+            when '04' then '集聚'
             else '其他'
             end as eventTypeNm,
             EVENT_STATE as eventState,
@@ -221,10 +221,10 @@
                 ve.VENUES_NAME as venuesName,
                 e.RESPONSIBLE_PERSON as responsiblePerson,
                 case e.EVENT_TYPE
-                    when '01' then '火灾预警'
-                    when '02' then '人脸识别'
-                    when '03' then '任务预警'
-                    when '04' then '人流聚集'
+                    when '01' then '明火'
+                    when '02' then '超限'
+                    when '03' then '重点'
+                    when '04' then '集聚'
                     else '其他'
                 end as eventType,
                 e.EVENT_DATA as eventData,
@@ -321,10 +321,10 @@
             EVENT_ID as eventId,
             ev.WARN_TIME as warnTime,
             case ev.EVENT_TYPE
-                when '01' then '火灾预警'
-                when '02' then '人脸识别'
-                when '03' then '任务预警'
-                when '04' then '人流聚集'
+                when '01' then '明火'
+                when '02' then '超限'
+                when '03' then '重点'
+                when '04' then '集聚'
             end as eventType,
             ve.VENUES_NAME as venuesName,
             ve.PICTURES_PATH as  path,
@@ -390,10 +390,10 @@
                 ev.RESPONSIBLE_PERSON as responsiblePerson,
                 EVENT_TYPE as eventType,
                 case EVENT_TYPE
-                when '01' then '火灾预警'
-                when '02' then '人脸识别'
-                when '03' then '任务预警'
-                when '04' then '人流聚集'
+                when '01' then '明火'
+                when '02' then '超限'
+                when '03' then '重点'
+                when '04' then '集聚'
                 else '其他'
                 end as eventTypeNm,
                 EVENT_STATE as eventState,
@@ -787,10 +787,10 @@
             DATE_FORMAT(ev.WARN_TIME ,'%Y-%m-%d %H:%i:%s') as warnTime,
             DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
             case ev.EVENT_TYPE
-            when '01' then '火灾预警'
-            when '02' then '人脸识别'
-            when '03' then '任务预警'
-            when '04' then '人流聚集'
+            when '01' then '明火'
+            when '02' then '超限'
+            when '03' then '重点'
+            when '04' then '集聚'
             end as eventTypeCn,
             ev.EVENT_TYPE as eventType,
             case ev.EVENT_STATE
@@ -856,10 +856,10 @@
             ve.VENUES_NAME as venuesName,
             ev.EVENT_TYPE as eventType,
             case ev.EVENT_TYPE
-            when '01' then '火灾预警'
-            when '02' then '人脸识别'
-            when '03' then '任务预警'
-            when '04' then '人流聚集'
+            when '01' then '明火'
+            when '02' then '超限'
+            when '03' then '重点'
+            when '04' then '集聚'
             else '其他'
             end as eventTypeNm,
             ve.PICTURES_PATH as venuesPicture,

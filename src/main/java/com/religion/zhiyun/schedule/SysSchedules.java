@@ -25,4 +25,11 @@ public class SysSchedules {
         schedulesService.CommonAutoFill();
     }
 
+    /** 每天9点执行一次 **/
+    @Scheduled(cron ="0 0 22 1 1/3  ?")
+    public void testFill() {
+        //普通通知
+        System.out.println("测试------");
+    }
+
 }

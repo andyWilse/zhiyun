@@ -37,7 +37,7 @@ public class BuildPic {
         //venuesEntity.setPicturesPath(picturesPath);
 
 
-        String filePath="http://zszjmobile.860577.net:8808/super/20230317/2023031720575011.png";
+        String filePath="http://zszjfile.860577.net:8808/super/20230317/2023031720575011.png";
         String[] supers = filePath.split("super");
         String aSuper = supers[1];
         System.out.println(aSuper);
