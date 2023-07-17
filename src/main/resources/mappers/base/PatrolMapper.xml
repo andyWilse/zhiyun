@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.patrol.dao.PatrolMapper">
+    <sql id="venuesColumn">
+        PATROL_ID as  patrolId,
+        REL_VENUES_ID as relVenuesId,
+        SCORE as score,
+        SAFE_PASS as safePass,
+        SAFE_UNCHECK as safeUncheck,
+        SAFE_DANGE as safeDange,
+        ELEC_PASS as elecPass,
+        ELEC_UNCHECK as elecUncheck,
+        ELEC_DANGE as elecDange,
+        DEVICE_PASS as devicePass,
+        DEVICE_UNCHECK as deviceUncheck,
+        DEVICE_DANGE as deviceDange,
+        EVACUATE_PASS as evacuatePass,
+        EVACUATE_UNCHECK as evacuateUncheck,
+        EVACUATE_DANGE as evacuateDange,
+        EDUCATE_PASS as educatePass,
+        EDUCATE_UNCHECK as educateUncheck,
+        EDUCATE_DANGE as educateDange,
+        YEAR_PASS as yearPass,
+        YEAR_UNCHECK as yearUncheck,
+        YEAR_DANGE as yearDange,
+        MONTH_PASS as monthPass,
+        MONTH_UNCHECK as monthUncheck,
+        MONTH_DANGE as monthDange,
+        CURRENT_PASS as currentPass,
+        CURRENT_UNCHECK as currentUncheck,
+        CURRENT_DANGE as currentDange,
+        BUILD as build
+
+    </sql>
+
+    <select id="getOuHai" resultType="map">
+        select
+        ROUND(safe/total*100,0) as fireSafe,
+        ROUND(self/total*100,0) as selfCheck,
+        ROUND(build/total*100,0) as buildSafe
+        from (select
+        COUNT(patrol_id) AS total,
+        SUM(CASE WHEN (safe_pass = 5 and elec_pass = 5 and device_pass = 5 and evacuate_pass = 2  and educate_pass = 3) THEN 1 ELSE 0 END) AS safe,
+        SUM(CASE WHEN (year_pass = 5 and month_pass = 9 ) THEN 1 ELSE 0 END) AS self,
+        SUM(CASE WHEN current_pass = 50 THEN 1 ELSE 0 END) AS current,
+        SUM(CASE WHEN build = 1 THEN 1 ELSE 0 END) AS build
+        from rm_patrol_info i)tr
+    </select>
+
+    <select id="getTown" resultType="map">
+        select
+        case when TOWN_NAME is null then '瓯海市区' else TOWN_NAME end as town,
+        ROUND(safe/total *100,0) as fireSafe,
+        ROUND(self/total *100,0) as selfCheck,
+        ROUND(build/total *100,0) as buildSafe
+        from
+        (select
+        ve.TOWN,
+        ton.TOWN_NAME,
+        COUNT(patrol_id) AS total,
+        SUM(CASE WHEN (safe_pass = 5 and elec_pass = 5 and device_pass = 5 and evacuate_pass = 2  and educate_pass = 3) THEN 1 ELSE 0 END) AS safe,
+        SUM(CASE WHEN (year_pass = 5 and month_pass = 9 ) THEN 1 ELSE 0 END) AS self,
+        SUM(CASE WHEN current_pass = 50 THEN 1 ELSE 0 END) AS current,
+        SUM(CASE WHEN build = 1 THEN 1 ELSE 0 END) AS build
+        from rm_patrol_info pa
+        left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+        left join  rm_town_info ton on ton.TOWN_CODE=ve.town
+        group by ve.TOWN,ton.TOWN_NAME)pa order by pa.TOWN
+    </select>
+
+    <select id="getTownCode" resultType="map">
+        select ton.TOWN_CODE as codes ,ton.TOWN_NAME as townNm from rm_town_info ton order by ton.TOWN_CODE
+    </select>
+
+    <select id="getFireDetail" resultType="map">
+        SELECT
+            venuesName,
+            case sta when '02' then '已完成' else '未完成' end as stat,
+            case sta when '02' then '' else '已提醒' end as remind
+        FROM (
+            select ve.VENUES_NAME as venuesName,
+            CASE WHEN (safe_pass = 5 and elec_pass = 5 and device_pass = 5 and evacuate_pass = 2  and educate_pass = 3) THEN '02' ELSE '03' END as sta
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            where ve.town=#{town}
+        ) fir
+        <if test="stat != null and stat != ''">
+            where fir.sta=#{stat}
+        </if>
+    </select>
+
+    <select id="getSelfDetail" resultType="map">
+        SELECT
+            venuesName,
+            case sta when '02' then '已完成' else '未完成' end as stat,
+            case sta when '02' then '' else '已提醒' end as remind
+            FROM (
+            select ve.VENUES_NAME as venuesName,
+            CASE WHEN (year_pass = 5 and month_pass = 9) THEN '02' ELSE '03' END as sta
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            where ve.town=#{town}
+        ) fir
+        <if test="stat != null and stat != ''">
+            where fir.sta=#{stat}
+        </if>
+    </select>
+
+    <select id="getBuildDetail" resultType="map">
+        SELECT
+        venuesName,
+        case sta when '02' then '已完成' else '未完成' end as stat,
+        case sta when '02' then '' else '已提醒' end as remind
+        FROM (
+            select ve.VENUES_NAME as venuesName,
+            CASE WHEN (build = 1 ) THEN '02' ELSE '03' END as sta
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            where ve.town=#{town}
+        ) fir
+        <if test="stat != null and stat != ''">
+            where fir.sta=#{stat}
+        </if>
+    </select>
+
+    <select id="getTownSummary" resultType="map">
+        select
+            ton.TOWN_CODE as townCode,
+            ton.TOWN_NAME as townName,
+            count(pa.PATROL_ID) as venuesTotal,
+            SUM(CASE WHEN (safe_pass = 5 and elec_pass = 5 and device_pass = 5 and evacuate_pass = 2  and educate_pass = 3) THEN 1 ELSE 0 END) AS safe,
+            SUM(CASE WHEN (year_pass = 5 and month_pass = 9 ) THEN 1 ELSE 0 END) AS self,
+            SUM(CASE WHEN build = 1 THEN 1 ELSE 0 END) AS build,
+            SUM(CASE WHEN (SAFE_DANGE !=0 or ELEC_DANGE !=0 or DEVICE_DANGE !=0 or EVACUATE_DANGE !=0 or EDUCATE_DANGE !=0 or YEAR_DANGE !=0 or MONTH_DANGE!=0 ) THEN 1 ELSE 0 END) AS dange
+        from rm_patrol_info pa
+        left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+        left join  rm_town_info ton on ton.TOWN_CODE=ve.town
+        where ve.TOWN=#{town}
+
+    </select>
+
+    <select id="getVenuesScore" resultType="map">
+        select
+            ve.VENUES_ID as venuesId,
+            ve.VENUES_NAME as venuesName,
+            pa.SCORE as score
+        from rm_patrol_info pa
+        left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+        <if test="venuesId != null and venuesId != ''">
+            where ve.VENUES_ID=#{venuesId}
+        </if>
+        <if test="venuesName != null and venuesName != ''">
+            where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+        </if>
+    </select>
+
+    <select id="getTotalItem" resultType="map">
+        (
+            select
+                1 as indexs,
+                "消防安全" as assort,
+                20 as total,
+                (SAFE_PASS+ELEC_PASS+DEVICE_PASS+EVACUATE_PASS+EDUCATE_PASS) as pass,
+                (SAFE_UNCHECK + ELEC_UNCHECK + DEVICE_UNCHECK + EVACUATE_UNCHECK+EDUCATE_UNCHECK ) as uncheck,
+                (SAFE_DANGE+ELEC_DANGE+DEVICE_DANGE+EVACUATE_DANGE+EDUCATE_DANGE) as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                2 as indexs,
+                "自查巡查" as assort,
+                14 as total,
+                (YEAR_PASS+MONTH_PASS+CURRENT_PASS) as pass,
+                (YEAR_UNCHECK+MONTH_UNCHECK+CURRENT_UNCHECK) as uncheck,
+                (YEAR_DANGE+MONTH_DANGE+CURRENT_DANGE) as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                3 as indexs,
+                "建筑安全" as assort,
+                BUILD as total,
+                0 as pass,
+                0 as uncheck,
+                0 as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )
+    </select>
+
+    <select id="getFireItem" resultType="map">
+        (
+            select
+                1 as indexs,
+                "消防安全管理" as assort,
+                5 as total,
+                SAFE_PASS as pass,
+                SAFE_UNCHECK as uncheck,
+                SAFE_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                2 as indexs,
+                "用火用电管理" as assort,
+                5 as total,
+                ELEC_PASS as pass,
+                ELEC_UNCHECK as uncheck,
+                ELEC_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                3 as indexs,
+                "消防设施管理" as assort,
+                5 as total,
+                DEVICE_PASS as pass,
+                DEVICE_UNCHECK as uncheck,
+                DEVICE_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                4 as indexs,
+                "安全疏散管理" as assort,
+                2 as total,
+                EVACUATE_PASS as pass,
+                EVACUATE_UNCHECK as uncheck,
+                EVACUATE_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                5 as indexs,
+                "宣传教育概况" as assort,
+                3 as total,
+                EDUCATE_PASS as pass,
+                EDUCATE_UNCHECK as uncheck,
+                EDUCATE_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )
+    </select>
+
+    <select id="getSelfItem" resultType="map">
+        (
+            select
+                1 as indexs,
+                "年度" as assort,
+                5 as total,
+                YEAR_PASS as pass,
+                YEAR_UNCHECK as uncheck,
+                YEAR_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )union all(
+            select
+                2 as indexs,
+                "月度" as assort,
+                9 as total,
+                MONTH_PASS as pass,
+                MONTH_UNCHECK as uncheck,
+                MONTH_DANGE as warn
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            <if test="venuesId != null and venuesId != ''">
+                where ve.VENUES_ID=#{venuesId}
+            </if>
+            <if test="venuesName != null and venuesName != ''">
+                where ve.VENUES_NAME LIKE concat('%',#{venuesName},'%')
+            </if>
+        )
+
+    </select>
+
+    <select id="getVenuesRank" resultType="map">
+        select
+            @rownum := @rownum +1 as rank,
+            ve.VENUES_ID as venuesId,
+            ve.VENUES_NAME as venuesName,
+            ton.TOWN_CODE as townCode,
+            ton.TOWN_NAME as townName,
+            pa.SCORE as score
+        from rm_patrol_info pa
+        join (select @rownum :=0 ) nums
+        left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+        left join  rm_town_info ton on ton.TOWN_CODE=ve.town
+        <if test="type != null and type == '01'">
+            order by pa.SCORE desc
+        </if>
+        <if test="type != null and type == '02'">
+            order by pa.SCORE asc
+        </if>
+        limit 10
+    </select>
+
+    <select id="getTownRank" resultType="map">
+        select
+            @rownum := @rownum +1 as rank,
+            ra.townCode,
+            ra.townName,
+            ROUND(ra.score/ra.tot,2) as scoreEvg
+        from (
+            select
+                ton.TOWN_CODE as townCode,
+                ton.TOWN_NAME as townName,
+                count(pa.REL_VENUES_ID) as tot,
+                SUM(pa.SCORE) as score
+            from rm_patrol_info pa
+            left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
+            left join  rm_town_info ton on ton.TOWN_CODE=ve.town
+            group by ton.TOWN_CODE,ton.TOWN_NAME
+        ) ra
+        join (select @rownum :=0 ) nums
+        order by ROUND(ra.score/ra.tot,2)  desc
+    </select>
+</mapper>
