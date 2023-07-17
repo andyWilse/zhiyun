@@ -13,7 +13,7 @@ import java.util.Map;
 public interface MonitorBaseMapper {
 
     /**根据设备编号获取场所**/
-    String getVenue(String channelId);
+    String getVenue(@Param("channelId") String channelId);
 
     /**获取所有监控**/
     List<Map<String,Object>> getAllMonitors();

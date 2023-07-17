@@ -113,7 +113,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setAccessNumber(deviceId);
             event.setWarnTime(TimeTool.getYmdHms());
             //预警类型
-            //event.setEventType(ParamCode.EVENT_TYPE_01.getCode());
+            event.setEventType(aiEntity.getAreaCode());
             //程度
             event.setEventLevel("1");//普通
             String emergencyLevel="02";
@@ -165,7 +165,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         try{
             Map<String, Object> map = JsonUtils.jsonToMap(eventJson);
 
-            Long id= (Long) map.get("id");
+            //Long id= (Long) map.get("id");
             String taskId= (String) map.get("taskId");//任务id
             String alarmName= (String) map.get("alarmName");//告警名称
             String alarmCode= (String) map.get("alarmCode");//预警类型编码
@@ -245,17 +245,19 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setAccessNumber(cameraId);
             event.setWarnTime(timeStamp);
             //预警类型
-            if("TRASH_ACCUMULATION".equals(alarmCode)){
+            /*if("TRASH_ACCUMULATION".equals(alarmCode)){
                 event.setEventType(ParamCode.EVENT_TYPE_02.getCode());
-            }else if("CROWDS_GATHER".equals(alarmCode)){//人群聚集
+            }else if("CROWDS_GATHER".equals(alarmCode)){
                 event.setEventType(ParamCode.EVENT_TYPE_04.getCode());
-            }else if("FIR".equals(alarmCode)){//人群聚集
+            }else if("FIR".equals(alarmCode)){
                 event.setEventType(ParamCode.EVENT_TYPE_01.getCode());
             }else{
                 event.setEventType(ParamCode.EVENT_TYPE_03.getCode());
-            }
+            }*/
+
+            event.setEventType(alarmCode);
             //程度
-            String emergencyLevel="02";
+            /*String emergencyLevel="02";
             if("轻微".equals(alarmLevelName)){
                 event.setEventLevel("1");//普通
             }else if("一般".equals(alarmLevelName)){
@@ -265,7 +267,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 emergencyLevel="01";
             }else{
                 event.setEventLevel("0");//普通
-            }
+            }*/
+            event.setEventLevel(alarmLevelName);//普通
             event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             event.setRelVenuesId(relVenuesId);
             event.setHandleResults("0");
@@ -284,7 +287,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 rmEventInfoMapper.addEvent(event);
                 eventId = event.getEventId();
                 //3.短信通知，新增通知任务发起
-                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,locationName,emergencyLevel);
+                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,locationName,alarmLevelName);
             }
 
             code=ResultCode.SUCCESS.getCode();
@@ -520,8 +523,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         long code=ResultCode.FAILED.getCode();
         String message="接受NB烟感器的数据:"+eventEntity;
         System.out.println(message);
-        int relVenuesId=10000001;//后期提供
-        String emergencyLevel="02";
+        int relVenuesId=0;//后期提供
+        String emergencyLevel="";
         try {
 
             //数据解析
@@ -551,7 +554,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
 
             //数据封装
-            if("alarm".equals(type) && "fireAlarm".equals(streamId) && "2".equals(level)){
+            if("alarm".equals(type) && "fireAlarm".equals(streamId) && 2==level){
                 EventEntity event = new EventEntity();
                 event.setDeviceName(deviceName);
                 event.setAccessNumber(deviceId);
@@ -560,7 +563,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 event.setEventType(ParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
                 event.setRawData(rawData);
                 event.setEventData(data);
-                event.setEventLevel("2");//火警默认严重
+                event.setEventLevel("01");//火警默认严重
                 event.setLocation(location);
                 event.setEventState(ParamCode.EVENT_STATE_03.getCode());
                 event.setHandleResults("待处理");

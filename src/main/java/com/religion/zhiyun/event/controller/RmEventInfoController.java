@@ -46,23 +46,22 @@ public class RmEventInfoController {
 
     }
 
-  /*  @PostMapping("/addAiEvent")
+    /*@PostMapping("/addAiEvent")
     @ResponseBody
     public AppResponse addAiEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addAiEvent(eventJson);
-    }
-*/
+    }*/
   /*  @PostMapping("/addEvent")
     @ResponseBody
     public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addEvent(eventJson);
     }*/
 
-   /* @PostMapping("/pushAiEvent")
+    @PostMapping("/pushAiEvent")
     @ResponseBody
     public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addEvent(eventJson);
-    }*/
+    }
 
     @PostMapping("/updateEvent")
     public void updateEvent(@RequestBody String eventJson) {
