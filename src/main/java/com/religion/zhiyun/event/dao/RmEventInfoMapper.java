@@ -228,4 +228,18 @@ public interface RmEventInfoMapper {
      */
     String getEventState(@Param("eventId") String eventId);
 
+    /**
+     * 预警数据查询（大屏）
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> getEventDp(@Param("vo") ParamsVo vo);
+    Long getEventDpTotal(@Param("vo") ParamsVo vo);
+
+    /**
+     * 预警汇总（大屏）
+     * @return
+     */
+    List<Map<String,Object>> getAiSummary();
+    List<Map<String,Object>> getAiTownSummary();
 }

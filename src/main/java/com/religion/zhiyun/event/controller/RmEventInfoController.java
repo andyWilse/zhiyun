@@ -244,4 +244,19 @@ public class RmEventInfoController {
         return rmEventInfoService.getDaPingGather(-5,dateType);
     }
 
+    @GetMapping("/getEventDp")
+    public AppResponse getEventDp(@RequestParam Map<String, Object> map) {
+        return rmEventInfoService.getEventDp(map);
+    }
+
+    @GetMapping("/getAiSummary")
+    public AppResponse getAiSummary() {
+        return rmEventInfoService.getAiSummary();
+    }
+
+    @GetMapping("/getAiTownSummary")
+    public AppResponse getAiTownSummary() {
+        return rmEventInfoService.getAiTownSummary();
+    }
+
 }

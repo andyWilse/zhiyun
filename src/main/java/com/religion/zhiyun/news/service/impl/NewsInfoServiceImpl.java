@@ -10,17 +10,13 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.PageResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.TokenUtils;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -69,14 +65,16 @@ public class NewsInfoServiceImpl implements NewsInfoService {
                     newsEntity.setNewsPicturesPath(picturesPath);
                 }
             }
-            rmNewsInfoMapper.add(newsEntity);
             //添加链接
-            if(newsEntity.getNewsOpera().equals("01")){
-                int newsId = newsEntity.getNewsId();
-                newsEntity.setNewsRef("http://localhost:8081/detail?aid="+newsId);
-                rmNewsInfoMapper.update(newsEntity);
-
+            if(newsEntity.getNewsOpera().equals("01")){//手动编辑新闻
+                newsEntity.setNewsRef(newsEntity.getNewsOpera());
+                String newsTitle = newsEntity.getNewsTitle();
+                if(GeneTool.isEmpty(newsTitle)){
+                    throw new RuntimeException("手动添加新闻时，新闻标题不能为空！");
+                }
             }
+
+            rmNewsInfoMapper.add(newsEntity);
             code=ResultCode.SUCCESS.getCode();
             message= "新闻信息保存成功！";
         } catch (RuntimeException r) {
@@ -138,18 +136,18 @@ public class NewsInfoServiceImpl implements NewsInfoService {
         String message= "获取新闻信息！";
         List<NewsEntity> list=new ArrayList<>();
         try {
-            NewsEntity news = rmNewsInfoMapper.getNewsById(newsId);
-            if(null==news){
+            list=rmNewsInfoMapper.getNewsContent(newsId);
+            if(null==list && list.size()<1){
                 throw new RuntimeException("新闻信息丢失，请联系管理员！");
             }
             //图片处理
-            String newsPicturesPath = news.getNewsPicturesPath();
+            NewsEntity newsEntity = list.get(0);
+            String newsPicturesPath = newsEntity.getNewsPicturesPath();
             //清理图片
             if(null!=newsPicturesPath && !newsPicturesPath.isEmpty()){
                 List<Map<String, Object>> fileUrl = rmFileService.getFileUrl(newsPicturesPath.split(","));
-                news.setFileList(fileUrl.toArray());
+                newsEntity.setFileList(fileUrl.toArray());
             }
-            list.add(news);
 
             code=ResultCode.SUCCESS.getCode();
             message= "新闻信息修改成功！";
@@ -337,6 +335,8 @@ public class NewsInfoServiceImpl implements NewsInfoService {
                 //String replace = enti.getNewsContent().replace("\t", "  ");
                 //enti.setNewsContent(replace);
 
+            }else{
+                throw new RuntimeException("新闻内容丢失，请联系管理员!");
             }
             code=ResultCode.SUCCESS.getCode();
             message="获取新闻内容成功";

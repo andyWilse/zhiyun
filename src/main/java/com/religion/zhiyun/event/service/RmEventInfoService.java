@@ -146,4 +146,15 @@ public interface RmEventInfoService {
      */
     AppResponse alertEvent(String eventId,String token);
 
+    /**
+     * 获取预警信息（大屏）
+     * @param map
+     * @return
+     */
+    AppResponse getEventDp(Map<String, Object> map);
+
+    /**瓯海区预警事件汇总**/
+    AppResponse getAiSummary();
+    /**各镇、街预警事件汇总**/
+    AppResponse getAiTownSummary();
 }

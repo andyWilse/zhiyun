@@ -855,13 +855,7 @@
             DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
             ve.VENUES_NAME as venuesName,
             ev.EVENT_TYPE as eventType,
-            case ev.EVENT_TYPE
-            when '01' then '明火'
-            when '02' then '超限'
-            when '03' then '重点'
-            when '04' then '集聚'
-            else '其他'
-            end as eventTypeNm,
+            (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1004' and DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
             ve.PICTURES_PATH as venuesPicture,
             ev.EVENT_STATE as eventState,
             DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
@@ -869,8 +863,8 @@
             else fzz.MANAGER_CN_NM
             end as handlePerson,
             case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId,
-            ta.EMERGENCY_LEVEL as emergencyLevel,
-            case ta.EMERGENCY_LEVEL
+            ev.EVENT_LEVEL as emergencyLevel,
+            case ev.EVENT_LEVEL
             when '01' then '紧急'
             when '02' then '普通'
             else ta.EMERGENCY_LEVEL
@@ -982,5 +976,94 @@
         from rm_event_info
         where EVENT_ID=#{eventId}
     </select>
+
+    <select id="getEventDp" resultType="map">
+        select
+            ev.EVENT_ID as eventId,
+            ve.VENUES_ID as venuesId,
+            ve.VENUES_NAME as venuesNm,
+            DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
+            ev.EVENT_TYPE as eventType,
+            (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1004' and DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
+            DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
+            case when us.USER_NM is not null then us.USER_NM
+            else fzz.MANAGER_CN_NM
+            end as handlePerson,
+            ev.EVENT_STATE as eventState,
+            (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1005' and DICT_CD=ev.EVENT_STATE) as eventStateNm,
+            ev.EVENT_LEVEL as emergencyLevel,
+            case ev.EVENT_LEVEL
+            when '01' then '紧急'
+            when '02' then '普通'
+            else ta.EMERGENCY_LEVEL
+            end as emergencyLevelCn,
+            ve.town as townCode,
+            (select t.TOWN_NAME from rm_town_info t where t.TOWN_CODE=ve.town) as townNm,
+            ev.PICTURES_PATH as eventPicture,
+            ev.ACCESS_NUMBER as channelId,
+            case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
+        where ev.EVENT_TYPE!='05'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ev.EVENT_TYPE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ve.town = #{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  ve.VENUES_ID = #{vo.searchThree}
+        </if>
+        ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getEventDpTotal" resultType="long">
+        select
+        count(ev.EVENT_ID)
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        where ev.EVENT_TYPE!='05'
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and ev.EVENT_TYPE=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and ve.town = #{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  ve.VENUES_ID = #{vo.searchThree}
+        </if>
+    </select>
+
+    <select id="getAiSummary" resultType="map">
+        select
+            ve.AREA as areaCode,
+            '瓯海区' as areaNm,
+            SUM(CASE WHEN ev.EVENT_TYPE = '01' THEN 1 ELSE 0 END) AS fire,
+            SUM(CASE WHEN ev.EVENT_TYPE = '02' THEN 1 ELSE 0 END) AS limits,
+            SUM(CASE WHEN ev.EVENT_TYPE = '03' THEN 1 ELSE 0 END) AS important,
+            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve  on ev.REL_VENUES_ID=ve.VENUES_ID
+    </select>
+
+    <select id="getAiTownSummary" resultType="map">
+        select
+            ve.TOWN as townCode,
+            tt.TOWN_NAME as townNm,
+            SUM(CASE WHEN ev.EVENT_TYPE = '01' THEN 1 ELSE 0 END) AS fire,
+            SUM(CASE WHEN ev.EVENT_TYPE = '02' THEN 1 ELSE 0 END) AS limits,
+            SUM(CASE WHEN ev.EVENT_TYPE = '03' THEN 1 ELSE 0 END) AS important,
+            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect
+        from rm_town_info tt
+        left join RM_VENUES_INFO ve on tt.TOWN_CODE=ve.TOWN
+        left join RM_EVENT_INFO ev  on ev.REL_VENUES_ID=ve.VENUES_ID
+        group by ve.TOWN,tt.TOWN_NAME
+        order by ve.TOWN
+    </select>
+
 
 </mapper>

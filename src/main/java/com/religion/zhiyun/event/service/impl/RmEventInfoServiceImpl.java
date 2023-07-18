@@ -995,28 +995,27 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //根据场所获取场所三人驻堂、街干
             userList = sysUserMapper.getJgByVenues(relVenuesId);
         }
-        //火警、人员
-        if("01".equals(eventType) || "01".equals(eventType)){
-            //1.监管人员处理
-            if(null!=userList && userList.size()>0){
-                for(int i=0;i<userList.size();i++){
-                    Map<String, Object> map = userList.get(i);
-                    String userMobile = (String) map.get("userMobile");
-                    userNextList.add(userMobile);//下节点流程处理人员
-                    user=user+userMobile+",";
-                    //短信通知
-                    //短信开关
-                    String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
-                    if("1".equals(openFlag)){//1-开；0-关
-                        String message = SendMassage.sendSms(contents, userMobile);
-                        //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
-                    }
+
+        //1.监管人员处理
+        if(null!=userList && userList.size()>0){
+            for(int i=0;i<userList.size();i++){
+                Map<String, Object> map = userList.get(i);
+                String userMobile = (String) map.get("userMobile");
+                userNextList.add(userMobile);//下节点流程处理人员
+                user=user+userMobile+",";
+                //短信通知
+                //短信开关
+                String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
+                if("1".equals(openFlag)){//1-开；0-关
+                    String message = SendMassage.sendSms(contents, userMobile);
+                    //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
                 }
-                notifiedEntity.setNotifiedUser(user);
-            }else{
-                throw new RuntimeException("该场所内尚未添加相关成员！");
             }
+            notifiedEntity.setNotifiedUser(user);
+        }else{
+            throw new RuntimeException("该场所内尚未添加相关成员！");
         }
+
 
         //2.教职人员
         if("01".equals(eventType)){
@@ -1060,15 +1059,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(String.valueOf(relVenuesId));
         String venuesName = venueByID.getVenuesName();
         if("01".equals(eventType)){
-            tnm=venuesName+"-火灾预警";
+            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_01.getMessage();
         }else if("02".equals(eventType)){
-            tnm=venuesName+"-人脸识别";
+            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_02.getMessage();
         }else if("03".equals(eventType)){
-            tnm=venuesName+"-任务预警";
+            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_03.getMessage();
         }else if("04".equals(eventType)){
-            tnm=venuesName+"-人流聚集";
+            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_04.getMessage();
         }else if("05".equals(eventType)){
-            tnm=venuesName+"-设备报修";
+            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_05.getMessage();
         }
         taskEntity.setTaskName(tnm);
         taskEntity.setTaskContent("预警事件,请处理");
@@ -1490,7 +1489,98 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
      */
     public void update(String eventId,String eventState,String notifiedFlag){
 
+    }
 
+
+    @Override
+    public AppResponse getEventDp(Map<String, Object> map) {
+        long code= ResultCode.FAILED.getCode();
+        String message="大屏获取预警信息失败！";
+        List<Map<String, Object>> mapList=null;
+        Long total=0L;
+        try {
+            ParamsVo auth = new ParamsVo();
+            //分页
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            auth.setSize(size);
+            auth.setPage(page);
+            //预警类型（all-全部；01-；02-；03-；04-）
+            String eventType = (String)map.get("eventType");
+            if("all".equals(eventType)){
+                eventType="";
+            }
+            String town = (String)map.get("town");
+            String venues = (String)map.get("venues");
+            auth.setSearchOne(eventType);
+            auth.setSearchTwo(town);
+            auth.setSearchThree(venues);
+
+            mapList = rmEventInfoMapper.getEventDp(auth);
+            if(null!=mapList && mapList.size()>0){
+                for(int i=0;i<mapList.size();i++){
+                    Map<String, Object> maps = mapList.get(i);
+                    String eventPicture = (String) maps.get("eventPicture");
+                    if(null!=eventPicture && !eventPicture.isEmpty()){
+                        List<Map<String, Object>> path = rmFileMapper.getPath(eventPicture.split(","));
+                        if(null!=path && path.size()>0){
+                            maps.put("eventPicture",path.get(0).get("filePath"));
+                        }
+                    }
+                }
+            }
+            total=rmEventInfoMapper.getEventDpTotal(auth);
+
+            code=ResultCode.SUCCESS.getCode();
+            message="大屏获取预警信息成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,total,mapList.toArray());
+    }
+
+    @Override
+    public AppResponse getAiSummary() {
+        long code= ResultCode.FAILED.getCode();
+        String message="大屏获取瓯海区预警事件汇总失败！";
+        List<Map<String, Object>> mapList=new ArrayList<>();
+        try {
+            mapList = rmEventInfoMapper.getAiSummary();
+            code=ResultCode.SUCCESS.getCode();
+            message="大屏获取瓯海区预警事件汇总成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,mapList.toArray());
+    }
+
+    @Override
+    public AppResponse getAiTownSummary() {
+        long code= ResultCode.FAILED.getCode();
+        String message="大屏获取街镇预警事件汇总失败！";
+        List<Map<String, Object>> mapList=new ArrayList<>();
+        try {
+            mapList = rmEventInfoMapper.getAiTownSummary();
+            code=ResultCode.SUCCESS.getCode();
+            message="大屏获取街镇预警事件汇总成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,mapList.toArray());
     }
 
 }

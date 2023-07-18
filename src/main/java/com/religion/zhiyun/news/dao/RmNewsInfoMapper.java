@@ -30,7 +30,7 @@ public interface RmNewsInfoMapper {
      * 根据id获取
      * @param newsId
      */
-    NewsEntity getNewsById(int newsId);
+   // NewsEntity getNewsById(int newsId);
 
     /**
      * 新闻上下架
