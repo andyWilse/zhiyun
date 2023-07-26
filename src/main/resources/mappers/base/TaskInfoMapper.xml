@@ -131,12 +131,13 @@
             '' as message,
             GROUP_CONCAT(if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ ))) as taskNm,
             ti.PROC_INST_ID_ as id,
-            ti.START_TIME_
+            '' as ti.START_TIME_
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
         where ti.END_TIME_ is null
         and ti.PROC_INST_ID_=#{procInstId})
+        group by ti.PROC_INST_ID_,ti.END_TIME_
         ) task
         where task.taskNm is not null
         order by START_TIME_ asc

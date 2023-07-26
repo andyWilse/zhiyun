@@ -149,7 +149,7 @@
             ) men
             left join RM_SYS_MENU_INFO f on  men.menu=f.MENU_ID and RESOURCE_TYPE='04' and f.VALID_IND='1'
             join RM_SYS_MENU_INFO s on s.MENU_ID=f.PARENT_ID and s.VALID_IND='1')
-        ) ch group by ch.parentId
+        ) ch group by ch.parentId,menuNm,iconNm
     </select>
 
 </mapper>

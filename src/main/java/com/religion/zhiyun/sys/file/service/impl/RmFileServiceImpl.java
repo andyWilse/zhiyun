@@ -125,8 +125,8 @@ public class RmFileServiceImpl implements RmFileService {
             String newImgName = time+".jpg";
             String framefile = rootPath + newImgName;
             String imgUrlSave = basePath+newImgName;//图片最终位置路径
-            videoUrl="http://zszjfile.860577.net:8808/super/mm.mp4";
-            imgUrlSave="http://zszjfile.860577.net:8808/super/1.jpg";
+            videoUrl="http://61.153.44.75:18088/images/mm.mp4";
+            imgUrlSave="http://61.153.44.75:18088/images/1.jpg";
             //视频截取封面图
             String imgUrl= VideoUpDown.getVedioImg(videoUrl, framefile, imgUrlSave);
 
