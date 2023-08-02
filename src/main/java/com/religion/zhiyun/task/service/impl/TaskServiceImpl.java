@@ -526,6 +526,10 @@ public class TaskServiceImpl implements TaskService {
                             fileUrl = rmFileMapper.getFileUrl(pictures.split(","));
                         }
                         commentMap.put("picture",fileUrl.toArray());
+
+                        //推送人
+                        String sendNames = (String) map.get("sendNames");
+                        commentMap.put("sendNames",sendNames);
                         //放入
                         commentList.add(commentMap);
                     }

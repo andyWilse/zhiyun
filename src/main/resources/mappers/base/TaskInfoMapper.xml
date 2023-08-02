@@ -98,16 +98,16 @@
     </select>
 
     <select id="getTaskCommon" resultType="map">
-
         select
-        handleTime,message,taskNm
+        handleTime,message,taskNm,sendNames
         from
         ((select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
             if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ )) as taskNm,
             ti.PROC_INST_ID_ as id,
-            ti.START_TIME_
+            ti.START_TIME_,
+            '' as sendNames
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
@@ -119,7 +119,13 @@
             co.MESSAGE_ as message,
             if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_  )) as taskNm,
             ti.PROC_INST_ID_ as id,
-            ti.START_TIME_
+            ti.START_TIME_,
+            (select GROUP_CONCAT(if(hus.USER_NM is not null, hus.USER_NM,if(hu.MANAGER_CN_NM is not null,hu.MANAGER_CN_NM,thi.ASSIGNEE_ ))) as sendNm
+            from act_hi_actinst thi
+            left join rm_sys_user_info hus on hus.USER_MOBILE=thi.ASSIGNEE_
+            left join rm_venues_manager_info hu on hu.MANAGER_MOBILE=thi.ASSIGNEE_
+            where ti.act_id_=thi.act_id_ and thi.PROC_INST_ID_=#{procInstId}
+            ) as sendNames
         from act_hi_actinst ti
         join act_hi_comment  co on ti.ASSIGNEE_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
@@ -129,18 +135,20 @@
         (select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
-            GROUP_CONCAT(if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ ))) as taskNm,
+            '' as taskNm,
             ti.PROC_INST_ID_ as id,
-            '' as ti.START_TIME_
+            '',
+            GROUP_CONCAT(if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ ))) as sendNames
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
         where ti.END_TIME_ is null
-        and ti.PROC_INST_ID_=#{procInstId})
+        and ti.PROC_INST_ID_=#{procInstId}
         group by ti.PROC_INST_ID_,ti.END_TIME_
+        )
         ) task
         where task.taskNm is not null
-        order by START_TIME_ asc
+
     </select>
     <select id="queryTasks" resultType="map">
         SELECT
@@ -429,7 +437,7 @@
                 IFNULL(comm.commTotal,0) as handleTotal,
                 IFNULL(act.actTotal,0) as launchTotal
         FROM (
-            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            SELECT DATE_FORMAT(date_add(CURDATE(), INTERVAL i MONTH),'%Y-%m')  AS tmDate
             FROM num a where a.i >#{num} and type='month'
         ) tm
         left join(
@@ -608,7 +616,7 @@
                 IFNULL(TRUNCATE(IFNULL(comm.commTotal,0)/IFNULL(comm.avg,0),2) ,0)as ouHai,
                 IFNULL(comm.dd,0) as myTotal
         FROM (
-            SELECT left(date_add(DATE_SUB(CURDATE(),INTERVAL dayofyear(now())-1 DAY), interval i month),7) AS tmDate
+            SELECT DATE_FORMAT(date_add(CURDATE(), INTERVAL i MONTH),'%Y-%m')  AS tmDate
             FROM num a where a.i >#{num} and type='month'
         ) tm
         left join(
