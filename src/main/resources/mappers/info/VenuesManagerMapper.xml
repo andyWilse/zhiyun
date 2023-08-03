@@ -14,7 +14,6 @@
         MANAGER_PHOTO_PATH as  managerPhotoPath,
         VALID_IND as  validInd,
         PASSWORDS as  passwords,
-        PASSWORDS_ORIGIN as  passwordsOrigin,
         CREATOR as  creator,
         CREATE_TIME as createTime,
         LAST_MODIFIER as  lastModifier,
@@ -53,7 +52,6 @@
         MANAGER_PHOTO_PATH,
         VALID_IND,
         PASSWORDS,
-        PASSWORDS_ORIGIN,
         CREATOR,
         CREATE_TIME,
         LAST_MODIFIER,
@@ -88,7 +86,6 @@
         #{managerPhotoPath},
         #{validInd},
         #{passwords},
-        #{passwordsOrigin},
         #{creator},
         #{createTime},
         #{lastModifier},
@@ -128,7 +125,6 @@
                 MANAGER_MOBILE=#{managerMobile},
                 MANAGER_PHOTO_PATH=#{managerPhotoPath},
                 PASSWORDS=#{passwords},
-                PASSWORDS_ORIGIN=#{passwordsOrigin},
                 LAST_MODIFIER=#{lastModifier},
                 LAST_MODIFY_TIME=#{lastModifyTime}
         where MANAGER_ID=#{managerId}
@@ -176,7 +172,8 @@
             when '03' then '工作联络员'
             else MANAGER_TYPE_CD
             end as  managerTypeCd,
-            MANAGER_MOBILE as managerMobile
+            MANAGER_MOBILE as managerMobile,
+            MANAGER_TYPE_CD as typeCd
         from RM_VENUES_MANAGER_INFO ma
         where VALID_IND='1'
         <if test="vo.searchOne!=null and vo.searchOne!=''">
@@ -203,5 +200,9 @@
         where ma.MANAGER_ID=#{managerId}
     </select>
 
-
+    <update id="updatePass" >
+        update RM_VENUES_MANAGER_INFO
+        set PASSWORDS=#{passwors}
+        where MANAGER_ID = #{managerId}
+    </update>
 </mapper>

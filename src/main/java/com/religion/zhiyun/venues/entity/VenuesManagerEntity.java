@@ -46,9 +46,6 @@ public class VenuesManagerEntity implements Serializable {
     @Column(name = "PASSWORDS")
     private String passwords;//
 
-    @Column(name = "PASSWORDS_ORIGIN")
-    private String passwordsOrigin;//
-
     @Column(name = "CREATOR")
     private String creator;//
 

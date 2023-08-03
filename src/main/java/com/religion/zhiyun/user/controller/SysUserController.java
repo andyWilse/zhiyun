@@ -39,8 +39,8 @@ public class SysUserController {
     }
 
     @PostMapping("/update/password")
-    public RespPageBean updatePassword(@RequestBody Map<String,String> map) {
-        return sysUserService.updatePassword(map);
+    public PageResponse updatePassword(@RequestBody Map<String,String> map,@RequestHeader("token")String token) {
+        return sysUserService.updatePassword(map,token);
     }
 
     @GetMapping("/getUser")

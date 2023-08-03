@@ -242,7 +242,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             String pass=String.valueOf(hash);
             //修改密码
             if((null!=sysUserList && sysUserList.size()>0)){//修改监管人员
-                userMapper.updatePassword(pass,password,id,TimeTool.getYmdHms());
+                userMapper.updatePassword(pass,id,TimeTool.getYmdHms());
             }else if(null!=manager && manager.size()>0){//修改神职人员
                 rmStaffInfoMapper.updatePassword(pass,password,id,username,TimeTool.getYmdHms());
             }

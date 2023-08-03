@@ -11,6 +11,7 @@ import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.utils.Tool.GeneTool;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -137,7 +138,6 @@ public class SysUserServiceImpl implements SysUserService {
             String identity = sysUserEntity.getIdentity();
             //String loginNm = sysUserEntity.getLoginNm();
             String userMobile = sysUserEntity.getUserMobile();
-            sysUserEntity.setWeakPwInd(passwords);
             //MD5加密,salt加密
             String pass = this.passwordSalt(userMobile,passwords,identity);
             sysUserEntity.setPasswords(pass);
@@ -204,10 +204,9 @@ public class SysUserServiceImpl implements SysUserService {
             Timestamp timestamp = new Timestamp(new Date().getTime());
             sysUserEntity.setLastModifyTime(timestamp);
             //密码处理
-            String passwords =sysUserEntity.getWeakPwInd();
             String identity = sysUserEntity.getIdentity();
             //MD5加密,salt加密
-            String pass = this.passwordSalt(userMobile,passwords,identity);//密码加密
+            String pass = this.passwordSalt(userMobile,"ASqw@!12",identity);//密码加密
             sysUserEntity.setPasswords(pass);
             //图片处理
             String picturesPath = sysUserEntity.getUserPhotoUrl();
@@ -246,41 +245,52 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public RespPageBean updatePassword(Map<String, String> map) {
-        RespPageBean bean=new RespPageBean();
-        String oldPass = map.get("oldPass");
-        String newPass = map.get("newPass");
-        String surePass = map.get("surePass");
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-        String nbr = request.getHeader("login-name");
-        SysUserEntity sysUserEntity = sysUserMapper.queryByNbr(nbr);
-        String result= ResultCode.SUCCESS.getMessage();
-        long code=ResultCode.SUCCESS.getCode();
-        if(null!=sysUserEntity){
-            String weakPwInd = sysUserEntity.getWeakPwInd();
-            if(!weakPwInd.equals(oldPass)){
-                code=ResultCode.FAILED.getCode();
-                result="旧密码错误，请重新输入！";
+    public PageResponse updatePassword(Map<String, String> map,String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="用户密码更改失败！";
+        try {
+            String oldPass = map.get("oldPass");
+            String newPass = map.get("newPass");
+            String surePass = map.get("surePass");
+            //新密码输入校验
+            if(!newPass.equals(surePass)){
+                throw new RuntimeException("两次密码输入不一致，请重新输入确认密码！");
             }
-        }else{
-            code=ResultCode.FAILED.getCode();
-            result=ResultCode.UNAUTHORIZED.getMessage();
-        }
+            //HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            //String nbr = request.getHeader("login-name");
 
-        if(!newPass.equals(surePass)){
-            code=ResultCode.FAILED.getCode();
-            result="两次密码输入不一致，请重新输入确认密码！";
+            //获取登录用户信息
+            String login = this.getLogin(token);
+            List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(login);
+            if(null==sysUserEntities || sysUserEntities.size()<1){
+                throw new RuntimeException("用户登录信息丢失，请联系管理员！");
+            }else if(sysUserEntities.size()>1){
+                throw new RuntimeException("用户登录信息重复，请联系管理员！");
+            }
+            SysUserEntity sysUserEntity = sysUserEntities.get(0);
+            String identity ="";
+            //旧密码校验
+            if(null!=sysUserEntity){
+                identity = sysUserEntity.getIdentity();
+                String oldPassWord = this.passwordSalt(login, oldPass, identity);
+                String passwordOld = sysUserEntity.getPasswords();
+                if(!passwordOld.equals(oldPassWord)){
+                    throw new RuntimeException("原密码错误，请重新输入！");
+                }
+            }else{
+                throw new RuntimeException("用户登录信息丢失，请联系管理员！");
+            }
+            //更新密码
+            String newPassWord = this.passwordSalt(login, surePass, identity);
+            sysUserMapper.updatePassword(newPassWord,sysUserEntity.getUserId(), TimeTool.getYmdHms());
+
+            code= ResultCode.SUCCESS.getCode();
+            message="密码更改成功！";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
         }
-        bean.setCode(code);
-        bean.setResult(result);
-        if(code==ResultCode.SUCCESS.getCode()){
-            sysUserEntity.setWeakPwInd(newPass);
-            sysUserEntity.setPasswords(DigestUtils.md5Hex(newPass));
-            Timestamp timestamp = new Timestamp(new Date().getTime());
-            sysUserEntity.setLastModifyTime(timestamp);
-            sysUserMapper.update(sysUserEntity);
-        }
-       return bean;
+        return new PageResponse(code,message);
     }
 
     @Override

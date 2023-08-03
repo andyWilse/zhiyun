@@ -33,7 +33,7 @@ public interface SysUserService {
      * 密码修改
      * @param map
      */
-    RespPageBean updatePassword(Map<String,String> map);
+    PageResponse updatePassword(Map<String,String> map,String token);
 
     /**
      * 删除

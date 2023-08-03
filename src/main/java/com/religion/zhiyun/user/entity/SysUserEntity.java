@@ -74,9 +74,6 @@ public class SysUserEntity implements Serializable {
     @Column(comment = "关联场所(主键id)",defaultValue="" ,name = "REL_VENUES_ID")
     private String relVenuesId;
 
-    @Column(comment = "",name = "WEAK_PW_IND")
-    private String weakPwInd;
-
     @Column(comment = "是否有效：0-否；1-是",defaultValue="" ,name = "VALID_IND")
     private String validInd;
 

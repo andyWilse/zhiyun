@@ -7,7 +7,6 @@
         USER_ID as userId,
         LOGIN_NM as loginNm,
         PASSWORDS as passwords,
-        WEAK_PW_IND as weakPwInd,
         USER_NM as userNm,
         USER_MOBILE as userMobile,
         USER_EMAIL as userEmail,
@@ -44,7 +43,6 @@
                  LOGIN_IND,
                  VALID_IND,
                  USER_OA_NM,
-                 WEAK_PW_IND,
                  IDENTITY,
                  CREATE_TIME,
                  LAST_MODIFY_TIME,
@@ -72,7 +70,6 @@
                  '0',
                  '1',
                  NULL,
-                 #{weakPwInd},
                  #{identity},
                  #{createTime},
                  #{lastModifyTime},
@@ -349,7 +346,6 @@
         update RM_SYS_USER_INFO
         set
             PASSWORDS = #{passwords},
-            WEAK_PW_IND=#{weakPwInd},
             LAST_MODIFY_TIME = #{lastModifyTime}
         WHERE USER_ID = #{userId}
     </update>

@@ -67,4 +67,7 @@ public interface VenuesManagerMapper {
      * @return
      */
     List<VenuesManagerEntity> getByManagerId(@Param("managerId") String managerId);
+
+
+    void updatePass(@Param("managerId") int managerId,@Param("passwors") String passwors);
 }

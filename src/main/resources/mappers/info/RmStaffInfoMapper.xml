@@ -260,7 +260,6 @@
         update rm_venues_manager_info
         set
             PASSWORDS = #{passwords},
-            PASSWORDS_ORIGIN = #{passwordsOrigin},
             LAST_MODIFIER=#{lastModifier},
             LAST_MODIFY_TIME= #{lastModifyTime}
         WHERE MANAGER_ID = #{staffId}

@@ -116,11 +116,9 @@ public interface SysUserMapper {
     /**
      * 密码修改
      * @param passwords
-     * @param weakPwInd
      * @param lastModifyTime
      */
     void updatePassword(@Param("passwords") String passwords,
-                        @Param("weakPwInd") String weakPwInd,
                         @Param("userId") int userId,
                         @Param("lastModifyTime") String lastModifyTime);
 

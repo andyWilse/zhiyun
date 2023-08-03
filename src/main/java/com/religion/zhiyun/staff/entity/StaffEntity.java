@@ -128,7 +128,5 @@ public class StaffEntity implements Serializable {
     @Column(name = "PASSWORDS")
     private String passwords;//加密密码
 
-    @Column(name = "PASSWORDS_ORIGIN")
-    private String passwordsOrigin;//密码
 
 }

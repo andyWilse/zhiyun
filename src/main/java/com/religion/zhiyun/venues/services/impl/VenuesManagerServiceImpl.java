@@ -62,7 +62,6 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
             }
             String pass = this.passwordSalt(managerMobile, passwords, managerTypeCd);
             venuesManagerEntity.setPasswords(pass);
-            venuesManagerEntity.setPasswordsOrigin(passwords);
 
             String login = this.getLogin(token);
             venuesManagerEntity.setValidInd("1");//有效
@@ -127,13 +126,9 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
 
             //密码重置
             String managerTypeCd = venuesManagerEntity.getManagerTypeCd();
-            String passwordsOrigin = venuesManagerEntity.getPasswordsOrigin();
-            if(null==passwordsOrigin){
-                passwordsOrigin="Zhi!@#123";
-            }
+            String passwordsOrigin = "ASqw@!12";
             String pass = this.passwordSalt(managerMobile, passwordsOrigin, managerTypeCd);
             venuesManagerEntity.setPasswords(pass);
-            venuesManagerEntity.setPasswordsOrigin(passwordsOrigin);
 
             //修改记录
             String login = this.getLogin(token);
