@@ -8,6 +8,7 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -511,23 +512,31 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 String resId= (String) venuesMap.get("resId");
                 String resNm= (String) venuesMap.get("resNm");
                 String resMo= (String) venuesMap.get("resMo");
-                oneDirector.put("id",resId);
-                oneDirector.put("name",resNm);
-                oneDirector.put("phone",resMo);
+                if(!GeneTool.isEmpty(resId)){
+                    oneDirector.put("id",resId);
+                    oneDirector.put("name",resNm);
+                    oneDirector.put("phone",resMo);
+                }
+
                 Map<String, Object> twoDirector=new HashMap<>();
                 String groId= (String) venuesMap.get("groId");
                 String groNm= (String) venuesMap.get("groNm");
                 String groMo= (String) venuesMap.get("groMo");
-                twoDirector.put("id",groId);
-                twoDirector.put("name",groNm);
-                twoDirector.put("phone",groMo);
+                if(!GeneTool.isEmpty(groId)){
+                    twoDirector.put("id",groId);
+                    twoDirector.put("name",groNm);
+                    twoDirector.put("phone",groMo);
+                }
+
                 Map<String, Object> workDirector=new HashMap<>();
                 String liaId= (String) venuesMap.get("liaId");
                 String liaNm= (String) venuesMap.get("liaNm");
                 String liaMo= (String) venuesMap.get("liaMo");
-                workDirector.put("id",liaId);
-                workDirector.put("name",liaNm);
-                workDirector.put("phone",liaMo);
+                if(!GeneTool.isEmpty(liaId)){
+                    workDirector.put("id",liaId);
+                    workDirector.put("name",liaNm);
+                    workDirector.put("phone",liaMo);
+                }
 
                 venuesMap.put("oneDirector",oneDirector);
                 venuesMap.put("twoDirector",twoDirector);

@@ -491,6 +491,21 @@ public class TaskServiceImpl implements TaskService {
                 if(null!=mapList && mapList.size()>0){
                     for(int i=0;i<mapList.size();i++){
                         Map<String, Object> map= mapList.get(i);
+                        //获取推送
+                        Map<String, Object> sendMap= new HashMap<>();
+                        String actId = (String) map.get("actId");
+                        if(!"taskStart".equals(actId) && !"taskEnd".equals(actId)){
+                            sendMap= taskInfoMapper.getTaskSend(procInstId, actId);
+                        }
+                        sendMap.put("handlePerson","");
+                        sendMap.put("handleTime","");
+                        sendMap.put("handleResults","");
+                        sendMap.put("feedBack","");
+                        sendMap.put("picture","");
+                        String sendTime = (String) sendMap.get("sendTime");
+                        if(!GeneTool.isEmpty(sendTime)){
+                            commentList.add(sendMap);
+                        }
                         //重新组装
                         Map<String, Object> commentMap= new HashMap<>();
                         //节点
@@ -528,10 +543,13 @@ public class TaskServiceImpl implements TaskService {
                         commentMap.put("picture",fileUrl.toArray());
 
                         //推送人
-                        String sendNames = (String) map.get("sendNames");
-                        commentMap.put("sendNames",sendNames);
+                        commentMap.put("sendNames","");
+                        commentMap.put("sendTime","");
                         //放入
-                        commentList.add(commentMap);
+                        if(!GeneTool.isEmpty(handleTime)){
+                            commentList.add(commentMap);
+                        }
+
                     }
                 }
                 taskMap.put("taskComment",commentList.toArray());
