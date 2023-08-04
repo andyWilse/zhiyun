@@ -75,7 +75,8 @@ public class SysLoginServiceImpl implements SysLoginService {
         LoginInfo loginInfo =null;
         String token="";
         String passWordSys="";
-        String identity="";
+        String userId="";
+        String userNbr="";
         String validInd="";
         try {
             //查询
@@ -88,16 +89,17 @@ public class SysLoginServiceImpl implements SysLoginService {
                 throw new RuntimeException("该手机号未在系统添加使用，请添加后登录！");
             }else if(null!=sysUserList && sysUserList.size()>0){//01-监管人员
                 SysUserEntity sysUser=sysUserList.get(0);
-                //username=sysUser.getLoginNm();
                 passWordSys=sysUser.getPasswords();
-                identity=sysUser.getIdentity();
+                userId=String.valueOf(sysUser.getUserId());
+                userNbr = sysUser.getUserNbr();
                 validInd=sysUser.getValidInd();
                 direct="01";
             }else if(null!=manager && manager.size()>0){//02-神职人员
                 Map<String, Object> managerMap = manager.get(0);
-                //username= (String) managerMap.get("name");
+
                 passWordSys= (String) managerMap.get("passwords");
-                identity=(String) managerMap.get("type");
+                userId=username;
+                userNbr= (String) managerMap.get("type");
                 validInd=(String) managerMap.get("flag");
                 direct="02";
             }
@@ -105,7 +107,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             if("0".equals(validInd) || "02".equals(validInd)){
                 throw new RuntimeException("用户已被冻结，请联系管理员!");
             }
-            Hash hash = this.transSalt(username, password, identity);
+            Hash hash = this.transSalt(userId, password, userNbr);
             String pass=String.valueOf(hash);
             if(!passWordSys.equals(pass)){
                 throw new RuntimeException("密码错误!");

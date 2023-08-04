@@ -27,7 +27,7 @@ public interface SysUserService {
      * 修改
      * @param sysUserEntity
      */
-    PageResponse update(SysUserEntity sysUserEntity);
+    PageResponse update(SysUserEntity sysUserEntity,String token);
 
     /**
      * 密码修改

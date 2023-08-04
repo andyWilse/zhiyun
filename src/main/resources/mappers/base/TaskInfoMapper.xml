@@ -104,7 +104,11 @@
         ((select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
-            if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_ )) as taskNm,
+            if(us.USER_NM is not null,
+            CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
+            if(u.MANAGER_CN_NM is not null,
+            CONCAT(u.MANAGER_CN_NM,'(场所管理人员)'),
+            ti.ASSIGNEE_ )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_,
             ti.act_id_ as actId
@@ -117,7 +121,11 @@
         (select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             co.MESSAGE_ as message,
-            if(us.USER_NM is not null, us.USER_NM,if(u.MANAGER_CN_NM is not null,u.MANAGER_CN_NM,ti.ASSIGNEE_  )) as taskNm,
+            if(us.USER_NM is not null,
+            CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
+            if(u.MANAGER_CN_NM is not null,
+            CONCAT(u.MANAGER_CN_NM,'(场所管理人员)'),
+            ti.ASSIGNEE_  )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_,
             ti.act_id_ as actId
@@ -148,7 +156,11 @@
 
     <select id="getTaskSend" resultType="map">
         select
-            GROUP_CONCAT(if(hus.USER_NM is not null, hus.USER_NM,if(hu.MANAGER_CN_NM is not null,hu.MANAGER_CN_NM,thi.ASSIGNEE_ ))) as sendNames,
+            GROUP_CONCAT(if(hus.USER_NM is not null,
+            CONCAT(hus.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=hus.IDENTITY),')'),
+            if(hu.MANAGER_CN_NM is not null,
+            CONCAT(hu.MANAGER_CN_NM,'(场所管理人员)'),
+            thi.ASSIGNEE_ ))) as sendNames,
             min(DATE_FORMAT(thi.START_TIME_,'%Y-%m-%d %H:%i:%s') ) as sendTime
         from act_hi_actinst thi
         left join rm_sys_user_info hus on hus.USER_MOBILE=thi.ASSIGNEE_
@@ -1084,16 +1096,18 @@
 
 
     <select id="getReportMen" resultType="String">
+
         select
-            GROUP_CONCAT(dis.unm) as reportMens
-        from
-            (select
-                case when us.USER_NM is not null then us.USER_NM  else ma.MANAGER_CN_NM end as unm
-            from rm_event_report_men me
-            left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE
-            left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=us.USER_MOBILE
-            where me.PROC_INST_ID=#{procInstId}
-        ) dis
+            GROUP_CONCAT(if(us.USER_NM is not null,
+            CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
+            if(ma.MANAGER_CN_NM is not null,
+            CONCAT(ma.MANAGER_CN_NM,'(场所管理人员)'),
+            me.REPORT_MEN ))) as reportMens
+        from rm_event_report_men me
+        left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=us.USER_MOBILE
+        where me.PROC_INST_ID=#{procInstId}
+
     </select>
 
     <select id="getSubmitEvent" resultType="com.religion.zhiyun.interfaces.entity.minzong.SubmitEntity">

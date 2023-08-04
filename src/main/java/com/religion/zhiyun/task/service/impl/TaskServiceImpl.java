@@ -472,6 +472,7 @@ public class TaskServiceImpl implements TaskService {
                 if(!GeneTool.isEmpty(taskContent) && (flowType.equals("03") || flowType.equals("04"))){
                     UpFillEntity upFillEntity = JsonUtils.jsonTOBean(taskContent, UpFillEntity.class);
                     String picturesPath = upFillEntity.getTaskPicture();
+                    //图片
                     if(!GeneTool.isEmpty(picturesPath)){
                         String[] split = picturesPath.split(",");
                         List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);

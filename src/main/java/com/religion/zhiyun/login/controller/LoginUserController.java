@@ -48,7 +48,9 @@ public class LoginUserController {
             }else if("0".equals(user.getValidInd())){
                 throw new RuntimeException("登录失败，该用户已失效!");
             }
-            Hash hash = this.transSalt(username, password, user.getIdentity());
+            int userId = user.getUserId();
+            String userNbr = user.getUserNbr();
+            Hash hash = this.transSalt(String.valueOf(userId), password, userNbr);
             String pass=String.valueOf(hash);
             String passwords = user.getPasswords();
 

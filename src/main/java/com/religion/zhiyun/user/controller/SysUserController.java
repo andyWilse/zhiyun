@@ -29,8 +29,8 @@ public class SysUserController {
     }
 
     @PostMapping("/update")
-    public PageResponse update(@RequestBody SysUserEntity sysUserEntity) {
-        return sysUserService.update(sysUserEntity);
+    public PageResponse update(@RequestBody SysUserEntity sysUserEntity,@RequestHeader("token")String token) {
+        return sysUserService.update(sysUserEntity,token);
     }
 
     @PostMapping("/delete/{userId}")

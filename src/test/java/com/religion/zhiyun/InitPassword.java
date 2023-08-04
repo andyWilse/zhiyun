@@ -29,20 +29,22 @@ public class InitPassword {
         ParamsVo vo=new ParamsVo();
         vo.setPage(1);
         vo.setSize(100000);
-        /*List<SysUserEntity> usersByPage = sysUserMapper.getUsersByPage(vo);
+        List<SysUserEntity> usersByPage = sysUserMapper.getUsersByPage(vo);
         for(int i=0;i<usersByPage.size();i++){
             SysUserEntity sy = usersByPage.get(i);
             String passwords = sy.getPasswords();
-                String identity = sy.getIdentity();
-                String userMobile = sy.getUserMobile();
-                String passwor ="ASqw@!12";
-                String s = this.passwordSalt(userMobile, passwor, identity);
+                //String identity = sy.getIdentity();
+                //String userMobile = sy.getUserMobile();
+            int userId = sy.getUserId();
+            String userNbr = sy.getUserNbr();
+            String passwor ="ASqw@!12";
+                String s = this.passwordSalt(String.valueOf(userId), passwor, userNbr);
                 sy.setPasswords(s);
                 sysUserMapper.updatePassword(s,sy.getUserId(), TimeTool.getYmdHms());
 
-        }*/
+        }
 
-        List<Map<String, Object>> manager = venuesManagerMapper.findManager(vo);
+        /*List<Map<String, Object>> manager = venuesManagerMapper.findManager(vo);
         for(int i=0;i<manager.size();i++){
             Map<String, Object> aa = manager.get(i);
             String passwor ="ASqw@!12";
@@ -51,7 +53,7 @@ public class InitPassword {
             Integer managerId = (Integer) aa.get("managerId");
             String passwors = this.passwordSalt(managerMobile, passwor, typeCd);
             venuesManagerMapper.updatePass(managerId,passwors);
-        }
+        }*/
 
     }
 

@@ -23,6 +23,7 @@ import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -36,26 +37,24 @@ import java.util.Map;
 
 @Service
 public class SysUserServiceImpl implements SysUserService {
+
+    @Value("${zy.password.default}")
+    private String passwordDefault;
+
     @Autowired
     private SysUserMapper sysUserMapper;
-
     @Autowired
     private SysRoleMapper sysRoleMapper;
-
     @Autowired
     private OperateRecordMapper rmUserLogsInfoMapper;
-
     @Autowired
     private SysUserRoleRelMapper sysUserRoleRelMapper;
-
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-
     @Autowired
     private RmFileService rmFileService;
     @Autowired
     private RmFileMapper rmFileMapper;
-
     @Autowired
     private RmVenuesInfoMapper rmVenuesInfoMapper;
 
@@ -133,14 +132,6 @@ public class SysUserServiceImpl implements SysUserService {
             Long maxCustCd = sysUserMapper.getMaxUserNbr();
             maxCustCd++;
             sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
-            //密码加密
-            String passwords = sysUserEntity.getPasswords();
-            String identity = sysUserEntity.getIdentity();
-            //String loginNm = sysUserEntity.getLoginNm();
-            String userMobile = sysUserEntity.getUserMobile();
-            //MD5加密,salt加密
-            String pass = this.passwordSalt(userMobile,passwords,identity);
-            sysUserEntity.setPasswords(pass);
 
             //图片处理
             String picturesPath = sysUserEntity.getUserPhotoUrl();
@@ -164,6 +155,14 @@ public class SysUserServiceImpl implements SysUserService {
             //新增用户
             sysUserMapper.add(sysUserEntity);
 
+            //密码加密
+            String passwords = sysUserEntity.getPasswords();
+            int userId = sysUserEntity.getUserId();
+            String userNbr = sysUserEntity.getUserNbr();
+            //MD5加密,salt加密
+            String pass = this.passwordSalt(String.valueOf(userId),passwords,userNbr);
+            sysUserMapper.updatePassword(pass,userId,TimeTool.getYmdHms());
+
             //新增用户角色关系
             UserRoleEntity userRoleEntity=new UserRoleEntity();
             userRoleEntity.setUserId(String.valueOf(sysUserEntity.getUserId()));
@@ -186,13 +185,14 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public PageResponse update(SysUserEntity sysUserEntity) {
+    public PageResponse update(SysUserEntity sysUserEntity,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="数据更新";
+        String result="/userIndex";
         try {
             //电话校验
-            String userMobile = sysUserEntity.getUserMobile();
-            String userMobileOrigin = sysUserEntity.getUserMobileOrigin();
+            String userMobile = sysUserEntity.getUserMobile();//原电话
+            String userMobileOrigin = sysUserEntity.getUserMobileOrigin();//现电话
             if(!userMobile.equals(userMobileOrigin)){
                 //电话不能重复
                 long numTel = sysUserMapper.queryTelNum(userMobile);
@@ -203,11 +203,7 @@ public class SysUserServiceImpl implements SysUserService {
             message=this.checkData(sysUserEntity);
             Timestamp timestamp = new Timestamp(new Date().getTime());
             sysUserEntity.setLastModifyTime(timestamp);
-            //密码处理
-            String identity = sysUserEntity.getIdentity();
-            //MD5加密,salt加密
-            String pass = this.passwordSalt(userMobile,"ASqw@!12",identity);//密码加密
-            sysUserEntity.setPasswords(pass);
+
             //图片处理
             String picturesPath = sysUserEntity.getUserPhotoUrl();
             String picturesPathRemove = sysUserEntity.getPicturesPathRemove();
@@ -228,6 +224,11 @@ public class SysUserServiceImpl implements SysUserService {
                 }
             }
             sysUserMapper.update(sysUserEntity);
+            String login = this.getLogin(token);
+            if(login.equals(userMobileOrigin) && !userMobileOrigin.equals(userMobile)){
+                result="/";
+            }
+
             //保存日志
            //this.savelogs( "修改成功", InfoEnums.USER_UPDATE.getName());
 
@@ -240,7 +241,7 @@ public class SysUserServiceImpl implements SysUserService {
             message="用户更新失败！";
             e.printStackTrace();
         }
-        return new PageResponse(code,message);
+        return new PageResponse(code,message,result);
 
     }
 
@@ -268,11 +269,11 @@ public class SysUserServiceImpl implements SysUserService {
                 throw new RuntimeException("用户登录信息重复，请联系管理员！");
             }
             SysUserEntity sysUserEntity = sysUserEntities.get(0);
-            String identity ="";
+            int userId = sysUserEntity.getUserId();
+            String userNbr = sysUserEntity.getUserNbr();
             //旧密码校验
             if(null!=sysUserEntity){
-                identity = sysUserEntity.getIdentity();
-                String oldPassWord = this.passwordSalt(login, oldPass, identity);
+                String oldPassWord = this.passwordSalt(String.valueOf(userId), oldPass, userNbr);
                 String passwordOld = sysUserEntity.getPasswords();
                 if(!passwordOld.equals(oldPassWord)){
                     throw new RuntimeException("原密码错误，请重新输入！");
@@ -281,7 +282,7 @@ public class SysUserServiceImpl implements SysUserService {
                 throw new RuntimeException("用户登录信息丢失，请联系管理员！");
             }
             //更新密码
-            String newPassWord = this.passwordSalt(login, surePass, identity);
+            String newPassWord = this.passwordSalt(String.valueOf(userId), surePass, userNbr);
             sysUserMapper.updatePassword(newPassWord,sysUserEntity.getUserId(), TimeTool.getYmdHms());
 
             code= ResultCode.SUCCESS.getCode();
@@ -395,13 +396,13 @@ public class SysUserServiceImpl implements SysUserService {
 
     /**
      * 密码加密
-     * @param userName
+     * @param userNbr
      * @param password
      * @return
      */
-    public String passwordSalt(String userName,String password,String identity) {
+    public String passwordSalt(String userId,String password,String userNbr) {
         //String saltOrigin=null;
-        Object salt=ByteSource.Util.bytes(userName+identity);
+        Object salt=ByteSource.Util.bytes(userId+userNbr);
         String hashAlgorithmName = "MD5";//加密方式
         char[]  credential=(char[])(password != null ? password.toCharArray() : null);//密码
         int hashIterations = 1024;//加密1024次
