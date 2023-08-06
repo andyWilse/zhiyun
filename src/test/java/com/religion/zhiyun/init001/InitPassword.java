@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 public class InitPassword {
@@ -24,7 +25,7 @@ public class InitPassword {
     @Test
     void contextLoads(){
         ParamsVo vo=new ParamsVo();
-        vo.setPage(1);
+        vo.setPage(0);
         vo.setSize(100000);
         List<SysUserEntity> usersByPage = sysUserMapper.getUsersByPage(vo);
         for(int i=0;i<usersByPage.size();i++){
@@ -41,7 +42,7 @@ public class InitPassword {
 
         }
 
-        /*List<Map<String, Object>> manager = venuesManagerMapper.findManager(vo);
+       /* List<Map<String, Object>> manager = venuesManagerMapper.findManager(vo);
         for(int i=0;i<manager.size();i++){
             Map<String, Object> aa = manager.get(i);
             String passwor ="ASqw@!12";

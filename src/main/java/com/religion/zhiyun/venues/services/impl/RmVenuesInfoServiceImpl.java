@@ -400,7 +400,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         String message="app场所下拉(监管)";
         List<Map<String, Object>> venuesList =new ArrayList<>();
         try {
-            ParamsVo auth = this.getAuth(token);
+            //ParamsVo auth = this.getAuth(token);
+            ParamsVo auth =new ParamsVo();
             String search = (String)map.get("search");
             String province = (String)map.get("province");
             String city = (String)map.get("city");

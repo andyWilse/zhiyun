@@ -825,7 +825,8 @@
             end as emergencyLevelCn,
             IFNULL((select if( ti.ASSIGNEE_ is not null,'1','0') from act_hi_actinst ti
             where ti.PROC_INST_ID_=ta.PROC_INST_ID and ti.ASSIGNEE_='17689903431' and ti.END_TIME_ is null  ),'0' )
-            as grantFlag
+            as grantFlag,
+            if(ta.HANDLE_RESULTS is null,'无法解决',if(ta.HANDLE_RESULTS='1','已解决','无法解决')) as handleResults
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS

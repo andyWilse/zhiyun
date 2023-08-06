@@ -107,7 +107,7 @@
             if(us.USER_NM is not null,
             CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
             if(u.MANAGER_CN_NM is not null,
-            CONCAT(u.MANAGER_CN_NM,'(场所管理人员)'),
+            CONCAT(u.MANAGER_CN_NM,'(负责人)'),
             ti.ASSIGNEE_ )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_,
@@ -124,7 +124,7 @@
             if(us.USER_NM is not null,
             CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
             if(u.MANAGER_CN_NM is not null,
-            CONCAT(u.MANAGER_CN_NM,'(场所管理人员)'),
+            CONCAT(u.MANAGER_CN_NM,'(负责人)'),
             ti.ASSIGNEE_  )) as taskNm,
             ti.PROC_INST_ID_ as id,
             ti.START_TIME_,
@@ -159,7 +159,7 @@
             GROUP_CONCAT(if(hus.USER_NM is not null,
             CONCAT(hus.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=hus.IDENTITY),')'),
             if(hu.MANAGER_CN_NM is not null,
-            CONCAT(hu.MANAGER_CN_NM,'(场所管理人员)'),
+            CONCAT(hu.MANAGER_CN_NM,'(负责人)'),
             thi.ASSIGNEE_ ))) as sendNames,
             min(DATE_FORMAT(thi.START_TIME_,'%Y-%m-%d %H:%i:%s') ) as sendTime
         from act_hi_actinst thi
@@ -1101,7 +1101,7 @@
             GROUP_CONCAT(if(us.USER_NM is not null,
             CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
             if(ma.MANAGER_CN_NM is not null,
-            CONCAT(ma.MANAGER_CN_NM,'(场所管理人员)'),
+            CONCAT(ma.MANAGER_CN_NM,'(负责人)'),
             me.REPORT_MEN ))) as reportMens
         from rm_event_report_men me
         left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE
