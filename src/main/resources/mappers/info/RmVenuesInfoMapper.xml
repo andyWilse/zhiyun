@@ -579,4 +579,13 @@
         limit 0,#{num}
     </select>
 
+    <select id="queryOra" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+        v.VENUES_ID as venuesId,CONCAT('瓯海区 ',t.TOWN_NAME) as organization
+        from RM_VENUES_INFO v left join rm_town_info t on v.TOWN=t.TOWN_CODE
+    </select>
+    <update id="updateOra">
+        UPDATE RM_VENUES_INFO set ORGANIZATION=#{organization} WHERE VENUES_ID = #{venuesId}
+    </update>
+
 </mapper>

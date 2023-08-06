@@ -175,5 +175,7 @@ public interface RmVenuesInfoMapper {
 
     List<Map<String,Object>> getVenuesScore(@Param("num")Integer num);
 
+    List<VenuesEntity> queryOra(String religiousSect);
+    void updateOra(@Param("organization") String organization,@Param("venuesId") Integer venuesId);
 
 }

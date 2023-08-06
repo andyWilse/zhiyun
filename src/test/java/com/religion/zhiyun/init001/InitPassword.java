@@ -1,10 +1,8 @@
-package com.religion.zhiyun;
+package com.religion.zhiyun.init001;
 
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.shiro.crypto.hash.Hash;
@@ -15,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import java.util.Map;
 
 @SpringBootTest
 public class InitPassword {
@@ -33,14 +30,14 @@ public class InitPassword {
         for(int i=0;i<usersByPage.size();i++){
             SysUserEntity sy = usersByPage.get(i);
             String passwords = sy.getPasswords();
-                //String identity = sy.getIdentity();
-                //String userMobile = sy.getUserMobile();
+            //String identity = sy.getIdentity();
+            //String userMobile = sy.getUserMobile();
             int userId = sy.getUserId();
             String userNbr = sy.getUserNbr();
             String passwor ="ASqw@!12";
-                String s = this.passwordSalt(String.valueOf(userId), passwor, userNbr);
-                sy.setPasswords(s);
-                sysUserMapper.updatePassword(s,sy.getUserId(), TimeTool.getYmdHms());
+            String s = this.passwordSalt(String.valueOf(userId), passwor, userNbr);
+            sy.setPasswords(s);
+            sysUserMapper.updatePassword(s,sy.getUserId(), TimeTool.getYmdHms());
 
         }
 

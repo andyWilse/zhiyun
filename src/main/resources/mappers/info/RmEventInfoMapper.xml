@@ -152,13 +152,7 @@
             ve.VENUES_NAME as venuesName,
             e.RESPONSIBLE_PERSON as responsiblePerson,
             EVENT_TYPE as eventType,
-            case EVENT_TYPE
-            when '01' then '明火'
-            when '02' then '超限'
-            when '03' then '重点'
-            when '04' then '集聚'
-            else '其他'
-            end as eventTypeNm,
+            (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=e.EVENT_TYPE) as eventTypeNm,
             EVENT_STATE as eventState,
             case
                 when EVENT_STATE in ('00','02') then '待完成'
@@ -171,10 +165,8 @@
             ve.VENUES_NAME as venuesName,
             e.event_level as eventLevel,
             case event_level
-            when '0' then '事件'
-            when '1' then '次要'
-            when '2' then '重要'
-            when '3' then '严重'
+            when '01' then '紧急'
+            when '02' then '普通'
             else '其他'
             end as eventLevelNm,
             m.MONITOR_URL as monitorUrl,
@@ -220,13 +212,7 @@
                 ve.VENUES_ADDRES as venuesAddres,
                 ve.VENUES_NAME as venuesName,
                 e.RESPONSIBLE_PERSON as responsiblePerson,
-                case e.EVENT_TYPE
-                    when '01' then '明火'
-                    when '02' then '超限'
-                    when '03' then '重点'
-                    when '04' then '集聚'
-                    else '其他'
-                end as eventType,
+                (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=e.EVENT_TYPE) as eventType,
                 e.EVENT_DATA as eventData,
                 e.LOCATION as location,
                 case when e.EVENT_STATE ='01' or e.EVENT_STATE='04' then '已完成'
@@ -319,19 +305,16 @@
     <select id="getUndoEvents" resultType="map">
         select
             EVENT_ID as eventId,
+            ta.PROC_INST_ID as procInstId,
             ev.WARN_TIME as warnTime,
-            case ev.EVENT_TYPE
-                when '01' then '明火'
-                when '02' then '超限'
-                when '03' then '重点'
-                when '04' then '集聚'
-            end as eventType,
+            (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=ev.EVENT_TYPE) as eventType,
             ve.VENUES_NAME as venuesName,
             ve.PICTURES_PATH as  path,
             ev.EVENT_LEVEL as eventLevel,
             case ev.EVENT_LEVEL
-            when '3' then '紧急'
-            else '普通'
+            when '01' then '紧急'
+            when '02' then '普通'
+            else ev.EVENT_LEVEL
             end as eventLevelCn,
             ev.EVENT_RESOURCE as eventResource,
             case ev.EVENT_RESOURCE
@@ -341,21 +324,16 @@
             ve.RELIGIOUS_SECT as sect,
             ev.PICTURES_PATH as picturesPathEvent,
             ev.VIDEOS_PATH as videosPathEvent
-        from rm_event_notified_info no
-        left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
+        from rm_task_info ta
+        join RM_EVENT_INFO ev on ta.REL_EVENT_ID=ev.EVENT_ID
+        join act_hi_actinst hi on hi.PROC_INST_ID_=ta.PROC_INST_ID and hi.END_TIME_ is null
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        where no.NOTIFIED_FLAG='03'
+        where hi.ASSIGNEE_=#{vo.searchThree}
         <if test="vo.searchOne != null and vo.searchOne != ''">
             AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  ev.EVENT_TYPE =#{vo.searchTwo}
-        </if>
-        <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND  (
-                no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
-            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
-            )
         </if>
         ORDER BY ev.EVENT_LEVEL desc,ev.WARN_TIME  desc
         limit #{vo.page},#{vo.size}
@@ -364,21 +342,16 @@
     <select id="getUndoEventsTotal" resultType="java.lang.Long">
         select
             count(ev.EVENT_ID)
-        from rm_event_notified_info no
-        left join RM_EVENT_INFO ev on no.REF_EVENT_ID=ev.EVENT_ID
+        from rm_task_info ta
+        join RM_EVENT_INFO ev on ta.REL_EVENT_ID=ev.EVENT_ID
+        join act_hi_actinst hi on hi.PROC_INST_ID_=ta.PROC_INST_ID and hi.END_TIME_ is null
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        where no.NOTIFIED_FLAG='01'
+        where hi.ASSIGNEE_=#{vo.searchThree}
         <if test="vo.searchOne != null and vo.searchOne != ''">
             AND  ev.EVENT_STATE=#{vo.searchOne}
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
             AND  ev.EVENT_TYPE =#{vo.searchTwo}
-        </if>
-        <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND  (
-            no.NOTIFIED_USER LIKE CONCAT('%',#{vo.searchThree},'%')
-            or no.NOTIFIED_MANAGER LIKE CONCAT('%',#{vo.searchThree},'%')
-            )
         </if>
     </select>
 
@@ -389,31 +362,18 @@
                 v.VENUES_ADDRES as venuesAddres,
                 ev.RESPONSIBLE_PERSON as responsiblePerson,
                 EVENT_TYPE as eventType,
-                case EVENT_TYPE
-                when '01' then '明火'
-                when '02' then '超限'
-                when '03' then '重点'
-                when '04' then '集聚'
-                else '其他'
-                end as eventTypeNm,
+                (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
                 EVENT_STATE as eventState,
-                case EVENT_STATE
-                when '00' then '待查实'
-                when '01' then '已完成'
-                when '02' then '误报'
-                else '其他'
-                end as eventStateNm,
+                (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=ev.EVENT_STATE) as eventStateNm,
                 HANDLE_RESULTS as handleResults,
                 DATE_FORMAT(HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
                 v.PICTURES_PATH as picturesPath,
                 v.VENUES_NAME as venuesName,
                 ev.event_level as eventLevel,
                 case event_level
-                when '0' then '普通'
-                when '1' then '普通'
-                when '2' then '普通'
-                when '3' then '紧急'
-                else '普通'
+                when '02' then '普通'
+                when '01' then '紧急'
+                else event_level
                 end as eventLevelNm,
                 v.PICTURES_PATH as venuesPicture
 
@@ -790,19 +750,9 @@
         select
             DATE_FORMAT(ev.WARN_TIME ,'%Y-%m-%d %H:%i:%s') as warnTime,
             DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
-            case ev.EVENT_TYPE
-            when '01' then '明火'
-            when '02' then '超限'
-            when '03' then '重点'
-            when '04' then '集聚'
-            end as eventTypeCn,
+            (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=ev.EVENT_TYPE) as eventTypeCn,
             ev.EVENT_TYPE as eventType,
-            case ev.EVENT_STATE
-            when '01' then '已处理'
-            when '02' then '已上报'
-            when '03' then '已通知'
-            when '04' then '误报解除'
-            end as eventStateCn,
+            (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1005' and di.DICT_CD=ev.EVENT_STATE) as eventStateCn,
             ev.EVENT_STATE as eventState,
             ve.VENUES_PHONE as venuesPhone,
             ve.VENUES_NAME as venuesName,
