@@ -812,10 +812,14 @@
             (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1004' and DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
             ve.PICTURES_PATH as venuesPicture,
             ev.EVENT_STATE as eventState,
+            (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1005' and DICT_CD=ev.EVENT_STATE) as eventStateNm,
             DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
-            case when us.USER_NM is not null then us.USER_NM
-            else fzz.MANAGER_CN_NM
-            end as handlePerson,
+            if(us.USER_NM is not null,
+            CONCAT(us.USER_NM,'(',(select r.ROLE_NM from rm_sys_role r where r.ROLE_ID=us.IDENTITY),')'),
+            if(fzz.MANAGER_CN_NM is not null,
+            CONCAT(fzz.MANAGER_CN_NM,'(负责人)'),
+            ta.HANDLE_PERSON ))
+            as handlePerson,
             case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId,
             ev.EVENT_LEVEL as emergencyLevel,
             case ev.EVENT_LEVEL
@@ -824,7 +828,7 @@
             else ta.EMERGENCY_LEVEL
             end as emergencyLevelCn,
             IFNULL((select if( ti.ASSIGNEE_ is not null,'1','0') from act_hi_actinst ti
-            where ti.PROC_INST_ID_=ta.PROC_INST_ID and ti.ASSIGNEE_='17689903431' and ti.END_TIME_ is null  ),'0' )
+            where ti.PROC_INST_ID_=ta.PROC_INST_ID and ti.ASSIGNEE_=#{vo.searchFive} and ti.END_TIME_ is null  ),'0' )
             as grantFlag,
             if(ta.HANDLE_RESULTS is null,'无法解决',if(ta.HANDLE_RESULTS='1','已解决','无法解决')) as handleResults
         from RM_EVENT_INFO ev

@@ -12,7 +12,6 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
-import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -378,6 +377,43 @@ public class TaskServiceImpl implements TaskService {
                 }
             }
 
+            //查询
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取我的任务成功！";
+        }catch (RuntimeException r){
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            message= "获取我的任务失败！";
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,total,taskList.toArray());
+    }
+
+    @Override
+    public PageResponse getFirstTask(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取我的任务";
+        List<Map<String,Object>> taskList = new ArrayList<>();
+        long total=0l;
+        try {
+            ParamsVo vo=new ParamsVo();
+            //分页
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+            if(page!=null&&size!=null){
+                page=(page-1)*size;
+            }
+            vo.setPage(page);
+            vo.setSize(size);
+            //用户
+            String login = this.getLogin(token);
+            vo.setSearchOne(login);
+
+            taskList=taskInfoMapper.getFirstTask(vo);
+            total=taskInfoMapper.getFirstTaskTotal(vo);
             //查询
             code= ResultCode.SUCCESS.getCode();
             message= "获取我的任务成功！";

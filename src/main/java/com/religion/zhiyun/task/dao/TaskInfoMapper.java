@@ -119,6 +119,9 @@ public interface TaskInfoMapper {
     //全部
     List<Map<String,Object>> getMyTask(@Param("vo") ParamsVo vo);
     Long getMyTaskTotal(@Param("vo") ParamsVo vo);
+    //首页（非ai）
+    List<Map<String,Object>> getFirstTask(@Param("vo") ParamsVo vo);
+    Long getFirstTaskTotal(@Param("vo") ParamsVo vo);
 
     /**
      *获取我的任务（PC）

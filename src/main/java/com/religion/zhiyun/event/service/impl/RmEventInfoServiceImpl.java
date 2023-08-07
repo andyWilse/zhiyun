@@ -1420,6 +1420,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             venuesArr=relVenuesId.split(",");
             vo.setVenuesArr(venuesArr);
         }
+        vo.setSearchFive(login);
         return vo;
 
     }

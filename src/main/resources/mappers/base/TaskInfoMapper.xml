@@ -133,14 +133,16 @@
         join act_hi_comment  co on ti.ASSIGNEE_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
-        where ti.PROC_INST_ID_=#{procInstId})
+        where ti.PROC_INST_ID_=#{procInstId}
+        order by TIME_
+        )
         union all
         (select
             DATE_FORMAT(ti.END_TIME_,'%Y-%m-%d %H:%i:%s') as handleTime,
             '' as message,
             '' as taskNm,
             ti.PROC_INST_ID_ as id,
-            '',
+            ti.START_TIME_,
             ti.act_id_ as actId
         from act_hi_actinst ti
         left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
@@ -151,7 +153,7 @@
         )
         ) task
         where task.taskNm is not null
-
+        order by START_TIME_
     </select>
 
     <select id="getTaskSend" resultType="map">
@@ -1238,6 +1240,50 @@
         <if test="vo.searchOne!=null and vo.searchOne!=''">
             and ta.TASK_NAME LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
+    </select>
+
+
+    <select id="getFirstTask" resultType="map">
+        SELECT
+            ta.TASK_NAME as taskName,
+            case when ve.VENUES_NAME is not null then ve.VENUES_NAME else '' end as venuesName,
+            case when ve.VENUES_ADDRES is not null then ve.VENUES_ADDRES else '' end as venuesAddres,
+            case when ta.HANDLE_TIME is not null then  '已完成' else '待完成' end as statTask,
+            ta.PROC_INST_ID as procInstId,
+            DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as taskTime,
+            case ta.EMERGENCY_LEVEL when '01' then '紧急' when '02' then '普通' else ta.EMERGENCY_LEVEL end as emeLevelCn,
+            ta.EMERGENCY_LEVEL as emeLevel,
+            ta.FLOW_TYPE as flowType,
+            if(u.USER_NM is not null, u.USER_NM,if(m.MANAGER_CN_NM is not null,m.MANAGER_CN_NM,ta.LAUNCH_PERSON )) as launchPerson,
+            '330000' as province,
+            '330300' as city,
+            ve.area as area,
+            case  ta.REL_VENUES_ID!=u.area
+            when ta.REL_VENUES_ID=ve.VENUES_ID then ve.town
+            when ve.VENUES_ID is null then ta.REL_VENUES_ID
+            else ''
+            end as town,
+            TASK_CONTENT as taskContent
+        FROM rm_task_info ta
+        left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where ac.ASSIGNEE_=#{vo.searchOne}
+        and ta.REL_EVENT_ID is null
+        order by ta.EMERGENCY_LEVEL ,ta.LAUNCH_TIME desc
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getFirstTaskTotal" resultType="long">
+        select COUNT(ta.TASK_ID)
+        FROM rm_task_info ta
+        left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
+        left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        where ac.ASSIGNEE_=#{vo.searchOne}
+        and ta.REL_EVENT_ID is null
     </select>
 
 </mapper>

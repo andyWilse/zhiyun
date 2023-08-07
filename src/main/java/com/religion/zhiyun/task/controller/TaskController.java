@@ -76,6 +76,12 @@ public class TaskController {
         return taskService.getMyTask(map,token);
     }
 
+    //APP我的任务
+    @RequestMapping("/app/getFirstTask")
+    public PageResponse getFirstTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+        return taskService.getFirstTask(map,token);
+    }
+
     //PC任务
     @RequestMapping("/pc/getMyTask")
     public PageResponse getPcTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
