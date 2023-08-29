@@ -205,10 +205,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 relVenuesId = Integer.parseInt(venue);
             }
 
-            //1.摄像设备处理
+           /* //1.摄像设备处理
             if(null!=pictureRecs && !pictureRecs.isEmpty()){
                 event.setEventResource(ParamCode.EVENT_FILE_00.getCode());
-            }/*else if(null!=videoUrl && !videoUrl.isEmpty() && null!=cameraId && !cameraId.isEmpty()){
+            }else if(null!=videoUrl && !videoUrl.isEmpty() && null!=cameraId && !cameraId.isEmpty()){
                 event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
                 //判断数据库是否存在
                 List<MonitroEntity> monitorsList = rmMonitroInfoMapper.getMonitorsList(cameraId);

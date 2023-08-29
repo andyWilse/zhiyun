@@ -69,8 +69,8 @@ public class HttpParamers {
         return this.jsonParamer;
     }
 
-    public void setJsonParamer() {
-        this.jsonParamer = JSON.toJSONString(this.params);
+    public void setJsonParamer(Map<String, Object> jsonParamer) {
+        this.jsonParamer = JSON.toJSONString(jsonParamer);
     }
 
     private static boolean isEmpty(CharSequence cs) {

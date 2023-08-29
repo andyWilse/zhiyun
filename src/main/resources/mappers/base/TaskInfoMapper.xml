@@ -1112,7 +1112,7 @@
 
     </select>
 
-    <select id="getSubmitEvent" resultType="com.religion.zhiyun.interfaces.entity.minzong.SubmitEntity">
+    <select id="getSubmitEvent" resultType="map">
         SELECT
             ta.TASK_NAME as title,
             #{login} as reporterPhone,
@@ -1123,7 +1123,7 @@
             ve.AREA as adcode,
             ve.TOWN as towncode,
             ve.VENUES_ADDRES as detailedAddress,
-            ta.LAUNCH_TIME as occurTime,
+            DATE_FORMAT(ta.LAUNCH_TIME,'%Y-%m-%d %H:%i:%s') as occurTime,
             ta.FLOW_TYPE as flowType
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID

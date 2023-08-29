@@ -21,8 +21,8 @@ public enum ParamCode {
     FILE_TYPE_03("03", "视频"),
 
     //事件文件类型
-    EVENT_FILE_00("00", "AI预警(图片)"),
-    EVENT_FILE_01("01", "AI预警(视频)"),
+    //EVENT_FILE_00("00", "AI预警(视频)"),
+    EVENT_FILE_01("01", "AI预警(图片)"),
     EVENT_FILE_02("02", "烟感"),
 
     //事件类型

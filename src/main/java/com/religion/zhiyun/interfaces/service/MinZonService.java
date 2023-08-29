@@ -1,15 +1,12 @@
 package com.religion.zhiyun.interfaces.service;
 
-import com.religion.zhiyun.interfaces.entity.minzong.AuthorEntity;
-import com.religion.zhiyun.interfaces.entity.minzong.DictBizEntity;
-import com.religion.zhiyun.interfaces.entity.minzong.SceneEntity;
-import com.religion.zhiyun.interfaces.entity.minzong.TokenEntity;
+import com.religion.zhiyun.interfaces.entity.minzong.*;
 import com.religion.zhiyun.utils.response.AppResponse;
 
 public interface MinZonService {
 
     /** 民宗快响：获取授权码 **/
-    public AuthorEntity getAuthorize() throws Exception;
+    public BaseEntity getAuthorize() throws Exception;
 
     /** 民宗快响：获取token **/
     public TokenEntity getToken(String authorizeCode) throws Exception;

@@ -5,6 +5,7 @@ import com.religion.zhiyun.interfaces.service.MinZonService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
@@ -18,7 +19,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MinZonServiceImpl implements MinZonService {
@@ -32,24 +35,33 @@ public class MinZonServiceImpl implements MinZonService {
     @Value("${min.zon.appSecret}")
     private String appSecret;
 
+    @Value("${min.zon.tenantId}")
+    private String tenantId;
+
+    @Value("${min.zon.systemId}")
+    private String systemId;
+
+    @Value("${min.zon.responseType}")
+    private String responseType;
+
+    @Value("${min.zon.grantType}")
+    private String grantType;
+
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private TaskInfoMapper taskInfoMapper;
 
     @Override
-    public AuthorEntity getAuthorize() throws Exception {
+    public BaseEntity getAuthorize() throws Exception {
         String authorizeUrl=baseUrl+"/oauth2/authorize";
-        String authorizeCode="";//返回值
-
         //请求参数
-        String code="";
         String state= String.valueOf(new Random().nextInt(999999));
 
         //1.请求参数封装
         HttpParamers params=new HttpParamers(HttpMethod.GET);
         params.addParam("appId",appId);//服务端分配的客户端id
-        params.addParam("responseType",code);//此值固定传：code
+        params.addParam("responseType",responseType);//此值固定传：code
         //用于保持请求和回调的状态，授权请求后原样带回给第三方。该参数可用于防止csrf攻击（跨站请求伪造攻击），建议第三方带上该参数，
         // 可设置为简单的随机数加session进行校验
         params.addParam("state",state);
@@ -57,18 +69,17 @@ public class MinZonServiceImpl implements MinZonService {
         //2.结果解析
         HttpService httpService=new HttpService(authorizeUrl);
         String response = httpService.service(authorizeUrl, params);
-        AuthorEntity entity=JsonUtils.jsonTOBean(response,AuthorEntity.class);
+        BaseEntity entity=JsonUtils.jsonTOBean(response,BaseEntity.class);
         return entity;
     }
 
     @Override
     public TokenEntity getToken(String authorizeCode) throws Exception {
+        //token有效24小时，2小时内最多允许获取5次
         String tokenUrl=baseUrl+"/oauth2/token";
         String token="";//返回值
 
         //请求参数
-        String grantType="";
-        String tenantId="";
         //1.请求参数封装
         HttpParamers params=new HttpParamers(HttpMethod.GET);
         params.addParam("appId",appId);//服务端分配的客户端id
@@ -98,17 +109,20 @@ public class MinZonServiceImpl implements MinZonService {
 
             /**3.2.请求参数封装 json**/
             HttpParamers params=new HttpParamers(HttpMethod.POST);
-            params.addParam("params",this.getParam(procInstId,token));
-
+            //上报内容
+            Map<String,Object> jsonParamer=this.getParam(procInstId,token);
+            params.setJsonParamer(jsonParamer);
             /**3.3.接口调用**/
             HttpService httpService=new HttpService(submitUrl);
             String submitResponse = httpService.service(submitUrl, params, header);
             BaseEntity baseEntity = JsonUtils.jsonTOBean(submitResponse, BaseEntity.class);
             Boolean success=baseEntity.isSuccess();
+            int code = baseEntity.getCode();
             String msg=baseEntity.getMsg();
 
             /**3.4.结果分析**/
-            if(!success){
+            if(200!=code || !success){
+                codes=code;
                 throw new RuntimeException("民宗快响事件上报调用,响应失败:"+msg);
             }
 
@@ -207,37 +221,47 @@ public class MinZonServiceImpl implements MinZonService {
      * @return
      * @throws Exception
      */
-    public HttpHeader getHttpHeader() throws Exception {
-        String authorizeCode ="";//授权码
-        String accessToken ="";//token
-        /** 1. 获取授权码 **/
-        //1.1.获取授权码
-        AuthorEntity authorize = this.getAuthorize();
-        Boolean success=authorize.isSuccess();
-        String msg = authorize.getMsg();
-        int code= authorize.getCode();
-        String states = authorize.getState();
+    public HttpHeader getHttpHeader() throws Exception,RuntimeException {
+        String authorizeCode =stringRedisTemplate.opsForValue().get("authorizeCode");//授权码
+        String accessToken =stringRedisTemplate.opsForValue().get("accessToken");//token
+        String tokenType =stringRedisTemplate.opsForValue().get("tokenType");;
 
-        //1.2.返回数据解析
-        if(success){
-            authorizeCode = authorize.getAuthorizeCode();
-        }else{
-            throw new RuntimeException("民宗快响获取授权码调用,响应失败:"+msg);
-        }
-        /** 2. 获取token **/
-        //2.1.获取token
-        TokenEntity tokenEntity = this.getToken(authorizeCode);
-        code = tokenEntity.getCode();//状态码
-        Object data = tokenEntity.getData();//承载数据
-        String tokenType = tokenEntity.getToken_type();//token类型
-        String expiresIn = tokenEntity.getExpires_in();//有效期：默认24小时
-        msg = tokenEntity.getMsg();//返回消息
-        success = tokenEntity.isSuccess();//是否成功
-        //2.2.返回数据解析
-        if(success){
-            accessToken=tokenEntity.getAccess_token();;
-        }else{
-            throw new RuntimeException("民宗快响获取token调用,响应失败:"+msg);
+        if(GeneTool.isEmpty(authorizeCode)){
+            /** 1. 获取授权码 **/
+            //1.1.获取授权码
+            BaseEntity authorize = this.getAuthorize();
+            int code= authorize.getCode();
+            Boolean success=authorize.isSuccess();
+            String msg = authorize.getMsg();
+
+            //1.2.返回数据解析
+            if(success){
+                String data = authorize.getData();
+                AuthorEntity dataVo=JsonUtils.jsonTOBean(data,AuthorEntity.class);
+                authorizeCode = dataVo.getAuthorizeCode();
+                //String state = dataVo.getState();
+                stringRedisTemplate.opsForValue().set("authorizeCode",authorizeCode,12*60*60, TimeUnit.SECONDS);
+            }else{
+                throw new RuntimeException("民宗快响获取授权码调用,响应失败:"+msg);
+            }
+            /** 2. 获取token **/
+            //2.1.获取token
+            TokenEntity tokenEntity = this.getToken(authorizeCode);
+            int tokenCode = tokenEntity.getCode();//状态码
+            Boolean tokenSuccess = tokenEntity.isSuccess();//是否成功
+            String tokenMsg = tokenEntity.getMsg();//返回消息
+            //2.2.返回数据解析
+            if(tokenSuccess){
+                String tokenData = (String) tokenEntity.getData();//承载数据
+                TokenEntity dataVo=JsonUtils.jsonTOBean(tokenData,TokenEntity.class);
+                //String expiresIn = dataVo.getExpires_in();//有效期：默认24小时
+                tokenType = dataVo.getToken_type();//token类型
+                accessToken=dataVo.getAccess_token();
+                stringRedisTemplate.opsForValue().set("tokenType",tokenType,12*60*60, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set("accessToken",accessToken,12*60*60, TimeUnit.SECONDS);
+            }else{
+                throw new RuntimeException("民宗快响获取token调用,响应失败:"+tokenMsg);
+            }
         }
 
         /**3. 事件上报**/
@@ -248,8 +272,9 @@ public class MinZonServiceImpl implements MinZonService {
         //获取token接口返回的token_type与access_token两个值拼接，中间以空格隔开
         String bladeAuthHead=tokenType+" "+accessToken;
         HttpHeader header=new HttpHeader();
+        authorizationHead="Basic "+authorizationHead;
         header.addParam("Authorization",authorizationHead);
-        header.addParam("Blade‑Auth",bladeAuthHead);
+        header.addParam("Blade-Auth",bladeAuthHead);
 
         return header;
     }
@@ -258,7 +283,7 @@ public class MinZonServiceImpl implements MinZonService {
      * 封装上报数据
      * @return
      */
-    public String getParam(String procInstId,String token) throws Exception {
+    public Map<String,Object> getParam(String procInstId,String token) throws Exception {
         if(procInstId.isEmpty()){
             throw new RuntimeException("流程id丢失，请联系管理员！");
         }
@@ -269,14 +294,15 @@ public class MinZonServiceImpl implements MinZonService {
         }
 
         //获取事件基本信息
-        SubmitEntity submitEvent = taskInfoMapper.getSubmitEvent(procInstId, loginNm);
+        Map<String,Object> submitEvent = taskInfoMapper.getSubmitEvent(procInstId, loginNm);
         if(null==submitEvent){
             throw new RuntimeException("事件基本信息丢失，请联系管理员！");
         }
         //获取场景
         String code="";//1-突发事件;2-网络舆情;3-重大任务交办;4-事件通报;
         String type="01";
-        String flowType = submitEvent.getFlowType();
+
+        String flowType = (String) submitEvent.get("flowType");
         if(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode().equals(flowType)){
             code="1";
         }else if(TaskParamsEnum.TASK_FLOW_TYPE_02.getCode().equals(flowType)){
@@ -290,21 +316,24 @@ public class MinZonServiceImpl implements MinZonService {
         }else{
             code="0";
         }
-        SceneEntity scene = this.getScene(code, type);
-        String msg = scene.getMsg();
+        //SceneEntity scene = this.getScene(code, type);
+        /*String msg = scene.getMsg();
         boolean success = scene.isSuccess();
         if(success){
             submitEvent.setEventType(Integer.parseInt(code));
             submitEvent.setSceneId(Integer.parseInt(scene.getKey()));
         }else{
             throw new RuntimeException("民宗快响业务场景调用,响应失败:"+msg);
-        }
+        }*/
+        submitEvent.put("eventType",Integer.parseInt(code));
+        submitEvent.put("sceneId",Integer.parseInt(code));
 
         //事件等级
         int eventLevel=0;
-        String towncode = submitEvent.getTowncode();
-        String adcode = submitEvent.getAdcode();
-        String citycode = submitEvent.getCitycode();
+
+        String towncode = (String) submitEvent.get("towncode");
+        String adcode = (String) submitEvent.get("adcode");
+        String citycode = (String) submitEvent.get("citycode");
         if(!towncode.isEmpty()){
             eventLevel=2;
         }else if(!adcode.isEmpty()){
@@ -312,11 +341,10 @@ public class MinZonServiceImpl implements MinZonService {
         }else{
             eventLevel=1;
         }
-        submitEvent.setLevel(eventLevel);
-
+        submitEvent.put("level",eventLevel);
         //来源
-        submitEvent.setOrigion("3");
+        submitEvent.put("origion","3");
 
-        return JsonUtils.beanToJson(submitEvent);
+        return submitEvent;
     }
 }

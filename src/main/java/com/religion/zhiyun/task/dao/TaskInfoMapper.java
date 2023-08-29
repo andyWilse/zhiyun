@@ -177,7 +177,7 @@ public interface TaskInfoMapper {
      * @param login
      * @return
      */
-    SubmitEntity getSubmitEvent(@Param("procInstId") String procInstId,@Param("login") String login);
+    Map<String,Object> getSubmitEvent(@Param("procInstId") String procInstId,@Param("login") String login);
 
 
 }

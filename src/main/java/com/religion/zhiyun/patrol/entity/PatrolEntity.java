@@ -3,6 +3,7 @@ package com.religion.zhiyun.patrol.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -21,7 +22,7 @@ public class PatrolEntity {
     private int relVenuesId;
 
     @Column(name = "SCORE")
-    private int score;
+    private BigDecimal score;
 
     @Column(name = "SAFE_PASS")
     private int safePass;
