@@ -15,6 +15,7 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
@@ -104,29 +105,70 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
         try {
             EventEntity event=new EventEntity();
+            event.setEventData(eventJson);
             AiEntity aiEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
             String eventPlaceName = aiEntity.getEventPlaceName();//地址
-            String deviceId = aiEntity.getDeviceId();//监控通道编码
 
             event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
             //2.预警信息处理
-            event.setAccessNumber(deviceId);
             event.setWarnTime(TimeTool.getYmdHms());
-            //预警类型
-            event.setEventType(aiEntity.getAreaCode());
+            //“人员聚集”、“发现重点人员”、“明火检测” 01-明火;02-超限;03-重点;04-集聚
             //程度
-            event.setEventLevel("1");//普通
-            String emergencyLevel="02";
-
+            String eventLevel=ParamCode.EVENT_LEVEL_02.getCode();
+            String content = aiEntity.getContent();
+            String eventType="";
+            if(content.contains("明火")){
+                eventType=ParamCode.EVENT_TYPE_01.getCode();
+                eventLevel=ParamCode.EVENT_LEVEL_01.getCode();
+            }else if(content.contains("重点")){
+                eventType=ParamCode.EVENT_TYPE_03.getCode();
+            }else if(content.contains("聚集")){
+                eventType=ParamCode.EVENT_TYPE_04.getCode();
+            }else{
+                eventType="0";
+            }
+            //预警类型
+            event.setEventType(eventType);
+            event.setEventLevel(eventLevel);//普通
             event.setEventState(ParamCode.EVENT_STATE_03.getCode());
             //获取场所id
+            String deviceId = aiEntity.getDeviceId();//监控通道编码
             String venue = monitorBaseMapper.getVenue(deviceId);
+            if(GeneTool.isEmpty(venue)){
+                throw  new RuntimeException("AI预警通道："+deviceId+"场所信息不存在，请联系管理员！");
+            }
             int relVenuesId = Integer.parseInt(venue);
             event.setRelVenuesId(relVenuesId);
-            event.setHandleResults("0");
+            event.setHandleResults("预警已发起！");
             event.setHandleTime(TimeTool.getYmdHms());
             event.setDeviceCode(deviceId);//设备编码
-            //查询数据库数据是否存在，不存在新增；存在，修改
+            event.setAccessNumber(deviceId);
+
+            String deviceName = aiEntity.getDeviceName();
+            event.setDeviceName(deviceName);
+            aiEntity.getTitle()
+            event.setDeviceType(content);
+            //图片处理
+            String eventFile = aiEntity.getEventFile();
+            /*String[] split = eventFile.split("=");
+            int length = split.length;
+            String fileName = split[length - 1];*/
+            FileEntity fileEntity=new FileEntity();
+            fileEntity.setFilePath(eventFile);
+            fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+            fileEntity.setCreator("AI预警图片");
+            fileEntity.setCreateTime(TimeTool.getYmdHms());
+            rmFileMapper.add(fileEntity);
+            int fileId = fileEntity.getFileId();
+            event.setPicturesPath(String.valueOf(fileId));
+
+            //事件新增
+            rmEventInfoMapper.addEvent(event);
+            int eventId = event.getEventId();
+            //3.短信通知，新增通知任务发起
+            //this.addNotifiedParty(eventType, relVenuesId,eventId,eventPlaceName,eventLevel);
+
+           /* //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
             int eventId =0;
             if(null!=eventEntity){
@@ -134,14 +176,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 eventId = eventEntity.getEventId();
                 //rmEventInfoMapper.updateEvent(eventEntity);
             }else{
-                //新增
-                rmEventInfoMapper.addEvent(event);
-                eventId = event.getEventId();
-                //3.短信通知，新增通知任务发起
-                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,eventPlaceName,emergencyLevel);
-            }
 
-            code=ResultCode.FAILED.getCode();
+            }*/
+
+            code=ResultCode.SUCCESS.getCode();
             message="AI告警,数据处理成功！";
         } catch (RuntimeException r) {
             message=r.getMessage();
@@ -1015,7 +1053,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         }else{
             throw new RuntimeException("该场所内尚未添加相关成员！");
         }
-
 
         //2.教职人员
         if("01".equals(eventType)){

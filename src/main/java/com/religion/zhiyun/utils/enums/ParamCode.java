@@ -26,8 +26,8 @@ public enum ParamCode {
     EVENT_FILE_02("02", "烟感"),
 
     //事件类型
-    EVENT_LEVEL_0("0", "事件"),
-    EVENT_LEVEL_1("1", "次要"),
+    EVENT_LEVEL_01("01", "紧急"),
+    EVENT_LEVEL_02("02", "普通"),
     //事件类型
     /*EVENT_TYPE_01("01", "火灾预警"),
     EVENT_TYPE_02("02", "人脸识别"),

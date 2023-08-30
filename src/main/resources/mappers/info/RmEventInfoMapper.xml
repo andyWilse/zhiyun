@@ -10,7 +10,6 @@
         DEVICE_TYPE as deviceType,
         WARN_TIME as warnTime,
         REL_VENUES_ID as relVenuesId,
-        RESPONSIBLE_PERSON as responsiblePerson,
         EVENT_TYPE as eventType,
         RAWDATA as rawData,
         EVENT_DATA as eventData,
@@ -39,7 +38,6 @@
             ACCESS_NUMBER,
             WARN_TIME,
             REL_VENUES_ID,
-            RESPONSIBLE_PERSON,
             EVENT_TYPE,
             EVENT_STATE,
             HANDLE_RESULTS,
@@ -53,7 +51,6 @@
             #{accessNumber},
             #{warnTime},
             #{relVenuesId},
-            #{responsiblePerson},
             #{eventType},
             #{eventState},
             #{handleResults},
@@ -103,7 +100,7 @@
     </insert>
     <update id="updateEvent">
         update rm_event_info
-        set RESPONSIBLE_PERSON=#{responsiblePerson},
+        set
             EVENT_TYPE=#{eventType},
             EVENT_STATE=#{eventState},
             HANDLE_RESULTS=#{handleResults}
@@ -114,6 +111,7 @@
         delete from rm_event_info
         where EVENT_ID=#{eventId}
     </delete>
+
     <select id="allEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
         select <include refid="eventColumn"/>
         from rm_event_info
@@ -150,7 +148,6 @@
             DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
             ve.VENUES_ADDRES as venuesAddres,
             ve.VENUES_NAME as venuesName,
-            e.RESPONSIBLE_PERSON as responsiblePerson,
             EVENT_TYPE as eventType,
             (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=e.EVENT_TYPE) as eventTypeNm,
             EVENT_STATE as eventState,
@@ -211,7 +208,6 @@
                 e.WARN_TIME as warnTime,
                 ve.VENUES_ADDRES as venuesAddres,
                 ve.VENUES_NAME as venuesName,
-                e.RESPONSIBLE_PERSON as responsiblePerson,
                 (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=e.EVENT_TYPE) as eventType,
                 e.EVENT_DATA as eventData,
                 e.LOCATION as location,
@@ -360,7 +356,6 @@
                 EVENT_ID as eventId,
                 DATE_FORMAT(WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
                 v.VENUES_ADDRES as venuesAddres,
-                ev.RESPONSIBLE_PERSON as responsiblePerson,
                 EVENT_TYPE as eventType,
                 (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
                 EVENT_STATE as eventState,
@@ -727,9 +722,6 @@
         </if>
         <if test="eventType!=null and eventType!=''">
             and e.EVENT_TYPE=#{eventType}
-        </if>
-        <if test="responsiblePerson!=null and responsiblePerson!=''">
-            and e.RESPONSIBLE_PERSON=#{responsiblePerson}
         </if>
         <if test="relVenuesId!=null and relVenuesId!=''">
             and e.REL_VENUES_ID=#{relVenuesId}

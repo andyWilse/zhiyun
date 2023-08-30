@@ -140,7 +140,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             event.setRelVenuesId(Integer.parseInt(venuesId));
             event.setAccessNumber(repairAccessNumber);
             event.setEventType(ParamCode.EVENT_TYPE_05.getCode());
-            event.setEventLevel(ParamCode.EVENT_LEVEL_1.getCode());
+            event.setEventLevel(ParamCode.EVENT_LEVEL_02.getCode());
             event.setEventResource(ParamCode.EVENT_TYPE_05.getCode());
             event.setLocation(locationName);
             event.setPicturesPath(picturePath);
