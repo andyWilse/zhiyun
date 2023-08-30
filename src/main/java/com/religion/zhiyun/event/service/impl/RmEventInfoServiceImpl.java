@@ -107,8 +107,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             EventEntity event=new EventEntity();
             event.setEventData(eventJson);
             AiEntity aiEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
-            String eventPlaceName = aiEntity.getEventPlaceName();//地址
-
             event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
             //2.预警信息处理
             event.setWarnTime(TimeTool.getYmdHms());
@@ -116,6 +114,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //程度
             String eventLevel=ParamCode.EVENT_LEVEL_02.getCode();
             String content = aiEntity.getContent();
+            event.setDeviceCode(content);
             String eventType="";
             if(content.contains("明火")){
                 eventType=ParamCode.EVENT_TYPE_01.getCode();
@@ -141,13 +140,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setRelVenuesId(relVenuesId);
             event.setHandleResults("预警已发起！");
             event.setHandleTime(TimeTool.getYmdHms());
-            event.setDeviceCode(deviceId);//设备编码
-            event.setAccessNumber(deviceId);
+            event.setAccessNumber(deviceId);//设备编码
 
             String deviceName = aiEntity.getDeviceName();
             event.setDeviceName(deviceName);
-            aiEntity.getTitle()
-            event.setDeviceType(content);
+            String title = aiEntity.getTitle();
+            event.setDeviceType(title);
             //图片处理
             String eventFile = aiEntity.getEventFile();
             /*String[] split = eventFile.split("=");
@@ -161,12 +159,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             rmFileMapper.add(fileEntity);
             int fileId = fileEntity.getFileId();
             event.setPicturesPath(String.valueOf(fileId));
-
+            String eventPlaceName = aiEntity.getEventPlaceName();//地址
+            event.setLocation(eventPlaceName);
             //事件新增
             rmEventInfoMapper.addEvent(event);
             int eventId = event.getEventId();
             //3.短信通知，新增通知任务发起
-            //this.addNotifiedParty(eventType, relVenuesId,eventId,eventPlaceName,eventLevel);
+            this.addNotifiedParty(eventType, relVenuesId,eventId,eventPlaceName,eventLevel);
 
            /* //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
@@ -599,8 +598,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 event.setDeviceType(deviceType);
                 event.setWarnTime(TimeTool.getYmdHms());
                 event.setEventType(ParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
-                event.setRawData(rawData);
-                event.setEventData(data);
+                event.setEventData(eventEntity);
                 event.setEventLevel("01");//火警默认严重
                 event.setLocation(location);
                 event.setEventState(ParamCode.EVENT_STATE_03.getCode());

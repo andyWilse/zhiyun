@@ -11,7 +11,6 @@
         WARN_TIME as warnTime,
         REL_VENUES_ID as relVenuesId,
         EVENT_TYPE as eventType,
-        RAWDATA as rawData,
         EVENT_DATA as eventData,
         EVENT_LEVEL as eventLevel,
         LOCATION as location,
@@ -46,7 +45,11 @@
             EVENT_LEVEL,
             PICTURES_PATH,
             VIDEOS_PATH,
-            DEVICE_CODE
+            DEVICE_CODE,
+            DEVICE_NAME,
+            DEVICE_TYPE,
+            EVENT_DATA,
+            LOCATION
         ) values (
             #{accessNumber},
             #{warnTime},
@@ -59,7 +62,11 @@
             #{eventLevel},
             #{picturesPath},
             #{videosPath},
-            #{deviceCode}
+            #{deviceCode},
+            #{deviceName},
+            #{deviceType},
+            #{eventData},
+            #{location}
         )
     </insert>
     <insert id="addEventByNB" useGeneratedKeys="true" keyProperty="eventId">
@@ -69,7 +76,6 @@
             DEVICE_TYPE,
             WARN_TIME,
             EVENT_TYPE,
-            RAWDATA,
             EVENT_DATA,
             EVENT_LEVEL,
             LOCATION,
@@ -85,7 +91,6 @@
             #{deviceType},
             #{warnTime},
             #{eventType},
-            #{rawData},
             #{eventData},
             #{eventLevel},
             #{location},

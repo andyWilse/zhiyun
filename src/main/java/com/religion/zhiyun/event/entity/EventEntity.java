@@ -36,22 +36,14 @@ public class EventEntity implements Serializable {
     @Column(name = "REL_VENUES_ID")
     private int relVenuesId;//地点   关联场所主键id
 
-    @Column(name = "RESPONSIBLE_PERSON")
-    private String responsiblePerson;//责任人
-
     @Column(name = "EVENT_TYPE")
     private String eventType;//事件类型  00-火灾预警；01-人脸识别；02-任务预警；03-人流聚集
-
-    @Column(name = "RAWDATA")
-    private String rawData;//原始数据
-
 
     @Column(name = "EVENT_DATA")
     private String eventData;//消息内容
 
-
     @Column(name = "EVENT_LEVEL")
-    private String eventLevel;//事件级别:事件=0,次要=1,重要=2,严重=3, 不填为严重。（火警默认严重
+    private String eventLevel;//紧急程度
 
     @Column(name = "LOCATION")
     private String location;//设备位置
