@@ -958,7 +958,7 @@
             end as emergencyLevelCn,
             ve.town as townCode,
             (select t.TOWN_NAME from rm_town_info t where t.TOWN_CODE=ve.town) as townNm,
-            ev.PICTURES_PATH as eventPicture,
+            if(ev.PICTURES_PATH is null,'',ev.PICTURES_PATH) as eventPicture,
             ev.ACCESS_NUMBER as channelId,
             case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
         from RM_EVENT_INFO ev

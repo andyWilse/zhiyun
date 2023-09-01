@@ -1,9 +1,11 @@
 package com.religion.zhiyun.interfaces.service;
 
+import com.religion.zhiyun.utils.response.AppResponse;
+
 public interface AiEventService {
     /**
      *
-     * @param fileName
+     * @param fileId
      */
-    String getAiFile(String fileName)throws Exception,RuntimeException;
+    AppResponse getAiFile(String fileId);
 }

@@ -148,9 +148,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             event.setDeviceType(title);
             //图片处理
             String eventFile = aiEntity.getEventFile();
-            /*String[] split = eventFile.split("=");
-            int length = split.length;
-            String fileName = split[length - 1];*/
             FileEntity fileEntity=new FileEntity();
             fileEntity.setFilePath(eventFile);
             fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
@@ -1558,7 +1555,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             auth.setSearchThree(venues);
 
             mapList = rmEventInfoMapper.getEventDp(auth);
-            if(null!=mapList && mapList.size()>0){
+           /* if(null!=mapList && mapList.size()>0){
                 for(int i=0;i<mapList.size();i++){
                     Map<String, Object> maps = mapList.get(i);
                     String eventPicture = (String) maps.get("eventPicture");
@@ -1569,7 +1566,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         }
                     }
                 }
-            }
+            }*/
             total=rmEventInfoMapper.getEventDpTotal(auth);
 
             code=ResultCode.SUCCESS.getCode();
