@@ -36,7 +36,7 @@ public enum ParamCode {
     EVENT_TYPE_01("01", "明火"),
     EVENT_TYPE_02("02", "超限"),
     EVENT_TYPE_03("03", "重点"),
-    EVENT_TYPE_04("04", "集聚"),
+    EVENT_TYPE_04("04", "聚集"),
     EVENT_TYPE_05("05", "设备报修"),
     //事件状态
     EVENT_STATE_01("01", "已处理"),

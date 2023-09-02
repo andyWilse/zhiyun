@@ -46,7 +46,7 @@ public class RmEventInfoController {
 
     }
 
-    @PostMapping("/addAiEvent")
+    @PostMapping("/addEvent")
     @ResponseBody
     public AppResponse addAiEvent(@RequestBody String eventJson) {
         return rmEventInfoService.addAiEvent(eventJson);
