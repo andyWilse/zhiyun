@@ -330,14 +330,12 @@
 
     <select id="getVenuesRank" resultType="map">
         select
-            @rownum := @rownum +1 as rank,
             ve.VENUES_ID as venuesId,
             ve.VENUES_NAME as venuesName,
             ton.TOWN_CODE as townCode,
             ton.TOWN_NAME as townName,
             pa.SCORE as score
         from rm_patrol_info pa
-        join (select @rownum :=0 ) nums
         left join rm_venues_info ve on pa.REL_VENUES_ID=ve.VENUES_ID
         left join  rm_town_info ton on ton.TOWN_CODE=ve.town
         <if test="type != null and type == '01'">
@@ -351,7 +349,6 @@
 
     <select id="getTownRank" resultType="map">
         select
-            @rownum := @rownum +1 as rank,
             ra.townCode,
             ra.townName,
             ROUND(ra.score/ra.tot,2) as scoreEvg
@@ -366,7 +363,7 @@
             left join  rm_town_info ton on ton.TOWN_CODE=ve.town
             group by ton.TOWN_CODE,ton.TOWN_NAME
         ) ra
-        join (select @rownum :=0 ) nums
         order by ROUND(ra.score/ra.tot,2)  desc
     </select>
+
 </mapper>

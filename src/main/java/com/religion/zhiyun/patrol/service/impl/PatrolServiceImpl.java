@@ -176,6 +176,12 @@ public class PatrolServiceImpl implements PatrolService {
                 throw new RuntimeException("排行榜类型不能为空！");
             }
             rankList = patrolMapper.getVenuesRank(type);
+            if(null!=rankList && rankList.size()>0){
+                for(int i=0;i<rankList.size();i++){
+                    Map<String, Object> map = rankList.get(i);
+                    map.put("rank",i+1);
+                }
+            }
 
             code= ResultCode.SUCCESS.getCode();
             message="场所综合得分排行榜获取成功！";
@@ -195,6 +201,13 @@ public class PatrolServiceImpl implements PatrolService {
         List<Map<String, Object>> rankList=new ArrayList<>();
         try {
             rankList = patrolMapper.getTownRank();
+            if(null!=rankList && rankList.size()>0){
+                for(int i=0;i<rankList.size();i++){
+                    Map<String, Object> map = rankList.get(i);
+                    map.put("rank",i+1);
+                }
+
+            }
 
             code= ResultCode.SUCCESS.getCode();
             message="街镇综合得分获取成功！";
