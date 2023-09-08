@@ -1,4 +1,4 @@
-package com.religion.zhiyun.test202303.pic;
+package com.religion.zhiyun.pic;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

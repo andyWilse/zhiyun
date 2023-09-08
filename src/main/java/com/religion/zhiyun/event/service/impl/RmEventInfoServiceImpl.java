@@ -104,9 +104,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String message="AI告警,数据处理失败！";
 
         try {
+            System.out.println("AI告警接收："+eventJson);
             EventEntity event=new EventEntity();
             event.setEventData(eventJson);
-            AiEntity aiEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
+
+            AiEntity dataEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
+            String data = dataEntity.getData();
+            AiEntity aiEntity = JsonUtils.jsonTOBean(data, AiEntity.class);
             event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
             //2.预警信息处理
             event.setWarnTime(TimeTool.getYmdHms());

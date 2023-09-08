@@ -1,4 +1,4 @@
-package com.religion.zhiyun.init001;
+package com.religion.zhiyun.init;
 
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.VenuesEntity;

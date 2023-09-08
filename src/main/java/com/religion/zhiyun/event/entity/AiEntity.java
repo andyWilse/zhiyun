@@ -6,6 +6,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AiEntity {
+
+    private String data;//数据
+
     private String receiveName;//接收方标识。必输
     private String innerEventId;//第三方案件号。必输
     private String areaCode;//事件所属区域编码。必输
