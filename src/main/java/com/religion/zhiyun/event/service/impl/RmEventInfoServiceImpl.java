@@ -98,13 +98,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Override
     public AppResponse addAiEvent(String eventJson) {
-        System.out.println("AI告警:"+eventJson);
-        log.info("AI告警:"+eventJson);
+        log.info("AI告警接收:"+eventJson);
         long code=ResultCode.FAILED.getCode();
         String message="AI告警,数据处理失败！";
 
         try {
-            System.out.println("AI告警接收："+eventJson);
             EventEntity event=new EventEntity();
             event.setEventData(eventJson);
 

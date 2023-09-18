@@ -29,6 +29,9 @@ public class AiEventServiceImpl implements AiEventService {
     @Value("${file.ai.image.url}")
     private String  baseUrl;
 
+    @Value("${file.ai.image.down.url}")
+    private String  downUrl;
+
     @Autowired
     private RmFileMapper rmFileMapper;
 
@@ -71,7 +74,7 @@ public class AiEventServiceImpl implements AiEventService {
             String accessToken = entity.getAccess_token();
 
             /**2.获取图⽚接⼝**/
-            String getPictureUrl=baseUrl+"/v1/gb/algorithm/image";
+            String getPictureUrl=downUrl+"/v1/gb/algorithm/image";
             //2.1.HttpHeader参数封装
             HttpHeader picHeader=new HttpHeader();
             String authorizationPic="Bearer "+accessToken;

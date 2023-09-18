@@ -22,14 +22,14 @@ public class SysSchedules {
     @Scheduled(cron ="0 0 9 * * ?")
     public void AutoFill() {
         //普通通知
-        schedulesService.CommonAutoFill();
+        //schedulesService.CommonAutoFill();
     }
 
     /** 每天9点执行一次 **/
     @Scheduled(cron ="0 0 22 1 1/3  ?")
     public void testFill() {
         //普通通知
-        System.out.println("测试------");
+        //System.out.println("测试------");
     }
 
 }
