@@ -48,9 +48,18 @@ public class AiEventServiceImpl implements AiEventService {
             }else{
                 throw new RuntimeException("AI图片信息丢失，请联系管理员！");
             }
-            String[] split = eventFile.split("=");
+            /*String[] split = eventFile.split("=");
             int length = split.length;
-            String fileName = split[length - 1];
+            String fileName = split[length - 1];*/
+
+            String[] split = eventFile.split("&");
+            String storage = split[0];
+            String fm = split[1];
+            String[] spli = storage.split("=");
+            String storageId =spli[1];
+            String[] split1 = fm.split("=");
+            String fileName =split1[1];
+
 
             /**1.获取授权**/
             String authorizeUrl=baseUrl+"/auth/oauth/token";
@@ -67,14 +76,18 @@ public class AiEventServiceImpl implements AiEventService {
             params.addParam("username",userNameAI);
             params.addParam("password",passWordAI);
             //1.3.发送请求
+            System.out.println("发送AI图片授权请求!开始------");
             HttpService httpService=new HttpService(authorizeUrl);
             String response = httpService.service(authorizeUrl, params,header);
+            System.out.println("发送AI图片授权请求!结束------"+response);
             //1.4.结果解析
             AiAuthorEntity entity= JsonUtils.jsonTOBean(response, AiAuthorEntity.class);
             String accessToken = entity.getAccess_token();
+            System.out.println("发送AI图片授权请求结果accessToken:"+accessToken);
 
             /**2.获取图⽚接⼝**/
-            String getPictureUrl=downUrl+"/v1/gb/algorithm/image";
+            //String getPictureUrl=baseUrl+"/hook/v1/gb/algorithm/image";
+            String getPictureUrl=baseUrl+"/img/v1/image";
             //2.1.HttpHeader参数封装
             HttpHeader picHeader=new HttpHeader();
             String authorizationPic="Bearer "+accessToken;
@@ -83,16 +96,21 @@ public class AiEventServiceImpl implements AiEventService {
             picHeader.addParam("Content-Type","multipart/form-data");
             //1.2.body参数封装
             HttpParamers picParams=new HttpParamers(HttpMethod.GET);
-            picParams.addParam("storageId", TimeTool.getYmdHms());//存储桶
+            picParams.addParam("storageId", storageId);//存储桶
             picParams.addParam("fileName",fileName);
             //1.3.发送请求
+            System.out.println("发送AI!开始:storageId("+storageId+")fileName:("+fileName+")!-----");
             HttpService httpServicePic=new HttpService(getPictureUrl);
             String responsePic = httpServicePic.service(getPictureUrl, picParams,picHeader);
+            System.out.println("发送AI!结束------"+responsePic);
             //1.4.结果解析
             AiImageEntity entityImage= JsonUtils.jsonTOBean(responsePic, AiImageEntity.class);
             int code = entityImage.getCode();
+            System.out.println("发送AI图片请求结果code:"+code);
             if(200==code){
-                downloadUrl = entityImage.getDownloadUrl();
+                String dataJson = entityImage.getData();
+                AiImageEntity data= JsonUtils.jsonTOBean(dataJson, AiImageEntity.class);
+                downloadUrl = data.getDownloadUrl();
             }else{
                 String msg = entityImage.getMsg();
                 throw new RuntimeException(msg);

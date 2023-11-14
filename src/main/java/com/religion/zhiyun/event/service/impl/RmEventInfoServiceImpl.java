@@ -125,8 +125,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 eventType=ParamCode.EVENT_TYPE_03.getCode();
             }else if(content.contains("聚集")){
                 eventType=ParamCode.EVENT_TYPE_04.getCode();
-            }else if(content.contains("未成年")){
-                eventType=ParamCode.EVENT_TYPE_05.getCode();
+            }else if(content.contains("未成年")){//未成年检测
+                eventType=ParamCode.EVENT_TYPE_03.getCode();
             }else{
                 eventType="0";
             }

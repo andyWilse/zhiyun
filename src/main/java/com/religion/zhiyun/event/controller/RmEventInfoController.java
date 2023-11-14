@@ -236,7 +236,7 @@ public class RmEventInfoController {
     //折线图（总图）
     @RequestMapping("/daPing/gather")
     public AppResponse getDaPingGather(@RequestParam String dateType) {
-        return rmEventInfoService.getDaPingGather(-5,dateType);
+        return rmEventInfoService.getDaPingGather(-8,dateType);
     }
 
     @GetMapping("/getEventDp")

@@ -944,7 +944,7 @@
             DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d %H:%i:%s') as warnTime,
             ev.EVENT_TYPE as eventType,
             (select DICT_CN_DESC from rm_sys_dict where DICT_TYPE_CD='1004' and DICT_CD=ev.EVENT_TYPE) as eventTypeNm,
-            DATE_FORMAT(ev.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
+            DATE_FORMAT(ta.HANDLE_TIME,'%Y-%m-%d %H:%i:%s') as handleTime,
             case when us.USER_NM is not null then us.USER_NM
             else fzz.MANAGER_CN_NM
             end as handlePerson,

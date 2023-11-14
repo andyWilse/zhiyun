@@ -6,7 +6,15 @@ import org.apache.shiro.util.ByteSource;
 
 public class saltTest {
     public static void main(String[] args) {
-        String name="zuzhang1";
+        String name="https://zjc-cw.sittone.com:51443/hook/v1/gb/algorithm/image?storageId=B5&fileName=pkg30/rect/childDetection/20231110/33030200992007000001/33030461631320000002/33729981271_23440484.jpg";
+        String[] split = name.split("&");
+        String s = split[0];
+        String s1 = split[1];
+        String[] spli = s.split("=");
+        System.out.println(spli[1]);
+        String[] split1 = s1.split("=");
+        System.out.println(split1[1]);
+        /*String name="zuzhang1";
         String salts="10000006";
 
         ByteSource admin = ByteSource.Util.bytes(name+salts);
@@ -24,7 +32,7 @@ public class saltTest {
         System.out.println(aa.equals(passwords));
 
         String pa=String.valueOf(result);
-        System.out.println("pa:"+pa);
+        System.out.println("pa:"+pa);*/
 
        // ByteSource a=
 

@@ -1044,13 +1044,15 @@
             end as town,
             ta.REL_EVENT_ID as eventId,
             ta.TASK_PICTURE as taskPicture,
-            case when ac.END_TIME_ is null then '0' else '1' end as handleFlag
+            case when ac.END_TIME_ is null then '0' else '1' end as handleFlag,
+        if(ev.PICTURES_PATH is null,'',ev.PICTURES_PATH) as fileId
 
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID AND ac.ASSIGNEE_=#{login}
         left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
         left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join RM_EVENT_INFO ev on ev.EVENT_ID=ta.REL_EVENT_ID
         where 1=1
         <if test="procInstId!=null and procInstId!=''">
             and ta.PROC_INST_ID = #{procInstId}
@@ -1285,5 +1287,7 @@
         where ac.ASSIGNEE_=#{vo.searchOne}
         and ta.REL_EVENT_ID is null
     </select>
+
+
 
 </mapper>
