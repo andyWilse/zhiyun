@@ -118,15 +118,20 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String content = aiEntity.getContent();
             event.setDeviceCode(content);
             String eventType="";
+            String cont="";
             if(content.contains("明火")){
                 eventType=ParamCode.EVENT_TYPE_01.getCode();
                 eventLevel=ParamCode.EVENT_LEVEL_01.getCode();
+                cont=ParamCode.EVENT_TYPE_01.getMessage();
             }else if(content.contains("重点")){
                 eventType=ParamCode.EVENT_TYPE_03.getCode();
+                cont=ParamCode.EVENT_TYPE_03.getMessage();
             }else if(content.contains("聚集")){
                 eventType=ParamCode.EVENT_TYPE_04.getCode();
+                cont=ParamCode.EVENT_TYPE_04.getMessage();
             }else if(content.contains("未成年")){//未成年检测
                 eventType=ParamCode.EVENT_TYPE_03.getCode();
+                cont=ParamCode.EVENT_TYPE_03.getMessage();
             }else{
                 eventType="0";
             }
@@ -166,7 +171,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             rmEventInfoMapper.addEvent(event);
             int eventId = event.getEventId();
             //3.短信通知，新增通知任务发起
-            this.addNotifiedParty(eventType, relVenuesId,eventId,eventPlaceName,eventLevel);
+            VenuesEntity venues = rmVenuesInfoMapper.getVenueByID(venue);
+            String venuesAddres ="";
+            if(null!=venues){
+                venuesAddres = venues.getVenuesAddres();
+            }
+            String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"疑似触发“"+cont+"”预警，请您立刻前去处理！！";
+            this.addNotifiedParty(eventType, relVenuesId,eventId,contents,eventLevel);
 
            /* //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
@@ -325,7 +336,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 rmEventInfoMapper.addEvent(event);
                 eventId = event.getEventId();
                 //3.短信通知，新增通知任务发起
-                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,locationName,alarmLevelName);
+                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,"",alarmLevelName);
             }
 
             code=ResultCode.SUCCESS.getCode();
@@ -615,7 +626,14 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 rmEventInfoMapper.addEventByNB(event);
 
                 //2.发送短信通知:火警全员通知
-                this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),location,emergencyLevel);
+                VenuesEntity venues = rmVenuesInfoMapper.getVenueByID(venuesId);
+                String venuesAddres ="";
+                if(null!=venues){
+                    venuesAddres = venues.getVenuesAddres();
+                }
+                String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"疑似触发“烟感”预警，请您立刻前去处理！！";
+
+                this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),contents,emergencyLevel);
 
                 code=ResultCode.SUCCESS.getCode();
                 message="NB烟感器数据处理成功！";
@@ -1016,9 +1034,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
      *教职人员，按预警的类别进行推送，比如火警可以推送教职人员，但是人脸不一定推送，具体推送什么类型的等跟业主进行确认
      * @return
      */
-    public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String location,String emergencyLevel) {
+    public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String contents,String emergencyLevel) {
 
-        String contents="【瓯海宗教智治】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
+        //String contents="【瓯海宗教智治】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
         String user="";//监管
         String manager="";// 管理
         NotifiedEntity notifiedEntity=new NotifiedEntity();

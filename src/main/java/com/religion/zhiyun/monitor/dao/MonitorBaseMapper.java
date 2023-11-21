@@ -20,4 +20,5 @@ public interface MonitorBaseMapper {
 
     /**获取所有监控**/
     List<Map<String,Object>> queryMonitors(@Param("vo") ParamsVo vo);
+
 }
