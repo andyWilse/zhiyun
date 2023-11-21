@@ -12,7 +12,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ZhiyunApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ZhiyunApplication.class, args);
+
+        try {
+            SpringApplication.run(ZhiyunApplication.class, args);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

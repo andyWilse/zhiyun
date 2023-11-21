@@ -158,7 +158,7 @@
             EVENT_STATE as eventState,
             case
                 when EVENT_STATE in ('00','02') then '待完成'
-                when EVENT_STATE in ('01','03','04') then '已完成'
+                when EVENT_STATE in ('01','03','04','05') then '已完成'
                 else '其他'
             end as eventStateNm,
             HANDLE_RESULTS as handleResults,
@@ -216,7 +216,7 @@
                 (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1004' and di.DICT_CD=e.EVENT_TYPE) as eventType,
                 e.EVENT_DATA as eventData,
                 e.LOCATION as location,
-                case when e.EVENT_STATE ='01' or e.EVENT_STATE='04' then '已完成'
+                case when e.EVENT_STATE  in ('01','04','05') then '已完成'
                 else '未完成'
                 end as eventState,
                 ta.HANDLE_RESULTS as handleResults,
@@ -1024,5 +1024,14 @@
         order by ve.TOWN
     </select>
 
+    <select id="getMzSubmitSum" resultType="long">
+        select
+            count(ev.EVENT_ID)
+        from RM_EVENT_INFO ev
+        where 1=1
+        <if test="eventState != null and eventState != ''">
+            and ev.EVENT_STATE=#{eventState}
+        </if>
+    </select>
 
 </mapper>

@@ -43,12 +43,13 @@ public enum ParamCode {
     EVENT_STATE_02("02", "已上报"),
     EVENT_STATE_03("03", "已通知"),
     EVENT_STATE_04("04", "误报解除"),
-
+    EVENT_STATE_05("05", "已推送民宗快响"),
     //预警通知
     NOTIFIED_FLAG_01("01", "已处理"),
     NOTIFIED_FLAG_02("02", "已上报"),
     NOTIFIED_FLAG_03("03", "已通知"),
     NOTIFIED_FLAG_04("04", "误报解除"),
+    NOTIFIED_FLAG_05("05", "民宗快响推送"),
     //摄像设备状态
     MONITOR_STATE_01("01", "在线"),
     MONITOR_STATE_02("02", "报修"),

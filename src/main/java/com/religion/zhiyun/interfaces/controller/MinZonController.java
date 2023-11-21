@@ -22,5 +22,10 @@ public class MinZonController {
         return minZonService.finishEvent(procInstId,token);
     }
 
+    @RequestMapping("/sum")
+    public AppResponse mzSubmitSum(){
+        return minZonService.mzSubmitSum();
+    }
+
 
 }

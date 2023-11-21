@@ -23,5 +23,8 @@ public interface MinZonService {
     /** 民宗快响,业务接口：4.业务字典 **/
     public DictBizEntity getDictBiz(String code) throws Exception;
 
+    /** 推送民宗快响：数据统计 **/
+    public AppResponse mzSubmitSum();
+
 
 }

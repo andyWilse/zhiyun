@@ -242,4 +242,11 @@ public interface RmEventInfoMapper {
      */
     List<Map<String,Object>> getAiSummary();
     List<Map<String,Object>> getAiTownSummary();
+
+    /**
+     * 推送民宗快响：数据统计
+     * @param eventState
+     * @return
+     */
+    Long getMzSubmitSum(@Param("eventState") String eventState);
 }

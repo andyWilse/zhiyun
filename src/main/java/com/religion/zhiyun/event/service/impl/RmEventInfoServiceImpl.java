@@ -173,10 +173,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //3.短信通知，新增通知任务发起
             VenuesEntity venues = rmVenuesInfoMapper.getVenueByID(venue);
             String venuesAddres ="";
+            String venuesName ="";
             if(null!=venues){
                 venuesAddres = venues.getVenuesAddres();
+                venuesName = venues.getVenuesName();
             }
-            String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"疑似触发“"+cont+"”预警，请您立刻前去处理！！";
+            String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！！";
             this.addNotifiedParty(eventType, relVenuesId,eventId,contents,eventLevel);
 
            /* //查询数据库数据是否存在，不存在新增；存在，修改
@@ -408,7 +410,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 auth.setSearchThree("01");
             }else if("02".equals(type)){
                 message="历史预警";
-                searchArr=new String[]{"01","04"};
+                searchArr=new String[]{"01","04","05"};
                 auth.setSearchArr(searchArr);
                 auth.setSearchFour("02");
             }
@@ -454,7 +456,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 auth.setSearchArr(new String[]{"02","03"});
             }else if("02".equals(type)){
                 message="历史预警";
-                auth.setSearchArr(new String[]{"01","04"});
+                auth.setSearchArr(new String[]{"01","04","05"});
             }
             allNum = rmEventInfoMapper.getAllNum(auth);
 
@@ -628,10 +630,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 //2.发送短信通知:火警全员通知
                 VenuesEntity venues = rmVenuesInfoMapper.getVenueByID(venuesId);
                 String venuesAddres ="";
+                String venuesName ="";
                 if(null!=venues){
                     venuesAddres = venues.getVenuesAddres();
+                    venuesName = venues.getVenuesName();
                 }
-                String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"疑似触发“烟感”预警，请您立刻前去处理！！";
+                String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“烟感”预警，请您立刻前去处理！！";
 
                 this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),contents,emergencyLevel);
 
@@ -675,7 +679,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 auth.setSearchArr(searchArr);
             }else if("02".equals(eventState)){
                 message="历史预警";
-                searchArr=new String[]{"01","04"};
+                searchArr=new String[]{"01","04","05"};
                 auth.setSearchArr(searchArr);
             }
             String login = this.getLogin(token);
@@ -740,6 +744,39 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
         }catch (Exception e) {
             message="误报解除失败";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+    }
+
+    @Override
+    @Transactional
+    public AppResponse mzResponse(String eventId,String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="民宗快响推送失败！";
+        try {
+            //结束任务
+            List<TaskEntity> taskByEventId = taskInfoMapper.getTaskByEventId(eventId);
+            if(null!=taskByEventId && taskByEventId.size()>0){
+                for(int i=0;i<taskByEventId.size();i++){
+                    TaskEntity taskEntity = taskByEventId.get(i);
+                    String procInstId = taskEntity.getProcInstId();
+                    Map<String, Object> map =new HashMap<>();
+                    map.put("procInstId",procInstId);
+                    map.put("handleResults","1");
+                    map.put("feedBack","民宗快响推送");
+                    map.put("picture","");
+                    map.put("eventSta",ParamCode.NOTIFIED_FLAG_05.getCode());
+                    this.reportOneHandle(map,token);
+                }
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="民宗快响推送成功";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }catch (Exception e) {
+            message="民宗快响推送失败";
             e.printStackTrace();
         }
         return new AppResponse(code,message);
@@ -1380,6 +1417,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             if(ParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
                 eventState=ParamCode.EVENT_STATE_04.getCode();
                 notice =ParamCode.NOTIFIED_FLAG_04.getCode();
+            }if(ParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
+                eventState=ParamCode.EVENT_STATE_05.getCode();
+                notice =ParamCode.NOTIFIED_FLAG_05.getCode();
             }else{
                 eventState=ParamCode.EVENT_STATE_01.getCode();
                 notice =ParamCode.NOTIFIED_FLAG_01.getCode();
@@ -1409,7 +1449,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         return new AppResponse(code,message);
     }
 
-
     /**
      * 预警校验
      * @param eventId
@@ -1430,6 +1469,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_03.getMessage());
             }else if(ParamCode.EVENT_STATE_04.getCode().equals(eventState)){
                 throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_04.getMessage());
+            }else if(ParamCode.EVENT_STATE_05.getCode().equals(eventState)){
+                throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_05.getMessage());
             }
         }else{
             throw new RuntimeException("预警信息丢失，请联系管理员");
@@ -1636,6 +1677,24 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
         }
         return new AppResponse(code,message,mapList.toArray());
+    }
+
+    @Override
+    public AppResponse getMzSubmitSum(String eventState) {
+        long code= ResultCode.FAILED.getCode();
+        String message="推送民宗快响：数据统计失败！";
+        Long sum=0l;
+        try {
+            sum = rmEventInfoMapper.getMzSubmitSum(eventState);
+            code=ResultCode.SUCCESS.getCode();
+            message="推送民宗快响：数据统计成功！";
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,sum);
     }
 
 }

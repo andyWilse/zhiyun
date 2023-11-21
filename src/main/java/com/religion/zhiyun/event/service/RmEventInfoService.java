@@ -81,6 +81,13 @@ public interface RmEventInfoService {
      */
     AppResponse dismissEvent(String eventId,String token);
 
+    /**
+     * 民宗快响推送
+     * @param eventId
+     * @return
+     */
+    AppResponse mzResponse(String eventId,String token);
+
     /** 提交申请(上报) **/
     public AppResponse reportOneReport(Map<String, Object> map, String token);
 
@@ -157,4 +164,11 @@ public interface RmEventInfoService {
     AppResponse getAiSummary();
     /**各镇、街预警事件汇总**/
     AppResponse getAiTownSummary();
+
+    /**
+     * 推送民宗快响：数据统计
+     * @param eventState
+     * @return
+     */
+    AppResponse getMzSubmitSum(String eventState);
 }

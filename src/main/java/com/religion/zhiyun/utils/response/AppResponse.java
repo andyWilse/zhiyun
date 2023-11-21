@@ -37,6 +37,12 @@ public class AppResponse {
         this.result=result;
     }
 
+    public AppResponse(long code,String message,Long total){
+        this.code=code;
+        this.message=message;
+        this.total=total;
+    }
+
     public AppResponse(long code,String message,String direct){
         this.code=code;
         this.message=message;

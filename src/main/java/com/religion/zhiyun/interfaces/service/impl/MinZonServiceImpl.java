@@ -1,5 +1,6 @@
 package com.religion.zhiyun.interfaces.service.impl;
 
+import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.interfaces.entity.minzong.*;
 import com.religion.zhiyun.interfaces.service.MinZonService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
@@ -7,6 +8,7 @@ import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
@@ -51,6 +53,9 @@ public class MinZonServiceImpl implements MinZonService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private TaskInfoMapper taskInfoMapper;
+
+    @Autowired
+    private RmEventInfoService rmEventInfoService;
 
     @Override
     public BaseEntity getAuthorize() throws Exception {
@@ -111,7 +116,9 @@ public class MinZonServiceImpl implements MinZonService {
             HttpParamers params=new HttpParamers(HttpMethod.POST);
             //上报内容
             Map<String,Object> jsonParamer=this.getParam(procInstId,token);
+            //params.setJsonParamers(jsonParamer);
             params.setJsonParamer(jsonParamer);
+
             /**3.3.接口调用**/
             HttpService httpService=new HttpService(submitUrl);
             String submitResponse = httpService.service(submitUrl, params, header);
@@ -124,6 +131,22 @@ public class MinZonServiceImpl implements MinZonService {
             if(200!=code || !success){
                 codes=code;
                 throw new RuntimeException("民宗快响事件上报调用,响应失败:"+msg);
+            }
+
+            /****结束任务****/
+            Map<String, Object> evTaDetail = taskInfoMapper.getEvTaDetail(procInstId);
+            if(null==evTaDetail){
+                throw new RuntimeException(procInstId+"：流程信息丢失，请联系管理员！");
+            }
+            Integer eventId = (Integer) evTaDetail.get("eventId");
+
+            if(0==eventId){
+                throw new RuntimeException(procInstId+"：事件信息丢失，请联系管理员！");
+            }
+            //流程处理
+            AppResponse appResponse = rmEventInfoService.mzResponse(eventId.toString(), token);
+            if(500==appResponse.getCode()){
+                throw new RuntimeException("民宗快响推送，流程（"+procInstId+"）处理失败，请联系管理员！");
             }
 
             codes=ResultCode.SUCCESS.code();
@@ -214,6 +237,12 @@ public class MinZonServiceImpl implements MinZonService {
         HttpService httpService=new HttpService(dictUrl);
         String service = httpService.service(dictUrl, params,httpHeader);
         return JsonUtils.jsonTOBean(service,DictBizEntity.class);
+    }
+
+    @Override
+    public AppResponse mzSubmitSum() {
+        AppResponse mzSubmitSum = rmEventInfoService.getMzSubmitSum(ParamCode.EVENT_STATE_05.getCode());
+        return mzSubmitSum;
     }
 
     /**
