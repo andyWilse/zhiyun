@@ -14,6 +14,7 @@ import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
 import com.religion.zhiyun.utils.sms.http.HttpParamers;
 import com.religion.zhiyun.utils.sms.http.HttpService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -26,6 +27,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class MinZonServiceImpl implements MinZonService {
 
     @Value("${min.zon.baseUrl}")
@@ -116,7 +118,6 @@ public class MinZonServiceImpl implements MinZonService {
             HttpParamers params=new HttpParamers(HttpMethod.POST);
             //上报内容
             Map<String,Object> jsonParamer=this.getParam(procInstId,token);
-            //params.setJsonParamers(jsonParamer);
             params.setJsonParamer(jsonParamer);
 
             /**3.3.接口调用**/
@@ -133,7 +134,7 @@ public class MinZonServiceImpl implements MinZonService {
                 throw new RuntimeException("民宗快响事件上报调用,响应失败:"+msg);
             }
 
-            /****结束任务****/
+            /**** 结束任务流程----start ****/
             Map<String, Object> evTaDetail = taskInfoMapper.getEvTaDetail(procInstId);
             if(null==evTaDetail){
                 throw new RuntimeException(procInstId+"：流程信息丢失，请联系管理员！");
@@ -148,7 +149,7 @@ public class MinZonServiceImpl implements MinZonService {
             if(500==appResponse.getCode()){
                 throw new RuntimeException("民宗快响推送，流程（"+procInstId+"）处理失败，请联系管理员！");
             }
-
+            /**** 结束任务流程----end ****/
             codes=ResultCode.SUCCESS.code();
             message="民宗快响：事件上报成功";
 
@@ -373,6 +374,8 @@ public class MinZonServiceImpl implements MinZonService {
         submitEvent.put("level",eventLevel);
         //来源
         submitEvent.put("origion","3");
+        //String ymdHms = TimeTool.getYmdHms();
+        //submitEvent.put("accountId",ymdHms);
 
         return submitEvent;
     }

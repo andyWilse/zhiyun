@@ -7,8 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.http.entity.StringEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -18,7 +17,6 @@ public class HttpParamers {
     private Map<String, String> params = new HashMap<String, String>();
     private HttpMethod httpMethod;
     private String jsonParamer = "";
-    private StringEntity jsonParamers;
 
     public HttpParamers(HttpMethod httpMethod) {
         this.httpMethod = httpMethod;
@@ -57,14 +55,7 @@ public class HttpParamers {
     }
 
     public boolean isJson() {
-        Boolean flag=false;
-        if(!isEmpty(this.jsonParamer)){
-            flag=true;
-        }else if(null!=this.jsonParamers){
-            flag=true;
-        }
-
-        return flag;
+        return !isEmpty(this.jsonParamer);
     }
 
     public Map<String, String> getParams() {
@@ -81,19 +72,9 @@ public class HttpParamers {
 
     public void setJsonParamer(Map<String, Object> jsonParamer) {
         //this.jsonParamer = JSON.toJSONString(jsonParamer);
-        this.jsonParamer = JSONObject.toJSONString(jsonParamer);
+        //this.jsonParamer = JSONObject.toJSONString(jsonParamer);
+        this.jsonParamer = JsonUtils.mapToJson(jsonParamer);
     }
-
-    public StringEntity getJsonParamers() {
-        return this.jsonParamers;
-    }
-
-    public void setJsonParamers(Map<String, Object> jsonParamers) {
-        StringEntity stringEntity;
-        stringEntity = new StringEntity((JSONObject.toJSONString(jsonParamers)),"utf-8");
-        this.jsonParamers =stringEntity;
-    }
-
     private static boolean isEmpty(CharSequence cs) {
         return (cs == null) || (cs.length() == 0);
     }

@@ -60,8 +60,18 @@ public class HttpClient {
                 query = paramers.getQueryString(DEFAULT_CHARSET);
             }
             if(query != null){
-                HttpEntity reqEntity = new StringEntity(query);
-                httpPost.setEntity(reqEntity);
+                if (paramers.isJson()) {
+                    StringEntity entity;
+                    //设置编码方式
+                    entity = new StringEntity(query,"UTF-8");
+                    //设置发送数据格式
+                    entity.setContentType("application/json");
+                    httpPost.setEntity(entity);
+                }else{
+                    HttpEntity reqEntity = new StringEntity(query);
+                    httpPost.setEntity(reqEntity);
+                }
+
             }
             httpClient = HttpClients.createDefault();
             httpResponse = httpClient.execute(httpPost);
