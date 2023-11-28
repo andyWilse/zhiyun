@@ -53,4 +53,8 @@ public class SysUserController {
         return sysUserService.getModifyUser(userId);
     }
 
+    @PostMapping("/modify/password")
+    public PageResponse modifyPassword(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
+        return sysUserService.modifyPassword(map,token);
+    }
 }

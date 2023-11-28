@@ -493,12 +493,20 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     }
 
     @Override
-    public RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber,String token) {
+    public RespPageBean getEventsByPage(Map<String, Object> map,String token) {
         List<Map<String,Object>> dataList = new ArrayList<>();
         Long total=0l;
         long code= ResultCode.FAILED.getCode();
         String result="预警查询pc！";
         try {
+            String accessNumber = (String)map.get("accessNumber");
+            String venuesName = (String)map.get("venuesName");
+            String eventType = (String)map.get("eventType");
+            String eventState = (String)map.get("eventState");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
@@ -506,6 +514,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             auth.setPage(page);
             auth.setSize(size);
             auth.setSearchOne(accessNumber);
+            auth.setSearchTwo(venuesName);
+            auth.setSearchThree(eventType);
+            auth.setSearchFour(eventState);
+            if("02".equals(eventState)){
+                auth.setSearchArr(new String[]{"01","04","05"});
+            }else{
+                auth.setSearchArr(new String[]{"02","03"});
+            }
+
             dataList=rmEventInfoMapper.getEventsByPage(auth);
             total=rmEventInfoMapper.getTotal(auth);
 

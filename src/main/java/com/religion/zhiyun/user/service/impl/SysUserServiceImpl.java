@@ -295,6 +295,32 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    public PageResponse modifyPassword(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="用户管理密码更改失败！";
+        try {
+            String newPass = (String) map.get("newPass");
+            String surePass = (String) map.get("surePass");
+            Integer userId = (Integer) map.get("userId");
+            String userNbr = (String) map.get("userNbr");
+            //新密码输入校验
+            if(!newPass.equals(surePass)){
+                throw new RuntimeException("两次密码输入不一致，请重新输入确认密码！");
+            }
+            //更新密码
+            String newPassWord = this.passwordSalt(String.valueOf(userId), surePass, userNbr);
+            sysUserMapper.updatePassword(newPassWord,userId, TimeTool.getYmdHms());
+
+            code= ResultCode.SUCCESS.getCode();
+            message="密码更改成功！";
+        } catch (RuntimeException e) {
+            message=e.getMessage();
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message);
+    }
+
+    @Override
     public void delete(int userId) {
         sysUserMapper.delete(userId);
         //this.savelogs( "删除成功", InfoEnums.USER_DELETE.getName());

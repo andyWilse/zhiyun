@@ -136,6 +136,9 @@
         <if test="vo.area != null and vo.area != ''">
             AND  ve.AREA = #{vo.area}
         </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            AND ve.REL_VENUES_ID =#{vo.venues}
+        </if>
 
         order by LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}

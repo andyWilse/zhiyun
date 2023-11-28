@@ -36,6 +36,12 @@ public interface SysUserService {
     PageResponse updatePassword(Map<String,String> map,String token);
 
     /**
+     * 密码修改(用户管理)
+     * @param map
+     */
+    PageResponse modifyPassword(Map<String,Object> map,String token);
+
+    /**
      * 删除
      * @param userId
      */

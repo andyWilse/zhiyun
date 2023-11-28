@@ -128,12 +128,16 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
             menusTree = new ArrayList<>();
             Map<String, Object> map=new HashMap<>();
             List<Map<String, Object>> oneTree =new ArrayList<>();
-            /*String login = this.getLogin(token);
-            if(!"admin".equals(login)){
+            String login = this.getLogin(token);
+            List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(login);
+            if(sysUserEntities.size()!=1){
+                throw new RuntimeException(login+"不存在或存在多个用户，请联系管理员！");
+            }
 
-            }*/
+            String userId = String.valueOf(sysUserEntities.get(0).getUserId());
+
             //获取一级菜单
-            oneTree = rmSysMenuInfoMapper.findOneTree();
+            oneTree = rmSysMenuInfoMapper.findOneTree(userId);
             if(null!=oneTree && oneTree.size()>0){
                 for (int i=0;i<oneTree.size();i++){
                     Map<String, Object> oneTreeMap = oneTree.get(i);
@@ -141,7 +145,7 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
                     int id = (int) oneTreeMap.get("id");
                     //根据一级菜单获取二级菜单
                     if(type.equals("01")){
-                        List<Map<String, Object>> twoTree = rmSysMenuInfoMapper.findTwoTree(id);
+                        List<Map<String, Object>> twoTree = rmSysMenuInfoMapper.findTwoTree(id,userId);
                         if(null!=twoTree && twoTree.size()>0) {
                             for (int j = 0; j < twoTree.size(); j++) {
                                 Map<String, Object> twoTreeMap = twoTree.get(j);
@@ -149,11 +153,16 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
                                 int twoTreeId = (int) twoTreeMap.get("id");
                                 //根据二级菜单获取按钮
                                 if(twoTreeType.equals("03")){
-                                    List<Map<String, Object>> buttonTree = rmSysMenuInfoMapper.findButtonTree(twoTreeId);
+                                    List<Map<String, Object>> buttonTree = rmSysMenuInfoMapper.findButtonTree(twoTreeId,userId);
                                     twoTreeMap.put("children",buttonTree.toArray());
                                 }
                             }
                         }
+                        oneTreeMap.put("children",twoTree.toArray());
+                    }
+                    //客户管理特殊处理
+                    if(id==1002){
+                        List<Map<String, Object>> twoTree = rmSysMenuInfoMapper.findButtonTree(10020001,userId);
                         oneTreeMap.put("children",twoTree.toArray());
                     }
 

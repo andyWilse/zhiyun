@@ -233,6 +233,18 @@
             <if test="vo.searchOne != null and vo.searchOne != ''">
                 AND  e.ACCESS_NUMBER LIKE CONCAT('%',#{vo.searchOne},'%')
             </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            AND  ve.VENUES_NAME LIKE CONCAT('%',#{vo.searchTwo},'%')
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND  e.EVENT_TYPE=#{vo.searchThree}
+        </if>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            and e.EVENT_STATE IN
+            <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
             <if test="vo.town != null and vo.town != ''">
                 AND  ve.TOWN = #{vo.town}
             </if>
@@ -246,7 +258,7 @@
                 </foreach>
             </if>
         )al
-        order by  al.eventState desc,al.handleTime desc,al.warnTime
+        order by  al.eventState desc,al.handleTime desc,al.warnTime desc
         limit #{vo.page},#{vo.size}
     </select>
 

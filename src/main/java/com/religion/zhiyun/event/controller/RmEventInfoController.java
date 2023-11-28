@@ -133,13 +133,7 @@ public class RmEventInfoController {
 
     @GetMapping("/findPage")
     public RespPageBean getEventByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-
-        String accessNumber = (String)map.get("accessNumber");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-        return rmEventInfoService.getEventsByPage(page,size,accessNumber,token);
+        return rmEventInfoService.getEventsByPage(map,token);
     }
 
     //根据登录人不同，通知不同

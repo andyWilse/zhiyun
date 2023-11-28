@@ -48,41 +48,47 @@
 
     <select id="findOneTree" resultType="map">
         select
-            MENU_ID as id ,
-            MENU_NM as name,
-            RESOURCE_TYPE as type
-        from RM_SYS_MENU_INFO
-        where RESOURCE_TYPE  in ('01','02')
-        and VALID_IND='1'
-        order by SORT_LVL
+            me.MENU_ID as id ,
+            me.MENU_NM as name,
+            me.RESOURCE_TYPE as type
+        from RM_SYS_USER_POST_REL rel
+        left join RM_SYS_MENU_INFO me on rel.POST_CD=me.MENU_ID
+        where me.RESOURCE_TYPE  in ('01','02')
+        and me.VALID_IND='1'
+        and rel.USER_ID=#{userId}
+        order by me.SORT_LVL
     </select>
 
     <select id="findTwoTree" resultType="map">
         select
-            MENU_ID as id ,
-            MENU_NM as name,
-            RESOURCE_TYPE as type
-        from RM_SYS_MENU_INFO
-        where RESOURCE_TYPE  in ('03','04')
-        and VALID_IND='1'
-        <if test="_parameter != null and _parameter != ''">
-            and PARENT_ID = #{parentId}
+            me.MENU_ID as id ,
+            me.MENU_NM as name,
+            me.RESOURCE_TYPE as type
+        from RM_SYS_USER_POST_REL rel
+        left join RM_SYS_MENU_INFO me on rel.POST_CD=me.MENU_ID
+        where me.RESOURCE_TYPE  in ('03','04')
+        and me.VALID_IND='1'
+        and rel.USER_ID=#{userId}
+        <if test="parentId != null and parentId != ''">
+            and me.PARENT_ID = #{parentId}
         </if>
-        order by SORT_LVL
+        order by me.SORT_LVL
     </select>
 
     <select id="findButtonTree" resultType="map">
         select
-            MENU_ID as id ,
-            MENU_NM as name,
-            RESOURCE_TYPE as type
-        from RM_SYS_MENU_INFO
-        where RESOURCE_TYPE  ='05'
-        and VALID_IND='1'
-        <if test="_parameter != null and _parameter != ''">
-            and PARENT_ID = #{parentId}
+            me.MENU_ID as id ,
+            me.MENU_NM as name,
+            me.RESOURCE_TYPE as type
+        from RM_SYS_USER_POST_REL rel
+        left join RM_SYS_MENU_INFO me on rel.POST_CD=me.MENU_ID
+        where me.RESOURCE_TYPE  ='05'
+        and me.VALID_IND='1'
+        and rel.USER_ID=#{userId}
+        <if test="parentId != null and parentId != ''">
+            and me.PARENT_ID = #{parentId}
         </if>
-        order by SORT_LVL
+        order by me.SORT_LVL
     </select>
 
     <select id="findGrandMenus" resultType="com.religion.zhiyun.sys.menus.entity.MenuEntity">

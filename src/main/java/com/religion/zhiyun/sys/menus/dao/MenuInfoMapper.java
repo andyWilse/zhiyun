@@ -24,19 +24,19 @@ public interface MenuInfoMapper {
      * 获取一级菜单
      * @return
      */
-    List<Map<String,Object>> findOneTree();
+    List<Map<String,Object>> findOneTree(@Param("userId") String userId);
 
     /**
      * 获取二级菜单
      * @return
      */
-    List<Map<String,Object>> findTwoTree(@Param("parentId") Integer parentId);
+    List<Map<String,Object>> findTwoTree(@Param("parentId") Integer parentId,@Param("userId") String userId);
 
     /**
      * 获取按钮
      * @return
      */
-    List<Map<String,Object>> findButtonTree(@Param("parentId") Integer parentId);
+    List<Map<String,Object>> findButtonTree(@Param("parentId") Integer parentId,@Param("userId") String userId);
 
     /**
      * 查询权限菜单

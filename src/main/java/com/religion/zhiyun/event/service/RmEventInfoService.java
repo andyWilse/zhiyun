@@ -40,12 +40,11 @@ public interface RmEventInfoService {
 
     /**
      * 分页查询
-     * @param page
-     * @param size
-     * @param accessNumber
+     * @param map
+     * @param token
      * @return
      */
-    RespPageBean getEventsByPage(Integer page, Integer size, String accessNumber,String token);
+    RespPageBean getEventsByPage(Map<String, Object> map,String token);
 
     /**
      * 手机端（预警查询）
