@@ -97,4 +97,7 @@ public  class VenuesEntity implements Serializable {
 
     private String picturesPathRemove;
     private Object[] fileList;
+
+
+    private String latitudes;//纬度
 }

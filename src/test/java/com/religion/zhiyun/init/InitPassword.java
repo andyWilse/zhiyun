@@ -1,5 +1,6 @@
 package com.religion.zhiyun.init;
 
+import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.TimeTool;
@@ -21,9 +22,23 @@ public class InitPassword {
     private SysUserMapper sysUserMapper;
     @Autowired
     private VenuesManagerMapper venuesManagerMapper;
+
+    @Autowired
+    private SysLoginService LoginService;
     @Test
     void contextLoads(){
-        ParamsVo vo=new ParamsVo();
+
+        String username = "18514260203";//电话
+        String verifyCode = "";//验证码
+        String password= "ASqw@!34";//密码
+        LoginService.updatePassword(verifyCode,password,username);
+        /*int userId = 1001;
+        String userNbr = "1001";
+        String passwor ="ASqw@!12";
+        String s = this.passwordSalt(String.valueOf(userId), passwor, userNbr);
+        //sy.setPasswords(s);
+        sysUserMapper.updatePassword(s,userId, TimeTool.getYmdHms());*/
+        /*ParamsVo vo=new ParamsVo();
         vo.setPage(0);
         vo.setSize(100000);
         List<SysUserEntity> usersByPage = sysUserMapper.getUsersByPage(vo);
@@ -39,7 +54,7 @@ public class InitPassword {
             sy.setPasswords(s);
             sysUserMapper.updatePassword(s,sy.getUserId(), TimeTool.getYmdHms());
 
-        }
+        }*/
 
        /* List<Map<String, Object>> manager = venuesManagerMapper.findManager(vo);
         for(int i=0;i<manager.size();i++){

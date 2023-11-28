@@ -57,6 +57,8 @@ public class ShiroConfig {
         filterMap.put("/play/sync","anon");
         //filterMap.put("/venues/find","perms[venues:get]");
 
+        filterMap.put("/huawei/callBack","anon");
+
         filterMap.put("/**","auth");    //拦截所有路径, 它自动会跑到 AuthFilter这个自定义的过滤器里面
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterMap);
 

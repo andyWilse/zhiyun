@@ -166,18 +166,17 @@
         select
             MANAGER_ID as managerId,
             MANAGER_CN_NM as  managerCnNm,
-            case MANAGER_TYPE_CD
-            when '01' then '负责人'
-            when '02' then '管理组成员'
-            when '03' then '工作联络员'
-            else MANAGER_TYPE_CD
-            end as  managerTypeCd,
+            (select DICT_CN_DESC from  rm_sys_dict where DICT_TYPE_CD='1006' and VALID_IND='1' and DICT_CD=MANAGER_TYPE_CD) as  managerTypeCd,
+
             MANAGER_MOBILE as managerMobile,
             MANAGER_TYPE_CD as typeCd
         from RM_VENUES_MANAGER_INFO ma
         where VALID_IND='1'
         <if test="vo.searchOne!=null and vo.searchOne!=''">
             and   MANAGER_CN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and   MANAGER_MOBILE LIKE CONCAT('%',#{vo.searchTwo},'%')
         </if>
         order by ma.LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}
@@ -190,6 +189,9 @@
         where VALID_IND='1'
         <if test="vo.searchOne!=null and vo.searchOne!=''">
             and   MANAGER_CN_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+        </if>
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and   MANAGER_MOBILE LIKE CONCAT('%',#{vo.searchTwo},'%')
         </if>
     </select>
 

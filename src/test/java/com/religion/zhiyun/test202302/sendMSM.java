@@ -1,10 +1,13 @@
 package com.religion.zhiyun.test202302;
 
 import com.religion.zhiyun.utils.sms.SendMassage;
+import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 @SpringBootTest
 public class sendMSM {
@@ -12,7 +15,47 @@ public class sendMSM {
     void contextLoads() throws UnsupportedEncodingException {
         SendMassage a=new SendMassage();
         String contents="【瓯海宗教智治】尊敬的消防智慧云用户，请及时妥善处理";
-        a.sendSms(contents,"18514260203");
+        int length = contents.length();
+        String result1 ="";
+        String result2 ="";
+        String result3 ="";
+        String result4 ="";
+        String result5 ="";
+        if(length<10){
+            result1 = contents.substring(0,length);
+        }else{
+            result1 = contents.substring(0,10);
+            if(length<20){
+                result2 = contents.substring(10,length);
+            }else{
+                result2 = contents.substring(10,20);
+                if(length<30){
+                    result3 = contents.substring(20,length);
+                }else{
+                    result3 = contents.substring(20,30);
+                    if(length<40){
+                        result4 = contents.substring(30,length);
+                    }else{
+                        result4 = contents.substring(30,40);
+                        if(length<50){
+                            result5 = contents.substring(40,length);
+                        }else{
+
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(contents.length());
+        //a.sendSms(contents,"18514260203");
+       /* Map<String,Object> umap=new HashMap<>();
+        umap.put("phone","+8618514260203");
+        umap.put("venuesAddres","北京海淀");
+        umap.put("venuesName","友谊宾馆");
+        umap.put("event","聚集");
+        VoiceCall.voiceCall(umap);*/
+
 
         //String md5Password = DigestUtils.md5DigestAsHex("1234562013-01-01 12:00:00".getBytes());
         //System.out.println(md5Password);

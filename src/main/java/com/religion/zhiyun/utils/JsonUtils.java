@@ -172,5 +172,37 @@ public class JsonUtils {
 
     public static void jsonTOBean(String sysJson) {
     }
+
+    /**
+     * 数组转JSON
+     */
+    public static String arrToJSON(Object[] object) {
+        // 创建一个新的Gson实例
+        Gson gson = new Gson();
+        String string =gson.toJson(object);
+        return string;
+    }
+
+    /**
+     * json转String数组
+     */
+    public static String[] JSONToStringArr(String json) {
+        // 创建一个新的Gson实例
+        Gson gson = new Gson();
+        String[] str = gson.fromJson(json, String[].class);
+        return str;
+    }
+
+    /**
+     * json转INT数组
+     */
+    public static int[] JSONToIntArr(String json) {
+        // 创建一个新的Gson实例
+        Gson gson = new Gson();
+        int[] str = gson.fromJson(json, int[].class);
+        return str;
+    }
+
+
 }
 

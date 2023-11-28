@@ -32,6 +32,7 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.sms.SendMassage;
+import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -179,7 +180,17 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 venuesName = venues.getVenuesName();
             }
             String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！！";
-            this.addNotifiedParty(eventType, relVenuesId,eventId,contents,eventLevel);
+            HashMap<String,Object> mapCall=new HashMap<>();
+            mapCall.put("eventType",eventType);
+            mapCall.put("relVenuesId",relVenuesId);
+            mapCall.put("eventId",eventId);
+            mapCall.put("contents",contents);
+            mapCall.put("eventLevel",eventLevel);
+            mapCall.put("venuesAddres",venuesAddres);
+            mapCall.put("venuesName",venuesName);
+            mapCall.put("event",cont);
+
+            this.addNotifiedParty(mapCall);
 
            /* //查询数据库数据是否存在，不存在新增；存在，修改
             EventEntity eventEntity = rmEventInfoMapper.queryEvent(event);
@@ -338,7 +349,16 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 rmEventInfoMapper.addEvent(event);
                 eventId = event.getEventId();
                 //3.短信通知，新增通知任务发起
-                this.addNotifiedParty(event.getEventType(), relVenuesId,eventId,"",alarmLevelName);
+                HashMap<String,Object> mapj=new HashMap<>();
+                mapj.put("eventType",event.getEventType());
+                mapj.put("relVenuesId",relVenuesId);
+                mapj.put("eventId",eventId);
+                mapj.put("contents","");
+                mapj.put("eventLevel",alarmLevelName);
+                mapj.put("venuesAddres","");
+                mapj.put("venuesName","");
+                mapj.put("event","");
+                this.addNotifiedParty(mapj);
             }
 
             code=ResultCode.SUCCESS.getCode();
@@ -636,8 +656,16 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     venuesName = venues.getVenuesName();
                 }
                 String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“烟感”预警，请您立刻前去处理！！";
-
-                this.addNotifiedParty(ParamCode.EVENT_TYPE_01.getCode(),relVenuesId,event.getEventId(),contents,emergencyLevel);
+                HashMap<String,Object> mapCall=new HashMap<>();
+                mapCall.put("eventType",ParamCode.EVENT_TYPE_01.getCode());
+                mapCall.put("relVenuesId",relVenuesId);
+                mapCall.put("eventId",event.getEventId());
+                mapCall.put("contents",contents);
+                mapCall.put("eventLevel",emergencyLevel);
+                mapCall.put("venuesAddres",venuesAddres);
+                mapCall.put("venuesName",venuesName);
+                mapCall.put("event","烟感");
+                this.addNotifiedParty(mapCall);
 
                 code=ResultCode.SUCCESS.getCode();
                 message="NB烟感器数据处理成功！";
@@ -1063,24 +1091,25 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     /**
      * 预警通知保存
-     * @param emergencyLevel
-     * @param relVenuesId
-     * @param relEventId
+     * @param mapCall
      *
      *ai预警推送，监管人员按紧急普通区分，紧急的默认推送所有监管人员，普通的默认推送给街镇、三人驻堂
      *教职人员，按预警的类别进行推送，比如火警可以推送教职人员，但是人脸不一定推送，具体推送什么类型的等跟业主进行确认
      * @return
      */
-    public void addNotifiedParty(String eventType,int relVenuesId,int relEventId,String contents,String emergencyLevel) {
+    public void addNotifiedParty(Map<String,Object> mapCall) {
 
-        //String contents="【瓯海宗教智治】您好！位于"+location+"疑似发生火灾，请您立刻前去处理！！";
-        String user="";//监管
-        String manager="";// 管理
-        NotifiedEntity notifiedEntity=new NotifiedEntity();
-        List<String> userNextList=new ArrayList<>();
+        /*** 1.参数获取 ***/
+        String eventType= (String) mapCall.get("eventType");
+        Integer relVenuesId= (Integer) mapCall.get("relVenuesId");
+        Integer relEventId= (Integer) mapCall.get("eventId");
+        String contents= (String) mapCall.get("contents");
+        String emergencyLevel= (String) mapCall.get("eventLevel");
+
+        /*** 2.处理人员查询 ***/
         List<Map<String, Object>> userList =new ArrayList<>();
         //获取通知对象
-        if("01".equals(emergencyLevel) || "01".equals(eventType)){
+        if("01".equals(emergencyLevel) || ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
             //1.根据场所获取场所有相关人员
             userList =sysUserMapper.getAllByVenues(relVenuesId);
         }else{
@@ -1088,29 +1117,40 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             userList = sysUserMapper.getJgByVenues(relVenuesId);
         }
 
-        //1.监管人员处理
+        /*** 3.预警通知 ***/
+        NotifiedEntity notifiedEntity=new NotifiedEntity();
+        List<String> userNextList=new ArrayList<>();//节点处理人员
+        boolean tmFlag = GeneTool.calendarCompare("08:30", "17:30");
+        //3.1.监管人员处理
+        String user="";//监管
         if(null!=userList && userList.size()>0){
             for(int i=0;i<userList.size();i++){
                 Map<String, Object> map = userList.get(i);
                 String userMobile = (String) map.get("userMobile");
                 userNextList.add(userMobile);//下节点流程处理人员
-                user=user+userMobile+",";
-                //短信通知
-                //短信开关
+                user=user+userMobile+",";//通知人员
+                //查询开关，通知
                 String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
-                if("1".equals(openFlag)){//1-开；0-关
-                    String message = SendMassage.sendSms(contents, userMobile);
-                    //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
+                if("1".equals(openFlag)){//1-开；0-关 （短信开关）
+                   //3.1.1.电话通知
+                    if(tmFlag && ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+                        mapCall.put("phone",userMobile);
+                        //VoiceCall.voiceCall(mapCall);
+                    }
+                    //3.1.2.短信通知
+                    SendMassage.sendSms(contents, userMobile);
                 }
             }
             notifiedEntity.setNotifiedUser(user);
+            System.out.println(contents+":共发送"+(userList.size())+"条短信");
         }else{
             throw new RuntimeException("该场所内尚未添加相关成员！");
         }
 
-        //2.教职人员
-        if("01".equals(eventType)){
-            //根据场所获取场所相关的教职人员
+        //3.2.管理人员
+        String manager="";// 管理
+        if(ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+            //根据场所获取场所相关的管理人员
             manager = rmStaffInfoMapper.getManagerByVenuesId(relVenuesId);
             if(null!=manager && !manager.isEmpty()){
                 notifiedEntity.setNotifiedManager(manager);
@@ -1122,33 +1162,40 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     //短信开关
                     String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
                     if("1".equals(openFlag)){//1-开；0-关
-                        String message = SendMassage.sendSms(contents, managerMobile);
-                        //System.out.println(managerMobile+message+"，共发送"+(i+1)+"条短信");
+                        //3.2.1.电话通知
+                        if(tmFlag){
+                            mapCall.put("phone",managerMobile);
+                            //VoiceCall.voiceCall(mapCall);
+                        }
+                        //3.2.2.短信通知
+                        SendMassage.sendSms(contents, managerMobile);
                     }
                 }
                 System.out.println(contents+":共发送"+(split.length)+"条短信");
-
             }else{
                 throw new RuntimeException("该场所内尚未添加职员信息！");
             }
         }
 
-        //保存
+        /*** 4.保存通知 ***/
+        String event= (String) mapCall.get("event");
+        notifiedEntity.setEventType(event);//内容
+        notifiedEntity.setCallFlag("0");//否
         notifiedEntity.setRefEventId(relEventId);
         notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_03.getCode());
         notifiedEntity.setNotifiedTime(new Date());
         eventNotifiedMapper.addNotified(notifiedEntity);
-        //普通预警仅上报才给领导推送
-        //任务发起
+
+        /*** 5.任务发起 ：普通预警仅上报才给领导推送***/
+        //5.1.封装任务信息
         TaskEntity taskEntity=new TaskEntity();
         //String eventType = event.getEventType();
         taskEntity.setTaskType(eventType);
         taskEntity.setEndTime("");
-        String tnm="预警事件：一键上报（监管）";
-
         //查询场所名称
         VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(String.valueOf(relVenuesId));
         String venuesName = venueByID.getVenuesName();
+        String tnm="预警事件：一键上报（监管）";
         if("01".equals(eventType)){
             tnm=venuesName+"-"+ParamCode.EVENT_TYPE_01.getMessage();
         }else if("02".equals(eventType)){
@@ -1173,7 +1220,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 userNextList.add(userMobile);//下节点流程处理人员
             }
         }*/
-        //任务发起
+
+        //5.2.任务发起
         this.launch(taskEntity,userNextList,"预警平台");
 
         log.info(relEventId+"预警信息已通知：监管人员（"+user+");管理人员（"+manager+")");
@@ -1696,5 +1744,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         }
         return new AppResponse(code,message,sum);
     }
+
 
 }

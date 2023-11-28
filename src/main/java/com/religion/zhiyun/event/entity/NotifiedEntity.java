@@ -36,4 +36,10 @@ public class NotifiedEntity {
     @Column(name = "NOTIFIED_MANAGER")
     private String notifiedManager;//被通知人
 
+    @Column(name = "CALL_FLAG")
+    private String callFlag;//电话是否通知
+
+    @Column(name = "EVENT_TYPE")
+    private String eventType;//预警类型
+
 }

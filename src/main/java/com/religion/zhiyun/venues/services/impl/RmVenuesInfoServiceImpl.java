@@ -349,7 +349,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson, String religiousSect,String token) {
+    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson,
+                                        String religiousSect,String venuesPhone,String token) {
         long code=ResultCode.FAILED.getCode();
         String message="PC场所信息获取";
         Long total=0l;
@@ -375,6 +376,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             ve.setResponsiblePerson(responsiblePerson);
             ve.setVenuesName(venuesName);
             ve.setReligiousSect(religiousSect);
+            ve.setVenuesPhone(venuesPhone);
             ve.setArea(area);
             ve.setTown(town);
             ve.setVenuesAddres(relVenuesId);
@@ -792,26 +794,43 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
         }
 
-        //获取经纬度
+        int venuesId = venuesEntity.getVenuesId();
+        VenuesEntity venues= rmVenuesInfoMapper.getVenueByID(String.valueOf(venuesId));
+        //地址校验
+        String venuesAddresOld = venues.getVenuesAddres();
         String venuesAddres = venuesEntity.getVenuesAddres();
-        if(null!=venuesAddres && ""!=venuesAddres){
-            //String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
-            String lngAndLag = GetLngAndLagGaoDe.getLngAndLag(venuesAddres);
-            if(null==lngAndLag || lngAndLag.isEmpty()){
+        if(!venuesAddres.equals(venuesAddresOld)){
+            //获取经纬度
+            if(null!=venuesAddres && ""!=venuesAddres ){
+                //String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
+                String lngAndLag = GetLngAndLagGaoDe.getLngAndLag(venuesAddres);
+                if(null==lngAndLag || lngAndLag.isEmpty()){
+                    code= ResultCode.FAILED.getCode();
+                    message="无法获取经纬度，请重新填写详细地址！";
+                    throw new RuntimeException(message);
+                }
+                String[] split = lngAndLag.split(",");
+                String lng=split[0];
+                String lat=split[1];
+
+                venuesEntity.setLongitude(lng);
+                venuesEntity.setLatitude(lat);
+            }else{
                 code= ResultCode.FAILED.getCode();
-                message="无法获取经纬度，请重新填写详细地址！";
+                message="场所地址信息丢失！";
                 throw new RuntimeException(message);
             }
-            String[] split = lngAndLag.split(",");
-            String lng=split[0];
-            String lat=split[1];
-
-            venuesEntity.setLongitude(lng);
-            venuesEntity.setLatitude(lat);
         }else{
-            code= ResultCode.FAILED.getCode();
-            message="场所地址信息丢失！";
-            throw new RuntimeException(message);
+            String latitudeOld = venues.getLatitude();
+            String latitudes = venuesEntity.getLatitudes();
+            if(!latitudeOld.equals(latitudes)){
+                venuesEntity.setLatitude(latitudes);
+            }
+            String longitudeOld = venues.getLongitude();
+            String longitudes = venuesEntity.getLongitude();
+            if(!longitudeOld.equals(longitudes)){
+                venuesEntity.setLongitude(longitudes);
+            }
         }
 
         return venuesEntity;

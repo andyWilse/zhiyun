@@ -12,7 +12,7 @@ public class SysSchedules {
     private SchedulesService schedulesService;
 
     /** 每隔1分钟执行一次 **/
-    @Scheduled(cron ="0 */1 * * * ?")
+    @Scheduled(cron ="0 */5 * * * ?")
     public void AutoReport() {
         //自动上报
         //schedulesService.UrgentAutoReport();
@@ -25,11 +25,10 @@ public class SysSchedules {
         //schedulesService.CommonAutoFill();
     }
 
-    /** 每天9点执行一次 **/
-    @Scheduled(cron ="0 0 22 1 1/3  ?")
-    public void testFill() {
-        //普通通知
-        //System.out.println("测试------");
+    /** 每天8:30-17:30 ,5分钟执行一次 **/
+    @Scheduled(cron ="0 30/5 8-17 * * ? ")
+    public void warnCall() {
+        schedulesService.warnCallReport();
     }
 
 }

@@ -21,6 +21,7 @@
         LAST_MODIFY_TIME as lastModifyTime,
         LONGITUDE as longitude,
         LATITUDE as Latitude,
+        LATITUDE as latitudes,
         GROUP_MEMBERS as groupMembers,
         PROVINCE as province,
         CITY as city,
@@ -320,6 +321,9 @@
         <if test="venue.religiousSect != null and venue.religiousSect != ''">
             AND  ve.RELIGIOUS_SECT = #{venue.religiousSect}
         </if>
+        <if test="venue.venuesPhone != null and venue.venuesPhone != ''">
+            AND  ve.VENUES_PHONE LIKE CONCAT('%',#{venue.venuesPhone},'%')
+        </if>
         <if test="venue.town != null and venue.town != ''">
             AND  ve.TOWN = #{venue.town}
         </if>
@@ -352,7 +356,9 @@
             ve.CREATE_TIME as createTime,
             ve.LAST_MODIFIER as lastModifier,
             ve.LAST_MODIFY_TIME as lastModifyTime,
-            ve.RELIGIOUS_SECT as dictCd
+            ve.RELIGIOUS_SECT as dictCd,
+            ve.LONGITUDE as longitude,
+            ve.LATITUDE as latitudes
 
         from RM_VENUES_INFO ve
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -366,6 +372,9 @@
         </if>
         <if test="venue.religiousSect != null and venue.religiousSect != ''">
             AND  ve.RELIGIOUS_SECT = #{venue.religiousSect}
+        </if>
+        <if test="venue.venuesPhone != null and venue.venuesPhone != ''">
+            AND  ve.VENUES_PHONE LIKE CONCAT('%',#{venue.venuesPhone},'%')
         </if>
         <if test="venue.town != null and venue.town != ''">
             AND  ve.TOWN = #{venue.town}

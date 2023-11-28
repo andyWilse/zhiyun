@@ -108,11 +108,12 @@ public class RmVenuesInfoController {
         String venuesName = (String)map.get("venuesName");
         String responsiblePerson = (String)map.get("responsiblePerson");
         String religiousSect = (String)map.get("religiousSect");
+        String venuesPhone = (String)map.get("venuesPhone");
         String pages = (String) map.get("page");
         String sizes = (String)map.get("size");
         Integer page = Integer.valueOf(pages);
         Integer size = Integer.valueOf(sizes);
-        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,token);
+        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,venuesPhone,token);
     }
 
     //场所更新：app下拉使用(管理)

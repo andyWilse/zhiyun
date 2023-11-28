@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.Map;
 
 
 @Mapper
@@ -24,5 +25,10 @@ public interface EventNotifiedMapper {
      */
     void updateNotifiedFlag(String eventId, String ymdHms,String notifiedFlag);
     void updateNotifiedUser(String eventId, String ymdHms,String notifiedUser);
+
+    /**
+     * 获取电话通知人
+     */
+    Map<String,String> getNotified();
 
 }

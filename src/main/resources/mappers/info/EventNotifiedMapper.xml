@@ -10,14 +10,18 @@
             NOTIFIED_TIME,
             REPORT_TIME,
             REF_EVENT_ID,
-            NOTIFIED_MANAGER
+            NOTIFIED_MANAGER,
+            CALL_FLAG,
+            EVENT_TYPE
         ) values (
             #{notifiedUser},
             #{notifiedFlag},
             #{notifiedTime},
             #{reportTime},
             #{refEventId},
-            #{notifiedManager}
+            #{notifiedManager},
+            #{callFlag},
+            #{eventType}
         )
     </insert>
 
@@ -28,5 +32,20 @@
     <update id="updateNotifiedUser">
         update RM_EVENT_NOTIFIED_INFO set NOTIFIED_USER=#{notifiedUser},REPORT_TIME=#{ymdHms} where REF_EVENT_ID=#{eventId}
     </update>
+
+    <select id="getNotified" resultType="map">
+        SELECT nt.NOTIFIED_MANAGER as manegers,
+            nt.NOTIFIED_USER as users,
+            ve.VENUES_ADDRES as arr,
+            ve.VENUES_NAME  as nm,
+            nt.EVENT_TYPE as event
+
+        FROM RM_EVENT_NOTIFIED_INFO nt
+        join rm_event_info ev on nt.REF_EVENT_ID=ev.EVENT_ID
+        left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
+        where ev.EVENT_TYPE='01'
+        and nt.NOTIFIED_FLAG='03'
+        and nt.CALL_FLAG='0'
+    </select>
 
 </mapper>

@@ -12,11 +12,19 @@ public class TimeTool {
     public static String year="yyyy";
     public static String month="MM";
     public static String day="dd ";
+    public static String ymdHmsTZ="yyyy-MM-dd'T'HH:mm:ss'Z'";
 
 
     public static String getYmdHms(){
         Date date = new Date();
         SimpleDateFormat format=new SimpleDateFormat(ymdHms);
+        String format1 = format.format(date);
+        return format1;
+    }
+
+    public static String getYmdHmsTZ(){
+        Date date = new Date();
+        SimpleDateFormat format=new SimpleDateFormat(ymdHmsTZ);
         String format1 = format.format(date);
         return format1;
     }

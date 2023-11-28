@@ -212,11 +212,12 @@ public class SysLoginServiceImpl implements SysLoginService {
         try {
 
             //查询
-            String identity="";
+            //String identity="";
             int id=0;
             List<SysUserEntity> sysUserList = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//神职人员
-            //String loginNm="";
+            String userId="";
+            String userNbr="";
             int num=sysUserList.size()+manager.size();
             if(num>1){
                 message="用户手机号重复，请联系管理员！";
@@ -226,12 +227,16 @@ public class SysLoginServiceImpl implements SysLoginService {
                 throw new RuntimeException(message);
             }else if(null!=sysUserList && sysUserList.size()>0){
                 SysUserEntity sysUser =sysUserList.get(0);
-                identity=sysUser.getIdentity();
+                //identity=sysUser.getIdentity();
                 id=sysUser.getUserId();
+                userId=String.valueOf(sysUser.getUserId());
+                userNbr = sysUser.getUserNbr();
             }else if(null!=manager && manager.size()>0){
                 Map<String, Object> managerMap = manager.get(0);
-                identity= (String) managerMap.get("type");
+                //identity= (String) managerMap.get("type");
                 id= (int) managerMap.get("id");
+                userId=username;
+                userNbr= (String) managerMap.get("type");
             }
             //验证码验证
             AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
@@ -240,7 +245,7 @@ public class SysLoginServiceImpl implements SysLoginService {
                 return appResponse;
             }
             //salt加密
-            Hash hash = this.transSalt(username,password,identity);
+            Hash hash = this.transSalt(userId,password,userNbr);
             String pass=String.valueOf(hash);
             //修改密码
             if((null!=sysUserList && sysUserList.size()>0)){//修改监管人员

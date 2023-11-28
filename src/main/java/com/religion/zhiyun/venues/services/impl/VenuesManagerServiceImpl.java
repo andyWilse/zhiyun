@@ -208,6 +208,7 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
         try {
             ParamsVo auth = this.getAuth(token);
             String managerCnNm = (String) map.get("managerCnNm");
+            String managerMobile = (String) map.get("managerMobile");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
             Integer page = Integer.valueOf(pages);
@@ -218,6 +219,7 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
             auth.setPage(page);
             auth.setSize(size);
             auth.setSearchOne(managerCnNm);
+            auth.setSearchTwo(managerMobile);
 
             list = venuesManagerMapper.findManager(auth);
             total=venuesManagerMapper.findManagerTotal(auth);
