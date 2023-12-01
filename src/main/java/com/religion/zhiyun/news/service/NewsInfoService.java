@@ -31,7 +31,7 @@ public interface NewsInfoService {
      * 下架
      * @param newsId
      */
-    void delete(int newsId);
+    void delete(int newsId,String token);
 
     /**
      * 上下架

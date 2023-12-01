@@ -13,7 +13,13 @@ import java.util.Map;
 public class sendMSM {
     @Test
     void contextLoads() throws UnsupportedEncodingException {
-        SendMassage a=new SendMassage();
+        Map<String, Object> map=new HashMap<>();
+        map.put("phone","18514260203");
+        map.put("venuesAddres","浙江省温州市瓯海区郭溪街道凰桥村燎原中路226-228号道凰桥村燎原道凰桥村燎原");
+        map.put("venuesName","陈岙基督教堂(潘桥)陈岙基督教堂陈岙基督教堂");
+        map.put("event","明火");
+        VoiceCall.voiceCall(map);
+        /*SendMassage a=new SendMassage();
         String contents="【瓯海宗教智治】尊敬的消防智慧云用户，请及时妥善处理";
         int length = contents.length();
         String result1 ="";
@@ -47,7 +53,7 @@ public class sendMSM {
             }
         }
 
-        System.out.println(contents.length());
+        System.out.println(contents.length());*/
         //a.sendSms(contents,"18514260203");
        /* Map<String,Object> umap=new HashMap<>();
         umap.put("phone","+8618514260203");

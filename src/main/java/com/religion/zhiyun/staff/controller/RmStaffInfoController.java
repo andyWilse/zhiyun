@@ -2,17 +2,11 @@ package com.religion.zhiyun.staff.controller;
 
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
-import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 
@@ -41,14 +35,12 @@ public class RmStaffInfoController {
     }
 
     @PostMapping("/delete")
-    public PageResponse delete(@RequestBody Map<String, Object> map) {
-        String staffVenues = (String)map.get("staffVenues");
-        String staffId = (String)map.get("staffId");
-        return rmStaffInfoService.delete(staffVenues,staffId);
+    public PageResponse delete(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
+        return rmStaffInfoService.delete( map,token);
     }
 
     @GetMapping("/find")
-    public PageResponse getEmpByPage(@RequestParam Map<String, Object> map){
+    public PageResponse getStaffByPage(@RequestParam Map<String, Object> map){
 
         String staffName = (String)map.get("staffName");
         String staffVenues = (String)map.get("staffVenues");
@@ -58,6 +50,11 @@ public class RmStaffInfoController {
         Integer size = Integer.valueOf(sizes);
 
         return rmStaffInfoService.getStaffByPage(page,size,staffName,staffVenues);
+    }
+
+    @GetMapping("/getStaff")
+    public PageResponse getAllStaffByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        return rmStaffInfoService.getAllStaffByPage(map,token);
     }
 
     /*

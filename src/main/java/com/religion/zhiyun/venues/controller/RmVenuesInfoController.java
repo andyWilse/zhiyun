@@ -43,8 +43,8 @@ public class RmVenuesInfoController {
     }
 
     @PostMapping("/delete/{venuesId}")
-    public void delete(@PathVariable int venuesId) {
-        rmVenuesInfoService.delete(venuesId);
+    public void delete(@PathVariable int venuesId,@RequestHeader("token")String token) {
+        rmVenuesInfoService.delete(venuesId,token);
     }
 
     @RequestMapping("/querySelect")

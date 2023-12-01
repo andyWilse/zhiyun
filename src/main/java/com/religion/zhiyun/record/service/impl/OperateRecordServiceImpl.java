@@ -6,7 +6,6 @@ import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 
 @Service
 public class OperateRecordServiceImpl implements OperateRecordService {
@@ -39,20 +37,65 @@ public class OperateRecordServiceImpl implements OperateRecordService {
     }
 
     @Override
-    public RespPageBean findRecordByPage(Integer page, Integer size, String userName, String token) {
+    public AppResponse addRecord(Map<String, Object> opMap) {
+        long code= ResultCode.FAILED.getCode();
+        String message="新增操作记录失败！";
+
+        try {
+            String operator = (String) opMap.get("operator");
+            String operateContent = (String) opMap.get("operateContent");
+            String operateDetail = (String) opMap.get("operateDetail");
+            Date operateTime = (Date) opMap.get("operateTime");
+            String operateRef = (String) opMap.get("operateRef");
+            String operateType = (String) opMap.get("operateType");
+
+            RecordEntity logsEntity=new RecordEntity();
+            logsEntity.setOperator(operator);
+            logsEntity.setOperateContent(operateContent);
+            logsEntity.setOperateDetail(operateDetail);
+            logsEntity.setOperateTime(operateTime);
+            logsEntity.setOperateRef(operateRef);
+            logsEntity.setOperateType(operateType);
+            //logsEntity.setOperateTm();
+            rmUserLogsInfoMapper.add(logsEntity);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="新增操作记录成功！";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message);
+    }
+
+    @Override
+    public RespPageBean findRecordByPage(Map<String, Object> map, String token) {
         long code= ResultCode.FAILED.getCode();
         String message="操作记录信息查询！";
-
         List<VenuesEntity> dataList=new ArrayList<>();
         Long total=0l;
         try {
+            String userName = (String)map.get("userName");
+            String type = (String)map.get("type");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            String start = (String)map.get("start");
+            String end = (String)map.get("end");
+
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
-            ParamsVo auth = this.getAuth(token);
+            //ParamsVo auth = this.getAuth(token);
+            ParamsVo auth =new ParamsVo();
             auth.setPage(page);
             auth.setSize(size);
             auth.setSearchOne(userName);
+            auth.setSearchTwo(type);
+            auth.setSearchThree(start);
+            auth.setSearchFour(end);
             //获取数据
             dataList=rmUserLogsInfoMapper.findRecordByPage(auth);
             //获取条数

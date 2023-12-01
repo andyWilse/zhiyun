@@ -9,16 +9,23 @@ import java.util.Map;
 
 public interface OperateRecordService {
 
+    /**
+     * 新增记录
+     * @param logsEntity
+     */
     void add(RecordEntity logsEntity);
 
     /**
-     * 分页查询
-     * @param page
-     * @param size
-     * @param userName
+     * 新增操作记录
+     * @param map
+     */
+    AppResponse addRecord(Map<String, Object> map);
+
+    /**
+     * 分页查询（区级权限）
      * @return
      */
-    RespPageBean findRecordByPage(Integer page, Integer size, String userName, String token);
+    RespPageBean findRecordByPage(Map<String, Object> map, String token);
 
     /**
      * 监控查看记录

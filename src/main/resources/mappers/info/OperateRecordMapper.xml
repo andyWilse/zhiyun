@@ -35,51 +35,50 @@
 
     <select id="findRecordByPage" resultType="com.religion.zhiyun.record.entity.RecordEntity">
         select
-            OPERATOR as operator,
+            u.USER_NM as operator,
             OPERATE_CONTENT as operateContent,
             OPERATE_DETAIL as operateDetail,
+            (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1007' and di.DICT_CD=re.OPERATE_TYPE) as operateType,
             DATE_FORMAT(OPERATE_TIME,'%Y-%m-%d %H:%i:%s') as operateTm
         from RM_OPERATE_RECORD_INFO re
-        left join RM_VENUES_INFO ve on re.OPERATE_REF=ve.VENUES_ID
-        where ve.VENUES_STATUS!=02
+        left join rm_sys_user_info u on re.OPERATOR=u.USER_MOBILE
+        where 1=1
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            and re.OPERATOR=#{vo.searchOne}
+            and u.USER_NM  LIKE concat('%',#{vo.searchOne},'%')
         </if>
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and re.OPERATE_TYPE  =#{vo.searchTwo}
         </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
+
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and re.OPERATE_TIME &gt;= #{vo.searchThree}
         </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            and re.OPERATE_TIME &lt;= #{vo.searchFour}
         </if>
-        ORDER BY OPERATE_TIME DESC
+
+        ORDER BY re.OPERATE_TIME DESC
         limit #{vo.page},#{vo.size}
     </select>
 
     <select id="getTotal" resultType="java.lang.Long">
-        select count(RECORD_ID)
+        select
+            count(RECORD_ID)
         from RM_OPERATE_RECORD_INFO re
-        left join RM_VENUES_INFO ve on re.OPERATE_REF=ve.VENUES_ID
-        where ve.VENUES_STATUS!=02
+        left join rm_sys_user_info u on re.OPERATOR=u.USER_MOBILE
+        where 1=1
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            and re.OPERATOR=#{vo.searchOne}
+            and u.USER_NM  LIKE concat('%',#{vo.searchOne},'%')
         </if>
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and re.OPERATE_TYPE  =#{vo.searchTwo}
         </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
+
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and re.OPERATE_TIME &gt;= #{vo.searchThree}
         </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
+        <if test="vo.searchFour != null and vo.searchFour != ''">
+            and re.OPERATE_TIME &lt;= #{vo.searchFour}
         </if>
     </select>
 

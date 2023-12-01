@@ -40,8 +40,8 @@ public class RmSysMenuInfoController {
     }
 
     @PostMapping("/userGrand")
-    public RespPageBean userGrand(@RequestBody Map<String,String> map){
-        return rmSysMenuInfoService.userGrand(map);
+    public RespPageBean userGrand(@RequestBody Map<String,String> map,@RequestHeader("token")String token){
+        return rmSysMenuInfoService.userGrand(map,token);
     }
 
     @GetMapping("/getByUser/{userId}")

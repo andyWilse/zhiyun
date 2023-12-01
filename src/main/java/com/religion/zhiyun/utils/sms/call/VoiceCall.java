@@ -60,23 +60,26 @@ public class VoiceCall {
             //p.setNotifyVoice("");
             p.setCollectContentTriggerReplaying("9");
             p.setReplayAfterCollection(true);
-            p.setTemplateId("b717860064344959a0a64f64047dc7d0");
+            p.setTemplateId("9dba200d2a5a4e80a4c86430f8146fdb");
             //模板采用UTF-8编码格式，汉字和中文符号为3个字节，字母、数字和英文符号为1个字节。
-            String[] pa=new String[9];
+            String[] pa=new String[6];
+            pa[0]="陈岙基督";
+            pa[1]="陈岙基督";
+            pa[2]="陈岙基督";
+            pa[3]="陈岙基督";
+            pa[4]="陈岙基督";
+            pa[5]="陈岙基督";
             //地址
             String[] ve = subString(venuesAddres);
-            pa[0]=ve[0];
+            /*pa[0]=ve[0];
             pa[1]=ve[1];
             pa[2]=ve[2];
-            pa[3]=ve[3];
-            pa[4]=ve[4];
             //场所
             String[] vn = subString(venuesName);
-            pa[5]=vn[0];
-            pa[6]=vn[1];
-            pa[7]=vn[2];
+            pa[3]=vn[0];
+            pa[4]=vn[1];
             //事件
-            pa[8]=event;
+            pa[5]=event;*/
 
             String paras = JsonUtils.arrToJSON(pa);
             p.setTemplateParas(paras);

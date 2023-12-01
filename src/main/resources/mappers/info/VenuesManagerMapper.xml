@@ -41,7 +41,8 @@
 
     </sql>
 
-    <insert id="add">
+    <insert id="add" keyColumn="fileId" useGeneratedKeys="true" keyProperty="fileId"
+            parameterType="com.religion.zhiyun.venues.entity.VenuesManagerEntity">
     insert into rm_venues_manager_info(
         MANAGER_CN_NM,
         MANAGER_EN_NM,

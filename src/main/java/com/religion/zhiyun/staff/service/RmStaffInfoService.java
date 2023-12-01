@@ -20,11 +20,11 @@ public interface RmStaffInfoService {
 
     /**
      * 场所除名
-     * @param staffId
+     * @param token
      * @return
      */
 
-    PageResponse delete(String staffVenues,String staffId);
+    PageResponse delete(Map<String, Object> map,String token);
 
     /**
      * 分页查询
@@ -35,6 +35,14 @@ public interface RmStaffInfoService {
      * @return
      */
     PageResponse getStaffByPage(Integer page, Integer size, String staffName, String staffVenues);
+
+    /**
+     * 分页查询全部
+     * @param map
+     * @param token
+     * @return
+     */
+    PageResponse getAllStaffByPage(Map<String, Object> map, String token);
 
     Long getMaxStaffCd();
 

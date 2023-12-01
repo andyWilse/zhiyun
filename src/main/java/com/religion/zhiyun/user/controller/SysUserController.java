@@ -24,8 +24,8 @@ public class SysUserController {
 
     @PostMapping("/add")
     @ResponseBody
-    public RespPageBean add(@RequestBody SysUserEntity sysUserEntity) {
-        return sysUserService.add(sysUserEntity);
+    public RespPageBean add(@RequestBody SysUserEntity sysUserEntity,@RequestHeader("token")String token) {
+        return sysUserService.add(sysUserEntity,token);
     }
 
     @PostMapping("/update")
@@ -34,8 +34,8 @@ public class SysUserController {
     }
 
     @PostMapping("/delete/{userId}")
-    public void delete(@PathVariable int userId) {
-        sysUserService.delete(userId);
+    public void delete(@PathVariable int userId,@RequestHeader("token")String token) {
+        sysUserService.delete(userId,token);
     }
 
     @PostMapping("/update/password")

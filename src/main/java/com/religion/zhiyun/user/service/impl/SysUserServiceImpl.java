@@ -1,6 +1,7 @@
 package com.religion.zhiyun.user.service.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysRoleMapper;
@@ -10,8 +11,10 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.entity.UserRoleEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -30,10 +33,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class SysUserServiceImpl implements SysUserService {
@@ -57,6 +57,8 @@ public class SysUserServiceImpl implements SysUserService {
     private RmFileMapper rmFileMapper;
     @Autowired
     private RmVenuesInfoMapper rmVenuesInfoMapper;
+    @Autowired
+    private OperateRecordService operateRecordService;
 
     @Override
     public PageResponse getUsersByPage(Map<String, Object> map,String token){
@@ -114,7 +116,7 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public RespPageBean add(SysUserEntity sysUserEntity) {
+    public RespPageBean add(SysUserEntity sysUserEntity,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="用户新增";
         Timestamp timestamp = null;
@@ -169,8 +171,17 @@ public class SysUserServiceImpl implements SysUserService {
             userRoleEntity.setRoleId(String.valueOf(sysUserEntity.getIdentity()));
             sysUserRoleRelMapper.add(userRoleEntity);
 
-            //保存日志
-            //this.savelogs( "新增成功", InfoEnums.USER_ADD.getName());
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            String login = this.getLogin(token);
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(sysUserEntity.getUserId()));
+            vuMap.put("operateType", OperaEnums.user_add.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(sysUserEntity));
+            String operateDetail="用户："+sysUserEntity.getUserNm();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code= ResultCode.SUCCESS.getCode();
             message="用户新增成功";
@@ -229,8 +240,16 @@ public class SysUserServiceImpl implements SysUserService {
                 result="/";
             }
 
-            //保存日志
-           //this.savelogs( "修改成功", InfoEnums.USER_UPDATE.getName());
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(sysUserEntity.getUserId()));
+            vuMap.put("operateType", OperaEnums.user_update.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(sysUserEntity));
+            String operateDetail="用户："+sysUserEntity.getUserNm();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code= ResultCode.SUCCESS.getCode();
             message="用户更新成功！";
@@ -303,6 +322,8 @@ public class SysUserServiceImpl implements SysUserService {
             String surePass = (String) map.get("surePass");
             Integer userId = (Integer) map.get("userId");
             String userNbr = (String) map.get("userNbr");
+            String userNm = (String) map.get("userNm");
+
             //新密码输入校验
             if(!newPass.equals(surePass)){
                 throw new RuntimeException("两次密码输入不一致，请重新输入确认密码！");
@@ -310,6 +331,18 @@ public class SysUserServiceImpl implements SysUserService {
             //更新密码
             String newPassWord = this.passwordSalt(String.valueOf(userId), surePass, userNbr);
             sysUserMapper.updatePassword(newPassWord,userId, TimeTool.getYmdHms());
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            String login = this.getLogin(token);
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(userId));
+            vuMap.put("operateType", OperaEnums.user_password_update.getCode());
+            vuMap.put("operateContent", "");
+            String operateDetail="用户："+userNm;
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code= ResultCode.SUCCESS.getCode();
             message="密码更改成功！";
@@ -321,8 +354,20 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public void delete(int userId) {
+    public void delete(int userId,String token) {
+        //删除
         sysUserMapper.delete(userId);
+        //增加日志信息
+        SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(String.valueOf(userId));
+        Map<String,Object> vuMap=new HashMap<>();
+        vuMap.put("operator",this.getLogin(token));
+        vuMap.put("operateTime",new Date());
+        vuMap.put("operateRef",String.valueOf(sysUserEntity.getUserId()));
+        vuMap.put("operateType", OperaEnums.user_delete.getCode());
+        vuMap.put("operateContent", JsonUtils.beanToJson(sysUserEntity));
+        String operateDetail="用户："+sysUserEntity.getUserNm();
+        vuMap.put("operateDetail",operateDetail);
+        operateRecordService.addRecord(vuMap);
         //this.savelogs( "删除成功", InfoEnums.USER_DELETE.getName());
 
     }

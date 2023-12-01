@@ -1,6 +1,7 @@
 package com.religion.zhiyun.staff.dao;
 
 import com.religion.zhiyun.staff.entity.StaffEntity;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -16,6 +17,13 @@ public interface RmStaffInfoMapper {
      * @param staffEntity
      */
     void add(StaffEntity staffEntity);
+
+    /**
+     * 根据id获取教职人员信息
+     * @param staffId
+     * @return
+     */
+    StaffEntity getStaffById(@Param("staffId") String staffId) ;
 
     //查询
     List<Map<String,Object>> getAllStaff(@Param("page") Integer page, @Param("size") Integer size, @Param("search") String search);
@@ -117,13 +125,15 @@ public interface RmStaffInfoMapper {
      * @return
      */
     String getVenuesStaff(@Param("venuesId")String venuesId);
+    Map<String,Object> getStaffVenues(@Param("venuesId")String venuesId);
 
     /**
      * 根据人员获取详细
-     * @param staffIds
+     * @param vo
      * @return
      */
-    List<Map<String,Object>> getStaffByVenues(@Param("staffIds") String[] staffIds,@Param("page") Integer page,@Param("size") Integer size);
+    List<Map<String,Object>> getStaffByVenues(@Param("vo") ParamsVo vo);
+    Long getStaffTotal(@Param("vo") ParamsVo vo);
 
     void updateVenuesStaff(@Param("venuesStaff")String venuesStaff,@Param("venuesId")String venuesId);
 }

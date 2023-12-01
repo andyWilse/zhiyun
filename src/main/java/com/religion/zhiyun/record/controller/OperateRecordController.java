@@ -17,15 +17,7 @@ public class OperateRecordController {
 
     @GetMapping("/findByPage")
     public RespPageBean findByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-
-        String userName = (String)map.get("userName");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-
-        return rmUserLogsInfoService.findRecordByPage(page,size,userName,token);
+        return rmUserLogsInfoService.findRecordByPage(map,token);
     }
     //监控访问记录
     @PostMapping("/addMonitRecord")

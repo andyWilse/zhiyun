@@ -4,11 +4,14 @@ import com.religion.zhiyun.news.dao.RmNewsInfoMapper;
 import com.religion.zhiyun.news.entity.NewsEntity;
 import com.religion.zhiyun.news.service.NewsInfoService;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +19,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static com.religion.zhiyun.utils.enums.OperaEnums.news_update;
 import static org.activiti.engine.impl.util.json.XMLTokener.entity;
 
 @Service
@@ -33,6 +35,8 @@ public class NewsInfoServiceImpl implements NewsInfoService {
     private SysUserMapper sysUserMapper;
     @Autowired
     private RmFileService rmFileService;
+    @Autowired
+    private OperateRecordService operateRecordService;
 
 
     @Override
@@ -75,6 +79,18 @@ public class NewsInfoServiceImpl implements NewsInfoService {
             }
 
             rmNewsInfoMapper.add(newsEntity);
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(newsEntity.getNewsId()));
+            vuMap.put("operateType", OperaEnums.news_add.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(newsEntity));
+            String operateDetail="新闻标题："+newsEntity.getNewsTitle();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
+
             code=ResultCode.SUCCESS.getCode();
             message= "新闻信息保存成功！";
         } catch (RuntimeException r) {
@@ -115,6 +131,17 @@ public class NewsInfoServiceImpl implements NewsInfoService {
                 }
             }
             rmNewsInfoMapper.update(newsEntity);
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(newsEntity.getNewsId()));
+            vuMap.put("operateType", news_update.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(newsEntity));
+            String operateDetail="新闻标题："+newsEntity.getNewsTitle();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code=ResultCode.SUCCESS.getCode();
             message= "新闻信息修改成功！";
@@ -163,8 +190,22 @@ public class NewsInfoServiceImpl implements NewsInfoService {
     }
 
     @Override
-    public void delete(int newsId) {
+    public void delete(int newsId,String token) {
+        String login = this.getLogin(token);
+        List<NewsEntity> newsContent = rmNewsInfoMapper.getNewsContent(newsId);
+        NewsEntity newsEntity = newsContent.get(0);
         rmNewsInfoMapper.delete(newsId);
+        //增加日志信息
+        Map<String,Object> vuMap=new HashMap<>();
+        vuMap.put("operator",login);
+        vuMap.put("operateTime",new Date());
+        vuMap.put("operateRef",String.valueOf(newsId));
+        vuMap.put("operateType", OperaEnums.news_delete.getCode());
+        vuMap.put("operateContent", JsonUtils.beanToJson(newsEntity));
+        String operateDetail="新闻标题："+newsEntity.getNewsTitle();
+        vuMap.put("operateDetail",operateDetail);
+        operateRecordService.addRecord(vuMap);
+
     }
 
     @Override

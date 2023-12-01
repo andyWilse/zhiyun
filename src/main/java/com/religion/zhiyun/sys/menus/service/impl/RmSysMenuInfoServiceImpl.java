@@ -1,6 +1,7 @@
 package com.religion.zhiyun.sys.menus.service.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.menus.dao.MenuInfoMapper;
 import com.religion.zhiyun.sys.menus.dao.RolePesnMapper;
 import com.religion.zhiyun.sys.menus.entity.MenuEntity;
@@ -10,6 +11,8 @@ import com.religion.zhiyun.sys.menus.entity.RespPage;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -18,10 +21,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
@@ -34,6 +34,9 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
     private SysUserMapper sysUserMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private OperateRecordService operateRecordService;
+
 
     public RmSysMenuInfoServiceImpl() {
     }
@@ -234,11 +237,12 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
 
     @Override
     @Transactional
-    public RespPageBean userGrand(Map<String, String> map) {
+    public RespPageBean userGrand(Map<String, String> map,String token) {
         long code= ResultCode.FAILED.getCode();
         String message= "用户权限修改";
         try {
             String userId = map.get("userId");
+            String userNm = map.get("userNm");
             String menus = map.get("menus");
             String[] split = menus.split(",");
             //删除原数据
@@ -251,6 +255,19 @@ public class RmSysMenuInfoServiceImpl implements RmSysMenuInfoService {
                     }
                 }
             }
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            String login = this.getLogin(token);
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",userId);
+            vuMap.put("operateType", OperaEnums.user_grand_update.getCode());
+            vuMap.put("operateContent", JsonUtils.arrToJSON(split));
+            String operateDetail="用户："+userNm;
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
+
             code = ResultCode.SUCCESS.getCode();
             message = "用户权限修改成功";
         } catch (Exception e) {

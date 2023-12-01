@@ -21,7 +21,7 @@ public interface SysUserService {
      * 新增
      * @param sysUserEntity
      */
-    RespPageBean add(SysUserEntity sysUserEntity);
+    RespPageBean add(SysUserEntity sysUserEntity,String token);
 
     /**
      * 修改
@@ -45,7 +45,7 @@ public interface SysUserService {
      * 删除
      * @param userId
      */
-    void delete(int userId);
+    void delete(int userId,String token);
 
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);

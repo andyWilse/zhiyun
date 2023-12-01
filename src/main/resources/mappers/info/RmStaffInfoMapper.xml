@@ -41,7 +41,6 @@
         LAST_MODIFY_TIME as lastModifyTime
     </sql>
 
-
     <insert id="add" parameterType="com.religion.zhiyun.staff.entity.StaffEntity">
         insert into rm_staff_info
         VALUES(#{staffId},#{staffCd},#{staffName},#{certTypeCd},#{certNbr},#{sex},#{religiousSect},#{religiousType},#{nation},#{nativePlace},
@@ -50,6 +49,7 @@
                 #{staffStatus},#{staffPost},#{relVenuesId},#{posttion},#{certificateUnit},#{certificateTime},#{certificateNumber},
                 #{creator},#{createTime},#{lastModifier},#{lastModifyTime})
     </insert>
+
     <update id="update">
         update rm_staff_info
         set
@@ -225,6 +225,7 @@
         left join rm_sys_dict d on d.DICT_CD=m.RELIGIOUS_SECT
         where MANAGER_ID=#{ManagerId}
     </select>
+
     <select id="getVenuesByManagerId" resultType="java.util.Map">
 		select
             VENUES_ID as id,
@@ -253,7 +254,6 @@
         <if test="ManagerId!=null and ManagerId!=''">
             and RESPONSIBLE_PERSON = #{ManagerId}
         </if>
-
     </select>
 
     <update id="updatePassword">
@@ -284,18 +284,56 @@
         )
     </select>
 
+    <select id="getStaffVenues" resultType="map">
+        SELECT
+            venues_staff as venuesStaff,
+            VENUES_ID as venuesId ,
+            VENUES_NAME as venuesName,
+            VENUES_ADDRES as venuesAddres
+        FROM rm_venues_info
+        where (venues_id = #{venuesId}
+        OR venues_name LIKE CONCAT('%',#{venuesId},'%')
+        )
+    </select>
+
     <select id="getStaffByVenues" resultType="map">
         SELECT
             STAFF_ID as staffId,
             STAFF_CN_NM as staffName,
             STAFF_TELPHONE as staffTelphone
         from rm_staff_info
-        where STAFF_ID in
-        <foreach collection="staffIds" item="item" index="index" open="(" close=")" separator=",">
-            #{item}
-        </foreach>
+        where  STAFF_STATUS!='02'
+        <if test="vo.venues != null and vo.venues != ''">
+            and STAFF_ID IN
+            <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and STAFF_TELPHONE LIKE concat('%',#{vo.searchTwo},'%')
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and STAFF_CN_NM LIKE concat('%',#{vo.searchThree},'%')
+        </if>
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and STAFF_CN_NM LIKE concat('%',#{vo.searchOne},'%')
+        </if>
         order by STAFF_CN_NM
-        limit #{page},#{size}
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getStaffTotal" resultType="long">
+        SELECT count(STAFF_ID) as total from rm_staff_info
+        where  STAFF_STATUS!='02'
+        <if test="vo.searchTwo != null and vo.searchTwo != ''">
+            and STAFF_TELPHONE LIKE concat('%',#{vo.searchTwo},'%')
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            and STAFF_CN_NM LIKE concat('%',#{vo.searchThree},'%')
+        </if>
+        <if test="vo.searchOne != null and vo.searchOne != ''">
+            and STAFF_CN_NM LIKE concat('%',#{vo.searchOne},'%')
+        </if>
     </select>
 
     <update id="updateVenuesStaff">
@@ -303,4 +341,13 @@
         where (venues_id = #{venuesId} OR venues_name LIKE CONCAT('%',#{venuesId},'%') )
     </update>
 
+    <select id="getStaffById" resultType="com.religion.zhiyun.staff.entity.StaffEntity">
+        select
+            STAFF_CN_NM as staffName
+        from rm_staff_info
+        where  1=1
+        <if test="staffId!=null and staffId!=''">
+            and STAFF_ID = #{staffId}
+        </if>
+    </select>
 </mapper>

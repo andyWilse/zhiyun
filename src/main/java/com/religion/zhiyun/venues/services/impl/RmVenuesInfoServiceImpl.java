@@ -1,15 +1,16 @@
 package com.religion.zhiyun.venues.services.impl;
 
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.record.dao.OperateRecordMapper;
-import com.religion.zhiyun.record.entity.RecordEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -42,11 +43,11 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     @Autowired
     private SysUserMapper sysUserMapper;
     @Autowired
-    private OperateRecordMapper userLogsInfoMapper;
-    @Autowired
     private RmStaffInfoMapper staffInfoMapper;
     @Autowired
     private RmFileService rmFileService;
+    @Autowired
+    private OperateRecordService operateRecordService;
 
     long code= ResultCode.FAILED.getCode();
     String message="场所信息数据处理！";
@@ -94,14 +95,15 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             rmVenuesInfoMapper.add(venuesEntity);
 
             //增加日志信息
-            RecordEntity en=new RecordEntity();
-            en.setOperateContent("新增场所");
-            en.setOperator(loginNm);
-            en.setOperateDetail("新增场所:名称（"+venuesEntity.getVenuesName()+"），地址（"+venuesEntity.getVenuesAddres()+"）");
-            en.setOperateTime( new Date());
-            en.setOperateRef(String.valueOf(venuesEntity.getVenuesId()));
-            en.setOperateType("01");
-            userLogsInfoMapper.add(en);
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",loginNm);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(venuesEntity.getVenuesId()));
+            vuMap.put("operateType", OperaEnums.venue_add.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(venuesEntity));
+            String operateDetail="场所："+venuesEntity.getVenuesName()+"（"+venuesEntity.getVenuesAddres()+"）";
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code=ResultCode.SUCCESS.getCode();
             message="新增场所信息成功！";
@@ -150,15 +152,17 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             rmVenuesInfoMapper.update(venuesEntity);
 
             //增加日志信息
-            RecordEntity en=new RecordEntity();
-            en.setOperateContent("场所更新");
-            en.setOperator(login);
-            en.setOperateDetail("场所更新:名称（"+venuesEntity.getVenuesName()+"），地址（"+venuesEntity.getVenuesAddres()+"）");
-            en.setOperateTime( new Date());
-            en.setOperateRef(String.valueOf(venuesEntity.getVenuesId()));
-            en.setOperateType("01");
-            userLogsInfoMapper.add(en);
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(venuesEntity.getVenuesId()));
+            vuMap.put("operateType", OperaEnums.venue_update.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(venuesEntity));
+            String operateDetail="场所："+venuesEntity.getVenuesName()+"（"+venuesEntity.getVenuesAddres()+"）";
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
+            //成功
             code= ResultCode.SUCCESS.getCode();
             message="场所信息更新成功！";
         }catch (RuntimeException r) {
@@ -172,8 +176,22 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public int delete(int venuesId) {
-        return rmVenuesInfoMapper.delete(venuesId);
+    public int delete(int venuesId,String token) {
+        String veId = String.valueOf(venuesId);
+        VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(veId);
+        int delete = rmVenuesInfoMapper.delete(venuesId);
+        //增加日志信息
+        Map<String,Object> vuMap=new HashMap<>();
+        vuMap.put("operator",this.getLogin(token));
+        vuMap.put("operateTime",new Date());
+        vuMap.put("operateRef",veId);
+        vuMap.put("operateType", OperaEnums.venue_delete.getCode());
+        vuMap.put("operateContent", JsonUtils.beanToJson(venueByID));
+        String operateDetail="场所："+venueByID.getVenuesName()+"（"+venueByID.getVenuesAddres()+"）";
+        vuMap.put("operateDetail",operateDetail);
+        operateRecordService.addRecord(vuMap);
+
+        return delete;
     }
 
     @Override
@@ -490,6 +508,18 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 if(null!=venuesStaff && !venuesStaff.isEmpty()){
                     venuesStaffs = rmVenuesInfoMapper.getVenuesStaffs(venuesStaff.split(","));
                 }
+                String veStaffStr="";
+                if(null!=venuesStaffs && venuesStaffs.size()>0){
+                    for (int k=0;k<venuesStaffs.size();k++) {
+                        Map<String, Object> sMap = venuesStaffs.get(k);
+                        String name = (String) sMap.get("name");
+                        veStaffStr=veStaffStr+name+"、";
+                        if(k==venuesStaffs.size()-1){
+                            veStaffStr=veStaffStr+name;
+                        }
+                    }
+                }
+                venuesMap.put("veStaffStr",veStaffStr);
                 venuesMap.put("venuesStaff",venuesStaffs.toArray());
                /* List<Map<String, Object>> staffs = rmVenuesInfoMapper.getStaffs(venuesId);
                 Map<String, Object> oneStaffDirector=new HashMap<>();
@@ -760,7 +790,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     public VenuesEntity checkVenuesData(VenuesEntity venuesEntity) throws UnsupportedEncodingException {
         code= ResultCode.FAILED.getCode();
         message="场所信息数据校验！";
-        if(null!=venuesEntity.getResponsiblePerson() && !venuesEntity.getResponsiblePerson().isEmpty()){
+        if(!GeneTool.isEmpty(venuesEntity.getResponsiblePerson())){
             //场所人员校验(负责人)
             List<Map<String, Object>> managerByNm = venuesManagerMapper.getManagerByNm(venuesEntity.getResponsiblePerson());
             if(managerByNm.size()<1){
@@ -771,7 +801,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 venuesEntity.setResponsiblePerson(String.valueOf(managerId.intValue()));
             }
         }
-        if(null!=venuesEntity.getLiaisonMan() && !venuesEntity.getLiaisonMan().isEmpty()){
+        if(!GeneTool.isEmpty(venuesEntity.getLiaisonMan())){
             //场所人员校验(工作联络员)
             List<Map<String, Object>> liaByNm = venuesManagerMapper.getManagerByNm(venuesEntity.getLiaisonMan());
             if(liaByNm.size()<1){
@@ -782,7 +812,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
                 venuesEntity.setLiaisonMan(String.valueOf(managerId.intValue()));
             }
         }
-        if(null!=venuesEntity.getGroupMembers() && !venuesEntity.getGroupMembers().isEmpty()){
+        if(!GeneTool.isEmpty(venuesEntity.getGroupMembers())){
             //场所人员校验(管理组成员)
             List<Map<String, Object>> groByNm = venuesManagerMapper.getManagerByNm(venuesEntity.getGroupMembers());
             if(groByNm.size()<1){
@@ -794,49 +824,69 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
         }
 
-        int venuesId = venuesEntity.getVenuesId();
-        VenuesEntity venues= rmVenuesInfoMapper.getVenueByID(String.valueOf(venuesId));
         //地址校验
-        String venuesAddresOld = venues.getVenuesAddres();
         String venuesAddres = venuesEntity.getVenuesAddres();
-        if(!venuesAddres.equals(venuesAddresOld)){
-            //获取经纬度
-            if(null!=venuesAddres && ""!=venuesAddres ){
-                //String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
-                String lngAndLag = GetLngAndLagGaoDe.getLngAndLag(venuesAddres);
-                if(null==lngAndLag || lngAndLag.isEmpty()){
-                    code= ResultCode.FAILED.getCode();
-                    message="无法获取经纬度，请重新填写详细地址！";
-                    throw new RuntimeException(message);
-                }
+        int venuesId = venuesEntity.getVenuesId();
+        if(0!=venuesId){
+            VenuesEntity venues= rmVenuesInfoMapper.getVenueByID(String.valueOf(venuesId));
+            String venuesAddresOld = venues.getVenuesAddres();
+            if(!venuesAddres.equals(venuesAddresOld)){
+                String lngAndLag = this.getLngAndLag(venuesAddres);
                 String[] split = lngAndLag.split(",");
                 String lng=split[0];
                 String lat=split[1];
 
                 venuesEntity.setLongitude(lng);
                 venuesEntity.setLatitude(lat);
+                venuesEntity.setLatitudes(lat);
             }else{
-                code= ResultCode.FAILED.getCode();
-                message="场所地址信息丢失！";
-                throw new RuntimeException(message);
+                String latitudeOld = venues.getLatitude();
+                String latitudes = venuesEntity.getLatitudes();
+                if(!latitudeOld.equals(latitudes)){
+                    venuesEntity.setLatitudes(latitudes);
+                    venuesEntity.setLatitude(latitudes);
+                }
+                String longitudeOld = venues.getLongitude();
+                String longitudes = venuesEntity.getLongitude();
+                if(!longitudeOld.equals(longitudes)){
+                    venuesEntity.setLongitude(longitudes);
+                }
             }
         }else{
-            String latitudeOld = venues.getLatitude();
-            String latitudes = venuesEntity.getLatitudes();
-            if(!latitudeOld.equals(latitudes)){
-                venuesEntity.setLatitude(latitudes);
-            }
-            String longitudeOld = venues.getLongitude();
-            String longitudes = venuesEntity.getLongitude();
-            if(!longitudeOld.equals(longitudes)){
-                venuesEntity.setLongitude(longitudes);
-            }
+            String lngAndLag = this.getLngAndLag(venuesAddres);
+            String[] split = lngAndLag.split(",");
+            String lng=split[0];
+            String lat=split[1];
+
+            venuesEntity.setLongitude(lng);
+            venuesEntity.setLatitude(lat);
+            venuesEntity.setLatitudes(lat);
         }
 
         return venuesEntity;
     }
 
+    /**
+     * 根据地址获取经纬度
+     * @param venuesAddres
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public String getLngAndLag(String venuesAddres) throws UnsupportedEncodingException {
+        //获取经纬度
+        String lngAndLag ="";
+        if(null!=venuesAddres && ""!=venuesAddres ){
+            //String coordinate = GeocoderLatitudeUtil.getCoordinate(venuesAddres);
+            lngAndLag = GetLngAndLagGaoDe.getLngAndLag(venuesAddres);
+            if(null==lngAndLag || lngAndLag.isEmpty()){
+                throw new RuntimeException("无法获取经纬度，请重新填写详细地址！");
+            }
+        }else{
+            throw new RuntimeException("场所地址信息丢失！");
+        }
 
+        return lngAndLag;
+    }
 
     @Override
     public AppResponse getvenuesByType(String Type) {

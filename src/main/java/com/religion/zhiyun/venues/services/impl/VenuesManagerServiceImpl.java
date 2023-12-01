@@ -1,12 +1,15 @@
 package com.religion.zhiyun.venues.services.impl;
 
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.PcResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -22,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class VenuesManagerServiceImpl implements VenuesManagerService {
@@ -39,6 +39,9 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
     private RmFileService rmFileService;
     @Autowired
     private RmFileMapper rmFileMapper;
+    @Autowired
+    private OperateRecordService operateRecordService;
+
 
     @Override
     public PageResponse add(VenuesManagerEntity venuesManagerEntity, String token) {
@@ -89,6 +92,17 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
                 }
             }
             venuesManagerMapper.add(venuesManagerEntity);
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(venuesManagerEntity.getManagerId()));
+            vuMap.put("operateType", OperaEnums.venue_manager_add.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(venuesManagerEntity));
+            String operateDetail="场所负责人："+venuesManagerEntity.getManagerCnNm();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
 
             code= ResultCode.SUCCESS.getCode();
             message="添加数据成功！";
@@ -155,6 +169,17 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
             }
             venuesManagerMapper.update(venuesManagerEntity);
 
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(venuesManagerEntity.getManagerId()));
+            vuMap.put("operateType", OperaEnums.venue_manager_update.getCode());
+            vuMap.put("operateContent", JsonUtils.beanToJson(venuesManagerEntity));
+            String operateDetail="场所负责人："+venuesManagerEntity.getManagerCnNm();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
+
             code= ResultCode.SUCCESS.getCode();
             message="修改数据成功！";
         } catch (RuntimeException r ){
@@ -179,8 +204,22 @@ public class VenuesManagerServiceImpl implements VenuesManagerService {
         long code=ResultCode.FAILED.getCode();
         String message="场所管理人员删除";
         try {
+            String manaId = String.valueOf(managerId);
+            List<VenuesManagerEntity> byManagerId = venuesManagerMapper.getByManagerId(manaId);
             String login = this.getLogin(token);
             venuesManagerMapper.delete(managerId,login, TimeTool.getYmdHms());
+
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",login);
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",manaId);
+            vuMap.put("operateType", OperaEnums.venue_manager_delete.getCode());
+            vuMap.put("operateContent", JsonUtils.listTOJson(byManagerId));
+            String operateDetail="场所负责人："+byManagerId.get(0).getManagerCnNm();
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
+
             code=ResultCode.SUCCESS.getCode();
             message="场所管理人员删除成功";
         }catch (RuntimeException r) {

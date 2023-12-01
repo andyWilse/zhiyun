@@ -21,7 +21,7 @@ public interface RmSysMenuInfoService {
     PageResponse getMenuByRole(String roleId);
 
     //保存
-    RespPageBean userGrand(Map<String,String> map);
+    RespPageBean userGrand(Map<String,String> map,String token);
 
     //获取角色下所有菜单
     PageResponse getMenuByUser(String roleId);

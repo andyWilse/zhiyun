@@ -33,8 +33,8 @@ public class NewsInfoController {
     }
 
     @PostMapping("/delete/{newsId}")
-    public void delete(@PathVariable int newsId) {
-        newsInfoService.delete(newsId);
+    public void delete(@PathVariable int newsId,@RequestHeader("token")String token) {
+        newsInfoService.delete(newsId,token);
     }
 
     @PostMapping("/newsDown")
