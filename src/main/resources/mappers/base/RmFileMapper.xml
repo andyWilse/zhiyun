@@ -49,7 +49,8 @@
         select
             FILE_ID as fileId,
             FILE_NAME as name,
-            FILE_PATH as url
+            FILE_PATH as url,
+            FILE_TITLE as fileTitle
         from RM_FILE_INFO
         where FILE_ID in
         <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">
@@ -67,5 +68,9 @@
         from RM_FILE_INFO
         where FILE_NAME = #{loginNm}
     </select>
+
+    <update id="updateFilePath" >
+        update RM_FILE_INFO t set t.FILE_PATH=#{filePath} where FILE_ID=#{fileId}
+    </update>
 
 </mapper>

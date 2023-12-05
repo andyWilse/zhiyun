@@ -3,8 +3,10 @@ package com.religion.zhiyun.schedule.service.impl;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import com.religion.zhiyun.schedule.service.SchedulesService;
 import com.religion.zhiyun.utils.Tool.GeneTool;
+import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,7 @@ public class SchedulesServiceImpl implements SchedulesService {
             String arr = notified.get("arr");
             String nm = notified.get("nm");
             String event = notified.get("event");
+            String relEventId = notified.get("eventId");
             //管理
             if(!GeneTool.isEmpty(manegers)){
                 String[] ma = manegers.split(",");
@@ -60,7 +63,14 @@ public class SchedulesServiceImpl implements SchedulesService {
                     map.put("venuesAddres",arr);
                     map.put("venuesName",nm);
                     map.put("event",event);
-                    VoiceCall.voiceCall(map);
+                    String sessionId = VoiceCall.voiceCall(map);
+
+                    //保存数据
+                    FeeInfo feeInfo =new FeeInfo();
+                    feeInfo.setSessionId(sessionId);
+                    feeInfo.setEventType(CallEnums.fee.getCode());
+                    feeInfo.setRefEventId(String.valueOf(relEventId));
+                    eventNotifiedMapper.addCall(feeInfo);
                 }
             }
             //监管
@@ -73,7 +83,13 @@ public class SchedulesServiceImpl implements SchedulesService {
                     umap.put("venuesAddres",arr);
                     umap.put("venuesName",nm);
                     umap.put("event",event);
-                    VoiceCall.voiceCall(umap);
+                    String sessionId= VoiceCall.voiceCall(umap);
+                    //保存数据
+                    FeeInfo feeInfo =new FeeInfo();
+                    feeInfo.setSessionId(sessionId);
+                    feeInfo.setEventType(CallEnums.fee.getCode());
+                    feeInfo.setRefEventId(String.valueOf(relEventId));
+                    eventNotifiedMapper.addCall(feeInfo);
                 }
             }
         }

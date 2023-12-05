@@ -5,7 +5,7 @@ import com.religion.zhiyun.interfaces.entity.ai.AiImageEntity;
 import com.religion.zhiyun.interfaces.service.AiEventService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
@@ -16,8 +16,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 @Service
 public class AiEventServiceImpl implements AiEventService {
     @Value("${file.ai.username}")
@@ -32,6 +39,12 @@ public class AiEventServiceImpl implements AiEventService {
     @Value("${file.ai.image.down.url}")
     private String  downUrl;
 
+    @Value("${images.upload.url}")
+    private String  uploadUrl;
+
+    @Value("${images.down.url}")
+    private String  aiUrl;
+
     @Autowired
     private RmFileMapper rmFileMapper;
 
@@ -39,18 +52,20 @@ public class AiEventServiceImpl implements AiEventService {
     public AppResponse getAiFile(String fileId){
         long codes= ResultCode.ERROR.code();
         String message="AI图片获取失败！";
-        String downloadUrl ="";
+        String path  ="";
         try {
+
             List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(fileId.split(","));
+            String urlNew = (String) fileUrl.get(0).get("fileTitle");
+            if(!GeneTool.isEmpty(urlNew)){
+                return new AppResponse(ResultCode.SUCCESS.code(),"AI图片获取成功！",urlNew);
+            }
             String eventFile="";
             if(null!=fileUrl && fileUrl.size()>0){
                 eventFile= (String) fileUrl.get(0).get("url");
             }else{
                 throw new RuntimeException("AI图片信息丢失，请联系管理员！");
             }
-            /*String[] split = eventFile.split("=");
-            int length = split.length;
-            String fileName = split[length - 1];*/
 
             String[] split = eventFile.split("&");
             String storage = split[0];
@@ -110,7 +125,11 @@ public class AiEventServiceImpl implements AiEventService {
             if(200==code){
                 String dataJson = entityImage.getData();
                 AiImageEntity data= JsonUtils.jsonTOBean(dataJson, AiImageEntity.class);
-                downloadUrl = data.getDownloadUrl();
+                String downloadUrl = data.getDownloadUrl();
+                //下载图片到本地服务器
+                path = this.downloadPicture(downloadUrl);
+                //更新文件
+                rmFileMapper.updateFilePath(path,fileId);
             }else{
                 String msg = entityImage.getMsg();
                 throw new RuntimeException(msg);
@@ -125,6 +144,42 @@ public class AiEventServiceImpl implements AiEventService {
             e.printStackTrace();
         }
 
-        return new AppResponse(codes,message,downloadUrl);
+        return new AppResponse(codes,message,path);
+    }
+
+    /**
+     * 把图片下载到本地
+     * @param urlString
+     * @throws Exception
+     */
+    public String downloadPicture(String urlString) throws Exception {
+        // 构造URL
+        URL url = new URL(urlString);
+        // 打开连接
+        URLConnection con = url.openConnection();
+        // 输入流
+        InputStream is = con.getInputStream();
+        // 1K的数据缓冲
+        byte[] bs = new byte[1024];
+        // 读取到的数据长度
+        int len;
+        // 输出的文件流
+        String name= String.valueOf(UUID.randomUUID()).replaceAll("-","");
+
+        //String filename = "D:\\图片下载/" + name+ ".jpg";  //下载路径及下载图片名称uploadUrl
+        String filePath =aiUrl+"ai/"+name+ ".jpg";
+        String filename = uploadUrl +"ai/"+ name+ ".jpg";
+        File file = new File(filename);
+        FileOutputStream os = new FileOutputStream(file, true);
+        // 开始读取
+        while ((len = is.read(bs)) != -1) {
+            os.write(bs, 0, len);
+        }
+
+        // 完毕，关闭所有链接
+        os.close();
+        is.close();
+
+        return filePath;
     }
 }

@@ -63,15 +63,9 @@ public class VoiceCall {
             p.setTemplateId("9dba200d2a5a4e80a4c86430f8146fdb");
             //模板采用UTF-8编码格式，汉字和中文符号为3个字节，字母、数字和英文符号为1个字节。
             String[] pa=new String[6];
-            pa[0]="陈岙基督";
-            pa[1]="陈岙基督";
-            pa[2]="陈岙基督";
-            pa[3]="陈岙基督";
-            pa[4]="陈岙基督";
-            pa[5]="陈岙基督";
             //地址
             String[] ve = subString(venuesAddres);
-            /*pa[0]=ve[0];
+            pa[0]=ve[0];
             pa[1]=ve[1];
             pa[2]=ve[2];
             //场所
@@ -79,17 +73,15 @@ public class VoiceCall {
             pa[3]=vn[0];
             pa[4]=vn[1];
             //事件
-            pa[5]=event;*/
-
-            String paras = JsonUtils.arrToJSON(pa);
-            p.setTemplateParas(paras);
-
+            pa[5]=event;
+            p.setTemplateParas(pa);
             playInfoList.add(p);
+
             bodys.put("playInfoList", playInfoList);//必输
 
-           /* //URL可填写为http://IP:Port或域名，推荐使用域名，支持http和https。且该域名对应多个服务器，避免单点故障无法接收通知
-            bodys.put("statusUrl","1" );//非必输
-            //URL可填写为http://IP:Port或域名，推荐使用域名，支持http和https。且该域名对应多个服务器，避免单点故障无法接收话单
+            //URL可填写为http://IP:Port或域名，推荐使用域名，支持http和https。且该域名对应多个服务器，避免单点故障无法接收通知
+            //bodys.put("statusUrl","http://172.17.28.75:8081/api/huawei/callBack" );//非必输
+            /*//URL可填写为http://IP:Port或域名，推荐使用域名，支持http和https。且该域名对应多个服务器，避免单点故障无法接收话单
             bodys.put("feeUrl","1" );//非必输
             //指示是否需要返回平台的空闲端口数量。默认 false
             bodys.put("returnIdlePort", false);//非必输

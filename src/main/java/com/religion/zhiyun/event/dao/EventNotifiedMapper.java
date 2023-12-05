@@ -1,6 +1,7 @@
 package com.religion.zhiyun.event.dao;
 
 import com.religion.zhiyun.event.entity.NotifiedEntity;
+import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +20,7 @@ public interface EventNotifiedMapper {
     void addNotified(NotifiedEntity notifiedEntity);
 
     /**
-     * 更新
+     * 更新通知
      * @param eventId
      * @return
      */
@@ -30,5 +31,17 @@ public interface EventNotifiedMapper {
      * 获取电话通知人
      */
     Map<String,String> getNotified();
+
+    /**
+     *新增语音通话信息
+     * @param feeInfo
+     */
+    void addCall(FeeInfo feeInfo);
+
+    /**
+     * 更新语音通话信息
+     * @param feeInfo
+     */
+    int updateCall(FeeInfo feeInfo);
 
 }

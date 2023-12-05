@@ -42,4 +42,11 @@ public interface RmFileMapper {
      * @return
      */
     String getUserUrl(@Param("loginNm") String loginNm);
+
+    /**
+     * 更新地址
+     * @param filePath
+     * @param fileId
+     */
+    void updateFilePath(@Param("filePath") String filePath,@Param("fileId") String fileId);
 }

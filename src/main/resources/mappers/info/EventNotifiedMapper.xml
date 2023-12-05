@@ -11,8 +11,8 @@
             REPORT_TIME,
             REF_EVENT_ID,
             NOTIFIED_MANAGER,
-            CALL_FLAG,
             EVENT_TYPE
+
         ) values (
             #{notifiedUser},
             #{notifiedFlag},
@@ -20,7 +20,6 @@
             #{reportTime},
             #{refEventId},
             #{notifiedManager},
-            #{callFlag},
             #{eventType}
         )
     </insert>
@@ -34,18 +33,50 @@
     </update>
 
     <select id="getNotified" resultType="map">
-        SELECT nt.NOTIFIED_MANAGER as manegers,
-            nt.NOTIFIED_USER as users,
-            ve.VENUES_ADDRES as arr,
-            ve.VENUES_NAME  as nm,
-            nt.EVENT_TYPE as event
-
+        select nt.REF_EVENT_ID as eventId,
+                nt.NOTIFIED_MANAGER as manegers,
+                nt.NOTIFIED_USER as users,
+                ve.VENUES_ADDRES as arr,
+                ve.VENUES_NAME  as nm,
+                nt.EVENT_TYPE as event
         FROM RM_EVENT_NOTIFIED_INFO nt
+        left join rm_call_info cal on nt.REF_EVENT_ID=cal.REF_EVENT_ID and cal.UL_FAIL_REASON=0
         join rm_event_info ev on nt.REF_EVENT_ID=ev.EVENT_ID
         left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
         where ev.EVENT_TYPE='01'
         and nt.NOTIFIED_FLAG='03'
-        and nt.CALL_FLAG='0'
+        group by nt.REF_EVENT_ID
+        having COUNT(cal.CALL_ID) &lt;= 0
     </select>
+
+    <insert id="addCall" >
+        insert into rm_call_info (
+            ICID,
+            SESSION_ID,
+            UL_FAIL_REASON,
+            CALL_DETAIL,
+            EVENT_TYPE,
+            REF_EVENT_ID
+
+        ) values (
+            #{icid},
+            #{sessionId},
+            #{ulFailReason},
+            #{callDetail},
+            #{eventType},
+            #{refEventId}
+
+        )
+    </insert>
+
+    <update id="updateCall" parameterType="com.religion.zhiyun.interfaces.entity.huawei.FeeInfo"
+            keyColumn="fileId" useGeneratedKeys="true" keyProperty="fileId">
+        update rm_call_info set
+            ICID=#{icid},
+            UL_FAIL_REASON=#{ulFailReason} ,
+            CALL_DETAIL=#{callDetail}
+        where SESSION_ID=#{sessionId}
+        and EVENT_TYPE=#{eventType}
+    </update>
 
 </mapper>

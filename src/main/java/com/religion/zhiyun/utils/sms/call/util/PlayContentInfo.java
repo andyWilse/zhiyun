@@ -13,8 +13,8 @@ public class PlayContentInfo {
     private String templateId;
 
     //非必输，语音通知模板的变量值列表，用于依次填充templateId参数指定的模板内容中的变量。该参数需填写为JSONArray格式。
-    private String templateParas;
-
+    //private String templateParas;
+    private String[] templateParas;
     //非必输，是否进行收号。若进行收号，请在语音通知内容播放完毕后的5秒之内进行按键操作，系统会将用户输入的号码通过语音通知呼叫状态通知API发送给SP
     private Integer collectInd;
 

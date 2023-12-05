@@ -7,6 +7,7 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
@@ -25,6 +26,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
@@ -164,6 +166,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             fileEntity.setCreator("AI预警图片");
             fileEntity.setCreateTime(TimeTool.getYmdHms());
             rmFileMapper.add(fileEntity);
+
             int fileId = fileEntity.getFileId();
             event.setPicturesPath(String.valueOf(fileId));
             String eventPlaceName = aiEntity.getEventPlaceName();//地址
@@ -1152,7 +1155,14 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                    //3.1.1.电话通知
                     if(tmFlag && ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
                         mapCall.put("phone",userMobile);
-                        //VoiceCall.voiceCall(mapCall);
+                        String sessionId = VoiceCall.voiceCall(mapCall);
+                        //保存数据
+                        FeeInfo feeInfo =new FeeInfo();
+                        feeInfo.setSessionId(sessionId);
+                        feeInfo.setEventType(CallEnums.fee.getCode());
+                        feeInfo.setRefEventId(String.valueOf(relEventId));
+                        eventNotifiedMapper.addCall(feeInfo);
+
                     }
                     //3.1.2.短信通知
                     SendMassage.sendSms(contents, userMobile);
@@ -1182,7 +1192,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         //3.2.1.电话通知
                         if(tmFlag){
                             mapCall.put("phone",managerMobile);
-                            //VoiceCall.voiceCall(mapCall);
+                            String sessionId = VoiceCall.voiceCall(mapCall);
+                            //保存数据
+                            FeeInfo feeInfo =new FeeInfo();
+                            feeInfo.setSessionId(sessionId);
+                            feeInfo.setEventType(CallEnums.fee.getCode());
+                            feeInfo.setRefEventId(String.valueOf(relEventId));
+                            eventNotifiedMapper.addCall(feeInfo);
                         }
                         //3.2.2.短信通知
                         SendMassage.sendSms(contents, managerMobile);
@@ -1197,7 +1213,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         /*** 4.保存通知 ***/
         String event= (String) mapCall.get("event");
         notifiedEntity.setEventType(event);//内容
-        notifiedEntity.setCallFlag("0");//否
         notifiedEntity.setRefEventId(relEventId);
         notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_03.getCode());
         notifiedEntity.setNotifiedTime(new Date());
