@@ -56,7 +56,7 @@ public class RmFileServiceImpl implements RmFileService {
     @Override
     public RespPageBean uploadImage(HttpServletRequest request) {
         RespPageBean page =new RespPageBean();
-        long code= ResultCode.SUCCESS.getCode();
+        long code=ResultCode.FAILED.getCode();
         String refpath="";
         try {
             List<FileEntity> fileEntities = FileUpDown.imagesUpload(request, pathUpload);
@@ -81,8 +81,8 @@ public class RmFileServiceImpl implements RmFileService {
             if(StringUtils.isEmpty(refpath)){
                 code=ResultCode.FAILED.getCode();
             }
+            code= ResultCode.SUCCESS.getCode();
         }catch (Exception e){
-            code=ResultCode.FAILED.getCode();
             e.printStackTrace();
         }
         page.setCode(code);

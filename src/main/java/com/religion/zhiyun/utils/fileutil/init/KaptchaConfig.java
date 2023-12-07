@@ -1,4 +1,4 @@
-package com.religion.zhiyun.utils.fileutil;
+package com.religion.zhiyun.utils.fileutil.init;
 import com.google.code.kaptcha.Producer;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.google.code.kaptcha.util.Config;

@@ -6,6 +6,7 @@ import com.religion.zhiyun.interfaces.service.AiEventService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
+import com.religion.zhiyun.utils.fileutil.DownloadPicture;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
@@ -52,13 +53,15 @@ public class AiEventServiceImpl implements AiEventService {
     public AppResponse getAiFile(String fileId){
         long codes= ResultCode.ERROR.code();
         String message="AI图片获取失败！";
-        String path  ="";
+        //String path  ="";//图片本地地址
+        String fileStream  ="";//图片本地地址
         try {
 
             List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(fileId.split(","));
-            String urlNew = (String) fileUrl.get(0).get("fileTitle");
-            if(!GeneTool.isEmpty(urlNew)){
-                return new AppResponse(ResultCode.SUCCESS.code(),"AI图片获取成功！",urlNew);
+            //String urlNew = (String) fileUrl.get(0).get("fileTitle");
+            fileStream = (String) fileUrl.get(0).get("fileStream");
+            if(!GeneTool.isEmpty(fileStream)){
+                return new AppResponse(ResultCode.SUCCESS.code(),"AI图片获取成功！",fileStream);
             }
             String eventFile="";
             if(null!=fileUrl && fileUrl.size()>0){
@@ -127,9 +130,15 @@ public class AiEventServiceImpl implements AiEventService {
                 AiImageEntity data= JsonUtils.jsonTOBean(dataJson, AiImageEntity.class);
                 String downloadUrl = data.getDownloadUrl();
                 //下载图片到本地服务器
-                path = this.downloadPicture(downloadUrl);
+                System.out.println("AI下载图片到本地服务器！");
+                String ai = DownloadPicture.downloadPic(downloadUrl, "ai");
+                System.out.println("AI图片地址："+ai);
+                fileStream = DownloadPicture.getImageStream(downloadUrl);
+                System.out.println("AI图片流："+fileStream);
+
                 //更新文件
-                rmFileMapper.updateFilePath(path,fileId);
+                rmFileMapper.updateFilePath("",fileStream,fileId);
+
             }else{
                 String msg = entityImage.getMsg();
                 throw new RuntimeException(msg);
@@ -144,42 +153,7 @@ public class AiEventServiceImpl implements AiEventService {
             e.printStackTrace();
         }
 
-        return new AppResponse(codes,message,path);
+        return new AppResponse(codes,message,fileStream);
     }
 
-    /**
-     * 把图片下载到本地
-     * @param urlString
-     * @throws Exception
-     */
-    public String downloadPicture(String urlString) throws Exception {
-        // 构造URL
-        URL url = new URL(urlString);
-        // 打开连接
-        URLConnection con = url.openConnection();
-        // 输入流
-        InputStream is = con.getInputStream();
-        // 1K的数据缓冲
-        byte[] bs = new byte[1024];
-        // 读取到的数据长度
-        int len;
-        // 输出的文件流
-        String name= String.valueOf(UUID.randomUUID()).replaceAll("-","");
-
-        //String filename = "D:\\图片下载/" + name+ ".jpg";  //下载路径及下载图片名称uploadUrl
-        String filePath =aiUrl+"ai/"+name+ ".jpg";
-        String filename = uploadUrl +"ai/"+ name+ ".jpg";
-        File file = new File(filename);
-        FileOutputStream os = new FileOutputStream(file, true);
-        // 开始读取
-        while ((len = is.read(bs)) != -1) {
-            os.write(bs, 0, len);
-        }
-
-        // 完毕，关闭所有链接
-        os.close();
-        is.close();
-
-        return filePath;
-    }
 }

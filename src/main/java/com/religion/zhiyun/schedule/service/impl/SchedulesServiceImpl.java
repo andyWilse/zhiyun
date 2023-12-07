@@ -63,14 +63,13 @@ public class SchedulesServiceImpl implements SchedulesService {
                     map.put("venuesAddres",arr);
                     map.put("venuesName",nm);
                     map.put("event",event);
-                    String sessionId = VoiceCall.voiceCall(map);
-
+                    /*String sessionId = VoiceCall.voiceCall(map);
                     //保存数据
                     FeeInfo feeInfo =new FeeInfo();
                     feeInfo.setSessionId(sessionId);
                     feeInfo.setEventType(CallEnums.fee.getCode());
                     feeInfo.setRefEventId(String.valueOf(relEventId));
-                    eventNotifiedMapper.addCall(feeInfo);
+                    eventNotifiedMapper.addCall(feeInfo);*/
                 }
             }
             //监管
@@ -83,13 +82,13 @@ public class SchedulesServiceImpl implements SchedulesService {
                     umap.put("venuesAddres",arr);
                     umap.put("venuesName",nm);
                     umap.put("event",event);
-                    String sessionId= VoiceCall.voiceCall(umap);
+                    /*String sessionId = VoiceCall.voiceCall(umap);
                     //保存数据
                     FeeInfo feeInfo =new FeeInfo();
                     feeInfo.setSessionId(sessionId);
                     feeInfo.setEventType(CallEnums.fee.getCode());
                     feeInfo.setRefEventId(String.valueOf(relEventId));
-                    eventNotifiedMapper.addCall(feeInfo);
+                    eventNotifiedMapper.addCall(feeInfo);*/
                 }
             }
         }

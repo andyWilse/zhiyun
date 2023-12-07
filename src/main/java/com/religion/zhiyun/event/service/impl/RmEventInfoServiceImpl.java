@@ -1155,13 +1155,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                    //3.1.1.电话通知
                     if(tmFlag && ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
                         mapCall.put("phone",userMobile);
-                        String sessionId = VoiceCall.voiceCall(mapCall);
+                        /*String sessionId = VoiceCall.voiceCall(mapCall);
                         //保存数据
                         FeeInfo feeInfo =new FeeInfo();
                         feeInfo.setSessionId(sessionId);
                         feeInfo.setEventType(CallEnums.fee.getCode());
                         feeInfo.setRefEventId(String.valueOf(relEventId));
-                        eventNotifiedMapper.addCall(feeInfo);
+                        eventNotifiedMapper.addCall(feeInfo);*/
 
                     }
                     //3.1.2.短信通知
@@ -1192,13 +1192,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         //3.2.1.电话通知
                         if(tmFlag){
                             mapCall.put("phone",managerMobile);
-                            String sessionId = VoiceCall.voiceCall(mapCall);
+                            /*String sessionId = VoiceCall.voiceCall(mapCall);
                             //保存数据
                             FeeInfo feeInfo =new FeeInfo();
                             feeInfo.setSessionId(sessionId);
                             feeInfo.setEventType(CallEnums.fee.getCode());
                             feeInfo.setRefEventId(String.valueOf(relEventId));
-                            eventNotifiedMapper.addCall(feeInfo);
+                            eventNotifiedMapper.addCall(feeInfo);*/
                         }
                         //3.2.2.短信通知
                         SendMassage.sendSms(contents, managerMobile);

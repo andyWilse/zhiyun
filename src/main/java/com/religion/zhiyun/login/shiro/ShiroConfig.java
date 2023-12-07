@@ -49,6 +49,8 @@ public class ShiroConfig {
 
         filterMap.put("/event/addEvent","anon");  //放行AI预警
         filterMap.put("/event/addEventByNB","anon");  //放行烟感预警
+        filterMap.put("/huawei/callStatus","anon");//华为通话状态接收
+        filterMap.put("/huawei/callFee","anon");//华为通话状态接收
 
         filterMap.put("/event/daPing/day","anon");
         filterMap.put("/event/daPing/gather","anon");
@@ -56,10 +58,6 @@ public class ShiroConfig {
         filterMap.put("/venues/daPing/score","anon");
         filterMap.put("/play/sync","anon");
         //filterMap.put("/venues/find","perms[venues:get]");
-
-        filterMap.put("/huawei/callStatus","anon");
-        filterMap.put("/huawei/callFee","anon");
-        filterMap.put("/huawei/test","anon");
 
         filterMap.put("/**","auth");    //拦截所有路径, 它自动会跑到 AuthFilter这个自定义的过滤器里面
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterMap);

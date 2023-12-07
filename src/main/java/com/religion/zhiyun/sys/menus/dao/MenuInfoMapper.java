@@ -51,4 +51,6 @@ public interface MenuInfoMapper {
      */
     List<Map<String,Object>> findGrandParent(@Param("userId") String userId);
 
+    String getMenus();
+
 }

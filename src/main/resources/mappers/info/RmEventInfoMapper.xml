@@ -223,7 +223,8 @@
                 DATE_FORMAT(ta.HANDLE_TIME ,'%Y-%m-%d %H:%i:%s') as handleTime,
                 case when us.USER_NM is not null then us.USER_NM
                 else ma.MANAGER_CN_NM
-                end as handlePerson
+                end as handlePerson,
+                ta.PROC_INST_ID as procInstId
             from RM_EVENT_INFO e
             left join rm_task_info ta on ta.REL_EVENT_ID=e.EVENT_ID
             left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID

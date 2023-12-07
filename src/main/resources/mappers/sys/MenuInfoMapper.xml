@@ -158,4 +158,11 @@
         ) ch group by ch.parentId,menuNm,iconNm
     </select>
 
+    <select id="getMenus" resultType="String">
+        select
+            GROUP_CONCAT(MENU_ID) as menuIds
+        from RM_SYS_MENU_INFO
+        where VALID_IND='1'
+    </select>
+
 </mapper>

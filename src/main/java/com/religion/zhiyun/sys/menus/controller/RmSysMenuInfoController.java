@@ -54,5 +54,9 @@ public class RmSysMenuInfoController {
         return rmSysMenuInfoService.getGrandByMenu(token,menuId);
     }
 
+    @PostMapping("/roleGrand")
+    public PageResponse roleGrand(){
+        return rmSysMenuInfoService.roleGrand();
+    }
 
 }

@@ -29,4 +29,7 @@ public interface RmSysMenuInfoService {
     PageResponse getGrandByMenu(String token,String menuId);
 
 
+    PageResponse roleGrand();
+
+
 }

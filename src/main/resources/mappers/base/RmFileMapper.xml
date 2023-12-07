@@ -50,7 +50,8 @@
             FILE_ID as fileId,
             FILE_NAME as name,
             FILE_PATH as url,
-            FILE_TITLE as fileTitle
+            FILE_TITLE as fileTitle,
+            FILE_STREAM as fileStream
         from RM_FILE_INFO
         where FILE_ID in
         <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">
@@ -70,7 +71,7 @@
     </select>
 
     <update id="updateFilePath" >
-        update RM_FILE_INFO t set t.FILE_PATH=#{filePath} where FILE_ID=#{fileId}
+        update RM_FILE_INFO t set t.FILE_PATH=#{filePath},FILE_STREAM=#{fileStream}  where FILE_ID=#{fileId}
     </update>
 
 </mapper>
