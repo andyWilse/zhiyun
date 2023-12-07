@@ -245,9 +245,12 @@ public class RmFileServiceImpl implements RmFileService {
                     for (int i = 0; i < split.length; i++) {
                         //删除图片
                         String filePaths = fileEntities.get(i).getFilePath();
-                        String[] supers = filePaths.split("super/");
-                        String aSuper = supers[1];
-                        String filePath =pathUpload+aSuper;
+                        /*String[] supers = filePaths.split("/");
+                        String aSuper = supers[3];
+                        String aSuper = supers[3];
+                        String filePath =pathUpload+aSuper;*/
+                        String filePath = filePaths.replace(pathDown, pathUpload);
+
                         int fileId = fileEntities.get(i).getFileId();
                         File file = new File(filePath);
                         if (file.exists()) {//文件是否存在

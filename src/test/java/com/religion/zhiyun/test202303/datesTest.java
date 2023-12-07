@@ -6,9 +6,9 @@ import java.util.Date;
 
 public class datesTest {
     public static void main(String[] args) throws ParseException {
-        String aa="20230417 19:42:01";
+        String aa="http://39.174.220.72:8084/20231207/20231207165011.png";
 
-        SimpleDateFormat f=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 
         /*Date parse = f.parse(aa);
         System.out.println(parse);*/
