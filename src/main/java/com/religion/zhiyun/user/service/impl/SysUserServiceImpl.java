@@ -427,32 +427,47 @@ public class SysUserServiceImpl implements SysUserService {
         long code= ResultCode.FAILED.getCode();
         String message="获取登录用户信息";
 
-        List<SysUserEntity> list=new ArrayList<>();
+        List<Map<String, Object>> list=new ArrayList<>();
         try {
-            SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(userId);
+            //SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(userId);
+            Map<String, Object> uMap = sysUserMapper.getUserId(userId);
 
-            if(null!=sysUserEntity){
+            if(null!=uMap){
                 //。图片回显
-                String picturesPath = sysUserEntity.getUserPhotoUrl();
+                //String picturesPath = sysUserEntity.getUserPhotoUrl();
+                String picturesPath = (String) uMap.get("userPhotoUrl");
                 if(null!=picturesPath && !picturesPath.isEmpty()){
                     String[] split = picturesPath.split(",");
                     List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
-                    sysUserEntity.setFileList(fileUrl.toArray());
+                    //sysUserEntity.setFileList(fileUrl.toArray());
+                    uMap.put("fileList",fileUrl.toArray());
                 }
                 //2.场所地址
-                String relVenuesId = sysUserEntity.getRelVenuesId();
+                //String relVenuesId = sysUserEntity.getRelVenuesId();
+                String relVenuesId = (String) uMap.get("relVenuesId");
                 if(null!=relVenuesId && !relVenuesId.isEmpty()){
                     String[] split = relVenuesId.split(",");
                     String venuesNm = sysUserMapper.getVenuesNm(split);
-                    sysUserEntity.setVenuesNm(venuesNm);
+                    //sysUserEntity.setVenuesNm(venuesNm);
+                    uMap.put("venuesNm",venuesNm);
+                    //场所回显
+                    ParamsVo vo=new ParamsVo();
+                    vo.setVenues(relVenuesId);
+                    vo.setVenuesArr(split);
+                    List<VenuesEntity> venuesEntities = rmVenuesInfoMapper.querySelect(vo);
+                    //sysUserEntity.setSelectVenues(venuesEntities);
+                    uMap.put("selectVenues",venuesEntities.toArray());
                 }
 
-                sysUserEntity.setIdentityInt(Integer.valueOf(sysUserEntity.getIdentity()));
+                //sysUserEntity.setIdentityInt(Integer.valueOf(sysUserEntity.getIdentity()));
+                String identity = (String) uMap.get("identity");
+                uMap.put("identityInt",Integer.valueOf(identity));
+
             }else{
                 throw new RuntimeException("用户信息丢失！");
             }
 
-            list.add(sysUserEntity);
+            list.add(uMap);
             code= ResultCode.SUCCESS.getCode();
             message="获取登录用户信息成功";
         } catch (RuntimeException r) {
@@ -528,6 +543,7 @@ public class SysUserServiceImpl implements SysUserService {
      */
     public String checkData(SysUserEntity sysUserEntity){
         String message="";
+        int userId = sysUserEntity.getUserId();
         //查询组员数量
         String relVenuesIds = sysUserEntity.getRelVenuesId();
         String identity = sysUserEntity.getIdentity();
@@ -539,19 +555,19 @@ public class SysUserServiceImpl implements SysUserService {
                 VenuesEntity ve = rmVenuesInfoMapper.getVenueByID(relVenuesId);
                 String venuesName = ve.getVenuesName();
                 if(RoleEnums.ZU_YUAN.getCode().equals(identity)){
-                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId,userId);
                     //只能两位组员
                     if(yuanNum==2){
                         throw new RuntimeException(venuesName+":该场所内三人驻堂组员数量已满2人！");
                     }
                 }else if(RoleEnums.ZU_ZHANG.getCode().equals(identity)){
                     //组长添加必须满足3个组员
-                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId);
+                    int yuanNum = sysUserMapper.getYuanNum(relVenuesId,userId);
                     if(yuanNum!=2){
                         message=venuesName+":该场所内三人驻堂组员数量不足2人，不能添加组长！";
                         throw new RuntimeException(message);
                     }
-                    int zzhNum = sysUserMapper.getZzhNum(relVenuesId);
+                    int zzhNum = sysUserMapper.getZzhNum(relVenuesId,userId);
                     if(zzhNum==1){
                         throw new RuntimeException(venuesName+":该场所内已存在三人驻堂组长");
                     }

@@ -19,6 +19,7 @@ public interface SysUserMapper {
 
     //根据用户名查询数据
     SysUserEntity queryByUserId(@Param("userId") String userId);
+    Map<String,Object> getUserId(@Param("userId") String userId);
 
     //根据用户编号查询数据
     SysUserEntity queryByNbr(@Param("userNbr") String userNbr);
@@ -109,8 +110,8 @@ public interface SysUserMapper {
      * 获取场所内组员数量
      * @return
      */
-    int getYuanNum(@Param("relVenuesId") String relVenuesId);
-    int getZzhNum(@Param("relVenuesId") String relVenuesId);
+    int getYuanNum(@Param("relVenuesId") String relVenuesId,@Param("userId") int userId);
+    int getZzhNum(@Param("relVenuesId") String relVenuesId,@Param("userId") int userId);
 
 
     /**

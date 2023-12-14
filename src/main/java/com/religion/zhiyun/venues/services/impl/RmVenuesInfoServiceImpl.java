@@ -206,7 +206,10 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         message="场所信息获取(下拉框)";
         List<VenuesEntity>  dataList=new ArrayList<>();
         try {
-            dataList=rmVenuesInfoMapper.querySelect(search,town);
+            ParamsVo vo=new ParamsVo();
+            vo.setSearchOne(search);
+            vo.setTown(town);
+            dataList=rmVenuesInfoMapper.querySelect(vo);
             if(null==dataList || dataList.size()<1){
                 throw new RuntimeException("该区域无相关场所，请先添加场所信息！");
             }

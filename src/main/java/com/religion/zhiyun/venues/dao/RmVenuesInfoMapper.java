@@ -14,11 +14,10 @@ import java.util.Map;
 public interface RmVenuesInfoMapper {
     /**
      * pc下拉框获取
-     * @param search
-     * @param town
+     * @param vo
      * @return
      */
-    public List<VenuesEntity> querySelect(@Param("search") String search,@Param("town") String town);
+    public List<VenuesEntity> querySelect(@Param("vo") ParamsVo vo);
 
     /**
      * app下拉使用(监管)

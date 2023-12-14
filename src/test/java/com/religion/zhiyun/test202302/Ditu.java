@@ -3,6 +3,7 @@ package com.religion.zhiyun.test202302;
 import com.religion.zhiyun.utils.map.GeocoderLatitudeUtil;
 import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,8 @@ class Ditu {
     @Test
 
     void contextLoads() throws FileNotFoundException, UnsupportedEncodingException {
-        List<VenuesEntity> venuesEntities = mVenuesInfoMapper.querySelect("","");
+        ParamsVo vo=new ParamsVo();
+        List<VenuesEntity> venuesEntities = mVenuesInfoMapper.querySelect(vo);
         for(int i=0;i<venuesEntities.size();i++){
             VenuesEntity venuesEntity = venuesEntities.get(i);
             String venuesAddres = venuesEntity.getVenuesAddres();

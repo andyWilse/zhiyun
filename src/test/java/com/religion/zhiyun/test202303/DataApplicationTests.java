@@ -2,6 +2,7 @@ package com.religion.zhiyun.test202303;
 
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,8 @@ public class DataApplicationTests {
     public void toTest(){
         /*List<UserLogin> userLogins = userLoginMapper.queryAll();
         userLogins.forEach(e-> System.out.println(e));*/
-
-        List<VenuesEntity> userLogins = rmVenuesInfoMapper.querySelect("","");
+        ParamsVo vo=new ParamsVo();
+        List<VenuesEntity> userLogins = rmVenuesInfoMapper.querySelect(vo);
         userLogins.forEach(e-> System.out.println(e));
     }
 

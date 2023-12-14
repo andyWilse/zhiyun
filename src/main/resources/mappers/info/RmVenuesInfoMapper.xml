@@ -76,11 +76,17 @@
             VENUES_ADDRES as venuesAddres
         from RM_VENUES_INFO
         where VENUES_STATUS!='02'
-        <if test="search!=null and search!=''">
-            and VENUES_NAME LIKE concat('%',#{search},'%')
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
         </if>
-        <if test="town!=null and town!=''">
-            and TOWN =#{town}
+        <if test="vo.town!=null and vo.town!=''">
+            and TOWN =#{vo.town}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
         </if>
     </select>
 

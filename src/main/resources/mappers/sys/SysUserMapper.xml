@@ -96,6 +96,13 @@
         where USER_ID = #{userId}
     </select>
 
+    <select id="getUserId" resultType="map">
+        select
+        <include refid="userColumn"/>
+        from RM_SYS_USER_INFO
+        where USER_ID = #{userId}
+    </select>
+
     <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
             <include refid="userColumn"/>
@@ -334,6 +341,7 @@
         where u.IDENTITY='10000007'
         and u.VALID_IND='1'
         AND  u.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        and u.USER_ID!=#{userId}
     </select>
 
     <select id="getZzhNum" resultType="int">
@@ -343,6 +351,7 @@
         where zz.IDENTITY='10000006'
         and zz.VALID_IND='1'
         and zz.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        and zz.USER_ID!=#{userId}
     </select>
 
     <update id="updatePassword">
