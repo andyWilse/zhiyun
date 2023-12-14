@@ -45,8 +45,8 @@ public interface RmFileMapper {
 
     /**
      * 更新地址
-     * @param filePath
+     * @param fileStream
      * @param fileId
      */
-    void updateFilePath(@Param("filePath") String filePath,@Param("fileStream") String fileStream,@Param("fileId") String fileId);
+    void updateFilePath(@Param("fileStream") String fileStream,@Param("fileId") String fileId);
 }

@@ -126,18 +126,20 @@ public class AiEventServiceImpl implements AiEventService {
             int code = entityImage.getCode();
             System.out.println("发送AI图片请求结果code:"+code);
             if(200==code){
+
                 String dataJson = entityImage.getData();
                 AiImageEntity data= JsonUtils.jsonTOBean(dataJson, AiImageEntity.class);
                 String downloadUrl = data.getDownloadUrl();
+                fileStream =downloadUrl;
                 //下载图片到本地服务器
                 System.out.println("AI下载图片到本地服务器！");
                 String ai = DownloadPicture.downloadPic(downloadUrl, "ai");
-                System.out.println("AI图片地址："+ai);
-                fileStream = DownloadPicture.getImageStream(downloadUrl);
-                System.out.println("AI图片流："+fileStream);
+                System.out.println("fileId:("+fileId+");AI图片地址："+ai);
+                fileStream = DownloadPicture.getImageStream("/home/zhiyun/files/ai/40e33341a391445cb487ac5c40fcc246.jpg");
+                //System.out.println("AI图片流："+fileStream);
 
                 //更新文件
-                rmFileMapper.updateFilePath("",fileStream,fileId);
+                //rmFileMapper.updateFilePath(fileStream,fileId);
 
             }else{
                 String msg = entityImage.getMsg();

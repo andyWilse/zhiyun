@@ -123,16 +123,12 @@ public class TaskIssuedServiceImpl implements TaskIssuedService {
             String identityStr="";
             if(RoleEnums.QU_WEI.getCode().equals(identity)){
                 identityStr="10000003,10000004,10000005";
-                town="";
             }else if(RoleEnums.QU_GAN.getCode().equals(identity)){
                 identityStr = "10000004,10000005";
-                town="";
             }else if(RoleEnums.JIE_WEI.getCode().equals(identity)){
                 identityStr = "10000005";
-
             }else if(RoleEnums.JIE_GAN.getCode().equals(identity)){
                 identityStr = "100000000001";
-
             }
             String[] identityArr = identityStr.split(",");
             if(null!=taskEntity.getRelVenuesId() && !taskEntity.getRelVenuesId().isEmpty()){

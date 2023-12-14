@@ -424,9 +424,12 @@
             </foreach>
         </if>
         <if test="vo.searchOne!=null and vo.searchOne!=''">
-            and (ve.RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
+            and (
+            ve.RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
             or ve.VENUES_ADDRES LIKE concat('%',#{vo.searchOne},'%')
-            or ve.VENUES_NAME LIKE concat('%',#{vo.searchOne},'%') )
+            or ve.VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_ID=#{vo.searchOne}
+            )
         </if>
         <if test="vo.town != null and vo.town != ''">
             AND  ve.TOWN = #{vo.town}

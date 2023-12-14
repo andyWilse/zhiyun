@@ -31,9 +31,9 @@ public class DownloadPicture {
             // 输出的文件流
             String name= String.valueOf(UUID.randomUUID()).replaceAll("-","");
 
-            //String filename = "D:\\图片下载/" + name+ ".jpg";  //下载路径及下载图片名称uploadUrl
             filePath = FilePropertiesVo.getBaseUrl()+filePathBase+"/"+name+ ".jpg";
             String filename = FilePropertiesVo.getUploadUrl() +filePathBase+"/"+ name+ ".jpg";
+            //filename = "F:\\home/" + name+ ".jpg";//下载路径及下载图片名称uploadUrl
             File file = new File(filename);
             FileOutputStream os = new FileOutputStream(file, true);
             // 开始读取

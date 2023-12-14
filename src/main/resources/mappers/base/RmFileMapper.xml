@@ -71,7 +71,7 @@
     </select>
 
     <update id="updateFilePath" >
-        update RM_FILE_INFO t set t.FILE_PATH=#{filePath},FILE_STREAM=#{fileStream}  where FILE_ID=#{fileId}
+        update RM_FILE_INFO t set FILE_STREAM=#{fileStream}  where FILE_ID=#{fileId}
     </update>
 
 </mapper>

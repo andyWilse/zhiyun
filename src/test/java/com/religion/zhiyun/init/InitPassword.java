@@ -2,10 +2,8 @@ package com.religion.zhiyun.init;
 
 import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
-import com.religion.zhiyun.user.entity.SysUserEntity;
-import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.fileutil.DownloadPicture;
 import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
-import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
@@ -27,11 +25,11 @@ public class InitPassword {
     private SysLoginService LoginService;
     @Test
     void contextLoads(){
-
-        String username = "18514260203";//电话
+        DownloadPicture.downloadPic("http://39.174.220.72:8084/20230717/20230717222923.jpg","");
+       /* String username = "18514260203";//电话
         String verifyCode = "";//验证码
         String password= "ASqw@!34";//密码
-        LoginService.updatePassword(verifyCode,password,username);
+        LoginService.updatePassword(verifyCode,password,username);*/
         /*int userId = 1001;
         String userNbr = "1001";
         String passwor ="ASqw@!12";
