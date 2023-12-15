@@ -38,4 +38,7 @@ public class FileEntity implements Serializable {
     @Column(name = "CREATE_TIME")
     private String createTime;//创建时间
 
+    @Column(name = "IMG_PATH")
+    private String imgPath;//图片存放路径
+
 }

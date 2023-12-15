@@ -12,7 +12,8 @@
             FILE_TYPE,
             FILE_TITLE,
             CREATOR,
-            CREATE_TIME
+            CREATE_TIME,
+            IMG_PATH
             )
             values(
                 #{fileName},
@@ -20,7 +21,8 @@
                 #{fileType},
                 #{fileTitle},
                 #{creator},
-                #{createTime}
+                #{createTime},
+                #{imgPath}
             )
     </insert>
 
@@ -51,7 +53,7 @@
             FILE_NAME as name,
             FILE_PATH as url,
             FILE_TITLE as fileTitle,
-            FILE_STREAM as fileStream
+            IMG_PATH as imgPath
         from RM_FILE_INFO
         where FILE_ID in
         <foreach collection="array" item="fileIds" index="index" open="(" close=")" separator=",">
@@ -71,7 +73,16 @@
     </select>
 
     <update id="updateFilePath" >
-        update RM_FILE_INFO t set FILE_STREAM=#{fileStream}  where FILE_ID=#{fileId}
+        update RM_FILE_INFO t set IMG_PATH=#{imgPath}  where FILE_ID=#{fileId}
     </update>
+
+    <select id="getInit" resultType="java.util.Map">
+        select
+            FILE_ID as fileId,
+            FILE_NAME as fileName,
+            FILE_PATH as filePath
+        from RM_FILE_INFO
+        where CREATOR LIKE concat('%',#{creator},'%')
+    </select>
 
 </mapper>

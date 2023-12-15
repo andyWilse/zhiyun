@@ -16,7 +16,7 @@ public class DownloadPicture {
      * @return
      */
     public static String downloadPic(String picturePath,String filePathBase){
-        String filePath = null;
+        String imagePath = "";
         try {
             // 构造URL
             URL url = new URL(picturePath);
@@ -31,11 +31,16 @@ public class DownloadPicture {
             // 输出的文件流
             String name= String.valueOf(UUID.randomUUID()).replaceAll("-","");
 
-            filePath = FilePropertiesVo.getBaseUrl()+filePathBase+"/"+name+ ".jpg";
-            String filename = FilePropertiesVo.getUploadUrl() +filePathBase+"/"+ name+ ".jpg";
-            //filename = "F:\\home/" + name+ ".jpg";//下载路径及下载图片名称uploadUrl
+            //filePath = FilePropertiesVo.getBaseUrl()+filePathBase+File.separator+name+ ".jpg";
+            //下载路径及下载图片名称uploadUrl
+
+            String filename = FilePropertiesVo.getUploadUrl() +filePathBase;
+            imagePath =filename+File.separator+name+ ".jpg";
             File file = new File(filename);
-            FileOutputStream os = new FileOutputStream(file, true);
+            if(!file.exists()){
+                file.mkdirs();
+            }
+            FileOutputStream os = new FileOutputStream(file+File.separator+name+ ".jpg", true);
             // 开始读取
             while ((len = is.read(bs)) != -1) {
                 os.write(bs, 0, len);
@@ -48,7 +53,7 @@ public class DownloadPicture {
             e.printStackTrace();
         }
 
-        return filePath;
+        return imagePath;
     }
 
 

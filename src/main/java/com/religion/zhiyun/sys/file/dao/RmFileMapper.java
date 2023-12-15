@@ -45,8 +45,11 @@ public interface RmFileMapper {
 
     /**
      * 更新地址
-     * @param fileStream
+     * @param imgPath
      * @param fileId
      */
-    void updateFilePath(@Param("fileStream") String fileStream,@Param("fileId") String fileId);
+    void updateFilePath(@Param("imgPath") String imgPath,@Param("fileId") String fileId);
+
+
+    List<Map<String,Object>> getInit(@Param("creator") String creator);
 }

@@ -21,6 +21,12 @@ public class AiEventController {
     public AppResponse getImage(@RequestParam("fileId") String fileId, @RequestHeader("token")String token){
         return aiEventService.getAiFile(fileId);
     }
+
+    @RequestMapping("/downImage")
+    public AppResponse downImage(@RequestParam("filePath") String filePath){
+        return aiEventService.downImage(filePath);
+    }
+
 }
 
 

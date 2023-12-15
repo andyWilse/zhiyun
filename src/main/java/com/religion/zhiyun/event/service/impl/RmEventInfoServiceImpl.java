@@ -7,7 +7,8 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
-import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
+import com.religion.zhiyun.interfaces.service.AiEventService;
+import com.religion.zhiyun.login.entity.LoginInfo;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
@@ -26,7 +27,6 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
@@ -34,7 +34,6 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.sms.SendMassage;
-import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
@@ -98,6 +97,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     MonitorSmokerMapper monitorSmokerMapper;
+    @Autowired
+    private AiEventService aiEventService;
 
     @Override
     public AppResponse addAiEvent(String eventJson) {
@@ -165,6 +166,14 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
             fileEntity.setCreator("AI预警图片");
             fileEntity.setCreateTime(TimeTool.getYmdHms());
+            //AI图片下载
+            AppResponse appResponse = aiEventService.downImage(eventFile);
+            if(200==appResponse.getCode()){
+                String direct = appResponse.getDirect();
+                fileEntity.setImgPath(direct);
+            }else{
+                fileEntity.setImgPath(appResponse.getMessage());
+            }
             rmFileMapper.add(fileEntity);
 
             int fileId = fileEntity.getFileId();

@@ -9,6 +9,7 @@ import java.util.Date;
 public class TimeTool {
 
     public static String ymdHms="yyyy-MM-dd HH:mm:ss";
+    public static String ymd="yyyyMMdd";
     public static String year="yyyy";
     public static String month="MM";
     public static String day="dd ";
@@ -18,6 +19,13 @@ public class TimeTool {
     public static String getYmdHms(){
         Date date = new Date();
         SimpleDateFormat format=new SimpleDateFormat(ymdHms);
+        String format1 = format.format(date);
+        return format1;
+    }
+
+    public static String getYmd(){
+        Date date = new Date();
+        SimpleDateFormat format=new SimpleDateFormat(ymd);
         String format1 = format.format(date);
         return format1;
     }
