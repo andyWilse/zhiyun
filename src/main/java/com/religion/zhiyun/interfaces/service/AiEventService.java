@@ -14,7 +14,10 @@ public interface AiEventService {
      * @param filePath
      * @return
      */
-    AppResponse downImage(String filePath);
-
+    AppResponse downImage(String filePath,String fileId);
+    /**
+     * AI图片下载（历史）
+     * @return
+     */
     AppResponse initImage();
 }

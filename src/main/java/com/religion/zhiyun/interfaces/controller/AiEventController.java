@@ -24,7 +24,7 @@ public class AiEventController {
 
     @RequestMapping("/downImage")
     public AppResponse downImage(@RequestParam("filePath") String filePath){
-        return aiEventService.downImage(filePath);
+        return aiEventService.downImage(filePath,"");
     }
 
 }

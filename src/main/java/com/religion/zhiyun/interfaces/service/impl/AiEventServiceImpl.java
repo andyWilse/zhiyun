@@ -56,7 +56,7 @@ public class AiEventServiceImpl implements AiEventService {
         long codes= ResultCode.ERROR.code();
         String message="AI图片获取失败！";
 
-        String downloadUrl  ="";
+        String direct  ="";
         try {
             List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(fileId.split(","));
             if(null==fileUrl || fileUrl.size()<=0){
@@ -67,9 +67,16 @@ public class AiEventServiceImpl implements AiEventService {
             if(!GeneTool.isEmpty(imgPath)){
                 String str = "data:image/png;base64,";
                 String imageStream = DownloadPicture.getImageStream(imgPath);
-                downloadUrl=str+imageStream;
+                String downloadUrl=str+imageStream;
+                return new AppResponse(ResultCode.SUCCESS.code(),"AI图片获取成功！",downloadUrl);
             }else{
-                throw new RuntimeException(fileId+":AI图片未下载，请联系管理员！");
+                String url = (String) fileUrl.get(0).get("url");
+                AppResponse appResponse = this.downImage(url, fileId);
+                if(200==appResponse.getCode()){
+                    direct = appResponse.getDirect();
+                }else{
+                    return new AppResponse(codes,appResponse.getMessage());
+                }
             }
             codes= ResultCode.SUCCESS.code();
             message="AI图片获取成功！";
@@ -81,14 +88,14 @@ public class AiEventServiceImpl implements AiEventService {
             e.printStackTrace();
         }
 
-        return new AppResponse(codes,message,downloadUrl);
+        return new AppResponse(codes,message,direct);
     }
 
     @Override
-    public AppResponse downImage(String filePath) {
+    public AppResponse downImage(String filePath,String fileId) {
         long codes= ResultCode.ERROR.code();
         String message="AI图片下载失败！";
-        String aiPath ="";
+        String imageStream ="";
         try {
             /************************************** 从ai获取图片访问地址 ****************************************/
             //String eventFile= (String) fileUrl.get(0).get("url");
@@ -102,6 +109,8 @@ public class AiEventServiceImpl implements AiEventService {
                 storageId =spli[1];
                 String[] split1 = fm.split("=");
                 fileName =split1[1];
+            }else{
+                throw new RuntimeException("AI图片地址丢失，请联系管理员！");
             }
 
             /**1.获取授权**/
@@ -159,8 +168,13 @@ public class AiEventServiceImpl implements AiEventService {
                 //System.out.println("AI下载图片到本地服务器！");
                 String yy = TimeTool.getCurrentYear(new Date());
                 String mm = TimeTool.getCurrentMonth(new Date());
-                aiPath = DownloadPicture.downloadPic(downloadUrl, "ai"+File.separator+yy+File.separator+mm);
-
+                String aiPath = DownloadPicture.downloadPic(downloadUrl, "ai"+File.separator+yy+File.separator+mm);
+                //更新文件
+                rmFileMapper.updateFilePath(aiPath,fileId);
+                //返回文件流
+                String str = "data:image/png;base64,";
+                String imgStream = DownloadPicture.getImageStream(aiPath);
+                imageStream =str+imgStream;
             }else{
                 String msg = entityImage.getMsg();
                 throw new RuntimeException(msg);
@@ -175,7 +189,7 @@ public class AiEventServiceImpl implements AiEventService {
             e.printStackTrace();
         }
 
-        return new AppResponse(codes,message,aiPath);
+        return new AppResponse(codes,message,imageStream);
     }
 
     @Override

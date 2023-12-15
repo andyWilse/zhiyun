@@ -167,13 +167,13 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             fileEntity.setCreator("AI预警图片");
             fileEntity.setCreateTime(TimeTool.getYmdHms());
             //AI图片下载
-            AppResponse appResponse = aiEventService.downImage(eventFile);
+           /* AppResponse appResponse = aiEventService.downImage(eventFile);
             if(200==appResponse.getCode()){
                 String direct = appResponse.getDirect();
                 fileEntity.setImgPath(direct);
             }else{
                 fileEntity.setImgPath(appResponse.getMessage());
-            }
+            }*/
             rmFileMapper.add(fileEntity);
 
             int fileId = fileEntity.getFileId();
