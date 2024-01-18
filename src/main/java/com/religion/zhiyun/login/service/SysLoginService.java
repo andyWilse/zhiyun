@@ -3,17 +3,18 @@ package com.religion.zhiyun.login.service;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 
+import java.util.Map;
+
 public interface SysLoginService {
     SysUserEntity queryByName(String username);
     Object test(String username);
 
     /**
      *  app登录
-     * @param username
-     * @param password
+     * @param map
      * @return
      */
-    AppResponse loginIn(String username,String password);
+    AppResponse loginIn(Map<String, Object> map);
 
     /**
      * 验证

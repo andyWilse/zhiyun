@@ -89,8 +89,8 @@
                 end as taskNm
             from act_hi_identitylink ti
             left join act_hi_comment  co on ti.USER_ID_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
-            left join rm_sys_user_info us on us.USER_MOBILE=ti.USER_ID_
-            left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.USER_ID_
+            left join rm_sys_user_info us on us.USER_MOBILE=ti.USER_ID_ and us.VALID_IND='1'
+            left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.USER_ID_ and u.VALID_IND='1'
             join (SELECT  @rownum := 0) r
             where ti.PROC_INST_ID_=#{procInstId}
             order by co.TIME_ desc
@@ -113,8 +113,8 @@
             ti.START_TIME_,
             ti.act_id_ as actId
         from act_hi_actinst ti
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
-        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
+        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.ACT_TYPE_='startEvent'
         and ti.PROC_INST_ID_=#{procInstId})
         union all
@@ -131,8 +131,8 @@
             ti.act_id_ as actId
         from act_hi_actinst ti
         join act_hi_comment  co on ti.ASSIGNEE_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
-        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
+        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.PROC_INST_ID_=#{procInstId}
         order by TIME_
         )
@@ -145,8 +145,8 @@
             ti.START_TIME_,
             ti.act_id_ as actId
         from act_hi_actinst ti
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_
-        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_
+        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.END_TIME_ is null
         and ti.PROC_INST_ID_=#{procInstId}
         group by ti.PROC_INST_ID_,ti.END_TIME_
@@ -165,8 +165,8 @@
             thi.ASSIGNEE_ ))) as sendNames,
             min(DATE_FORMAT(thi.START_TIME_,'%Y-%m-%d %H:%i:%s') ) as sendTime
         from act_hi_actinst thi
-        left join rm_sys_user_info hus on hus.USER_MOBILE=thi.ASSIGNEE_
-        left join rm_venues_manager_info hu on hu.MANAGER_MOBILE=thi.ASSIGNEE_
+        left join rm_sys_user_info hus on hus.USER_MOBILE=thi.ASSIGNEE_ and hus.VALID_IND='1'
+        left join rm_venues_manager_info hu on hu.MANAGER_MOBILE=thi.ASSIGNEE_ and hu.VALID_IND='1'
         where thi.act_id_=#{actId} and thi.PROC_INST_ID_=#{procInstId}
     </select>
 
@@ -187,8 +187,8 @@
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join rm_sys_dict di on ta.FLOW_TYPE=di.DICT_CD and di.DICT_TYPE_CD='1003'
-        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON and us.VALID_IND='1'
+        left join rm_venues_manager_info u on u.MANAGER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
         left join act_hi_identitylink ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.TYPE_='starter'
         where 1=1
         <if test="vo.searchThree != null and vo.searchThree != ''">
@@ -273,8 +273,8 @@
             ta.PROC_INST_ID as procInstId
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info us on ta.LAUNCH_PERSON=us.USER_MOBILE
-        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info us on ta.LAUNCH_PERSON=us.USER_MOBILE and us.VALID_IND='1'
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON and ma.VALID_IND='1'
         where ta.PROC_INST_ID in
         <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
             #{procInstId}
@@ -388,7 +388,7 @@
         select
            g.USER_MOBILE as userMobile
         from rm_sys_user_info  g
-        left join rm_sys_user_info u on g.town=u.town and u.IDENTITY='10000006'
+        left join rm_sys_user_info u on g.town=u.town and u.IDENTITY='10000006' and u.VALID_IND='1'
         where g.VALID_IND='1'
         and g.IDENTITY ='10000005'
         <if test="relVenuesId!=null and relVenuesId!=''">
@@ -645,6 +645,7 @@
                 (select count(u.USER_ID)
                     from rm_sys_user_info u
                     where u.area='330304'
+                    and u.VALID_IND='1'
                     and u.IDENTITY in
                     <foreach collection="identityArr" item="item" index="index" open="(" close=")" separator=",">
                         #{item}
@@ -653,7 +654,7 @@
                 count(co.ID_) as commTotal,
                 SUM(case when co.USER_ID_=#{handle} then 1 else 0 END )as dd
             from act_hi_comment  co
-            left join rm_sys_user_info us on co.USER_ID_=us.USER_MOBILE
+            left join rm_sys_user_info us on co.USER_ID_=us.USER_MOBILE and us.VALID_IND='1'
             left join rm_task_info ta on co.PROC_INST_ID_=ta.PROC_INST_ID
             where DATE_FORMAT(co.TIME_,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{num} day)
             and ta.HANDLE_TIME is not null
@@ -695,8 +696,8 @@
             TASK_CONTENT as taskContent
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where 1=1
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and ta.LAUNCH_PERSON = #{vo.searchTwo}
@@ -759,8 +760,8 @@
             FROM rm_task_info ta
             left join act_hi_comment co on ta.PROC_INST_ID=co.PROC_INST_ID_
             left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and co.USER_ID_ = #{vo.searchTwo}
@@ -797,8 +798,8 @@
             FROM rm_task_info ta
             left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
             left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                and ac.ASSIGNEE_ = #{vo.searchTwo}
@@ -861,8 +862,8 @@
                 TASK_CONTENT as taskContent
             FROM rm_task_info ta
             left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and ta.LAUNCH_PERSON = #{vo.searchTwo}
@@ -902,8 +903,8 @@
             FROM rm_task_info ta
             left join act_hi_comment co on ta.PROC_INST_ID=co.PROC_INST_ID_
             left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and co.USER_ID_ = #{vo.searchTwo}
@@ -943,8 +944,8 @@
             FROM rm_task_info ta
             left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
             left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+            left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+            left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
             where 1=1
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and ac.ASSIGNEE_ = #{vo.searchTwo}
@@ -1049,9 +1050,9 @@
 
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID AND ac.ASSIGNEE_=#{login}
-        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.ASSIGNEE_=#{login}
+        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON and us.VALID_IND='1'
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON and ma.VALID_IND='1'
         left join RM_EVENT_INFO ev on ev.EVENT_ID=ta.REL_EVENT_ID
         where 1=1
         <if test="procInstId!=null and procInstId!=''">
@@ -1108,8 +1109,8 @@
             CONCAT(ma.MANAGER_CN_NM,'(负责人)'),
             me.REPORT_MEN ))) as reportMens
         from rm_event_report_men me
-        left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE
-        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=us.USER_MOBILE
+        left join rm_sys_user_info us on me.REPORT_MEN =us.USER_MOBILE and us.VALID_IND='1'
+        left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=me.REPORT_MEN and ma.VALID_IND='1'
         where me.PROC_INST_ID=#{procInstId}
 
     </select>
@@ -1118,7 +1119,7 @@
         SELECT
             ta.TASK_NAME as title,
             #{login} as reporterPhone,
-            (select us.USER_NM from rm_sys_user_info us where us.USER_MOBILE=#{login}) as reporterName,
+            (select us.USER_NM from rm_sys_user_info us where us.USER_MOBILE=#{login} and us.VALID_IND='1') as reporterName,
             ve.Latitude as latitude,
             ve.longitude as longitude,
             ve.CITY as citycode,
@@ -1152,8 +1153,8 @@
             join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null and ac.ASSIGNEE_= #{vo.searchTwo}
         </if>
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where ta.HANDLE_TIME is null
         <if test="vo.venues!=null and vo.venues!=''">
             and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
@@ -1172,8 +1173,8 @@
             join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null and ac.ASSIGNEE_= #{vo.searchTwo}
         </if>
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where ta.HANDLE_TIME is null
         <if test="vo.venues!=null and vo.venues!=''">
             and ve.VENUES_NAME LIKE CONCAT('%',#{vo.venues},'%')
@@ -1203,8 +1204,8 @@
         FROM rm_task_info ta
         left join act_hi_comment  co on  ta.PROC_INST_ID=co.PROC_INST_ID_
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where  (ta.LAUNCH_PERSON=#{vo.searchTwo} or co.USER_ID_=#{vo.searchTwo})
         <if test="vo.searchThree!=null and vo.searchThree!=''">
             and ta.HANDLE_TIME is null
@@ -1227,8 +1228,8 @@
         FROM rm_task_info ta
         left join act_hi_comment  co on  ta.PROC_INST_ID=co.PROC_INST_ID_
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where  (ta.LAUNCH_PERSON=#{vo.searchTwo} or co.USER_ID_=#{vo.searchTwo})
         <if test="vo.searchThree!=null and vo.searchThree!=''">
             and ta.HANDLE_TIME is null
@@ -1269,8 +1270,8 @@
         FROM rm_task_info ta
         left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where ac.ASSIGNEE_=#{vo.searchOne}
         and ta.REL_EVENT_ID is null
         order by ta.EMERGENCY_LEVEL ,ta.LAUNCH_TIME desc
@@ -1282,8 +1283,8 @@
         FROM rm_task_info ta
         left join  act_hi_actinst ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.END_TIME_ is null
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON
-        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON
+        left join rm_sys_user_info u on u.USER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
+        left join rm_venues_manager_info m on m.MANAGER_MOBILE=ta.LAUNCH_PERSON and m.VALID_IND='1'
         where ac.ASSIGNEE_=#{vo.searchOne}
         and ta.REL_EVENT_ID is null
     </select>

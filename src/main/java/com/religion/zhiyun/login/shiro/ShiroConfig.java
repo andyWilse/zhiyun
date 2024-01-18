@@ -38,9 +38,10 @@ public class ShiroConfig {
 
         //要拦截的路径放在map里面
         Map<String,String> filterMap=new LinkedHashMap<String,String>();
-        filterMap.put("/login","anon");  //放行login接口
+        //filterMap.put("/login","anon");  //放行login接口
         filterMap.put("/logout","anon");    //放行logout接口
         filterMap.put("/app/sendVerifyCode","anon");  //放行sendVerifyCode
+        filterMap.put("/app/sendCode","anon");  //放行sendVerifyCode
         filterMap.put("/app/loginIn","anon");  //放行loginIn
         filterMap.put("/app/updatePassword","anon");  //放行updatePassword
 

@@ -1,8 +1,11 @@
 package com.religion.zhiyun.login.controller;
 
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.login.entity.LoginResp;
+import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
+import com.religion.zhiyun.utils.response.AppResponse;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -17,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author: Eli Shaw
+ * @author: wang
  * @Date: 2019-11-14 11:33:26
  * @Description：
  */
@@ -31,6 +34,9 @@ public class LoginUserController {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    private SysLoginService loginService;
+
 /**
  * 登录方法
  * @param map
@@ -41,6 +47,7 @@ public class LoginUserController {
         try {
             String username = (String) map.get("username");
             String password = (String) map.get("password");
+            String verifyCode = (String) map.get("verifyCode");
 
             SysUserEntity user = sysUserService.queryByTel(username);
             if(user==null){
@@ -56,6 +63,12 @@ public class LoginUserController {
 
             if(!passwords.equals(pass)){
                 throw new RuntimeException("密码错误!");
+            }
+            //验证码验证
+            AppResponse appResponse = loginService.checkVerifyCode(verifyCode, username);
+            //验证码不正确
+            if(ResultCode.FAILED.getCode()==appResponse.getCode()){
+                throw new RuntimeException("验证码错误!");
             }
 
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username

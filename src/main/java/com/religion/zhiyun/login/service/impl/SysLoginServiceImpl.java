@@ -12,6 +12,7 @@ import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.service.SysRoleService;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.login.entity.LoginInfo;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -68,7 +69,7 @@ public class SysLoginServiceImpl implements SysLoginService {
     }
 
     @Override
-    public AppResponse loginIn(String username,String password) {
+    public AppResponse loginIn(Map<String, Object> map) {
         long code= ResultCode.FAILED.getCode();
         String message="";
         String direct="";
@@ -79,6 +80,14 @@ public class SysLoginServiceImpl implements SysLoginService {
         String userNbr="";
         String validInd="";
         try {
+            String username= (String) map.get("username");
+            String password= (String) map.get("password");//密码
+            String verifyCode = (String) map.get("verifyCode");//验证码
+            //用户名校验
+            if(GeneTool.isEmpty(username)){
+                throw new RuntimeException("用户名不能为空！");
+            }
+
             //查询
             List<SysUserEntity>  sysUserList = userMapper.queryByTel(username);//监管人员
             List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
@@ -112,6 +121,13 @@ public class SysLoginServiceImpl implements SysLoginService {
             if(!passWordSys.equals(pass)){
                 throw new RuntimeException("密码错误!");
             }
+            //验证码验证
+            /*AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
+            //验证码不正确
+            if(ResultCode.FAILED.getCode()==appResponse.getCode()){
+                throw new RuntimeException(appResponse.getMessage());
+            }*/
+
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
             stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);
@@ -191,6 +207,29 @@ public class SysLoginServiceImpl implements SysLoginService {
         String message="验证码发送失败";
         String verifyCode="";
         try {
+            if(GeneTool.isEmpty(username)){
+                throw new RuntimeException("手机号不能为空！");
+            }
+            //验证号码在系统是否存在
+            List<SysUserEntity>  sysUserList = userMapper.queryByTel(username);//监管人员
+            List<Map<String,Object>> manager= rmStaffInfoMapper.getByTel(username);//教职人员
+            int num=sysUserList.size()+manager.size();
+            if(num>1){
+                throw new RuntimeException("用户身份重复，请联系管理员！");
+            }else if(num==0){
+                throw new RuntimeException("手机号（"+username+"）在系统不存在，请在系统添加后使用！");
+            }else{
+                String validInd ="0";
+                if(sysUserList.size()>0){
+                    validInd = sysUserList.get(0).getValidInd();
+                }else{
+                    validInd = (String) manager.get(0).get("");
+                }
+                if("0".equals(validInd)){
+                    throw new RuntimeException("号码("+username+")在系统内已失效!");
+                }
+            }
+
             //随机生成验证码存入redis
             verifyCode = this.saveCodeRedis(username);
             code=ResultCode.SUCCESS.getCode();

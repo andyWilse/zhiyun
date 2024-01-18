@@ -25,11 +25,20 @@ public class AppLoginController {
         return LoginService.sendVerifyCode(username);
     }
 
-    @PostMapping("/loginIn")
-    public AppResponse login(@RequestParam Map<String, Object> map) {
+    /**
+     * 发送验证码(手机号)pc
+     * @param map
+     * @return
+     */
+    @PostMapping(value = "/sendCode")
+    public AppResponse sendVerifyCode(@RequestBody Map<String, Object> map) {
         String username= (String) map.get("username");
-        String password= (String) map.get("password");//密码
-        return LoginService.loginIn(username,password);
+        return LoginService.sendVerifyCode(username);
+    }
+
+    @PostMapping("/loginIn")
+    public AppResponse login(@RequestBody Map<String, Object> map) {
+        return LoginService.loginIn(map);
     }
 
     @PostMapping("/updatePassword")

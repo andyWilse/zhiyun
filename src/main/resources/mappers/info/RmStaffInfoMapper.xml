@@ -186,7 +186,7 @@
             VALID_IND as flag,
             MANAGER_ID as id
         from rm_venues_manager_info
-        where 1=1
+        where VALID_IND='1'
         <if test="username != null and username != ''">
             AND  MANAGER_MOBILE=#{username}
         </if>

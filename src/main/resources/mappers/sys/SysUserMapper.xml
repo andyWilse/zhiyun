@@ -113,9 +113,10 @@
         select
         <include refid="userColumn"/>
         from RM_SYS_USER_INFO
-        where  USER_MOBILE= #{userMobile}
+        where VALID_IND='1'
+        and (USER_MOBILE= #{userMobile}
         or LOGIN_NM LIKE CONCAT('%',#{userMobile},'%')
-        or USER_NM LIKE CONCAT('%',#{userMobile},'%')
+        or USER_NM LIKE CONCAT('%',#{userMobile},'%'))
     </select>
 
     <select id="queryTelNum" resultType="java.lang.Long">
