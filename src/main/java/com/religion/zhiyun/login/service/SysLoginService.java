@@ -40,4 +40,11 @@ public interface SysLoginService {
      */
     AppResponse updatePassword(String verifyCode,String password,String username);
 
+    /**
+     *  PC 登录
+     * @param map
+     * @return
+     */
+    AppResponse loginInPC(Map<String, Object> map);
+
 }

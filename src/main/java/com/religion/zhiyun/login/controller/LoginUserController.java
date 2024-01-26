@@ -5,6 +5,7 @@ import com.religion.zhiyun.login.entity.LoginResp;
 import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.crypto.hash.Hash;
@@ -56,13 +57,35 @@ public class LoginUserController {
                 throw new RuntimeException("登录失败，该用户已失效!");
             }
             int userId = user.getUserId();
+            //验证用户是否被锁定
+            String lock = stringRedisTemplate.opsForValue().get(String.valueOf(userId)+"-lock");
+            if(!GeneTool.isEmpty(lock)){
+                long nowTime = System.currentTimeMillis() / 1000 ;
+                long oldLong = Long.valueOf(nowTime);
+                long sec=1800l-(nowTime-oldLong);
+                long yu=sec;
+                throw new RuntimeException("10分钟内密码错误大于等于5次，账户锁定。请" + yu + "分钟后再来");
+            }
             String userNbr = user.getUserNbr();
             Hash hash = this.transSalt(String.valueOf(userId), password, userNbr);
             String pass=String.valueOf(hash);
             String passwords = user.getPasswords();
 
+            String num = stringRedisTemplate.opsForValue().get(String.valueOf(userId));
             if(!passwords.equals(pass)){
-                throw new RuntimeException("密码错误!");
+                int errNum =1;
+                if(!GeneTool.isEmpty(num)){
+                    errNum = Integer.parseInt(num);
+                    errNum++;
+                }
+                //登录时密码10分钟连续错误5次
+                stringRedisTemplate.opsForValue().set(String.valueOf(userId),String.valueOf(errNum),10*60, TimeUnit.SECONDS);
+                //登录时密码连续错误5次锁定30分钟
+                if(5==errNum){
+                    long errSec = System.currentTimeMillis() / 1000;
+                    stringRedisTemplate.opsForValue().set(String.valueOf(userId)+"-lock",String.valueOf(errSec),30*60, TimeUnit.SECONDS);
+                }
+                throw new RuntimeException("密码错误" + errNum + "次!");
             }
             //验证码验证
             AppResponse appResponse = loginService.checkVerifyCode(verifyCode, username);
@@ -74,6 +97,7 @@ public class LoginUserController {
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             String token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
             stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);
+            //stringRedisTemplate.opsForValue().set(String.valueOf(usId),"0");
 
             return LoginResp.success("登录成功").add("token",token); // 将用户的角色和权限发送到前台
         } catch (IncorrectCredentialsException e) {

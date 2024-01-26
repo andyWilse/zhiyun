@@ -41,6 +41,11 @@ public class AppLoginController {
         return LoginService.loginIn(map);
     }
 
+    @PostMapping("/loginPc")
+    public AppResponse loginInPC(@RequestBody Map<String, Object> map) {
+        return LoginService.loginInPC(map);
+    }
+
     @PostMapping("/updatePassword")
     public AppResponse updatePassword(@RequestParam Map<String, Object> map) {
         String username = (String) map.get("username");//电话

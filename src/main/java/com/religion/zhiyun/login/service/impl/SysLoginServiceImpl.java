@@ -83,6 +83,18 @@ public class SysLoginServiceImpl implements SysLoginService {
             String username= (String) map.get("username");
             String password= (String) map.get("password");//密码
             String verifyCode = (String) map.get("verifyCode");//验证码
+
+            //验证用户是否被锁定
+            String lock = stringRedisTemplate.opsForValue().get(username+"-lock");
+            if(!GeneTool.isEmpty(lock)){
+                long nowTime = System.currentTimeMillis() / 1000;
+                long oldLong = Long.valueOf(lock);
+                long sec=1800l-(nowTime-oldLong);
+                long yu=sec/ 60 % 60;
+                if(yu>0){
+                    throw new RuntimeException("用户已锁定！请" + yu + "分钟后再来。");
+                }
+            }
             //用户名校验
             if(GeneTool.isEmpty(username)){
                 throw new RuntimeException("用户名不能为空！");
@@ -118,8 +130,25 @@ public class SysLoginServiceImpl implements SysLoginService {
             }
             Hash hash = this.transSalt(userId, password, userNbr);
             String pass=String.valueOf(hash);
+
+            String ernum = stringRedisTemplate.opsForValue().get(username+"-pass");
             if(!passWordSys.equals(pass)){
-                throw new RuntimeException("密码错误!");
+                int errNum =1;
+                if(!GeneTool.isEmpty(ernum)){
+                    errNum = Integer.parseInt(ernum);
+                    errNum++;
+                }
+                //登录时密码10分钟连续错误5次
+                stringRedisTemplate.opsForValue().set(username+"-pass",String.valueOf(errNum),10*60, TimeUnit.SECONDS);
+                //登录时密码连续错误5次锁定30分钟
+                if(5==errNum){
+                    long errTime = System.currentTimeMillis() / 1000 ;
+                    stringRedisTemplate.opsForValue().set(username+"-lock",String.valueOf(errTime),30*60, TimeUnit.SECONDS);
+                    stringRedisTemplate.delete(username+"-pass");
+                    throw new RuntimeException("密码10分钟内连续错误5次，用户已锁定！请30分钟后再来！");
+                }
+                throw new RuntimeException("密码错误" + errNum + "次!");
+
             }
             //验证码验证
             /*AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
@@ -131,7 +160,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
             token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
             stringRedisTemplate.opsForValue().set(token,username,180*24*60*60, TimeUnit.SECONDS);
-
+            stringRedisTemplate.delete(username+"-pass");
             code=ResultCode.SUCCESS.getCode();
             message="登录成功！";
 
@@ -303,6 +332,99 @@ public class SysLoginServiceImpl implements SysLoginService {
         }
 
         return new AppResponse(code,message);
+    }
+
+    @Override
+    public AppResponse loginInPC(Map<String, Object> map) {
+        long code= ResultCode.FAILED.getCode();
+        String message="";
+        String token="";
+
+        try {
+            String username= (String) map.get("username");//用户
+            String password= (String) map.get("password");//密码
+            String verifyCode = (String) map.get("verifyCode");//验证码
+            //用户名校验
+            if(GeneTool.isEmpty(username)){
+                throw new RuntimeException("用户名不能为空！");
+            }
+            //查询
+            List<SysUserEntity>  sysUserList = userMapper.queryByTel(username);//监管人员
+            if(sysUserList.size()>1){
+                throw new RuntimeException("用户重复，请联系管理员！");
+            }else if(null==sysUserList || sysUserList.size()==0){
+                throw new RuntimeException("手机号("+username+")未在系统添加使用，请添加后登录！");
+            }
+            SysUserEntity user = sysUserList.get(0);
+            int usId = user.getUserId();
+            String userNbr = user.getUserNbr();
+            //验证用户是否被锁定
+            String lock = stringRedisTemplate.opsForValue().get(usId+"-lock");
+            if(!GeneTool.isEmpty(lock)){
+                long nowTime = System.currentTimeMillis() / 1000;
+                long oldLong = Long.valueOf(lock);
+                long sec=1800l-(nowTime-oldLong);
+                long yu=sec/ 60 % 60;
+                if(yu>0){
+                    throw new RuntimeException("用户已锁定！请" + yu + "分钟后再来。");
+                }
+            }
+
+            Hash hash = this.transSalt(String.valueOf(usId), password, userNbr);
+            String pass=String.valueOf(hash);
+            String passWordSys = user.getPasswords();
+
+            String ernum = stringRedisTemplate.opsForValue().get(usId+"-pass");
+            if(!passWordSys.equals(pass)){
+                int errNum =1;
+                if(!GeneTool.isEmpty(ernum)){
+                    errNum = Integer.parseInt(ernum);
+                    errNum++;
+                }
+                //登录时密码10分钟连续错误5次
+                stringRedisTemplate.opsForValue().set(usId+"-pass",String.valueOf(errNum),10*60, TimeUnit.SECONDS);
+                //登录时密码连续错误5次锁定30分钟
+                if(3==errNum){
+                    long errTime = System.currentTimeMillis() / 1000 ;
+                    stringRedisTemplate.opsForValue().set(usId+"-lock",String.valueOf(errTime),30*60, TimeUnit.SECONDS);
+                    stringRedisTemplate.delete(usId+"-pass");
+                    throw new RuntimeException("密码10分钟内连续错误5次，用户已锁定！请30分钟后再来！");
+                }
+                throw new RuntimeException("密码错误" + errNum + "次!");
+
+            }
+            //验证码验证
+            /*AppResponse appResponse = this.checkVerifyCode(verifyCode, username);
+            //验证码不正确
+            if(ResultCode.FAILED.getCode()==appResponse.getCode()){
+                throw new RuntimeException(appResponse.getMessage());
+            }*/
+
+            //通过UUID生成token字符串,并将其以string类型的数据保存在redis缓存中，key为token，value为username
+            token= String.valueOf(UUID.randomUUID()).replaceAll("-","");
+            stringRedisTemplate.opsForValue().set(token,username,2*60*60, TimeUnit.SECONDS);
+            stringRedisTemplate.delete(usId+"-pass");
+            code=ResultCode.SUCCESS.getCode();
+            message="登录成功！";
+
+        } catch (IncorrectCredentialsException e) {
+            code=ResultCode.FAILED.getCode();
+            message="密码错误!";
+        } catch (LockedAccountException e) {
+            code=ResultCode.FAILED.getCode();
+            message="登录失败，该用户已被冻结！";
+        } catch (AuthenticationException e) {
+            code=ResultCode.FAILED.getCode();
+            message="该用户不存在！";
+        } catch (RuntimeException e) {
+            code=ResultCode.FAILED.getCode();
+            message=e.getMessage();
+        }catch (Exception e) {
+            code=ResultCode.FAILED.getCode();
+            message="登陆失败！";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message,token);
     }
 
     /**
