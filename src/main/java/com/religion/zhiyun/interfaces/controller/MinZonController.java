@@ -1,11 +1,15 @@
 package com.religion.zhiyun.interfaces.controller;
 
 import com.religion.zhiyun.interfaces.service.MinZonService;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.response.AppResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+@DecryptRequest(false)
+@EncryptResponse(false)
 @RestController
 @Slf4j
 @RequestMapping("/response")

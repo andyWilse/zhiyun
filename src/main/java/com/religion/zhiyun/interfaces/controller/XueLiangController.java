@@ -1,6 +1,8 @@
 package com.religion.zhiyun.interfaces.controller;
 
 import com.religion.zhiyun.interfaces.service.XueLiangService;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+@DecryptRequest(false)
+@EncryptResponse(false)
 @RestController
 @RequestMapping("/play")
 public class XueLiangController {

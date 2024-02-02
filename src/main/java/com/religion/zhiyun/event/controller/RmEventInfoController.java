@@ -31,6 +31,8 @@ public class RmEventInfoController {
      * @param eventJson
      * @return
      */
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     @PostMapping("/addEventByNB")
     @ResponseBody
     public OutInterfaceResponse addEventByNB(@RequestBody String eventJson) {
@@ -49,6 +51,8 @@ public class RmEventInfoController {
 
     }
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     @PostMapping("/addEvent")
     @ResponseBody
     public AppResponse addAiEvent(@RequestBody String eventJson) {

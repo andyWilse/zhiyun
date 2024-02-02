@@ -2,6 +2,8 @@ package com.religion.zhiyun.interfaces.controller;
 
 import com.religion.zhiyun.interfaces.entity.huawei.RepeatedlyReadRequestWrapper;
 import com.religion.zhiyun.interfaces.service.HuaWeiService;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.response.AppResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
+@DecryptRequest(false)
+@EncryptResponse(false)
 @RestController
 @Slf4j
 @RequestMapping("/huawei")
