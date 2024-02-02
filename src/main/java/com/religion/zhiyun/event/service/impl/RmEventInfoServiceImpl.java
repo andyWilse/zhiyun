@@ -191,7 +191,12 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 venuesAddres = venues.getVenuesAddres();
                 venuesName = venues.getVenuesName();
             }
-            String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！！";
+            //短信模板
+            String contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！";
+            if(ParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
+                contents="【瓯海宗教智治】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
+            }
+            //封装
             HashMap<String,Object> mapCall=new HashMap<>();
             mapCall.put("eventType",eventType);
             mapCall.put("relVenuesId",relVenuesId);

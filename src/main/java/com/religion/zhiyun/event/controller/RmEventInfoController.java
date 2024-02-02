@@ -3,6 +3,8 @@ package com.religion.zhiyun.event.controller;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
@@ -15,7 +17,8 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @Slf4j
 @RestController
 @RequestMapping("/event")

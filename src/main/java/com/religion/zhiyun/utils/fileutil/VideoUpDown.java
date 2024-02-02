@@ -36,7 +36,7 @@ public class VideoUpDown {
      * @throws Exception
      */
     public static void fetchFrame(String videofile, String framefile) throws Exception {
-        //long start = System.currentTimeMillis();
+       /* //long start = System.currentTimeMillis();
         File targetFile = new File(framefile);
         FFmpegFrameGrabber ff = new FFmpegFrameGrabber(videofile);
         ff.start();
@@ -67,19 +67,19 @@ public class VideoUpDown {
 //        }
         int width = 800;
         int height = (int) (((double) width / owidth) * oheight);
-        /**
+        *//**
          width - 所创建图像的宽度
          height - 所创建图像的高度
          imageType - 所创建图像的类型
          TYPE_3BYTE_BGR - 表示一个具有 8 位 RGB 颜色分量的图像，对应于 Windows 风格的 BGR 颜色模型，具有用 3 字节存储的 Blue、Green 和 Red 三种颜色。
-         */
+         *//*
         BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         //此方法返回 Graphics2D，但此处是出于向后兼容性的考虑。
         bi.getGraphics().drawImage(f.image.getBufferedImage().getScaledInstance(width, height, Image.SCALE_SMOOTH),
                 0, 0, null);
         ImageIO.write(bi, "jpg", targetFile);
         //ff.flush();
-        ff.stop();
+        ff.stop();*/
         //  System.out.println(System.currentTimeMillis() - start);
     }
 }

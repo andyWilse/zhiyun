@@ -1,6 +1,8 @@
 package com.religion.zhiyun.task.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.task.service.TaskService;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -9,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/task")
 public class TaskController {

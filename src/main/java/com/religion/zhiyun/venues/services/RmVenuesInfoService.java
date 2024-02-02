@@ -27,7 +27,7 @@ public interface RmVenuesInfoService {
      * @return
      */
     RespPageBean update(VenuesEntity venuesEntity,String token);
-    int delete(int venuesId,String token);
+    AppResponse delete(int venuesId,String token);
     VenuesEntity getByResponsiblePerson(String responsiblePerson);
 
     /**

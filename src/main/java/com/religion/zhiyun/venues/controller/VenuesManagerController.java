@@ -1,16 +1,16 @@
 package com.religion.zhiyun.venues.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
-import com.religion.zhiyun.utils.response.PcResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.entity.VenuesManagerEntity;
 import com.religion.zhiyun.venues.services.VenuesManagerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/manager")
 public class VenuesManagerController {

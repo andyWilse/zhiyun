@@ -1,5 +1,7 @@
 package com.religion.zhiyun.user.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -7,9 +9,9 @@ import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/user")
 public class SysUserController {
@@ -48,8 +50,8 @@ public class SysUserController {
         return sysUserService.getUserInfo(token);
     }
 
-    @GetMapping("/getMoUser")
-    public PageResponse getModifyUser(@RequestParam String userId){
+    @RequestMapping("/getMoUser")
+    public PageResponse getModifyUser(String userId){
         return sysUserService.getModifyUser(userId);
     }
 

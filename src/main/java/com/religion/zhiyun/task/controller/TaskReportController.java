@@ -1,17 +1,18 @@
 package com.religion.zhiyun.task.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskReportService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @Slf4j
 @RestController
 @RequestMapping("/eventTask")

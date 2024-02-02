@@ -1,5 +1,7 @@
 package com.religion.zhiyun.sys.feedback.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.sys.feedback.service.FeedbackService;
 import com.religion.zhiyun.utils.response.AppResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/feedback")
 public class FeedbackController {

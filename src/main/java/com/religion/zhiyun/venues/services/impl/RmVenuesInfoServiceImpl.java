@@ -176,7 +176,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public int delete(int venuesId,String token) {
+    public AppResponse delete(int venuesId,String token) {
         String veId = String.valueOf(venuesId);
         VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(veId);
         int delete = rmVenuesInfoMapper.delete(venuesId);
@@ -191,7 +191,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         vuMap.put("operateDetail",operateDetail);
         operateRecordService.addRecord(vuMap);
 
-        return delete;
+        return new AppResponse(200l,operateDetail+":删除成功！");
     }
 
     @Override

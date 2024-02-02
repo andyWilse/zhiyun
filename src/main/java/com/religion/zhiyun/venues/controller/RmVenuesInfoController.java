@@ -2,26 +2,25 @@ package com.religion.zhiyun.venues.controller;
 
 
 import com.religion.zhiyun.login.api.CommonResult;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
 import com.religion.zhiyun.venues.services.RmVenuesInfoService;
-import org.apache.shiro.authz.annotation.Logical;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 //@RequiresPermissions ("venues:all")
 //@CrossOrigin
 //@RequiresPermissions(value={"venues:get"},logical = Logical.OR)
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/venues")
 public class RmVenuesInfoController {
@@ -42,9 +41,10 @@ public class RmVenuesInfoController {
         return CommonResult.success("修改成功！");
     }
 
+    @DecryptRequest(false)
     @PostMapping("/delete/{venuesId}")
-    public void delete(@PathVariable int venuesId,@RequestHeader("token")String token) {
-        rmVenuesInfoService.delete(venuesId,token);
+    public AppResponse delete(@PathVariable int venuesId,@RequestHeader("token")String token) {
+        return rmVenuesInfoService.delete(venuesId,token);
     }
 
     @RequestMapping("/querySelect")

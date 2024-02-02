@@ -1,16 +1,17 @@
 package com.religion.zhiyun.sys.dict.controller;
 
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.sys.dict.entity.SysEntity;
 import com.religion.zhiyun.sys.dict.service.RmSysInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.response.PcResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/dict")
 public class RmSysInfoController {

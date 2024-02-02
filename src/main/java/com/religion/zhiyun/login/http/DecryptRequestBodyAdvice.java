@@ -41,11 +41,11 @@ public class DecryptRequestBodyAdvice implements RequestBodyAdvice {
     @Override
     public HttpInputMessage beforeBodyRead(HttpInputMessage inputMessage, MethodParameter parameter, Type targetType,
                                            Class<? extends HttpMessageConverter<?>> converterType) throws IOException {
-//        if( NeedCrypto.needDecrypt(parameter) ){
-//            return new DecryptHttpInputMessage(inputMessage , charset , key);
-//        }
-//        return inputMessage;
-        return new DecryptHttpInputMessage(inputMessage , charset , key);//请求信息解密，参考DecryptHttpInputMessage解密类
+        if( NeedCrypto.needDecrypt(parameter) ){
+            return new DecryptHttpInputMessage(inputMessage , charset , key);
+        }
+        return inputMessage;
+        //return new DecryptHttpInputMessage(inputMessage , charset , key);//请求信息解密，参考DecryptHttpInputMessage解密类
     }
 
     @Override

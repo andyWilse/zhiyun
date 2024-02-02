@@ -1,6 +1,8 @@
 package com.religion.zhiyun.user.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.login.service.impl.SysLoginServiceImpl;
@@ -12,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/login")
 public class LoginController {

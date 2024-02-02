@@ -1,9 +1,8 @@
 package com.religion.zhiyun.task.controller;
 
-import com.religion.zhiyun.task.entity.TaskEntity;
-import com.religion.zhiyun.task.entity.UpFillEntity;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.task.service.TaskFilingService;
-import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import java.util.Map;
 /**
  * 教职人员端的场景更新、活动备案，默认普通状态，只推给街镇干事审核
  */
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/filing")
 public class TaskFilingController {

@@ -1,5 +1,7 @@
 package com.religion.zhiyun.staff.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.staff.service.RmStaffInfoService;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -9,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/staff")
 @CrossOrigin

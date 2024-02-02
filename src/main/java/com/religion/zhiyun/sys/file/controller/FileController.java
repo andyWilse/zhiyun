@@ -1,12 +1,15 @@
 package com.religion.zhiyun.sys.file.controller;
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.sys.file.entity.ResponseVo;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.io.*;
 import java.util.Base64;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/file")
 public class FileController {

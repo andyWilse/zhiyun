@@ -1,6 +1,8 @@
 package com.religion.zhiyun.monitor.controller;
 
 
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.monitor.entity.MonitorEntity;
 import com.religion.zhiyun.monitor.service.RmMonitroInfoService;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -12,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/monitor")
 public class RmMonitroInfoController {

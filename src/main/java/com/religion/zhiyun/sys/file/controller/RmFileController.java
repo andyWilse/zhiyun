@@ -1,15 +1,14 @@
 package com.religion.zhiyun.sys.file.controller;
 
 import com.google.code.kaptcha.Producer;
-import com.religion.zhiyun.sys.file.entity.FileEntity;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.sys.file.service.RmFileService;
-import com.religion.zhiyun.utils.fileutil.DrawTransparentPic;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -24,7 +23,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @Slf4j
 @RestController
 @RequestMapping("/file")
@@ -34,6 +34,7 @@ public class RmFileController {
     @Autowired
     private Producer kaptchaProducer;
 
+    @EncryptResponse(false)
     @RequestMapping("/images/upload")
     public RespPageBean uploadImages( HttpServletRequest httpServletRequest) {
         return rmFileService.uploadImage(httpServletRequest);
@@ -81,6 +82,8 @@ public class RmFileController {
      * @return
      * @throws Exception
      */
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     @RequestMapping(value ="/uploadVideo")
     public PageResponse uploadVideo(HttpServletRequest httpServletRequest) throws Exception{
         MultipartFile multipartFile =null;

@@ -2,6 +2,8 @@ package com.religion.zhiyun.login.controller;
 
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.login.entity.LoginResp;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.login.service.SysLoginService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
@@ -25,6 +27,8 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2019-11-14 11:33:26
  * @Description：
  */
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 public class LoginUserController {
 

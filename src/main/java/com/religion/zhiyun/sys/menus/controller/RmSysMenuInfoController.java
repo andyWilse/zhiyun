@@ -1,16 +1,17 @@
 package com.religion.zhiyun.sys.menus.controller;
 
-import com.religion.zhiyun.sys.menus.entity.MenuList;
+import com.religion.zhiyun.login.http.inter.DecryptRequest;
+import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.sys.menus.entity.RespPage;
 import com.religion.zhiyun.sys.menus.service.RmSysMenuInfoService;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@DecryptRequest(true)
+@EncryptResponse(true)
 @RestController
 @RequestMapping("/menu")
 public class RmSysMenuInfoController {

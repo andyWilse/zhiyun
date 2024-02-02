@@ -31,8 +31,8 @@ public class EncryptResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        return true;
-        //return NeedCrypto.needEncrypt(returnType);
+
+        return NeedCrypto.needEncrypt(returnType);
     }
 
     @Override
