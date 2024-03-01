@@ -137,8 +137,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 eventType=ParamCode.EVENT_TYPE_03.getCode();
                 cont=ParamCode.EVENT_TYPE_03.getMessage();
             }else{
-                eventType="0";
+                throw new RuntimeException("("+content+")不属于宗教智治系统预警类型，不接收！！！");
             }
+
             //预警类型
             event.setEventType(eventType);
             event.setEventLevel(eventLevel);//普通
