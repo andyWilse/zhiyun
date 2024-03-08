@@ -38,12 +38,12 @@ public class TaskFilingController {
 
     //获取历史备案
     @GetMapping("/fillHistory")
-    public PageResponse getFillHistory(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
+    public PageResponse getFillHistory(@RequestBody Map<String, Object> map, @RequestHeader("token")String token){
         String search = (String)map.get("search");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
+        Integer page = (Integer) map.get("page");
+        Integer size = (Integer)map.get("size");
+        //Integer page = Integer.valueOf(pages);
+        //Integer size = Integer.valueOf(sizes);
 
         return taskFilingService.getFillHistory(page,size,search,token);
     }

@@ -422,10 +422,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         try {
             ParamsVo auth = this.getAuth(token);
             //分页
-            String pages = (String) map.get("page");
-            String sizes = (String)map.get("size");
-            Integer page = Integer.valueOf(pages);
-            Integer size = Integer.valueOf(sizes);
+            Integer page = (Integer) map.get("page");
+            Integer size = (Integer)map.get("size");
+            //Integer page = Integer.valueOf(pages);
+            //Integer size = Integer.valueOf(sizes);
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }

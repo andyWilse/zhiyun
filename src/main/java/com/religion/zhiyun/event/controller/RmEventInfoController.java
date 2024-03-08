@@ -103,7 +103,7 @@ public class RmEventInfoController {
      * 未完成的事件详情展示
      * @return
      */
-    @RequestMapping(value = "/getEventDetail")
+    @GetMapping (value = "/getEventDetail")
     public PageResponse getUndoEventDetail(@RequestParam("eventId")String eventId) {
         return rmEventInfoService.getUndoEventDetail(eventId);
     }
@@ -125,7 +125,7 @@ public class RmEventInfoController {
      * @return
      */
     @RequestMapping("/getEventByType")
-    public AppResponse getEventByType(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+    public AppResponse getEventByType(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
         return rmEventInfoService.getByType(map,token);
     }
 
@@ -145,12 +145,12 @@ public class RmEventInfoController {
 
     //根据登录人不同，通知不同
     @RequestMapping("/zlb/getEventsByState")
-    public AppResponse getEventsByState(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+    public AppResponse getEventsByState(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
         String eventState = (String)map.get("eventState");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
+        Integer page = (Integer) map.get("page");
+        Integer size = (Integer)map.get("size");
+        //Integer page = Integer.valueOf(pages);
+        //Integer size = Integer.valueOf(sizes);
         return rmEventInfoService.getEventsByState(page,size,eventState,token);
     }
 

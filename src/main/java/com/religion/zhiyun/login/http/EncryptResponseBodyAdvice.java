@@ -41,6 +41,7 @@ public class EncryptResponseBodyAdvice implements ResponseBodyAdvice<Object> {
         Object encrypt=null;
         try {
             //TODO 实现具体的加密方法
+
             String data = JsonUtils.beanToJson(body);
             //加密
             encrypt = SecureUtil.aes(key.getBytes(charset)).encrypt(data);
