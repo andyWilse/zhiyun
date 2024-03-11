@@ -600,6 +600,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String result="未完成预警详情查询失败！";
         List<Map<String, Object>> eventDetail = new ArrayList<>();
         try {
+            if(GeneTool.isEmpty(eventId)){
+                throw new RuntimeException("eventId不能为空！");
+            }
             eventDetail = rmEventInfoMapper.getEventDetail(eventId);
             if(null!=eventDetail && eventDetail.size()>0){
                 Map<String, Object> map = eventDetail.get(0);

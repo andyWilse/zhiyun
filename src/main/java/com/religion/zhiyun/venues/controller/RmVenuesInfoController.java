@@ -118,7 +118,9 @@ public class RmVenuesInfoController {
 
     //场所更新：app下拉使用(管理)
     @RequestMapping("/getVenueJz")
-    public AppResponse queryVenuesJz(@RequestParam String search,@RequestHeader("token")String token) {
+    public AppResponse queryVenuesJz(@RequestParam Map<String,Object> map,@RequestHeader("token")String token) {
+
+        String search= (String) map.get("search");
         return rmVenuesInfoService.queryVenuesJz(token,search);
     }
 

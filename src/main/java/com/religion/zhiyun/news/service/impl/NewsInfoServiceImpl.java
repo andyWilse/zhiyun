@@ -243,17 +243,20 @@ public class NewsInfoServiceImpl implements NewsInfoService {
     @Override
     public PageResponse getNewsByPage(Map<String, Object> map,String token){
         long code= ResultCode.FAILED.getCode();
-        String message="新闻信息查询";
+        String message="新闻信息获取失败！";
         List<NewsEntity> dataList =new ArrayList<>();
         long total=0l;
         try {
+            if(null==map || map.size()<1){
+                throw new RuntimeException("参数不能为空！");
+            }
             String newsTitle = (String)map.get("newsTitle");
             String newsRefType = (String)map.get("newsRefType");
             String newsType = (String)map.get("newsType");
-            String pages = (String) map.get("page");
-            String sizes = (String)map.get("size");
-            Integer page = Integer.valueOf(pages);
-            Integer size = Integer.valueOf(sizes);
+            Integer page = (Integer) map.get("page");
+            Integer size = (Integer)map.get("size");
+            //Integer page = Integer.valueOf(pages);
+            //Integer size = Integer.valueOf(sizes);
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }

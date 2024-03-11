@@ -103,8 +103,9 @@ public class RmEventInfoController {
      * 未完成的事件详情展示
      * @return
      */
-    @GetMapping (value = "/getEventDetail")
-    public PageResponse getUndoEventDetail(@RequestParam("eventId")String eventId) {
+    @RequestMapping (value = "/getEventDetail")
+    public PageResponse getUndoEventDetail(@RequestParam Map<String, Object> map) {
+        String eventId= (String) map.get("eventId");
         return rmEventInfoService.getUndoEventDetail(eventId);
     }
 
