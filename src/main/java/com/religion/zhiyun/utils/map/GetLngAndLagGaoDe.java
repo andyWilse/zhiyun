@@ -11,7 +11,8 @@ import java.net.URLEncoder;
 
 public class GetLngAndLagGaoDe {
 
-    public static final String KEY = "8b2f90754bd887f21f58e3d562c0d3cc";
+    //public static final String KEY = "8b2f90754bd887f21f58e3d562c0d3cc";
+    public static final String KEY = "8a717800130cf78693cd3ef2aa95155f";
     public static final String URL = "https://restapi.amap.com/v3/geocode/geo?address=";
 
     public static String getLngAndLag(String address) throws UnsupportedEncodingException {

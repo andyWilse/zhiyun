@@ -38,7 +38,7 @@ public class TaskFilingController {
 
     //获取历史备案
     @GetMapping("/fillHistory")
-    public PageResponse getFillHistory(@RequestBody Map<String, Object> map, @RequestHeader("token")String token){
+    public PageResponse getFillHistory(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
         String search = (String)map.get("search");
         Integer page = (Integer) map.get("page");
         Integer size = (Integer)map.get("size");
