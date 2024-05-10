@@ -38,7 +38,7 @@ public class SysSchedules {
     /** 每天8:30-17:30 ,5分钟执行一次 **/
     @Scheduled(cron ="0 30/5 8-17 * * ? ")
     public void warnCall() {
-        schedulesService.warnCallReport();
+       // schedulesService.warnCallReport();
     }
 
 }
