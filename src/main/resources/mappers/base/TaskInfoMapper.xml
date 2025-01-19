@@ -1289,6 +1289,8 @@
         and ta.REL_EVENT_ID is null
     </select>
 
-
+    <delete id="deleteRmTaskInfo">
+        delete from rm_task_info  where REL_EVENT_ID = #{eventId}
+    </delete>
 
 </mapper>

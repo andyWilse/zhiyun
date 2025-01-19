@@ -79,4 +79,8 @@
         and EVENT_TYPE=#{eventType}
     </update>
 
+    <delete id="deleteEventNotified">
+        delete from rm_event_notified_info where REF_EVENT_ID = #{refEventId}
+    </delete>
+
 </mapper>

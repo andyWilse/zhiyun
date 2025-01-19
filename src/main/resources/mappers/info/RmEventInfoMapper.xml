@@ -113,8 +113,7 @@
     </update>
 
     <delete id="deleteEvent">
-        delete from rm_event_info
-        where EVENT_ID=#{eventId}
+        delete from rm_event_info where EVENT_ID=#{eventId}
     </delete>
 
     <select id="allEvent" resultType="com.religion.zhiyun.event.entity.EventEntity">
@@ -1046,5 +1045,51 @@
             and ev.EVENT_STATE=#{eventState}
         </if>
     </select>
+
+    <select id="getFiles" resultType="string">
+        (SELECT PICTURES_PATH FROM rm_event_info where EVENT_ID= #{eventId} and PICTURES_PATH is not null)
+        union all
+        (select TASK_PICTURE from rm_task_info where REL_EVENT_ID= #{eventId} and TASK_PICTURE is not null)
+    </select>
+
+    <delete id="deleteActHiActinst">
+        delete from act_hi_actinst  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiAttachment">
+        delete from act_hi_attachment  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiComment">
+        delete from act_hi_comment  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiIdentitylink">
+        delete from act_hi_identitylink  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiDetail">
+        delete from act_hi_detail  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiProcinst">
+        delete from act_hi_procinst  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiTaskinst">
+        delete from act_hi_taskinst  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteActHiVarinst">
+        delete from act_hi_varinst  where PROC_INST_ID_ = #{procInstId}
+    </delete>
+
+    <delete id="deleteRmFilingInfo">
+        delete from rm_filing_info  where PROC_INST_ID = #{procInstId}
+    </delete>
+
+    <delete id="deleteRmEventReportMen">
+        delete from rm_event_report_men  where REF_EVENT_ID = #{eventId}
+    </delete>
 
 </mapper>

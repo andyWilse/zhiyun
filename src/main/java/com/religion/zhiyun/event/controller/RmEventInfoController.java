@@ -72,8 +72,8 @@ public class RmEventInfoController {
     }
 
     @PostMapping("/deleteEvent/{eventId}")
-    public void delete(@PathVariable int eventId) {
-        rmEventInfoService.deleteEvent(eventId);
+    public AppResponse delete(@PathVariable String eventId) {
+       return rmEventInfoService.deleteEvent(eventId);
     }
 
 

@@ -24,7 +24,7 @@ public interface RmEventInfoService {
 
     void updateEvent(EventEntity eventEntity);
 
-    void deleteEvent(int eventId);
+    AppResponse deleteEvent(String eventId);
 
     EventEntity getByEventId(String eventId);
 

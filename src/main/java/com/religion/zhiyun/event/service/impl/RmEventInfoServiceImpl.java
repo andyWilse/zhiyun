@@ -8,16 +8,16 @@ import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.interfaces.service.AiEventService;
-import com.religion.zhiyun.login.entity.LoginInfo;
+import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
-import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
+import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
@@ -27,12 +27,12 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.enums.ParamCode;
 import com.religion.zhiyun.utils.sms.SendMassage;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -51,6 +51,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -79,6 +80,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     private RmFileMapper rmFileMapper;
+    @Autowired
+    private RmFileService rmFileService;
 
     @Autowired
     TaskInfoMapper taskInfoMapper;
@@ -404,8 +407,57 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     }
 
     @Override
-    public void deleteEvent(int eventId) {
-        rmEventInfoMapper.deleteEvent(eventId);
+    public AppResponse deleteEvent(String eventId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="预警事件删除";
+        try {
+            /************************************************************** 1.流程清理 ****************************************************************/
+            //获取流程id
+            List<TaskEntity> taskEvent = taskInfoMapper.getTaskByEventId(eventId);
+            if(null!=taskEvent && taskEvent.size()>0){
+                String procInstId = taskEvent.get(0).getProcInstId();
+                if(!StringUtils.isEmpty(procInstId)){
+                    //1.1.删除流程相关表
+                    rmEventInfoMapper.deleteActHiActinst(procInstId);
+                    rmEventInfoMapper.deleteActHiAttachment(procInstId);
+                    rmEventInfoMapper.deleteActHiComment(procInstId);
+                    rmEventInfoMapper.deleteActHiIdentitylink(procInstId);
+                    rmEventInfoMapper.deleteActHiDetail(procInstId);
+                    rmEventInfoMapper.deleteActHiProcinst(procInstId);
+                    rmEventInfoMapper.deleteActHiTaskinst(procInstId);
+                    rmEventInfoMapper.deleteActHiVarinst(procInstId);
+                    //1.2.删除备案
+                    rmEventInfoMapper.deleteRmFilingInfo(procInstId);
+                }
+            }
+            /************************************************************** 2.清理图片 ****************************************************************/
+            //获取需要处理的图片id(任务表\事件表)
+            List<String> files = rmEventInfoMapper.getFiles(eventId);
+            if(null!=files && files.size()>0){
+                for(int k=0;k<files.size();k++){
+                    String fileIds = files.get(k);
+                    //1.先删除服务器图片；2.删除数据库数据
+                    rmFileService.deletePicture(fileIds);
+                }
+            }
+
+            /************************************************************** 3.删除通知 ****************************************************************/
+            eventNotifiedMapper.deleteEventNotified(eventId);
+            /************************************************************** 4.删除上报 ****************************************************************/
+            rmEventInfoMapper.deleteRmEventReportMen(eventId);
+            /************************************************************** 5.删除任务表 ****************************************************************/
+            taskInfoMapper.deleteRmTaskInfo(eventId);
+            /************************************************************** 6.删除事件表 ****************************************************************/
+            rmEventInfoMapper.deleteEvent(Integer.parseInt(eventId));
+
+            code=ResultCode.SUCCESS.getCode();
+            message=message+"成功!";
+        } catch (NumberFormatException e) {
+            message=message+"失败!";
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+
     }
 
     @Override

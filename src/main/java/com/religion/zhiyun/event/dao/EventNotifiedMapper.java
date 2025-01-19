@@ -3,6 +3,7 @@ package com.religion.zhiyun.event.dao;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -43,5 +44,11 @@ public interface EventNotifiedMapper {
      * @param feeInfo
      */
     int updateCall(FeeInfo feeInfo);
+
+    /**
+     * 删除通知
+     * @param refEventId
+     */
+    void deleteEventNotified(@Param("refEventId") String refEventId);
 
 }

@@ -249,4 +249,72 @@ public interface RmEventInfoMapper {
      * @return
      */
     Long getMzSubmitSum(@Param("eventState") String eventState);
+
+    /**
+     * 获取图片信息
+     * @param eventId
+     * @return
+     */
+    List<String> getFiles(@Param("eventId") String eventId);
+
+    /**
+     * 1.删除历史节点表数据
+     * @param procInstId
+     */
+    void deleteActHiActinst(@Param("procInstId") String procInstId);
+
+    /**
+     *2.删除历史附件表数据
+     * @param procInstId
+     */
+    void deleteActHiAttachment(@Param("procInstId") String procInstId);
+
+    /**
+     *3.删除历史意见表数据
+     * @param procInstId
+     */
+    void deleteActHiComment(@Param("procInstId") String procInstId);
+
+    /**
+     *4.删除历史流程人员表数据
+     * @param procInstId
+     */
+    void deleteActHiIdentitylink(@Param("procInstId") String procInstId);
+
+    /**
+     *5.删除历史详情表数据
+     * @param procInstId
+     */
+    void deleteActHiDetail(@Param("procInstId") String procInstId);
+
+    /**
+     *6.删除历史流程实例表数据
+     * @param procInstId
+     */
+    void deleteActHiProcinst(@Param("procInstId") String procInstId);
+
+    /**
+     *7.删除历史任务实例表数据
+     * @param procInstId
+     */
+    void deleteActHiTaskinst(@Param("procInstId") String procInstId);
+
+    /**
+     *8.删除历史流变量表数据
+     * @param procInstId
+     */
+    void deleteActHiVarinst(@Param("procInstId") String procInstId);
+
+    /**
+     *删除备案
+     * @param procInstId
+     */
+    void deleteRmFilingInfo(@Param("procInstId") String procInstId);
+
+    /**
+     *删除上报
+     * @param eventId
+     */
+    void deleteRmEventReportMen(@Param("eventId") String eventId);
+
 }

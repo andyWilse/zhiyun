@@ -179,5 +179,10 @@ public interface TaskInfoMapper {
      */
     Map<String,Object> getSubmitEvent(@Param("procInstId") String procInstId,@Param("login") String login);
 
+    /**
+     * 删除任务表数据
+     * @param eventId
+     */
+    void deleteRmTaskInfo(@Param("eventId") String eventId);
 
 }
