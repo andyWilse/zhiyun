@@ -47,5 +47,14 @@ public class SendParam {
         SendParam.massSend = massSend;
     }
 
+    /**
+     * 腾讯短信发送：单条短信发送
+     */
+    @Getter
+    private static String  oneSend;
+    @Value("${sms.send.one}")
+    public void setOneSend(String oneSend) {
+        SendParam.oneSend = oneSend;
+    }
 
 }

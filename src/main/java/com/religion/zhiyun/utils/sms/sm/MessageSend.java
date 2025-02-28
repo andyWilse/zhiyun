@@ -10,7 +10,6 @@ import com.religion.zhiyun.utils.sms.sm.util.SendParam;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.DigestUtils;
 
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,21 +31,14 @@ public class MessageSend {
         String appSecret=HwCallVo.getAppSecret();
 
         String smsUrl= SendParam.getSmsUrl();//请求url
-        System.out.println("第一次smsUrl："+smsUrl);
         String username=SendParam.getUserName();//用户名
-        System.out.println("用户名:"+username);
         String password=SendParam.getPassword();//密码
-        String massSend = SendParam.getMassSend();//api
+        String oneSend = SendParam.getOneSend();//api
         long timestamp = System.currentTimeMillis();//获取时间戳
 
-
-        smsUrl="https://apis.sms1086.com:8443/sms";
-        username="zhiyunkeji";
-        password="SKU73h4bZLzT";
-        massSend="/api/sendMessageOne";
-
         //请求地址
-        String sendUrl=smsUrl+massSend;
+        String sendUrl=smsUrl+oneSend;
+        System.out.println("第一次smsUrl："+sendUrl);
         try {
             /*** 1.HttpHeader参数封装 ***/
             HttpHeader header=new HttpHeader();
@@ -82,7 +74,8 @@ public class MessageSend {
             if(null!=response && ""!=response){
                 Map<String, Object> mapResponse = JsonUtils.jsonToMap(response);
                 //获取码值
-                Integer code = (Integer) mapResponse.get("code");
+                Double coded = (Double) mapResponse.get("code");
+                int code=coded.intValue();
                 String messages = (String) mapResponse.get("message");
                 if(0==code){
                     message="发送短信成功";
@@ -109,25 +102,16 @@ public class MessageSend {
     public static String sendSmsMass(String content, List<String> mobiles){
         String message="";//返回信息
 
-        String appKey= HwCallVo.getAppKey();
-        String appSecret=HwCallVo.getAppSecret();
-
         String smsUrl= SendParam.getSmsUrl();//请求url
         String username=SendParam.getUserName();//用户名
-        System.out.println("请求url:"+username);
-        System.out.println("用户名:"+smsUrl);
         String password=SendParam.getPassword();//密码
         String massSend = SendParam.getMassSend();//api
         long timestamp = System.currentTimeMillis();//获取时间戳
         String ymdHms = TimeTool.getYmdHms();
 
-        smsUrl="https://apis.sms1086.com:8443/sms";
-        username="zhiyunkeji";
-        password="SKU73h4bZLzT";
-        massSend="/api/sendMessageMass";
-
         //请求地址
         String sendUrl=smsUrl+massSend;
+        System.out.println("批量短信url:"+sendUrl);
         try {
             /*** 1.HttpHeader参数封装 ***/
             HttpHeader header=new HttpHeader();
@@ -136,6 +120,7 @@ public class MessageSend {
             //application/json
             header.addParam("Accept","application/json");
 
+            //body参数封装
             Map<String, Object> bodys = new HashMap();
             bodys.put("userName",username);
             bodys.put("content",content);
@@ -148,11 +133,12 @@ public class MessageSend {
             String sign = DigestUtils.md5DigestAsHex((username+timestamp+pw).getBytes());
             bodys.put("sign", sign);
             //短信定时发送时间，格式：yyyy-MM-dd HH:mm:ss。定时时间限制 15 天以内。
-           /* bodys.put("sendTime", ymdHms);
+            bodys.put("sendTime", ymdHms);
             //可选，附带通道扩展码
-            bodys.put("extcode", "");
+            //bodys.put("extcode", "");
             //用户回传数据，最大长度 64。用户若传递此参数将在回执推送时回传给用户。
-            bodys.put("callData", "");*/
+            //bodys.put("callData", "");
+
             HttpParamers params=new HttpParamers(HttpMethod.POST);
             params.setJsonParamer(bodys);
 
@@ -165,8 +151,9 @@ public class MessageSend {
             if(null!=response && ""!=response){
                 Map<String, Object> mapResponse = JsonUtils.jsonToMap(response);
                 //获取码值
-                Integer code = (Integer) mapResponse.get("code");
                 String messages = (String) mapResponse.get("message");
+                Double coded = (Double) mapResponse.get("code");
+                int code=coded.intValue();
                 if(0==code){
                     message="发送短信成功";
                 }else{
