@@ -36,7 +36,7 @@ public class codrvTest {
         //将验证码存到redis中,同时存入创建时间（也可以传入session）
         //以json存放，这里使用的是阿里的fastjson
         json = new JSONObject();
-            SendVerifyCode.sendVerifyCode(contents, "18514260203");
+           // SendVerifyCode.sendVerifyCode(contents, "18514260203");
         json.put("memPhone","18514260203");
         json.put("code",code);
         json.put("createTime",System.currentTimeMillis());

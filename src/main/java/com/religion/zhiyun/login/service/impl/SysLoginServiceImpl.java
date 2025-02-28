@@ -17,6 +17,7 @@ import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.SendVerifyCode;
+import com.religion.zhiyun.utils.sms.sm.MessageSend;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -434,9 +435,15 @@ public class SysLoginServiceImpl implements SysLoginService {
     public String saveCodeRedis (String username) throws Exception {
         //随机生成验证码存入redis
         String verifyCode = String.valueOf(new Random().nextInt(999999));
-        String contents="【瓯海宗教智治】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
+        String contents="【智云科技】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
+        List<Map<String,Object>> messageList=new ArrayList<>();
+        Map<String,Object> smap=new HashMap<>();
+        smap.put("phone",username);
+        smap.put("content",contents);
+        messageList.add(smap);
         //发送
-        SendVerifyCode.sendVerifyCode(contents, username);
+        //SendVerifyCode.sendVerifyCode(contents, username);
+        MessageSend.sendSmsOne(messageList);
         //封装参数
         JSONObject json = new JSONObject();
         json.put("username",username);
