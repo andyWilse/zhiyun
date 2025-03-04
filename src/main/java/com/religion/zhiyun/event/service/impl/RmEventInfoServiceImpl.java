@@ -33,7 +33,6 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.sms.SendMassage;
 import com.religion.zhiyun.utils.sms.sm.MessageSend;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -574,6 +573,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String venuesName = (String)map.get("venuesName");
             String eventType = (String)map.get("eventType");
             String eventState = (String)map.get("eventState");
+            String startTime = (String)map.get("startTime");
+            String endTime = (String)map.get("endTime");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
             Integer page = Integer.valueOf(pages);
@@ -588,6 +589,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             auth.setSearchTwo(venuesName);
             auth.setSearchThree(eventType);
             auth.setSearchFour(eventState);
+            auth.setSearchFive(startTime);
+            auth.setSearchSix(endTime);
+
             if("02".equals(eventState)){
                 auth.setSearchArr(new String[]{"01","04","05"});
             }else{
@@ -606,6 +610,40 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
         }
         return new RespPageBean(code,result,total,dataList.toArray());
+    }
+
+    @Override
+    public RespPageBean getEventExport(Map<String, Object> map, String token) {
+        List<Map<String,Object>> dataList = new ArrayList<>();
+        long code= ResultCode.FAILED.getCode();
+        String result="预警导出pc！";
+        try {
+            String accessNumber = (String)map.get("accessNumber");
+            String venuesName = (String)map.get("venuesName");
+            String eventType = (String)map.get("eventType");
+            String eventState = (String)map.get("eventState");
+            String startTime = (String)map.get("startTime");
+            String endTime = (String)map.get("endTime");
+            ParamsVo auth = this.getAuth(token);
+            auth.setSearchOne(accessNumber);
+            auth.setSearchTwo(venuesName);
+            auth.setSearchThree(eventType);
+            auth.setSearchFour(eventState);
+            auth.setSearchFive(startTime);
+            auth.setSearchSix(endTime);
+            if("02".equals(eventState)){
+                auth.setSearchArr(new String[]{"01","04","05"});
+            }else{
+                auth.setSearchArr(new String[]{"02","03"});
+            }
+
+            dataList=rmEventInfoMapper.getEventExport(auth);
+            code= ResultCode.SUCCESS.getCode();
+            result="预警查询成功！";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new RespPageBean(code,result,dataList.toArray());
     }
 
     @Override

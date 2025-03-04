@@ -79,6 +79,12 @@ public interface RmEventInfoMapper {
      */
     Long getTotal(@Param("vo") ParamsVo vo);
 
+    /* 预警信息导出
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> getEventExport(@Param("vo") ParamsVo vo);
+
     /**
      * 手机端（预警查询）
      * 已通知，待核查

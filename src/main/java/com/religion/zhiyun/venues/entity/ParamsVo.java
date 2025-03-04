@@ -24,6 +24,7 @@ public class ParamsVo {
     private String searchThree;
     private String searchFour;
     private String searchFive;
+    private String searchSix;
 
     private String[]  searchArr;
 }

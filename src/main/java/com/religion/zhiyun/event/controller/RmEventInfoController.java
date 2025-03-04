@@ -144,6 +144,11 @@ public class RmEventInfoController {
         return rmEventInfoService.getEventsByPage(map,token);
     }
 
+    @GetMapping("/export")
+    public RespPageBean eventExport(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+        return rmEventInfoService.getEventExport(map,token);
+    }
+
     //根据登录人不同，通知不同
     @RequestMapping("/zlb/getEventsByState")
     public AppResponse getEventsByState(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {

@@ -47,6 +47,14 @@ public interface RmEventInfoService {
     RespPageBean getEventsByPage(Map<String, Object> map,String token);
 
     /**
+     * 分数据导出
+     * @param map
+     * @param token
+     * @return
+     */
+    RespPageBean getEventExport(Map<String, Object> map,String token);
+
+    /**
      * 手机端（预警查询）
      * @return
      */
