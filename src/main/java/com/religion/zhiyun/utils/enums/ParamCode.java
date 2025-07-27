@@ -38,6 +38,7 @@ public enum ParamCode {
     EVENT_TYPE_03("03", "重点"),
     EVENT_TYPE_04("04", "聚集"),
     EVENT_TYPE_05("05", "设备报修"),
+    EVENT_TYPE_06("06", "画面异常"),
     //事件状态
     EVENT_STATE_01("01", "已处理"),
     EVENT_STATE_02("02", "已上报"),
