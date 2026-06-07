@@ -142,13 +142,14 @@ public class LoginUserController {
     //注销接口
     @PostMapping("/logout")
     public LoginResp logOut(@RequestHeader("token")String token){
-        //删除redis缓存中的token
-        stringRedisTemplate.delete(token);
-        //保存日志
+
         //操作时间
         Date actionTime= new Date();
+        //保存日志
         String username = stringRedisTemplate.opsForValue().get(token);
         SysUserEntity user = sysUserService.queryByTel(username);
+        //删除redis缓存中的token
+        stringRedisTemplate.delete(token);
         if(user!=null){
             UseractionLogEntity useractionLogEntity=new UseractionLogEntity(String.valueOf(user.getUserId()),2,0,new Date(), actionTime);
             useractionLogService.add(useractionLogEntity);
