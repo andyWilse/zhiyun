@@ -15,4 +15,8 @@ public interface SchedulesService {
      * 同一条预警事件，会推送给多人，所有人都没有接听的话，每隔5分钟拨打一次，只要其中有一人接听成功了，或者在手机端处置完成了，就都停止拨
      */
     void warnCallReport();
+    /**
+     * 系统运行计数
+     */
+    void metricRecord();
 }

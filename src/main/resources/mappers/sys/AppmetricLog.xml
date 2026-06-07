@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.sys.log.dao.AppmetricLogMapper">
+    <insert id="add">
+        insert into APP_METRIC_LOG
+        (
+        CREATE_TIME,
+        NAME,
+        VALUE,
+        APP_CODE
+        )
+        values(
+        #{createTime},
+        #{name},
+        #{value},
+        #{appCode}
+        )
+    </insert>
+
+    <select id="getEventAdd" resultType="int">
+        select count(ev.EVENT_ID) from RM_EVENT_INFO ev where ev.WARN_TIME>=#{warnTime}
+    </select>
+
+    <select id="getTask" resultType="map">
+        select
+            SUM(CASE WHEN task.FLOW_TYPE = '01' THEN 1 ELSE 0 END) AS report,
+            SUM(CASE WHEN task.FLOW_TYPE = '02' THEN 1 ELSE 0 END) AS issued,
+            SUM(CASE WHEN task.FLOW_TYPE = '03' THEN 1 ELSE 0 END) AS filing,
+            SUM(CASE WHEN task.FLOW_TYPE = '04' THEN 1 ELSE 0 END) AS upd,
+            SUM(CASE WHEN task.FLOW_TYPE = '05' THEN 1 ELSE 0 END) AS warn
+        from rm_task_info task
+        where task.HANDLE_TIME>=#{handleTime}
+    </select>
+
+    <select id="getNotify" resultType="string">
+        select GROUP_CONCAT(notify.notyMen SEPARATOR ",") as notyAll
+        from
+        (select CONCAT_WS(",",noty.NOTIFIED_MANAGER,noty.NOTIFIED_USER) as notyMen,noty.NOTIFIED_FLAG as notyFlag
+            from rm_event_notified_info noty where noty.NOTIFIED_TIME>=#{notifyTime}
+        )notify
+        group by notyFlag
+    </select>
+
+</mapper>

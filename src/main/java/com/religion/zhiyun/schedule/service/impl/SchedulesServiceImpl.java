@@ -5,12 +5,18 @@ import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import com.religion.zhiyun.schedule.service.SchedulesService;
+import com.religion.zhiyun.sys.log.dao.AppmetricLogMapper;
+import com.religion.zhiyun.sys.log.entity.AppmetricLogEntity;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +28,8 @@ public class SchedulesServiceImpl implements SchedulesService {
     private RmEventInfoMapper rmEventInfoMapper;
     @Autowired
     private EventNotifiedMapper eventNotifiedMapper;
+    @Autowired
+    private AppmetricLogMapper appmetricLogMapper;
 
     @Override
     public void UrgentAutoReport() {
@@ -90,6 +98,56 @@ public class SchedulesServiceImpl implements SchedulesService {
                     feeInfo.setRefEventId(String.valueOf(relEventId));
                     eventNotifiedMapper.addCall(feeInfo);*/
                 }
+            }
+        }
+    }
+
+    @Override
+    public void metricRecord() {
+        LocalDateTime localDateTime = LocalDateTime.now().minusDays(1);
+        System.out.println(localDateTime);
+        //获取预警事件记录总数
+        int eventAdd = appmetricLogMapper.getEventAdd(localDateTime);
+        if(eventAdd>0){
+            AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"预警事件",String.valueOf(eventAdd),"A330000100000202105005924");
+            appmetricLogMapper.add(metricLog);
+        }
+        //获取任务完成总数
+        HashMap<String, BigDecimal> taskMap = appmetricLogMapper.getTask(localDateTime);
+        if(null!=taskMap && taskMap.size()>0){
+            BigDecimal report = taskMap.get("report");
+            if(report.compareTo(BigDecimal.ZERO)>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"任务上报",String.valueOf(eventAdd),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
+            }
+            BigDecimal issued = taskMap.get("issued");
+            if(issued.compareTo(BigDecimal.ZERO)>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"任务下达",String.valueOf(issued),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
+            }
+            BigDecimal filing = taskMap.get("filing");
+            if(filing.compareTo(BigDecimal.ZERO)>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"活动备案",String.valueOf(filing),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
+            }
+            BigDecimal upd = taskMap.get("upd");
+            if(upd.compareTo(BigDecimal.ZERO)>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"场所更新",String.valueOf(upd),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
+            }
+            BigDecimal warn = taskMap.get("warn");
+            if(warn.compareTo(BigDecimal.ZERO)>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"预警处理",String.valueOf(warn),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
+            }
+        }
+        //获取短信通知
+        String notify = appmetricLogMapper.getNotify(localDateTime);
+        if(!StringUtils.isEmpty(notify)){
+            int notyNum = notify.split(",").length;
+            if(notyNum>0){
+                AppmetricLogEntity metricLog=new AppmetricLogEntity(new Date(),"短信通知",String.valueOf(notyNum),"A330000100000202105005924");
+                appmetricLogMapper.add(metricLog);
             }
         }
     }

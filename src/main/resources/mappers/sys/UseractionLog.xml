@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.sys.log.dao.UseractionLogMapper">
+    <insert id="add">
+        insert into USER_ACTION_LOG
+        (
+        ID,
+        CREATE_TIME,
+        USER_ID,
+        USER_ROLE,
+        AREA_CODE,
+        ACTION_TYPE,
+        ACTION_ID,
+        EVENT_TYPE,
+        PROCESSING_TIME,
+        ACTION_TIME,
+        ACTION_DURATION,
+        ACTION_STATUS,
+        APP_CODE
+        )
+        values(
+        #{id},
+        #{createTime},
+        #{userId},
+        #{userRole},
+        #{areaCode},
+        #{actionType},
+        #{actionId},
+        #{eventType},
+        #{processingTime},
+        #{actionTime},
+        #{actionDuration},
+        #{actionStatus},
+        #{appCode}
+        )
+    </insert>
+
+</mapper>

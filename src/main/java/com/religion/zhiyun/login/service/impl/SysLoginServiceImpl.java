@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.staff.entity.StaffEntity;
 import com.religion.zhiyun.login.api.ResultCode;
+import com.religion.zhiyun.sys.log.entity.UseractionLogEntity;
+import com.religion.zhiyun.sys.log.service.UseractionLogService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.RoleEntity;
 import com.religion.zhiyun.user.entity.SysUserEntity;
@@ -59,6 +61,9 @@ public class SysLoginServiceImpl implements SysLoginService {
     private RmStaffInfoMapper rmStaffInfoMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private UseractionLogService useractionLogService;
+
 
     @Override
     public SysUserEntity queryByName(String username) {
@@ -80,6 +85,8 @@ public class SysLoginServiceImpl implements SysLoginService {
         String userId="";
         String userNbr="";
         String validInd="";
+        //操作时间
+        Date actionTime= new Date();
         try {
             String username= (String) map.get("username");
             String password= (String) map.get("password");//密码
@@ -164,20 +171,38 @@ public class SysLoginServiceImpl implements SysLoginService {
             stringRedisTemplate.delete(username+"-pass");
             code=ResultCode.SUCCESS.getCode();
             message="登录成功！";
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,0,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
 
         } catch (IncorrectCredentialsException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="密码错误!";
         } catch (LockedAccountException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="登录失败，该用户已被冻结！";
         } catch (AuthenticationException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="该用户不存在！";
         } catch (RuntimeException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message=e.getMessage();
         }catch (Exception e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="登陆失败！";
             e.printStackTrace();
@@ -340,7 +365,9 @@ public class SysLoginServiceImpl implements SysLoginService {
         long code= ResultCode.FAILED.getCode();
         String message="";
         String token="";
-
+        //操作时间
+        Date actionTime= new Date();
+        String userId=UUID.randomUUID().toString();
         try {
             String username= (String) map.get("username");//用户
             String password= (String) map.get("password");//密码
@@ -358,6 +385,7 @@ public class SysLoginServiceImpl implements SysLoginService {
             }
             SysUserEntity user = sysUserList.get(0);
             int usId = user.getUserId();
+            userId=String.valueOf(usId);
             String userNbr = user.getUserNbr();
             //验证用户是否被锁定
             String lock = stringRedisTemplate.opsForValue().get(usId+"-lock");
@@ -407,20 +435,38 @@ public class SysLoginServiceImpl implements SysLoginService {
             stringRedisTemplate.delete(usId+"-pass");
             code=ResultCode.SUCCESS.getCode();
             message="登录成功！";
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,0,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
 
         } catch (IncorrectCredentialsException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="密码错误!";
         } catch (LockedAccountException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="登录失败，该用户已被冻结！";
         } catch (AuthenticationException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="该用户不存在！";
         } catch (RuntimeException e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message=e.getMessage();
         }catch (Exception e) {
+            //保存日志
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(userId,1,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
             code=ResultCode.FAILED.getCode();
             message="登陆失败！";
             e.printStackTrace();

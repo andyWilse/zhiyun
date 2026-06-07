@@ -40,5 +40,9 @@ public class SysSchedules {
     public void warnCall() {
        // schedulesService.warnCallReport();
     }
-
+    /** 每天上午10点执行一次 "0 0 10 * * ? "**/
+    @Scheduled(cron ="0 */1 * * * ? ")
+    public void metricRecord() {
+        schedulesService.metricRecord();
+    }
 }

@@ -5,6 +5,8 @@ import com.religion.zhiyun.login.entity.LoginResp;
 import com.religion.zhiyun.login.http.inter.DecryptRequest;
 import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.login.service.SysLoginService;
+import com.religion.zhiyun.sys.log.entity.UseractionLogEntity;
+import com.religion.zhiyun.sys.log.service.UseractionLogService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.utils.Tool.GeneTool;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -41,8 +44,11 @@ public class LoginUserController {
 
     @Autowired
     private SysLoginService loginService;
+    @Autowired
+    private UseractionLogService useractionLogService;
 
-/**
+
+    /**
  * 登录方法
  * @param map
  * @return*/
@@ -138,6 +144,19 @@ public class LoginUserController {
     public LoginResp logOut(@RequestHeader("token")String token){
         //删除redis缓存中的token
         stringRedisTemplate.delete(token);
+        //保存日志
+        //操作时间
+        Date actionTime= new Date();
+        String username = stringRedisTemplate.opsForValue().get(token);
+        SysUserEntity user = sysUserService.queryByTel(username);
+        if(user!=null){
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(String.valueOf(user.getUserId()),2,0,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
+        }else {
+            UseractionLogEntity useractionLogEntity=new UseractionLogEntity(token,2,1,new Date(), actionTime);
+            useractionLogService.add(useractionLogEntity);
+            throw new RuntimeException("退出失败!");
+        }
         return LoginResp.success("注销成功");
     }
 
