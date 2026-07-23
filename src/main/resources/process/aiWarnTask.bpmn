@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="aiWarnTaskKey" name="aiWarnTask" isExecutable="true">
+    <documentation>AI预警流程BPMN</documentation>
+    <startEvent id="aiStart" name="ai预警开始"></startEvent>
+    <userTask id="review" name="人工审核" activiti:assignee="${handle}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${reviewer}" activiti:elementVariable="handle">
+        <completionCondition>${taskCompleted&gt;0}</completionCondition>
+      </multiInstanceLoopCharacteristics>
+    </userTask>
+    <userTask id="manage" name="基层干部" activiti:assignee="${handle}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${managerList}" activiti:elementVariable="handle">
+        <completionCondition>${taskCompleted&gt;0}</completionCondition>
+      </multiInstanceLoopCharacteristics>
+    </userTask>
+    <userTask id="final" name="终审用户" activiti:assignee="${handle}">
+      <extensionElements>
+        <modeler:initiator-can-complete xmlns:modeler="http://activiti.com/modeler"><![CDATA[false]]></modeler:initiator-can-complete>
+      </extensionElements>
+      <multiInstanceLoopCharacteristics isSequential="false" activiti:collection="${finaler}" activiti:elementVariable="handle">
+        <completionCondition>${taskCompleted&gt;0}</completionCondition>
+      </multiInstanceLoopCharacteristics>
+    </userTask>
+    <sequenceFlow id="feed" name="反馈处置" sourceRef="manage" targetRef="final">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${manageFlag=='go'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="appraise" name="评价" sourceRef="final" targetRef="aiEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${finalFlag=='end'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="back" name="退回" sourceRef="final" targetRef="manage">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${finalFlag=='back'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="notice" name="短信通知处理人" sourceRef="review" targetRef="manage">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reviewFlag=='go'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="send" name="AI预警平台推送" sourceRef="aiStart" targetRef="review"></sequenceFlow>
+    <endEvent id="aiEnd" name="ai预警流程结束"></endEvent>
+    <sequenceFlow id="manageLift" name="误报解除" sourceRef="manage" targetRef="aiEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${manageFlag=='end'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="reviewLift" name="误报解除" sourceRef="review" targetRef="aiEnd">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reviewFlag=='end'}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_aiWarnTaskKey">
+    <bpmndi:BPMNPlane bpmnElement="aiWarnTaskKey" id="BPMNPlane_aiWarnTaskKey">
+      <bpmndi:BPMNShape bpmnElement="aiStart" id="BPMNShape_aiStart">
+        <omgdc:Bounds height="29.999999999999993" width="30.0" x="89.9999986588955" y="59.99999769032008"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="review" id="BPMNShape_review">
+        <omgdc:Bounds height="79.99999999999997" width="100.0" x="284.9999957531691" y="34.999998584389736"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="manage" id="BPMNShape_manage">
+        <omgdc:Bounds height="80.0" width="100.0" x="554.9999917298557" y="34.99999858438972"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="final" id="BPMNShape_final">
+        <omgdc:Bounds height="80.0" width="100.0" x="854.9999745190149" y="34.99999858438972"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="aiEnd" id="BPMNShape_aiEnd">
+        <omgdc:Bounds height="28.0" width="28.0" x="590.9999829232696" y="269.99999597668653"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="feed" id="BPMNEdge_feed">
+        <omgdi:waypoint x="654.9999917298557" y="74.99999858438972"></omgdi:waypoint>
+        <omgdi:waypoint x="854.9999745190149" y="74.99999858438972"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="reviewLift" id="BPMNEdge_reviewLift">
+        <omgdi:waypoint x="384.9999957531691" y="113.70370364431375"></omgdi:waypoint>
+        <omgdi:waypoint x="593.9292109400648" y="275.4303981042139"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="appraise" id="BPMNEdge_appraise">
+        <omgdi:waypoint x="854.9999745190149" y="109.83333245893321"></omgdi:waypoint>
+        <omgdi:waypoint x="616.4871898764814" y="275.9972416749425"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="manageLift" id="BPMNEdge_manageLift">
+        <omgdi:waypoint x="604.9999900443846" y="114.99999858438972"></omgdi:waypoint>
+        <omgdi:waypoint x="604.9999835131845" y="269.99999597668653"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="back" id="BPMNEdge_back">
+        <omgdi:waypoint x="854.9999745190149" y="74.99999858438972"></omgdi:waypoint>
+        <omgdi:waypoint x="654.9999917298557" y="74.99999858438972"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="send" id="BPMNEdge_send">
+        <omgdi:waypoint x="119.9999986588955" y="74.99999774862896"></omgdi:waypoint>
+        <omgdi:waypoint x="284.9999957531691" y="74.99999839002675"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="notice" id="BPMNEdge_notice">
+        <omgdi:waypoint x="384.9999957531691" y="74.99999858438972"></omgdi:waypoint>
+        <omgdi:waypoint x="554.9999917298557" y="74.99999858438972"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

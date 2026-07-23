@@ -469,4 +469,16 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="getReview" resultType="String">
+        SELECT us.USER_MOBILE as userMobile
+        FROM rm_sys_user_info us,rm_sys_role role
+        where us.IDENTITY=role.ROLE_ID
+        <if test="identity != null and identity != ''">
+            and us.identity=#{identity}
+        </if>
+        <if test="ofcId != null and ofcId != ''">
+            and role.ofc_Id=#{ofcId}
+        </if>
+    </select>
 </mapper>

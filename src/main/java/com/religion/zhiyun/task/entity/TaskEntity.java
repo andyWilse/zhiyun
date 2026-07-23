@@ -69,6 +69,13 @@ public class TaskEntity implements Serializable {
     @Column(name = "REL_EVENT_ID")
     private String relEventId;//'预警事件id'
 
+    @Column(name = "EVALUATION")
+    private String evaluation;//评价
+
+    @Column(name = "BACK_FLAG")
+    private Integer backFlag;//是否回退：1-是；0-否
+
+
     private String partNum;//'参与人数'
     private String responsiblePerson;//'负责人'
     private String venuesAddres;

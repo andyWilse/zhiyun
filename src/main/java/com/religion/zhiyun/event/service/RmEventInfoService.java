@@ -12,7 +12,7 @@ import java.util.Map;
 
 public interface RmEventInfoService {
     /**
-     * 接收ai预警
+     * 接收ai预警(202607升级废弃)
      * @param eventJson
      * @return
      */
@@ -178,4 +178,11 @@ public interface RmEventInfoService {
      * @return
      */
     AppResponse getMzSubmitSum(String eventState);
+
+    /**
+     * 接收ai预警(202607升级)
+     * @param eventJson
+     * @return
+     */
+    AppResponse addAiWarnEvent(String eventJson);
 }

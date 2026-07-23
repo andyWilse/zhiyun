@@ -62,6 +62,8 @@ public class TaskServiceImpl implements TaskService {
                 filePath=TaskParamsEnum.ZY_ISSUED_TASK_KEY.getFilePath();
             }else if(taskKey.equals(TaskParamsEnum.ZY_FILING_TASK_KEY.getCode())){//活动备案、场所更新
                 filePath=TaskParamsEnum.ZY_FILING_TASK_KEY.getFilePath();
+            }else if(taskKey.equals(TaskParamsEnum.ZY_WARN_TASK_KEY.getCode())){//AI预警任务流程
+                filePath=TaskParamsEnum.ZY_WARN_TASK_KEY.getFilePath();
             }else{
                 throw new RuntimeException("流程key值在系统不存在，请确认后重新填写");
             }

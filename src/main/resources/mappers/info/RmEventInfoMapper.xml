@@ -1176,4 +1176,20 @@
         delete from rm_event_report_men  where REF_EVENT_ID = #{eventId}
     </delete>
 
+    <select id="getEventVe" resultType="map">
+        select
+        ve.VENUES_ID as venuesId,
+        ve.VENUES_NAME as venuesNm,
+        ve.VENUES_ADDRES as venuesAddres,
+        ev.EVENT_TYPE as eventType,
+        ev.EVENT_ID as eventId,
+        EVENT_LEVEL as eventLevel
+        from RM_EVENT_INFO ev
+        left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
+        left join RM_TASK_INFO ta on ta.rel_event_id=ev.event_Id
+        <if test="procInstId != null and procInstId != ''">
+            where  ta.PROC_INST_ID = #{procInstId}
+        </if>
+    </select>
+
 </mapper>

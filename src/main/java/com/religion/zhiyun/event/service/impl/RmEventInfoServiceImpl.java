@@ -22,6 +22,7 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
+import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -102,6 +103,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     MonitorSmokerMapper monitorSmokerMapper;
     @Autowired
     private AiEventService aiEventService;
+
+    @Autowired
+    private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
+
 
     @Override
     public AppResponse addAiEvent(String eventJson) {
@@ -1877,6 +1882,133 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         }
         return new AppResponse(code,message,sum);
     }
+
+    @Override
+    public AppResponse addAiWarnEvent(String eventJson) {
+        log.info("AI告警接收:"+eventJson);
+        long code=ResultCode.FAILED.getCode();
+        String message="AI告警,数据处理失败！";
+
+        try {
+            EventEntity event=new EventEntity();
+            event.setEventData(eventJson);
+
+            AiEntity dataEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
+            String data = dataEntity.getData();
+            AiEntity aiEntity = JsonUtils.jsonTOBean(data, AiEntity.class);
+            event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
+            //2.预警信息处理
+            event.setWarnTime(TimeTool.getYmdHms());
+            //01-明火;02-超限;03-重点;04-集聚;06-画面异常
+            //程度
+            String eventLevel=ParamCode.EVENT_LEVEL_02.getCode();
+            String content = aiEntity.getContent();
+            event.setDeviceCode(content);
+            String eventType="";
+            String cont="";
+            if(content.contains("明火")){
+                eventType=ParamCode.EVENT_TYPE_01.getCode();
+                eventLevel=ParamCode.EVENT_LEVEL_01.getCode();
+                cont=ParamCode.EVENT_TYPE_01.getMessage();
+            }else if(content.contains("重点")){
+                eventType=ParamCode.EVENT_TYPE_03.getCode();
+                cont=ParamCode.EVENT_TYPE_03.getMessage();
+            }else if(content.contains("聚集")){
+                eventType=ParamCode.EVENT_TYPE_04.getCode();
+                cont=ParamCode.EVENT_TYPE_04.getMessage();
+            }else if(content.contains("未成年")){//未成年检测
+                eventType=ParamCode.EVENT_TYPE_03.getCode();
+                cont=ParamCode.EVENT_TYPE_03.getMessage();
+            }else if(content.contains("画面异常")){//画面异常
+                eventType=ParamCode.EVENT_TYPE_06.getCode();
+                cont=ParamCode.EVENT_TYPE_06.getMessage();
+            }else{
+                eventType="0";
+            }
+            //预警类型
+            event.setEventType(eventType);
+            event.setEventLevel(eventLevel);//普通
+            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            //获取场所id
+            String deviceId = aiEntity.getDeviceId();//监控通道编码
+            String venue = monitorBaseMapper.getVenue(deviceId);
+            if(GeneTool.isEmpty(venue)){
+                throw  new RuntimeException("AI预警通道："+deviceId+"场所信息不存在，请联系管理员！");
+            }
+            int relVenuesId = Integer.parseInt(venue);
+            event.setRelVenuesId(relVenuesId);
+            event.setHandleResults("预警已发起！");
+            event.setHandleTime(TimeTool.getYmdHms());
+            event.setAccessNumber(deviceId);//设备编码
+
+            String deviceName = aiEntity.getDeviceName();
+            event.setDeviceName(deviceName);
+            String title = aiEntity.getTitle();
+            event.setDeviceType(title);
+            //图片处理
+            String eventFile = aiEntity.getEventFile();
+            FileEntity fileEntity=new FileEntity();
+            fileEntity.setFilePath(eventFile);
+            fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+            fileEntity.setCreator("AI预警图片");
+            fileEntity.setCreateTime(TimeTool.getYmdHms());
+            rmFileMapper.add(fileEntity);
+
+            int fileId = fileEntity.getFileId();
+            event.setPicturesPath(String.valueOf(fileId));
+            //地址
+            String eventPlaceName = aiEntity.getEventPlaceName();
+            event.setLocation(eventPlaceName);
+            //事件新增
+            rmEventInfoMapper.addEvent(event);
+
+            /*** 任务发起 ：推送给人工审核岗***/
+            //5.1.封装任务信息
+            TaskEntity taskEntity=new TaskEntity();
+            taskEntity.setTaskType(eventType);
+            taskEntity.setEndTime("");
+            //查询场所名称
+            VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(venue);
+            String venuesName = venueByID.getVenuesName();
+            String tnm="预警事件：人工审核";
+            if("01".equals(eventType)){
+                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_01.getMessage();
+            }else if("02".equals(eventType)){
+                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_02.getMessage();
+            }else if("03".equals(eventType)){
+                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_03.getMessage();
+            }else if("04".equals(eventType)){
+                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_04.getMessage();
+            }else if("06".equals(eventType)){
+                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_06.getMessage();
+            }
+            taskEntity.setTaskName(tnm);
+            taskEntity.setTaskContent("预警事件,请处理");
+            taskEntity.setRelVenuesId(venue);
+            taskEntity.setEmergencyLevel(eventLevel);
+            taskEntity.setRelEventId(String.valueOf(event.getEventId()));
+
+            //获取人工审核人
+            List<String> review = sysUserMapper.getReview(RoleEnums.REVIEW.getCode(), RoleEnums.OF_ID_2.getCode());
+            if(review.size()<1 || null==review){
+                throw new RuntimeException("未找到人工审核岗处理人，请联系管理员！");
+            }
+
+            //5.2.任务发起
+            AppResponse res = taskAiWarnServiceImpl.launch(taskEntity, review, "预警平台");
+            if(res.getCode()==ResultCode.SUCCESS.getCode()){
+                code=ResultCode.SUCCESS.getCode();
+                message="AI告警,数据处理成功！";
+            }
+        } catch (RuntimeException r) {
+            message=r.getMessage();
+            r.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new AppResponse(code,message);
+    }
+
 
 
 }

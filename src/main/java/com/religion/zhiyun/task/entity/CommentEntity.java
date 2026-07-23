@@ -8,9 +8,16 @@ import lombok.Setter;
 @Getter
 public class CommentEntity {
 
+    /*处理结果*/
     private String handleResults ;
+    /*反馈*/
     private String feedBack;
+    /*图片*/
     private String picture;
+    /*审核*/
+    private String review;
+    /*评价*/
+    private String evaluation;
 
 
 }

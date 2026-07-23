@@ -65,4 +65,14 @@ public enum ParamCode {
         this.code = code;
         this.message = message;
     }
+
+    public static String getMessage(String code) {
+        for (ParamCode item : ParamCode.values()) {
+            if (item.name().equals(code)) {
+                return item.message;
+            }
+        }
+        return code;
+    }
+
 }

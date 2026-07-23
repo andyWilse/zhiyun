@@ -323,4 +323,12 @@ public interface RmEventInfoMapper {
      */
     void deleteRmEventReportMen(@Param("eventId") String eventId);
 
+    /**
+     * 获取预警场所信息
+     * @param procInstId
+     * @return
+     */
+    List<Map<String,Object>> getEventVe(@Param("procInstId") String procInstId);
+
+
 }

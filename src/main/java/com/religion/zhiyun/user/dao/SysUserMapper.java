@@ -172,4 +172,14 @@ public interface SysUserMapper {
      */
     String getVenuesNm(@Param("venuesIdArr") String[] venuesIdArr);
 
+    /**
+     * 根据角色获取人员信息
+     * @param identity
+     * @param ofcId
+     * @return
+     */
+    List<String> getReview(@Param("identity") String identity,@Param("ofcId") String ofcId);
+
+
+
 }

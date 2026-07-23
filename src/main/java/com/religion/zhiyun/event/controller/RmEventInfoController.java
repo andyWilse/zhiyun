@@ -56,7 +56,11 @@ public class RmEventInfoController {
     @PostMapping("/addEvent")
     @ResponseBody
     public AppResponse addAiEvent(@RequestBody String eventJson) {
-        return rmEventInfoService.addAiEvent(eventJson);
+        //废弃
+        //return rmEventInfoService.addAiEvent(eventJson);
+        //202607升级
+        return rmEventInfoService.addAiWarnEvent(eventJson);
+
     }
 
    /* @PostMapping("/pushAiEvent")
