@@ -134,7 +134,7 @@ public class SysUserServiceImpl implements SysUserService {
             if(numTel>0l){
                 throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
             }
-            message=this.checkData(sysUserEntity);
+           // message=this.checkData(sysUserEntity);
 
             sysUserEntity.setCreateTime(timestamp);
             sysUserEntity.setLastModifyTime(timestamp);
@@ -218,7 +218,7 @@ public class SysUserServiceImpl implements SysUserService {
                     throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
                 }
             }
-            message=this.checkData(sysUserEntity);
+            //message=this.checkData(sysUserEntity);
             Timestamp timestamp = new Timestamp(new Date().getTime());
             sysUserEntity.setLastModifyTime(timestamp);
 
