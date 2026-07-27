@@ -8,6 +8,8 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -98,5 +100,30 @@ public class RmFileController {
         return rmFileService.uploadVideo(multipartFile,httpServletRequest);
     }
 
+    /**
+     * Excel文件上传
+     * @param file
+     * @return
+     */
+    @EncryptResponse(false)
+    @RequestMapping("/excel/upload")
+    public PageResponse importExcel(@RequestParam("file") MultipartFile file){
+        try {
+            //获得原始文件名
+            String oriName = file.getOriginalFilename();
+            if (oriName.endsWith("xls")) {
+                //使用 HSSFWorkbook 解析
+                HSSFWorkbook workbook = new HSSFWorkbook(file.getInputStream());
 
+            } else {
+                //使用 XSSFWorkbook 解析
+                XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

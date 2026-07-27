@@ -21,7 +21,12 @@ import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import com.religion.zhiyun.venues.entity.VenuesEntity;
-import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.crypto.hash.Hash;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
@@ -29,9 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -74,6 +79,7 @@ public class SysUserServiceImpl implements SysUserService {
             String userNm = (String)map.get("userNm");
             String pages = (String) map.get("page");
             String sizes = (String)map.get("size");
+            String venue = (String)map.get("venue");
             //分页
             Integer page = Integer.valueOf(pages);
             Integer size = Integer.valueOf(sizes);
@@ -86,6 +92,7 @@ public class SysUserServiceImpl implements SysUserService {
             vo.setSize(size);
             vo.setSearchOne(userNm);
             vo.setSearchTwo(identity);
+            vo.setSearchThree(venue);
             dataList=sysUserMapper.getUsersByPage(vo);
             //转为中文
             if(null!=dataList && dataList.size()>0){
@@ -480,6 +487,175 @@ public class SysUserServiceImpl implements SysUserService {
         return new PageResponse(code,message,list.toArray());
     }
 
+    @Override
+    public PageResponse excelImport(MultipartFile file) {
+        long code= ResultCode.FAILED.getCode();
+        String message="三人驻堂信息Excel导入失败";
+        List<SysUserEntity> userList=new ArrayList<>();
+        try {
+            //1. 创建一个 workbook 对象
+            //获得原始文件名
+            String oriName = file.getOriginalFilename();
+            Workbook workbook=null;
+            if (oriName.endsWith("xls")) {
+                //使用 HSSFWorkbook 解析
+                workbook = new HSSFWorkbook(file.getInputStream());
+            } else {
+                //使用 XSSFWorkbook 解析
+                workbook = new XSSFWorkbook(file.getInputStream());
+            }
+            //2. 获取 workbook 中表单的数量
+            int numberOfSheets = workbook.getNumberOfSheets();
+            for (int i = 0; i < numberOfSheets; i++) {
+                //3. 获取表单
+                Sheet sheet = workbook.getSheetAt(i);
+                //4. 获取表单中的行数
+                int physicalNumberOfRows = sheet.getPhysicalNumberOfRows();
+                Long maxCustCd = sysUserMapper.getMaxUserNbr();
+                for (int j = 0; j < physicalNumberOfRows; j++) {
+                    //5. 跳过标题行
+                    if (j == 0) {
+                        continue;//跳过标题行
+                    }
+                    //6. 获取行
+                    Row row = sheet.getRow(j);
+                    if (row == null) {
+                        continue;//防止数据中间有空行
+                    }
+                    //7. 获取列数
+                    int physicalNumberOfCells =row.getPhysicalNumberOfCells();
+                    SysUserEntity sysUserEntity=new SysUserEntity();
+                    for (int k = 0; k < physicalNumberOfCells; k++) {
+                        Cell cell = row.getCell(k);
+                        int cellType = cell.getCellType();
+                        String cellValue="";
+                        int rowNo = j+1;
+                        int cellNo = k+1;
+                        if(0==cellType){
+                            //数值型
+                            cellValue= new BigDecimal(cell.getNumericCellValue()).toPlainString();
+                        }else if(1==cellType){
+                            //字符串
+                            cellValue=cell.getStringCellValue();
+                        }else if(4==cellType){
+                            //布尔型
+                            boolean booleanCellValue = cell.getBooleanCellValue();
+                            cellValue=String.valueOf(booleanCellValue);
+                        }else if(2==cellType){
+                            //公式型
+                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,公式型单元格错误！");
+                        }else if(3==cellType){
+                            //单元格为空!
+                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,字段不能为空！");
+                        }else if(5==cellType){
+                            //单元格错误
+                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,单元格错误！");
+                        }else{
+                            throw new RuntimeException("未知错误！");
+                        }
+
+                        //数据校验
+                        if(0==k){
+                            sysUserEntity.setUserNm(cellValue);
+                            sysUserEntity.setLoginNm(cellValue);
+                        }if(1==k){
+                            sysUserEntity.setIdentity("组长".equals(cellValue)?"10000006":"10000007");
+                        }if(2==k){
+                            //场所
+                            //获取场所信息
+                            VenuesEntity venue = rmVenuesInfoMapper.getVenueByID(cellValue);
+                            if(null==venue){
+                                throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,场所信息填写错误！");
+                            }
+                            sysUserEntity.setRelVenuesId(cellValue);
+                            sysUserEntity.setProvince(venue.getProvince());
+                            sysUserEntity.setCity(venue.getCity());
+                            sysUserEntity.setArea(venue.getArea());
+                            sysUserEntity.setTown(venue.getTown());
+                        }if(3==k){
+                            //电话
+                            sysUserEntity.setUserMobile(cellValue);
+                        }
+                    }
+                    userList.add(sysUserEntity);
+                    Timestamp timestamp = new Timestamp(new Date().getTime());
+                    //电话不能重复
+                    long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
+                    if(numTel>0l){
+                        throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
+                    }
+                    sysUserEntity.setCreateTime(timestamp);
+                    sysUserEntity.setLastModifyTime(timestamp);
+                    maxCustCd++;
+                    sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
+
+                }
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="三人驻堂信息Excel导入成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,message);
+        }
+
+        return  new PageResponse(code,message,userList);
+    }
+
+    @Override
+    public PageResponse excelImportAdd(List<SysUserEntity> sysUserList, String token) {
+
+        long code= ResultCode.FAILED.getCode();
+        String message="三人驻堂Excel数据保存失败";
+
+        List<Map<String, Object>> list=new ArrayList<>();
+        try {
+            if(null!=sysUserList && sysUserList.size()>0){
+                for(int i=0;i<sysUserList.size();i++){
+                    SysUserEntity sysUserEntity = sysUserList.get(i);
+                    //1.新增用户
+                    sysUserMapper.add(sysUserEntity);
+                    //2.密码加密
+                    String passwords = passwordDefault;
+                    int userId = sysUserEntity.getUserId();
+                    String userNbr = sysUserEntity.getUserNbr();
+                    //MD5加密,salt加密
+                    String pass = this.passwordSalt(String.valueOf(userId),passwords,userNbr);
+                    sysUserMapper.updatePassword(pass,userId,TimeTool.getYmdHms());
+                    //3.新增用户角色关系
+                    UserRoleEntity userRoleEntity=new UserRoleEntity();
+                    userRoleEntity.setUserId(String.valueOf(sysUserEntity.getUserId()));
+                    userRoleEntity.setRoleId(String.valueOf(sysUserEntity.getIdentity()));
+                    sysUserRoleRelMapper.add(userRoleEntity);
+                }
+                //日志记录
+                //增加日志信息
+                Map<String,Object> vuMap=new HashMap<>();
+                String login = this.getLogin(token);
+                vuMap.put("operator",login);
+                vuMap.put("operateTime",new Date());
+                vuMap.put("operateRef","三人驻堂");
+                vuMap.put("operateType", OperaEnums.user_add.getCode());
+                vuMap.put("operateContent", "三人驻堂excel数据");
+                vuMap.put("operateDetail","三人驻堂excel导入共:"+sysUserList.size()+"条");
+                operateRecordService.addRecord(vuMap);
+
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message="三人驻堂Excel数据保存成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,message);
+        }
+
+        return  new PageResponse(code,message);
+    }
+
     /**
      * 密码加密
      * @param userNbr
@@ -577,4 +753,5 @@ public class SysUserServiceImpl implements SysUserService {
 
         return message;
     }
+
 }

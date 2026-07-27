@@ -8,8 +8,10 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 import java.util.Map;
+
 @DecryptRequest(true)
 @EncryptResponse(true)
 @RestController
@@ -59,4 +61,17 @@ public class SysUserController {
     public PageResponse modifyPassword(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
         return sysUserService.modifyPassword(map,token);
     }
+
+    //三人驻堂Excel数据导入
+    @EncryptResponse(false)
+    @PostMapping("/import")
+       public PageResponse importData(@RequestParam("file") MultipartFile file){
+        return sysUserService.excelImport(file);
+    }
+    @PostMapping("/import/add")
+    public PageResponse excelImportAdd(@RequestBody List<SysUserEntity> sysUserList,@RequestHeader("token")String token) {
+        return sysUserService.excelImportAdd(sysUserList,token);
+    }
+
+
 }

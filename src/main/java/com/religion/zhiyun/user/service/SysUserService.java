@@ -5,8 +5,10 @@ import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public interface SysUserService {
@@ -67,5 +69,19 @@ public interface SysUserService {
      */
     PageResponse getModifyUser(String userId);
 
+    /**
+     * 三人驻堂excel数据验证解析
+     * @param file
+     * @return
+     */
+    PageResponse excelImport(MultipartFile file);
+
+    /**
+     * 三人驻堂excel数据保存
+     * @param sysUserList
+     * @param token
+     * @return
+     */
+    PageResponse excelImportAdd(List<SysUserEntity> sysUserList,String token);
 
 }

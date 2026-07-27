@@ -13,6 +13,8 @@ import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.enums.ParamCode;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -303,6 +305,35 @@ public class RmFileServiceImpl implements RmFileService {
     public List<Map<String, Object>> getFileUrl(String[] fileIds) {
         return rmFileMapper.getFileUrl(fileIds);
     }
+
+    @Override
+    public PageResponse importExcel(MultipartFile file) {
+        long code= ResultCode.FAILED.getCode();
+        String message="Excel文件导入失败";
+        try {
+            //获得原始文件名
+            String oriName = file.getOriginalFilename();
+            if (oriName.endsWith("xls")) {
+                //使用 HSSFWorkbook 解析
+                HSSFWorkbook workbook = new HSSFWorkbook(file.getInputStream());
+
+            } else {
+                //使用 XSSFWorkbook 解析
+                XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
+            }
+
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,message);
+        }
+
+
+        return null;
+    }
+
     /**
      * 获取登录人
      * @return

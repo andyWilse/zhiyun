@@ -56,4 +56,11 @@ public interface RmFileService {
      */
     List<Map<String,Object>> getFileUrl(String[] fileIds);
 
+    /**
+     * Excel文件上传导入
+     * @param file
+     * @return
+     */
+    PageResponse importExcel(MultipartFile file);
+
 }

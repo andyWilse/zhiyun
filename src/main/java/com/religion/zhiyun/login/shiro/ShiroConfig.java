@@ -47,6 +47,7 @@ public class ShiroConfig {
 
         filterMap.put("/file/images/upload","anon");
         filterMap.put("/file/uploadVideo","anon");
+        filterMap.put("/user/import","anon");
 
         filterMap.put("/event/addEvent","anon");  //放行AI预警
         filterMap.put("/event/addEventByNB","anon");  //放行烟感预警

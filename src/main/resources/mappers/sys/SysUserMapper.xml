@@ -147,6 +147,9 @@
         <if test="vo.venues != null and vo.venues != ''">
             AND ve.REL_VENUES_ID =#{vo.venues}
         </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND ve.REL_VENUES_ID LIKE concat('%',#{vo.searchThree},'%')
+        </if>
 
         order by LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}
