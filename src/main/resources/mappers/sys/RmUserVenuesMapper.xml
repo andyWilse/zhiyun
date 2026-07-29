@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.user.dao.RmUserVenuesMapper">
+
+    <select id="getUsers" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select USER_ID as userId,
+               REL_VENUES_ID as relVenuesId
+        from rm_sys_user_info
+        where IDENTITY in ('10000006','10000007') and VALID_IND='1'
+    </select>
+
+    <insert id="add" parameterType="com.religion.zhiyun.user.entity.UserVenuesEntity" useGeneratedKeys="true" keyProperty="uvId" >
+        INSERT INTO RM_USER_VENUES_MAP (USER_ID,VENUES_ID,VALID_IND,CREATE_TIME,LAST_MODIFY_TIME,MARK )
+        VALUES ( #{userId}, #{venuesId}, #{validInd}, #{createTime}, #{lastModifyTime}, #{mark})
+    </insert>
+
+</mapper>
