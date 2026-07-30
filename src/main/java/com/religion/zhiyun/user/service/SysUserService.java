@@ -84,4 +84,24 @@ public interface SysUserService {
      */
     PageResponse excelImportAdd(List<SysUserEntity> sysUserList,String token);
 
+    /**
+     * 根据场所获取三人驻堂
+     * @param venuesId
+     * @return
+     */
+    PageResponse getSrUser(String venuesId);
+
+    /**
+     * 从场所去除三人驻堂
+     * @param map
+     */
+    PageResponse deleteSrUser(Map<String,Object> map,String token);
+
+    /**
+     * 场所添加三人驻堂
+     * @param map
+     * @param token
+     * @return
+     */
+    PageResponse addSr(Map<String,Object> map,String token);
 }

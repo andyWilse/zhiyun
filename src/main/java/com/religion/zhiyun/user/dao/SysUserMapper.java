@@ -180,6 +180,11 @@ public interface SysUserMapper {
      */
     List<String> getReview(@Param("identity") String identity,@Param("ofcId") String ofcId);
 
-
+    /**
+     * 获取三人驻堂成员
+     * @param venuesId
+     * @return
+     */
+    List<SysUserEntity> getSrUser(@Param("venuesId") String venuesId);
 
 }

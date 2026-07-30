@@ -58,6 +58,7 @@
         EMERGENCY_LEVEL as emergencyLevel,
         TASK_PICTURE as taskPicture,
         TASK_VIDEO as taskVideo,
+        LAUNCH_TIME as launchTime,
         LAUNCH_PERSON as launchPerson,
         HANDLE_PERSON as handlePerson,
         HANDLE_RESULTS as handleResults,

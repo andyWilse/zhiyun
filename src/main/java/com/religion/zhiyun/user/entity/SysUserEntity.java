@@ -90,6 +90,7 @@ public class SysUserEntity implements Serializable {
     private String passwordsOrigin;
 
     private String salt;
+    private String uvId;
     /**
      * 密码盐.
      *

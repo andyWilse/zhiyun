@@ -25,6 +25,8 @@ public enum OperaEnums {
     news_update("100732", "宣传修改"),
     news_delete("100733", "宣传删除"),
 
+    user_venue_delete("100741", "场所三人驻堂成员去除"),
+    user_venue_add("100742", "场所三人驻堂成员添加"),
     ;
     private String code;
     private String name;

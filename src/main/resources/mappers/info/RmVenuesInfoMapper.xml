@@ -364,7 +364,12 @@
             ve.LAST_MODIFY_TIME as lastModifyTime,
             ve.RELIGIOUS_SECT as dictCd,
             ve.LONGITUDE as longitude,
-            ve.LATITUDE as latitudes
+            ve.LATITUDE as latitudes,
+            (select GROUP_CONCAT(us.USER_NM SEPARATOR ",")
+                from rm_user_venues_map uv
+                left join rm_sys_user_info us on us.USER_ID=uv.USER_ID
+                where uv.VENUES_ID=ve.VENUES_ID and uv.VALID_IND='1'
+            ) as userSr
 
         from RM_VENUES_INFO ve
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
@@ -394,7 +399,7 @@
                 #{value}
             </foreach>
         </if>
-        order by ve.LAST_MODIFY_TIME desc
+        order by (select count(uv.USER_ID) from rm_user_venues_map uv  where uv.VENUES_ID=ve.VENUES_ID and uv.VALID_IND='1')  desc,ve.LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
 

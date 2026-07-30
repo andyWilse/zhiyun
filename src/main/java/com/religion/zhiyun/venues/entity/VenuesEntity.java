@@ -100,4 +100,7 @@ public  class VenuesEntity implements Serializable {
 
 
     private String latitudes;//纬度
+
+    private String userSr;//三人驻堂成员
+
 }

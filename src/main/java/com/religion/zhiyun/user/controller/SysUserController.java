@@ -73,5 +73,19 @@ public class SysUserController {
         return sysUserService.excelImportAdd(sysUserList,token);
     }
 
+    //获取三人驻堂
+    @GetMapping("/getSr")
+    public PageResponse getSrUser(@RequestParam("venuesId")String venuesId){
+        return sysUserService.getSrUser(venuesId);
+    }
+    @PostMapping("/deleteSr")
+    public PageResponse deleteSrUser(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
+        return sysUserService.deleteSrUser(map,token);
+    }
+    @PostMapping("/addSr")
+    public PageResponse addSr(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
+        return sysUserService.addSr(map,token);
+    }
+
 
 }

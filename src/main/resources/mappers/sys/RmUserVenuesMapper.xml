@@ -15,4 +15,12 @@
         VALUES ( #{userId}, #{venuesId}, #{validInd}, #{createTime}, #{lastModifyTime}, #{mark})
     </insert>
 
+    <update id="deleteSrUser">
+        update RM_USER_VENUES_MAP
+        set
+        VALID_IND = '0',
+        LAST_MODIFY_TIME = #{lastModifyTime}
+        WHERE UV_ID = #{uvId}
+    </update>
+
 </mapper>

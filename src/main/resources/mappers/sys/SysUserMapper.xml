@@ -150,6 +150,9 @@
         <if test="vo.searchThree != null and vo.searchThree != ''">
             AND ve.REL_VENUES_ID LIKE concat('%',#{vo.searchThree},'%')
         </if>
+        <if test="vo.searchFour == 'sr'">
+            AND ve.IDENTITY in ('10000006','10000007')
+        </if>
 
         order by LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}
@@ -174,6 +177,9 @@
         </if>
         <if test="vo.venues != null and vo.venues != ''">
             AND ve.REL_VENUES_ID =#{vo.venues}
+        </if>
+        <if test="vo.searchFour == 'sr'">
+            AND ve.IDENTITY in ('10000006','10000007')
         </if>
     </select>
 
@@ -484,4 +490,24 @@
             and role.ofc_Id=#{ofcId}
         </if>
     </select>
+
+    <select id="getSrUser" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+        us.USER_NM as userNm,
+        us.USER_MOBILE as userMobile,
+        us.USER_ID as userId,
+        case us.IDENTITY
+            when '10000007' then '组员'
+            when '10000006' then '组长'
+            else ''
+        end as identity,
+        uv.UV_ID as uvId
+        from rm_sys_user_info us, rm_user_venues_map uv
+        where us.USER_ID=uv.USER_ID
+        and  uv.VALID_IND='1'
+        <if test="venuesId != null and venuesId != ''">
+            and uv.VENUES_ID=#{venuesId}
+        </if>
+    </select>
+
 </mapper>

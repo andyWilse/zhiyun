@@ -4,11 +4,13 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.service.RmFileService;
+import com.religion.zhiyun.user.dao.RmUserVenuesMapper;
 import com.religion.zhiyun.user.dao.SysRoleMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.dao.SysUserRoleRelMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.entity.UserRoleEntity;
+import com.religion.zhiyun.user.entity.UserVenuesEntity;
 import com.religion.zhiyun.user.service.SysUserService;
 import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.utils.JsonUtils;
@@ -64,6 +66,10 @@ public class SysUserServiceImpl implements SysUserService {
     private RmVenuesInfoMapper rmVenuesInfoMapper;
     @Autowired
     private OperateRecordService operateRecordService;
+    @Autowired
+    private RmUserVenuesMapper rmUserVenuesMapper;
+    @Autowired
+    private RmUserVenuesMapper initMapper;
 
     @Override
     public PageResponse getUsersByPage(Map<String, Object> map,String token){
@@ -75,11 +81,13 @@ public class SysUserServiceImpl implements SysUserService {
         long total=0l;
         try {
             //参数
-            String identity = (String)map.get("identity");
-            String userNm = (String)map.get("userNm");
-            String pages = (String) map.get("page");
-            String sizes = (String)map.get("size");
-            String venue = (String)map.get("venue");
+            String identity = map.get("identity")!=null?(String)map.get("identity"):"";
+            String userNm = map.get("userNm")!=null?(String)map.get("userNm"):"";
+            String pages = map.get("page")!=null?(String) map.get("page"):"";
+            String sizes = map.get("size")!=null?(String)map.get("size"):"";
+            String venue = map.get("venue")!=null?(String)map.get("venue"):"";
+            String mark = map.get("mark")!=null?(String)map.get("mark"):"";
+
             //分页
             Integer page = Integer.valueOf(pages);
             Integer size = Integer.valueOf(sizes);
@@ -93,6 +101,7 @@ public class SysUserServiceImpl implements SysUserService {
             vo.setSearchOne(userNm);
             vo.setSearchTwo(identity);
             vo.setSearchThree(venue);
+            vo.setSearchFour(mark);
             dataList=sysUserMapper.getUsersByPage(vo);
             //转为中文
             if(null!=dataList && dataList.size()>0){
@@ -651,6 +660,116 @@ public class SysUserServiceImpl implements SysUserService {
         }catch (Exception e) {
             e.printStackTrace();
             return  new PageResponse(code,message);
+        }
+
+        return  new PageResponse(code,message);
+    }
+
+    @Override
+    public PageResponse getSrUser(String venuesId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取三人驻堂失败";
+
+        List<SysUserEntity> list=new ArrayList<>();
+        try {
+            list=sysUserMapper.getSrUser(venuesId);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取三人驻堂成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,e.getMessage());
+        }
+
+        return  new PageResponse(code,message,list);
+    }
+
+    @Override
+    public PageResponse deleteSrUser(Map<String,Object> map, String token) {
+
+        long code= ResultCode.FAILED.getCode();
+        String message="场所三人驻堂成员去除失败";
+
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            String uvId = (String) map.get("uvId");
+            String operation = (String) map.get("operation");
+
+            //1.去除
+            rmUserVenuesMapper.deleteSrUser(uvId,timestamp);
+            //日志
+            //增加日志信息
+            Map<String,Object> vuMap=new HashMap<>();
+            vuMap.put("operator",this.getLogin(token));
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef",String.valueOf(uvId));
+            vuMap.put("operateType", OperaEnums.user_venue_delete.getCode());
+            vuMap.put("operateContent", "去除场所三人驻堂成员");
+            vuMap.put("operateDetail",operation);
+            operateRecordService.addRecord(vuMap);
+            code= ResultCode.SUCCESS.getCode();
+            message="场所三人驻堂成员去除成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,e.getMessage());
+        }
+
+        return  new PageResponse(code,message);
+    }
+
+    @Override
+    public PageResponse addSr(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="场所添加三人驻堂成员失败";
+
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            Integer venuesId = map.get("venuesId")!=null?(Integer) map.get("venuesId"):0;
+            String venuesName =map.get("venuesName")!=null? (String) map.get("venuesName"):"";
+            Object userList = map.get("userList");
+            Object[] srArr=null;
+            if(null!=userList){
+                srArr = ((List<?>) userList).toArray();
+            }
+            for(int i=0;i<srArr.length;i++){
+                HashMap<String,Object> user = (HashMap<String, Object>) srArr[i];
+                Integer userId = (Integer) user.get("userId");
+                String userNm = (String) user.get("userNm");
+                //1.增加
+                UserVenuesEntity uvEntity=new UserVenuesEntity();
+                uvEntity.setUserId(userId);
+                uvEntity.setVenuesId(venuesId);
+                uvEntity.setValidInd("1");
+                uvEntity.setCreateTime(timestamp);
+                uvEntity.setLastModifyTime(timestamp);
+                uvEntity.setMark("success");
+                initMapper.add(uvEntity);
+
+                //2.增加日志信息
+                Map<String,Object> vuMap=new HashMap<>();
+                vuMap.put("operator",this.getLogin(token));
+                vuMap.put("operateTime",new Date());
+                vuMap.put("operateRef",String.valueOf(uvEntity.getUvId()));
+                vuMap.put("operateType", OperaEnums.user_venue_add.getCode());
+                vuMap.put("operateContent", "场所添加三人驻堂成员");
+                vuMap.put("operateDetail","向（"+venuesName+"）内添加三人驻堂成员："+userNm);
+                operateRecordService.addRecord(vuMap);
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="场所添加三人驻堂成员成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,e.getMessage());
         }
 
         return  new PageResponse(code,message);
