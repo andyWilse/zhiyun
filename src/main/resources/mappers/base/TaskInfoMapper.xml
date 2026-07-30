@@ -90,7 +90,7 @@
                 end as taskNm
             from act_hi_identitylink ti
             left join act_hi_comment  co on ti.USER_ID_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
-            left join rm_sys_user_info us on us.USER_MOBILE=ti.USER_ID_ and us.VALID_IND='1'
+            left join RM_SYS_USER_INFO us on us.USER_MOBILE=ti.USER_ID_ and us.VALID_IND='1'
             left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.USER_ID_ and u.VALID_IND='1'
             join (SELECT  @rownum := 0) r
             where ti.PROC_INST_ID_=#{procInstId}
@@ -114,7 +114,7 @@
             ti.START_TIME_,
             ti.act_id_ as actId
         from act_hi_actinst ti
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.ACT_TYPE_='startEvent'
         and ti.PROC_INST_ID_=#{procInstId})
@@ -132,7 +132,7 @@
             ti.act_id_ as actId
         from act_hi_actinst ti
         join act_hi_comment  co on ti.ASSIGNEE_=co.USER_ID_ and ti.PROC_INST_ID_=co.PROC_INST_ID_
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.PROC_INST_ID_=#{procInstId}
         order by TIME_
@@ -146,7 +146,7 @@
             ti.START_TIME_,
             ti.act_id_ as actId
         from act_hi_actinst ti
-        left join rm_sys_user_info us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ti.ASSIGNEE_ and us.VALID_IND='1'
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.END_TIME_ is null
         and ti.PROC_INST_ID_=#{procInstId}
@@ -166,7 +166,7 @@
             thi.ASSIGNEE_ ))) as sendNames,
             min(DATE_FORMAT(thi.START_TIME_,'%Y-%m-%d %H:%i:%s') ) as sendTime
         from act_hi_actinst thi
-        left join rm_sys_user_info hus on hus.USER_MOBILE=thi.ASSIGNEE_ and hus.VALID_IND='1'
+        left join RM_SYS_USER_INFO hus on hus.USER_MOBILE=thi.ASSIGNEE_ and hus.VALID_IND='1'
         left join rm_venues_manager_info hu on hu.MANAGER_MOBILE=thi.ASSIGNEE_ and hu.VALID_IND='1'
         where thi.act_id_=#{actId} and thi.PROC_INST_ID_=#{procInstId}
     </select>
@@ -188,7 +188,7 @@
         FROM rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
         left join rm_sys_dict di on ta.FLOW_TYPE=di.DICT_CD and di.DICT_TYPE_CD='1003'
-        left join rm_sys_user_info us on us.USER_MOBILE=ta.LAUNCH_PERSON and us.VALID_IND='1'
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ta.LAUNCH_PERSON and us.VALID_IND='1'
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ta.LAUNCH_PERSON and u.VALID_IND='1'
         left join act_hi_identitylink ac on ac.PROC_INST_ID_ = ta.PROC_INST_ID and ac.TYPE_='starter'
         where 1=1
@@ -274,7 +274,7 @@
             ta.PROC_INST_ID as procInstId
         from rm_task_info ta
         left join rm_venues_info ve on ve.VENUES_ID=ta.REL_VENUES_ID
-        left join rm_sys_user_info us on ta.LAUNCH_PERSON=us.USER_MOBILE and us.VALID_IND='1'
+        left join RM_SYS_USER_INFO us on ta.LAUNCH_PERSON=us.USER_MOBILE and us.VALID_IND='1'
         left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.LAUNCH_PERSON and ma.VALID_IND='1'
         where ta.PROC_INST_ID in
         <foreach collection="idList" item="procInstId" index="index" open="(" close=")" separator=",">
@@ -375,11 +375,12 @@
         )union all(
             select
                 f.USER_MOBILE AS loginNm,IDENTITY
-            from rm_sys_user_info f
+            from RM_SYS_USER_INFO f
+            left join RM_USER_VENUES_MAP uv on f.USER_ID=uv.UV_USER_ID
             where f.VALID_IND='1'
             and f.IDENTITY in ('10000006','10000007')
             <if test="relVenuesId != null and relVenuesId != ''">
-                and f.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                and uv.UV_VENUES_ID = #{relVenuesId}
             </if>
             )
         ) uu order by uu.IDENTITY
@@ -390,10 +391,11 @@
            g.USER_MOBILE as userMobile
         from rm_sys_user_info  g
         left join rm_sys_user_info u on g.town=u.town and u.IDENTITY='10000006' and u.VALID_IND='1'
+        left join RM_USER_VENUES_MAP uv on u.USER_ID=uv.UV_USER_ID
         where g.VALID_IND='1'
         and g.IDENTITY ='10000005'
         <if test="relVenuesId!=null and relVenuesId!=''">
-            and u.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            and uv.UV_VENUES_ID = #{relVenuesId}
         </if>
         order by g.user_id
     </select>

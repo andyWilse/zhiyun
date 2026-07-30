@@ -187,6 +187,19 @@ public class SysUserServiceImpl implements SysUserService {
             userRoleEntity.setRoleId(String.valueOf(sysUserEntity.getIdentity()));
             sysUserRoleRelMapper.add(userRoleEntity);
 
+            //增加用户场所关系
+            String relVenuesId = sysUserEntity.getRelVenuesId();
+            if(null!=relVenuesId && relVenuesId!=""){
+                String[] split = relVenuesId.split(",");
+                if(null!=split && split.length>0){
+                    for(int v=0;v<split.length;v++){
+                        String venuesId = split[v];
+                        if(null!=venuesId && venuesId!=""){
+                            this.saveUv(userId,Integer.parseInt(venuesId));
+                        }
+                    }
+                }
+            }
             //增加日志信息
             Map<String,Object> vuMap=new HashMap<>();
             String login = this.getLogin(token);
@@ -638,6 +651,20 @@ public class SysUserServiceImpl implements SysUserService {
                     userRoleEntity.setUserId(String.valueOf(sysUserEntity.getUserId()));
                     userRoleEntity.setRoleId(String.valueOf(sysUserEntity.getIdentity()));
                     sysUserRoleRelMapper.add(userRoleEntity);
+
+                    //4.增加用户场所关系
+                    String relVenuesId = sysUserEntity.getRelVenuesId();
+                    if(null!=relVenuesId && relVenuesId!=""){
+                        String[] split = relVenuesId.split(",");
+                        if(null!=split && split.length>0){
+                            for(int v=0;v<split.length;v++){
+                                String venuesId = split[v];
+                                if(null!=venuesId && venuesId!=""){
+                                    this.saveUv(userId,Integer.parseInt(venuesId));
+                                }
+                            }
+                        }
+                    }
                 }
                 //日志记录
                 //增加日志信息
@@ -729,7 +756,6 @@ public class SysUserServiceImpl implements SysUserService {
         String message="场所添加三人驻堂成员失败";
 
         try {
-            Timestamp timestamp = new Timestamp(new Date().getTime());
             Integer venuesId = map.get("venuesId")!=null?(Integer) map.get("venuesId"):0;
             String venuesName =map.get("venuesName")!=null? (String) map.get("venuesName"):"";
             Object userList = map.get("userList");
@@ -742,15 +768,7 @@ public class SysUserServiceImpl implements SysUserService {
                 Integer userId = (Integer) user.get("userId");
                 String userNm = (String) user.get("userNm");
                 //1.增加
-                UserVenuesEntity uvEntity=new UserVenuesEntity();
-                uvEntity.setUserId(userId);
-                uvEntity.setVenuesId(venuesId);
-                uvEntity.setValidInd("1");
-                uvEntity.setCreateTime(timestamp);
-                uvEntity.setLastModifyTime(timestamp);
-                uvEntity.setMark("success");
-                initMapper.add(uvEntity);
-
+                UserVenuesEntity uvEntity = this.saveUv(userId, venuesId);
                 //2.增加日志信息
                 Map<String,Object> vuMap=new HashMap<>();
                 vuMap.put("operator",this.getLogin(token));
@@ -873,4 +891,27 @@ public class SysUserServiceImpl implements SysUserService {
         return message;
     }
 
+    /**
+     * 保存用户场所关系
+     * @param userId
+     * @param venuesId
+     * @return
+     */
+    public UserVenuesEntity saveUv(int userId,int venuesId) {
+        UserVenuesEntity uvEntity = new UserVenuesEntity();
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            uvEntity.setUvUserId(userId);
+            uvEntity.setUvValidInd("1");
+            uvEntity.setUvCreateTime(timestamp);
+            uvEntity.setUvModifyTime(timestamp);
+            uvEntity.setUvVenuesId(venuesId);
+            uvEntity.setUvMark("success");
+            //增加
+            initMapper.add(uvEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return uvEntity;
+    }
 }

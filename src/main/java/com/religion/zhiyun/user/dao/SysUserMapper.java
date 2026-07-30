@@ -76,12 +76,6 @@ public interface SysUserMapper {
      */
     String queryStarter(@Param("procInstId") String procInstId);
 
-    /**
-     * 获取三人驻堂的成员
-     * @param relVenuesId
-     * @return
-     */
-    List<Map<String,Object>> getSanByVenues(@Param("relVenuesId") Integer relVenuesId);
     //所有
     List<Map<String,Object>> getAllByVenues(@Param("relVenuesId") Integer relVenuesId);
     //街干、三人驻堂

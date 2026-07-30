@@ -227,7 +227,7 @@
             from RM_EVENT_INFO e
             left join rm_task_info ta on ta.REL_EVENT_ID=e.EVENT_ID
             left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
-            left join rm_sys_user_info us on us.USER_MOBILE=ta.HANDLE_PERSON
+            left join RM_SYS_USER_INFO us on us.USER_MOBILE=ta.HANDLE_PERSON
             left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.HANDLE_PERSON
             where ve.VENUES_STATUS!='02'
             <if test="vo.searchOne != null and vo.searchOne != ''">
@@ -329,7 +329,7 @@
             from RM_EVENT_INFO e
             left join rm_task_info ta on ta.REL_EVENT_ID=e.EVENT_ID
             left join RM_VENUES_INFO ve on e.REL_VENUES_ID=ve.VENUES_ID
-            left join rm_sys_user_info us on us.USER_MOBILE=ta.HANDLE_PERSON
+            left join RM_SYS_USER_INFO us on us.USER_MOBILE=ta.HANDLE_PERSON
             left join rm_venues_manager_info ma on ma.MANAGER_MOBILE=ta.HANDLE_PERSON
             where ve.VENUES_STATUS!='02'
             <if test="vo.searchOne != null and vo.searchOne != ''">
@@ -834,9 +834,10 @@
 
     <select id="getMobile" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         SELECT
-        us.USER_MOBILE as userMobile
-        from rm_sys_user_info us
-        WHERE REL_VENUES_ID=#{venuesId}
+            us.USER_MOBILE as userMobile
+        from RM_SYS_USER_INFO us
+        left join RM_USER_VENUES_MAP uv on us.USER_ID=uv.UV_USER_ID
+        WHERE uv.UV_VENUES_ID = #{venuesId}
     </select>
 
     <select id="getEventDetail" resultType="map">
@@ -874,11 +875,11 @@
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         left join RM_SYS_DICT d on ve.RELIGIOUS_SECT=d.DICT_CD
-        left join rm_monitor_manage_info mo on ev.ACCESS_NUMBER=mo.ACCESS_NUMBER
-        left join rm_venues_manager_info fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
-        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
+        left join RM_MONITOR_MANAGE_INFO mo on ev.ACCESS_NUMBER=mo.ACCESS_NUMBER
+        left join RM_VENUES_MANAGER_INFO fz on fz.MANAGER_ID=ve.RESPONSIBLE_PERSON and fz.MANAGER_TYPE_CD='01'
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_VENUES_MANAGER_INFO fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_TASK_INFO ta on ta.REL_EVENT_ID=ev.EVENT_ID
         where ev.EVENT_ID = #{eventId}
     </select>
 
@@ -926,9 +927,9 @@
             if(ta.HANDLE_RESULTS is null,'无法解决',if(ta.HANDLE_RESULTS='1','已解决','无法解决')) as handleResults
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_VENUES_MANAGER_INFO fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_TASK_INFO ta on ta.REL_EVENT_ID=ev.EVENT_ID
         where ev.EVENT_TYPE!='05'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and ev.EVENT_TYPE=#{vo.searchOne}
@@ -1019,9 +1020,9 @@
             else ma.MANAGER_CN_NM
             end as reportMen,
             DATE_FORMAT(REPORT_TIME,'%Y-%m-%d %H:%i:%s') as reportTime
-        from rm_event_report_men men
-        left join rm_sys_user_info us on men.REPORT_MEN=us.USER_MOBILE
-        left join rm_venues_manager_info ma on men.REPORT_MEN=ma.MANAGER_MOBILE
+        from RM_EVENT_REPORT_MEN men
+        left join RM_SYS_USER_INFO us on men.REPORT_MEN=us.USER_MOBILE
+        left join RM_VENUES_MANAGER_INFO ma on men.REPORT_MEN=ma.MANAGER_MOBILE
         where REF_EVENT_ID=#{eventId}
     </select>
 
@@ -1059,9 +1060,9 @@
             case when ta.PROC_INST_ID is not null then ta.PROC_INST_ID else '' end as procInstId
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
-        left join rm_sys_user_info us on us.USER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_venues_manager_info fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
-        left join rm_task_info ta on ta.REL_EVENT_ID=ev.EVENT_ID
+        left join RM_SYS_USER_INFO us on us.USER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_VENUES_MANAGER_INFO fzz on fzz.MANAGER_MOBILE=ev.HANDLE_RESULTS
+        left join RM_TASK_INFO ta on ta.REL_EVENT_ID=ev.EVENT_ID
         where ev.EVENT_TYPE!='05'
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and ev.EVENT_TYPE=#{vo.searchOne}

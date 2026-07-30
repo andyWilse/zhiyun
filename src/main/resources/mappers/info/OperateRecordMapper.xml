@@ -41,7 +41,7 @@
             (select di.DICT_CN_DESC from rm_sys_dict di where di.DICT_TYPE_CD='1007' and di.DICT_CD=re.OPERATE_TYPE) as operateType,
             DATE_FORMAT(OPERATE_TIME,'%Y-%m-%d %H:%i:%s') as operateTm
         from RM_OPERATE_RECORD_INFO re
-        left join rm_sys_user_info u on re.OPERATOR=u.USER_MOBILE
+        left join RM_SYS_USER_INFO u on re.OPERATOR=u.USER_MOBILE
         where 1=1
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and u.USER_NM  LIKE concat('%',#{vo.searchOne},'%')
@@ -65,7 +65,7 @@
         select
             count(RECORD_ID)
         from RM_OPERATE_RECORD_INFO re
-        left join rm_sys_user_info u on re.OPERATOR=u.USER_MOBILE
+        left join RM_SYS_USER_INFO u on re.OPERATOR=u.USER_MOBILE
         where 1=1
         <if test="vo.searchOne != null and vo.searchOne != ''">
             and u.USER_NM  LIKE concat('%',#{vo.searchOne},'%')

@@ -19,23 +19,23 @@ public class UserVenuesEntity implements Serializable {
     @Column(name = "UV_ID")
     private int uvId;
 
-    @Column(name = "USER_ID")
-    private int userId;
+    @Column(name = "UV_USER_ID")
+    private int uvUserId;
 
-    @Column(name = "VENUES_ID")
-    private int venuesId;
+    @Column(name = "UV_VENUES_ID")
+    private int uvVenuesId;
 
-    @Column(name = "VALID_IND")
-    private String validInd;
+    @Column(name = "UV_VALID_IND")
+    private String uvValidInd;
 
-    @Column(name = "CREATE_TIME")
-    private Timestamp createTime;//创建时间
+    @Column(name = "UV_CREATE_TIME")
+    private Timestamp uvCreateTime;//创建时间
 
-    @Column(name = "LAST_MODIFY_TIME")
-    private Timestamp lastModifyTime;//最后修改时间
+    @Column(name = "UV_MODIFY_TIME")
+    private Timestamp uvModifyTime;//最后修改时间
 
-    @Column(name = "MARK")
-    private String mark;
+    @Column(name = "UV_MARK")
+    private String uvMark;
 
 
 

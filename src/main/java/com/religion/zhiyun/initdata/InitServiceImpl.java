@@ -41,16 +41,16 @@ public class InitServiceImpl implements InitService{
                             UserVenuesEntity uvEntity=new UserVenuesEntity();
                             //查询场所
                             String ver = split[j];
-                            uvEntity.setUserId(userId);
-                            uvEntity.setValidInd("1");
-                            uvEntity.setCreateTime(timestamp);
-                            uvEntity.setLastModifyTime(timestamp);
+                            uvEntity.setUvUserId(userId);
+                            uvEntity.setUvValidInd("1");
+                            uvEntity.setUvCreateTime(timestamp);
+                            uvEntity.setUvModifyTime(timestamp);
                             VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(ver);
                             if(null!=venueByID){
-                                uvEntity.setVenuesId(Integer.parseInt(ver));
-                                uvEntity.setMark("success");
+                                uvEntity.setUvVenuesId(Integer.parseInt(ver));
+                                uvEntity.setUvMark("success");
                             }else{
-                                uvEntity.setMark("false");
+                                uvEntity.setUvMark("false");
                             }
                             //增加
                             initMapper.add(uvEntity);
@@ -59,11 +59,11 @@ public class InitServiceImpl implements InitService{
                     }
                 }else{
                     UserVenuesEntity uvEntity=new UserVenuesEntity();
-                    uvEntity.setUserId(userId);
-                    uvEntity.setValidInd("1");
-                    uvEntity.setCreateTime(timestamp);
-                    uvEntity.setLastModifyTime(timestamp);
-                    uvEntity.setMark("error");
+                    uvEntity.setUvUserId(userId);
+                    uvEntity.setUvValidInd("1");
+                    uvEntity.setUvCreateTime(timestamp);
+                    uvEntity.setUvModifyTime(timestamp);
+                    uvEntity.setUvMark("error");
                     System.out.println("用户"+userId+"场所为空！");
                 }
             }

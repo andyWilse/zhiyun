@@ -11,15 +11,15 @@
     </select>
 
     <insert id="add" parameterType="com.religion.zhiyun.user.entity.UserVenuesEntity" useGeneratedKeys="true" keyProperty="uvId" >
-        INSERT INTO RM_USER_VENUES_MAP (USER_ID,VENUES_ID,VALID_IND,CREATE_TIME,LAST_MODIFY_TIME,MARK )
+        INSERT INTO RM_USER_VENUES_MAP (UV_USER_ID,UV_VENUES_ID,UV_VALID_IND,UV_CREATE_TIME,UV_MODIFY_TIME,UV_MARK )
         VALUES ( #{userId}, #{venuesId}, #{validInd}, #{createTime}, #{lastModifyTime}, #{mark})
     </insert>
 
     <update id="deleteSrUser">
         update RM_USER_VENUES_MAP
         set
-        VALID_IND = '0',
-        LAST_MODIFY_TIME = #{lastModifyTime}
+        UV_VALID_IND = '0',
+        UV_MODIFY_TIME = #{lastModifyTime}
         WHERE UV_ID = #{uvId}
     </update>
 

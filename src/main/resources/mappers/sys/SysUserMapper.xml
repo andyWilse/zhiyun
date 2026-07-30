@@ -16,7 +16,6 @@
         OFC_ID as ofcId,
         CREATE_TIME as createTime,
         VALID_IND as validInd,
-        REL_VENUES_ID as relVenuesId,
         PROVINCE as province,
         CITY as city,
         AREA as area,
@@ -50,8 +49,7 @@
                  PROVINCE,
                  CITY,
                  AREA,
-                 TOWN,
-                 REL_VENUES_ID
+                 TOWN
              )
              VALUES
             (
@@ -77,8 +75,7 @@
                  #{province},
                  #{city},
                  #{area},
-                 #{town},
-                 #{relVenuesId}
+                 #{town}
              );
     </insert>
 
@@ -131,12 +128,13 @@
         select
             <include refid="userColumn"/>
         from RM_SYS_USER_INFO ve
-        where VALID_IND='1'
+        left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
+        where ve.VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            AND  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  IDENTITY = #{vo.searchTwo}
+            AND  ve.IDENTITY = #{vo.searchTwo}
         </if>
         <if test="vo.town != null and vo.town != ''">
             AND  ve.TOWN = #{vo.town}
@@ -145,16 +143,16 @@
             AND  ve.AREA = #{vo.area}
         </if>
         <if test="vo.venues != null and vo.venues != ''">
-            AND ve.REL_VENUES_ID =#{vo.venues}
+            AND uv.UV_VENUES_ID =#{vo.venues}
         </if>
         <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND ve.REL_VENUES_ID LIKE concat('%',#{vo.searchThree},'%')
+            AND uv.UV_VENUES_ID =#{vo.searchThree}
         </if>
         <if test="vo.searchFour == 'sr'">
             AND ve.IDENTITY in ('10000006','10000007')
         </if>
 
-        order by LAST_MODIFY_TIME desc
+        order by ve.LAST_MODIFY_TIME desc
         limit #{vo.page},#{vo.size}
     </select>
 
@@ -162,12 +160,13 @@
         select
             count(USER_ID)
         from RM_SYS_USER_INFO ve
-        where  VALID_IND='1'
+        left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
+        where  ve.VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            AND  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  IDENTITY = #{vo.searchTwo}
+            AND  ve.IDENTITY = #{vo.searchTwo}
         </if>
         <if test="vo.town != null and vo.town != ''">
             AND  ve.TOWN = #{vo.town}
@@ -176,7 +175,10 @@
             AND  ve.AREA = #{vo.area}
         </if>
         <if test="vo.venues != null and vo.venues != ''">
-            AND ve.REL_VENUES_ID =#{vo.venues}
+            AND uv.UV_VENUES_ID =#{vo.venues}
+        </if>
+        <if test="vo.searchThree != null and vo.searchThree != ''">
+            AND uv.UV_VENUES_ID =#{vo.searchThree}
         </if>
         <if test="vo.searchFour == 'sr'">
             AND ve.IDENTITY in ('10000006','10000007')
@@ -200,7 +202,6 @@
             USER_EMAIL = #{userEmail},
             USER_PHOTO_URL = #{userPhotoUrl},
             IDENTITY = #{identity},
-            REL_VENUES_ID = #{relVenuesId},
             PROVINCE = #{province},
             CITY = #{city},
             AREA = #{area},
@@ -220,19 +221,6 @@
         </if>
     </select>
 
-    <select id="getSanByVenues" resultType="java.util.Map">
-        select
-            zy.USER_NBR as userNbr,
-            USER_MOBILE as userMobile,
-            USER_NM as userNm
-        from rm_sys_user_info zy
-        where zy.VALID_IND='1'
-        and IDENTITY in ('10000006','10000007')
-        <if test="relVenuesId != null and relVenuesId != ''">
-            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
-        </if>
-    </select>
-
     <select id="getJgByVenues" resultType="map">
         select
             distinct	zz.userMobile
@@ -240,10 +228,11 @@
             (select zy.USER_NBR as userNbr,
                     zy.USER_MOBILE as userMobile,
                     zy.USER_NM as userNm
-                from rm_sys_user_info zy
+                from RM_SYS_USER_INFO zy
+                left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
                 where zy.VALID_IND='1'
                 <if test="relVenuesId != null and relVenuesId != ''">
-                    AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                    AND  uv.UV_VENUES_ID=#{relVenuesId}
                 </if>
             )union all
             (select jg.USER_NBR as userNbr,
@@ -251,11 +240,12 @@
                     jg.USER_NM as userNm
                 from rm_sys_user_info jg
                 left join rm_sys_user_info zy on jg.town=zy.town
+                left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
                 where jg.VALID_IND='1'
                 and jg.IDENTITY='10000005'
                 and zy.IDENTITY='10000007'
                 <if test="relVenuesId != null and relVenuesId != ''">
-                    AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                    AND uv.UV_VENUES_ID=#{relVenuesId}
                 </if>
             )
         ) zz
@@ -267,12 +257,13 @@
             jw.USER_NBR as userNbr,
             jw.USER_MOBILE as userMobile,
             jw.USER_NM as userNm
-        from rm_sys_user_info jw
-        left join rm_sys_user_info zy on jw.town=zy.town and zy.IDENTITY='10000007'
+        from RM_SYS_USER_INFO jw
+        left join RM_SYS_USER_INFO zy ON jw.TOWN=zy.TOWN and zy.IDENTITY='10000007'
+        left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
         where jw.VALID_IND='1'
         and jw.IDENTITY='10000004'
         <if test="relVenuesId != null and relVenuesId != ''">
-            AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            AND uv.UV_VENUES_ID=#{relVenuesId}
         </if>
     </select>
 
@@ -282,34 +273,37 @@
                 zy.USER_NBR as userNbr,
                 zy.USER_MOBILE as userMobile,
                 zy.USER_NM as userNm
-            from rm_sys_user_info zy
+            from RM_SYS_USER_INFO zy
+            left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
             where zy.VALID_IND='1'
             <if test="relVenuesId != null and relVenuesId != ''">
-                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                AND uv.UV_VENUES_ID=#{relVenuesId}
             </if>
         ) union all (
             select distinct
                 al.USER_NBR as userNbr,
                 al.USER_MOBILE as userMobile,
                 al.USER_NM as userNm
-            from rm_sys_user_info al
-            left join rm_sys_user_info zy on al.town=zy.town and zy.IDENTITY='10000007'
+            from RM_SYS_USER_INFO al
+            left join RM_SYS_USER_INFO zy on al.town=zy.town and zy.IDENTITY='10000007'
+            left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
             where al.VALID_IND='1'
             and al.IDENTITY in ('10000004','10000005')
             <if test="relVenuesId != null and relVenuesId != ''">
-                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                AND uv.UV_VENUES_ID=#{relVenuesId}
             </if>
         ) union all (
             select distinct
                 al.USER_NBR as userNbr,
                 al.USER_MOBILE as userMobile,
                 al.USER_NM as userNm
-            from rm_sys_user_info al
-            left join rm_sys_user_info zy on al.area=zy.area and zy.IDENTITY='10000007'
+            from RM_SYS_USER_INFO al
+            left join RM_SYS_USER_INFO zy on al.area=zy.area and zy.IDENTITY='10000007'
+            left join RM_USER_VENUES_MAP uv on zy.USER_ID=uv.UV_USER_ID
             where al.VALID_IND='1'
             and al.IDENTITY in ('10000002','10000003')
             <if test="relVenuesId != null and relVenuesId != ''">
-                AND  zy.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+                AND uv.UV_VENUES_ID=#{relVenuesId}
             </if>
         )
     </select>
@@ -348,19 +342,21 @@
         select
             count(u.USER_ID)
         from RM_SYS_USER_INFO u
+        left join RM_USER_VENUES_MAP uv on u.USER_ID=uv.UV_USER_ID
         where u.IDENTITY='10000007'
         and u.VALID_IND='1'
-        AND  u.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        and uv.UV_VENUES_ID=#{relVenuesId}
         and u.USER_ID!=#{userId}
     </select>
 
     <select id="getZzhNum" resultType="int">
         select
-        count(zz.USER_ID)
+            count(zz.USER_ID)
         from RM_SYS_USER_INFO zz
+        left join RM_USER_VENUES_MAP uv on zz.USER_ID=uv.UV_USER_ID
         where zz.IDENTITY='10000006'
         and zz.VALID_IND='1'
-        and zz.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        and uv.UV_VENUES_ID=#{relVenuesId}
         and zz.USER_ID!=#{userId}
     </select>
 
@@ -376,7 +372,8 @@
         SELECT
             zz.LOGIN_NM as loginNm,zz.USER_NM as userNm,zz.USER_MOBILE as userMobile
         FROM rm_sys_user_info zy,rm_sys_user_info zz
-        where zz.REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+        left join RM_USER_VENUES_MAP uv on zz.USER_ID=uv.UV_USER_ID
+        where uv.UV_VENUES_ID=#{relVenuesId}
         and zz.VALID_IND='1'
         and zz.IDENTITY='10000006'
         and zy.IDENTITY='10000007'
@@ -502,11 +499,11 @@
             else ''
         end as identity,
         uv.UV_ID as uvId
-        from rm_sys_user_info us, rm_user_venues_map uv
-        where us.USER_ID=uv.USER_ID
-        and  uv.VALID_IND='1'
+        from RM_SYS_USER_INFO us, RM_USER_VENUES_MAP uv
+        where us.USER_ID=uv.UV_USER_ID
+        and  uv.UV_VALID_IND='1'
         <if test="venuesId != null and venuesId != ''">
-            and uv.VENUES_ID=#{venuesId}
+            and uv.UV_VENUES_ID=#{venuesId}
         </if>
     </select>
 

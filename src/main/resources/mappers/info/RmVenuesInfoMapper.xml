@@ -366,9 +366,9 @@
             ve.LONGITUDE as longitude,
             ve.LATITUDE as latitudes,
             (select GROUP_CONCAT(us.USER_NM SEPARATOR ",")
-                from rm_user_venues_map uv
-                left join rm_sys_user_info us on us.USER_ID=uv.USER_ID
-                where uv.VENUES_ID=ve.VENUES_ID and uv.VALID_IND='1'
+                from RM_USER_VENUES_MAP uv
+                left join RM_SYS_USER_INFO us on us.USER_ID=uv.UV_USER_ID
+                where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1'
             ) as userSr
 
         from RM_VENUES_INFO ve
@@ -399,7 +399,7 @@
                 #{value}
             </foreach>
         </if>
-        order by (select count(uv.USER_ID) from rm_user_venues_map uv  where uv.VENUES_ID=ve.VENUES_ID and uv.VALID_IND='1')  desc,ve.LAST_MODIFY_TIME desc
+        order by (select count(uv.UV_USER_ID) from rm_user_venues_map uv  where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1')  desc,ve.LAST_MODIFY_TIME desc
         limit #{page},#{size}
     </select>
 
@@ -508,23 +508,25 @@
             USER_NM as name,
             USER_MOBILE as phone,
             IDENTITY as identity
-        FROM rm_sys_user_info
-        where VALID_IND='1'
-        and IDENTITY in ('10000007','10000006')
+        FROM RM_SYS_USER_INFO us
+        left join RM_USER_VENUES_MAP uv on us.USER_ID=uv.UV_USER_ID
+        where us.VALID_IND='1'
+        and us.IDENTITY in ('10000007','10000006')
         <if test="relVenuesId!=null and relVenuesId!=''">
-            and REL_VENUES_ID LIKE CONCAT('%',#{relVenuesId},'%')
+            and uv.UV_VENUES_ID = #{relVenuesId}
         </if>
     </select>
 
     <select id="getGanUsers" resultType="map">
         select
             distinct g.IDENTITY as IDENTITY,g.USER_NM,g.USER_MOBILE
-        from rm_sys_user_info  g
-        left join rm_sys_user_info u on g.area=u.area
+        from RM_SYS_USER_INFO  g
+        left join RM_SYS_USER_INFO u on g.area=u.area
+        left join RM_USER_VENUES_MAP uv on u.USER_ID=uv.UV_USER_ID
         where g.VALID_IND='1'
         and g.IDENTITY in ('10000002','10000003','10000004','10000005')
         <if test="relVenuesId!=null and relVenuesId!=''">
-            and u.REL_VENUES_ID = #{relVenuesId}
+            and uv.UV_VENUES_ID = #{relVenuesId}
         </if>
         order by g.IDENTITY
     </select>
