@@ -171,10 +171,17 @@ public interface RmVenuesInfoMapper {
     //根据教派类别获取场所信息
     List<Map<String,Object>> getvenuesByType(@Param("Type")String Type);
 
-
     List<Map<String,Object>> getVenuesScore(@Param("num")Integer num);
 
     List<VenuesEntity> queryOra(String religiousSect);
+
     void updateOra(@Param("organization") String organization,@Param("venuesId") Integer venuesId);
+
+    /**
+     * 获取三人驻堂管理的场所
+     * @param uvUserId
+     * @return
+     */
+    List<VenuesEntity> getVenueByUser(@Param("uvUserId")String uvUserId);
 
 }

@@ -4,6 +4,7 @@
 <mapper namespace="com.religion.zhiyun.user.dao.SysUserMapper">
 
     <sql id="userColumn">
+        DISTINCT
         USER_ID as userId,
         LOGIN_NM as loginNm,
         PASSWORDS as passwords,
@@ -15,6 +16,7 @@
         USER_NBR as userNbr,
         OFC_ID as ofcId,
         CREATE_TIME as createTime,
+        LAST_MODIFY_TIME as lastModifyTime,
         VALID_IND as validInd,
         PROVINCE as province,
         CITY as city,
@@ -22,7 +24,7 @@
         TOWN as town
     </sql>
 
-    <insert id="add" parameterType="com.religion.zhiyun.user.entity.SysUserEntity"
+    <insert id="addUser" parameterType="com.religion.zhiyun.user.entity.SysUserEntity"
             useGeneratedKeys="true" keyProperty="userId" keyColumn="fileId">
         INSERT INTO
             RM_SYS_USER_INFO
@@ -95,7 +97,21 @@
 
     <select id="getUserId" resultType="map">
         select
-        <include refid="userColumn"/>
+            USER_ID as userId,
+            LOGIN_NM as loginNm,
+            PASSWORDS as passwords,
+            USER_NM as userNm,
+            USER_MOBILE as userMobile,
+            USER_EMAIL as userEmail,
+            USER_PHOTO_URL as userPhotoUrl,
+            IDENTITY as identity,
+            USER_NBR as userNbr,
+            OFC_ID as ofcId,
+            VALID_IND as validInd,
+            PROVINCE as province,
+            CITY as city,
+            AREA as area,
+            TOWN as town
         from RM_SYS_USER_INFO
         where USER_ID = #{userId}
     </select>
@@ -144,9 +160,11 @@
         </if>
         <if test="vo.venues != null and vo.venues != ''">
             AND uv.UV_VENUES_ID =#{vo.venues}
+            AND uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchThree != null and vo.searchThree != ''">
             AND uv.UV_VENUES_ID =#{vo.searchThree}
+            AND uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchFour == 'sr'">
             AND ve.IDENTITY in ('10000006','10000007')
@@ -158,7 +176,7 @@
 
     <select id="getTotal" resultType="java.lang.Long">
         select
-            count(USER_ID)
+            count(DISTINCT USER_ID)
         from RM_SYS_USER_INFO ve
         left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
         where  ve.VALID_IND='1'
@@ -176,9 +194,11 @@
         </if>
         <if test="vo.venues != null and vo.venues != ''">
             AND uv.UV_VENUES_ID =#{vo.venues}
+            AND uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchThree != null and vo.searchThree != ''">
             AND uv.UV_VENUES_ID =#{vo.searchThree}
+            AND uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchFour == 'sr'">
             AND ve.IDENTITY in ('10000006','10000007')
@@ -468,12 +488,15 @@
     </select>
 
     <select id="getVenuesNm" resultType="String">
-        select GROUP_CONCAT(VENUES_NAME) as name
-        from rm_venues_info
-        where VENUES_ID in
-        <foreach collection="venuesIdArr" item="item" index="index" open="(" close=")" separator=",">
-            #{item}
-        </foreach>
+        select
+            GROUP_CONCAT(ve.VENUES_NAME) as name
+        from rm_venues_info ve, rm_user_venues_map uv
+        where uv.UV_VENUES_ID=ve.VENUES_ID
+            and uv.UV_VALID_IND='1'
+            and ve.VENUES_STATUS!='02'
+            <if test="uvUserId != null and uvUserId != ''">
+                and uv.UV_USER_ID =#{uvUserId}
+            </if>
     </select>
 
     <select id="getReview" resultType="String">
@@ -489,21 +512,38 @@
     </select>
 
     <select id="getSrUser" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
-        select
-        us.USER_NM as userNm,
-        us.USER_MOBILE as userMobile,
-        us.USER_ID as userId,
-        case us.IDENTITY
-            when '10000007' then '组员'
-            when '10000006' then '组长'
-            else ''
-        end as identity,
-        uv.UV_ID as uvId
-        from RM_SYS_USER_INFO us, RM_USER_VENUES_MAP uv
+        select DISTINCT
+            us.USER_NM as userNm,
+            us.USER_MOBILE as userMobile,
+            us.USER_ID as userId,
+            case us.IDENTITY
+                when '10000007' then '组员'
+                when '10000006' then '组长'
+                else ''
+            end as identity,
+            uv.UV_ID as uvId
+        from RM_SYS_USER_INFO us,RM_USER_VENUES_MAP uv
         where us.USER_ID=uv.UV_USER_ID
-        and  uv.UV_VALID_IND='1'
-        <if test="venuesId != null and venuesId != ''">
-            and uv.UV_VENUES_ID=#{venuesId}
+            and uv.UV_VALID_IND='1'
+            and us.VALID_IND='1'
+            and us.IDENTITY in ('10000006','10000007')
+            <if test="venuesId != null and venuesId != ''">
+                and uv.UV_VENUES_ID=#{venuesId}
+            </if>
+    </select>
+
+    <select id="getVenuesByUser" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+            ve.VENUES_ID as venuesId ,
+            ve.VENUES_NAME as venuesName,
+            ve.VENUES_ADDRES as venuesAddres
+        from RM_VENUES_INFO ve, RM_USER_VENUES_MAP uv
+        where uv.UV_VENUES_ID=ve.VENUES_ID
+            and uv.UV_VALID_IND='1'
+            and ve.VENUES_STATUS!='02'
+            and uv.UV_USER_ID='11000623'
+        <if test="uvUserId != null and uvUserId != ''">
+            and uv.UV_USER_ID =#{uvUserId}
         </if>
     </select>
 

@@ -2,6 +2,7 @@ package com.religion.zhiyun.user.dao;
 
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.venues.entity.ParamsVo;
+import com.religion.zhiyun.venues.entity.VenuesEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -19,6 +20,8 @@ public interface SysUserMapper {
 
     //根据用户名查询数据
     SysUserEntity queryByUserId(@Param("userId") String userId);
+
+    //根据用户ID名查询数据
     Map<String,Object> getUserId(@Param("userId") String userId);
 
     //根据用户编号查询数据
@@ -55,7 +58,7 @@ public interface SysUserMapper {
      * 新增
      * @param sysUserEntity
      */
-    int add(SysUserEntity sysUserEntity);
+    int addUser(SysUserEntity sysUserEntity);
 
     /**
      * 修改
@@ -161,10 +164,10 @@ public interface SysUserMapper {
 
     /**
      * 获取场所名称
-     * @param venuesIdArr
+     * @param uvUserId
      * @return
      */
-    String getVenuesNm(@Param("venuesIdArr") String[] venuesIdArr);
+    String getVenuesNm(@Param("uvUserId") Integer uvUserId);
 
     /**
      * 根据角色获取人员信息
@@ -180,5 +183,13 @@ public interface SysUserMapper {
      * @return
      */
     List<SysUserEntity> getSrUser(@Param("venuesId") String venuesId);
+
+    /**
+     * 根据用户获取场所
+     * @param uvUserId
+     * @return
+     */
+    List<VenuesEntity> getVenuesByUser(@Param("uvUserId") Integer uvUserId);
+
 
 }

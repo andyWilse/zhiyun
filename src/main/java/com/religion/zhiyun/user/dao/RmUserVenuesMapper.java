@@ -27,8 +27,16 @@ public interface RmUserVenuesMapper {
 
     /**
      * 删除场所用户
-     * @param uvId
+     * @param vo
      * @return
      */
-    int deleteSrUser(@Param("uvId") String uvId,@Param("lastModifyTime")  Timestamp lastModifyTime);
+    int deleteSrMap(@Param("vo") UserVenuesEntity vo);
+
+    /**
+     * 获取用户
+     * @param uvUserId
+     * @param uvVenuesId
+     * @return
+     */
+    List<UserVenuesEntity> getUserVenues(@Param("uvUserId") int uvUserId,@Param("uvVenuesId") int uvVenuesId);
 }

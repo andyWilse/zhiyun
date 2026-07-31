@@ -29,7 +29,7 @@ public class SysUserController {
     @PostMapping("/add")
     @ResponseBody
     public RespPageBean add(@RequestBody SysUserEntity sysUserEntity,@RequestHeader("token")String token) {
-        return sysUserService.add(sysUserEntity,token);
+        return sysUserService.addUser(sysUserEntity,token);
     }
 
     @PostMapping("/update")
@@ -52,8 +52,8 @@ public class SysUserController {
         return sysUserService.getUserInfo(token);
     }
 
-    @RequestMapping("/getMoUser")
-    public PageResponse getModifyUser(String userId){
+    @GetMapping("/getModify")
+    public PageResponse getModifyUser(@RequestParam("userId")String userId){
         return sysUserService.getModifyUser(userId);
     }
 
@@ -78,14 +78,23 @@ public class SysUserController {
     public PageResponse getSrUser(@RequestParam("venuesId")String venuesId){
         return sysUserService.getSrUser(venuesId);
     }
+    //删除场所三人驻堂人员
     @PostMapping("/deleteSr")
     public PageResponse deleteSrUser(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
         return sysUserService.deleteSrUser(map,token);
+    }
+    //删除三人驻堂人员关联场所
+    @PostMapping("/deleteVe")
+    public PageResponse deleteSrVenue(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
+        return sysUserService.deleteSrVenue(map,token);
     }
     @PostMapping("/addSr")
     public PageResponse addSr(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
         return sysUserService.addSr(map,token);
     }
-
+    @PostMapping("/addVenue")
+    public PageResponse addVenue(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
+        return sysUserService.addVenue(map,token);
+    }
 
 }

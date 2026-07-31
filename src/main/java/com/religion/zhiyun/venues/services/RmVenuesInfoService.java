@@ -115,5 +115,12 @@ public interface RmVenuesInfoService {
      */
     AppResponse getVenuesScore();
 
+    /**
+     * 获取三人驻堂管理的场所
+     * @param uvUserId
+     * @return
+     */
+    AppResponse getVenueByUser(String uvUserId);
+
 
 }

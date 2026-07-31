@@ -34,6 +34,7 @@ public class InitServiceImpl implements InitService{
                 SysUserEntity sysUserEntity = userList.get(i);
                 int userId = sysUserEntity.getUserId();
                 String relVenuesId = sysUserEntity.getRelVenuesId();
+                System.out.println(userId);
                 if(null!=relVenuesId && ""!=relVenuesId){
                     String[] split = relVenuesId.split(",");
                     if(null!=split){
@@ -71,7 +72,7 @@ public class InitServiceImpl implements InitService{
             message="用户场所关联表处理成功！";
         } catch (Exception e) {
             e.printStackTrace();
-            return new AppResponse(code,e.getMessage());
+            //return new AppResponse(code,e.getMessage());
         }
 
 

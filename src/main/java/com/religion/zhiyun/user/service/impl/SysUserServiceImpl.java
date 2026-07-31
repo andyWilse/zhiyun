@@ -132,7 +132,7 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public RespPageBean add(SysUserEntity sysUserEntity,String token) {
+    public RespPageBean addUser(SysUserEntity sysUserEntity,String token) {
         long code= ResultCode.FAILED.getCode();
         String message="用户新增";
         Timestamp timestamp = null;
@@ -171,7 +171,7 @@ public class SysUserServiceImpl implements SysUserService {
                 }
             }
             //新增用户
-            sysUserMapper.add(sysUserEntity);
+            sysUserMapper.addUser(sysUserEntity);
 
             //密码加密
             String passwords = sysUserEntity.getPasswords();
@@ -195,7 +195,14 @@ public class SysUserServiceImpl implements SysUserService {
                     for(int v=0;v<split.length;v++){
                         String venuesId = split[v];
                         if(null!=venuesId && venuesId!=""){
-                            this.saveUv(userId,Integer.parseInt(venuesId));
+                            int veId = Integer.parseInt(venuesId);
+                            //1.校验
+                            Boolean uvFlag = this.checkUv(userId, veId);
+                            if(uvFlag){
+                                throw new RuntimeException("用户（"+sysUserEntity.getUserNm()+"）已存在，请勿重复添加！");
+                            }
+                            //2.增加
+                            this.saveUv(userId,veId);
                         }
                     }
                 }
@@ -261,6 +268,18 @@ public class SysUserServiceImpl implements SysUserService {
                     }
                     //保存图片
                     sysUserEntity.setUserPhotoUrl(picturesPath);
+                }
+            }
+            //判断是否为三人驻堂，不是清理场所关系
+            String identity = sysUserEntity.getIdentity();
+            int userId = sysUserEntity.getUserId();
+            if(identity!="10000006" || identity!="10000007"){
+                List<UserVenuesEntity> userVenues = initMapper.getUserVenues(userId, 0);
+                if(null!=userVenues && userVenues.size()>0){
+                    //清理关系
+                    UserVenuesEntity vo=new UserVenuesEntity();
+                    vo.setUvUserId(userId);
+                    initMapper.deleteSrMap(vo);
                 }
             }
             sysUserMapper.update(sysUserEntity);
@@ -458,11 +477,10 @@ public class SysUserServiceImpl implements SysUserService {
 
         List<Map<String, Object>> list=new ArrayList<>();
         try {
-            //SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(userId);
+            //获取用户信息
             Map<String, Object> uMap = sysUserMapper.getUserId(userId);
-
             if(null!=uMap){
-                //。图片回显
+                //1.图片回显
                 //String picturesPath = sysUserEntity.getUserPhotoUrl();
                 String picturesPath = (String) uMap.get("userPhotoUrl");
                 if(null!=picturesPath && !picturesPath.isEmpty()){
@@ -472,23 +490,11 @@ public class SysUserServiceImpl implements SysUserService {
                     uMap.put("fileList",fileUrl.toArray());
                 }
                 //2.场所地址
-                //String relVenuesId = sysUserEntity.getRelVenuesId();
-                String relVenuesId = (String) uMap.get("relVenuesId");
-                if(null!=relVenuesId && !relVenuesId.isEmpty()){
-                    String[] split = relVenuesId.split(",");
-                    String venuesNm = sysUserMapper.getVenuesNm(split);
-                    //sysUserEntity.setVenuesNm(venuesNm);
-                    uMap.put("venuesNm",venuesNm);
-                    //场所回显
-                    ParamsVo vo=new ParamsVo();
-                    vo.setVenues(relVenuesId);
-                    vo.setVenuesArr(split);
-                    List<VenuesEntity> venuesEntities = rmVenuesInfoMapper.querySelect(vo);
-                    //sysUserEntity.setSelectVenues(venuesEntities);
-                    uMap.put("selectVenues",venuesEntities.toArray());
-                }
-
-                //sysUserEntity.setIdentityInt(Integer.valueOf(sysUserEntity.getIdentity()));
+                Integer uId = Integer.valueOf(userId);
+                String venuesNm = sysUserMapper.getVenuesNm(uId);
+                uMap.put("venuesNm",venuesNm);
+                //List<VenuesEntity> venuesEntities = sysUserMapper.getVenuesByUser(uId);
+                //uMap.put("selectVenues",venuesEntities.toArray());
                 String identity = (String) uMap.get("identity");
                 uMap.put("identityInt",Integer.valueOf(identity));
 
@@ -500,13 +506,15 @@ public class SysUserServiceImpl implements SysUserService {
             code= ResultCode.SUCCESS.getCode();
             message="获取登录用户信息成功";
         } catch (RuntimeException r) {
-            message=r.getMessage();
             r.printStackTrace();
+            return new PageResponse(code,r.getMessage());
+
         }catch (Exception e) {
-            message="获取登录用户信息失败！";
             e.printStackTrace();
+            return new PageResponse(code,e.getMessage());
+
         }
-        return new PageResponse(code,message,list.toArray());
+        return new PageResponse(code,message,list);
     }
 
     @Override
@@ -638,7 +646,7 @@ public class SysUserServiceImpl implements SysUserService {
                 for(int i=0;i<sysUserList.size();i++){
                     SysUserEntity sysUserEntity = sysUserList.get(i);
                     //1.新增用户
-                    sysUserMapper.add(sysUserEntity);
+                    sysUserMapper.addUser(sysUserEntity);
                     //2.密码加密
                     String passwords = passwordDefault;
                     int userId = sysUserEntity.getUserId();
@@ -660,7 +668,14 @@ public class SysUserServiceImpl implements SysUserService {
                             for(int v=0;v<split.length;v++){
                                 String venuesId = split[v];
                                 if(null!=venuesId && venuesId!=""){
-                                    this.saveUv(userId,Integer.parseInt(venuesId));
+                                    int veId = Integer.parseInt(venuesId);
+                                    //1.校验
+                                    Boolean uvFlag = this.checkUv(userId, veId);
+                                    if(uvFlag){
+                                        throw new RuntimeException("用户（"+sysUserEntity.getUserNm()+"）已存在，请勿重复添加！");
+                                    }
+                                    //2.增加
+                                    this.saveUv(userId,veId);
                                 }
                             }
                         }
@@ -705,13 +720,13 @@ public class SysUserServiceImpl implements SysUserService {
             message="获取三人驻堂成功";
         } catch (RuntimeException r) {
             r.printStackTrace();
-            return  new PageResponse(code,r.getMessage());
+            return new PageResponse(code,r.getMessage());
         }catch (Exception e) {
             e.printStackTrace();
             return  new PageResponse(code,e.getMessage());
         }
 
-        return  new PageResponse(code,message,list);
+        return new PageResponse(code,message,list);
     }
 
     @Override
@@ -726,7 +741,10 @@ public class SysUserServiceImpl implements SysUserService {
             String operation = (String) map.get("operation");
 
             //1.去除
-            rmUserVenuesMapper.deleteSrUser(uvId,timestamp);
+            UserVenuesEntity vo=new UserVenuesEntity();
+            vo.setUvId(Integer.valueOf(uvId));
+            vo.setUvModifyTime(timestamp);
+            rmUserVenuesMapper.deleteSrMap(vo);
             //日志
             //增加日志信息
             Map<String,Object> vuMap=new HashMap<>();
@@ -767,9 +785,14 @@ public class SysUserServiceImpl implements SysUserService {
                 HashMap<String,Object> user = (HashMap<String, Object>) srArr[i];
                 Integer userId = (Integer) user.get("userId");
                 String userNm = (String) user.get("userNm");
-                //1.增加
+                //1.校验
+                Boolean uvFlag = this.checkUv(userId, venuesId);
+                if(uvFlag){
+                    throw new RuntimeException("用户（"+userNm+"）已存在，请勿重复添加！");
+                }
+                //2.增加
                 UserVenuesEntity uvEntity = this.saveUv(userId, venuesId);
-                //2.增加日志信息
+                //3.增加日志信息
                 Map<String,Object> vuMap=new HashMap<>();
                 vuMap.put("operator",this.getLogin(token));
                 vuMap.put("operateTime",new Date());
@@ -782,6 +805,83 @@ public class SysUserServiceImpl implements SysUserService {
 
             code= ResultCode.SUCCESS.getCode();
             message="场所添加三人驻堂成员成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,e.getMessage());
+        }
+
+        return  new PageResponse(code,message);
+    }
+
+    @Override
+    public PageResponse deleteSrVenue(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="删除三人驻堂人员关联场所失败";
+
+        try {
+            Timestamp timestamp = new Timestamp(new Date().getTime());
+            Integer venuesId = map.get("venuesId")==null?0:(Integer) map.get("venuesId");
+            if(0==venuesId){
+                throw new RuntimeException("场所信息丢失，请联系管理员！");
+            }
+            String operation = (String) map.get("operation");
+            //1.去除
+            UserVenuesEntity vo=new UserVenuesEntity();
+            vo.setUvVenuesId(venuesId);
+            vo.setUvModifyTime(timestamp);
+            rmUserVenuesMapper.deleteSrMap(vo);
+            //2.增加日志信息
+            this.addLog(this.getLogin(token),String.valueOf(venuesId),OperaEnums.venue_user_delete.getCode(),"删除三人驻堂人员关联场所",operation);
+            code= ResultCode.SUCCESS.getCode();
+            message="删除三人驻堂人员关联场所成功";
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return  new PageResponse(code,r.getMessage());
+        }catch (Exception e) {
+            e.printStackTrace();
+            return  new PageResponse(code,e.getMessage());
+        }
+
+        return  new PageResponse(code,message);
+    }
+
+    @Override
+    public PageResponse addVenue(Map<String, Object> map, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message="三人驻堂用户加入场所失败";
+
+        try {
+            String userId = map.get("userId")!=null?(String) map.get("userId"):"";
+            String userNm =map.get("userNm")!=null? (String) map.get("userNm"):"";
+            Object venueList = map.get("venueList");
+            Object[] srArr=null;
+            if(null!=venueList){
+                srArr = ((List<?>) venueList).toArray();
+            }
+            for(int i=0;i<srArr.length;i++){
+                HashMap<String,Object> user = (HashMap<String, Object>) srArr[i];
+                Integer venuesId = (Integer) user.get("venuesId");
+                String venuesName = (String) user.get("venuesName");
+                //1.校验
+                Boolean uvFlag = this.checkUv(Integer.parseInt(userId), venuesId);
+                if(uvFlag){
+                    throw new RuntimeException("场所（"+venuesName+"）已存在，请勿重复添加！");
+                }
+                //2.增加
+                UserVenuesEntity uvEntity = this.saveUv(Integer.parseInt(userId), venuesId);
+                //3.增加日志信息
+                this.addLog(this.getLogin(token),
+                        String.valueOf(uvEntity.getUvId()),
+                        OperaEnums.venue_user_add.getCode(),
+                        OperaEnums.venue_user_add.getName(),
+                        "三人驻堂成员（"+userNm+"）加入场所："+venuesName);
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="三人驻堂用户加入场所成功";
         } catch (RuntimeException r) {
             r.printStackTrace();
             return  new PageResponse(code,r.getMessage());
@@ -913,5 +1013,41 @@ public class SysUserServiceImpl implements SysUserService {
             e.printStackTrace();
         }
         return uvEntity;
+    }
+
+    /**
+     * 重复性判断
+     * @param userId
+     * @param venuesId
+     * @return
+     */
+    public Boolean checkUv(int userId,int venuesId) {
+        Boolean flag=false;
+        //重复性校验
+        List<UserVenuesEntity> userVenues = initMapper.getUserVenues(userId, venuesId);
+        if(userVenues.size()>0){
+            flag=true;
+        }
+        return flag;
+    }
+
+    /**
+     * 添加日志
+     * @param login
+     * @param operateRef
+     * @param operateType
+     * @param operateContent
+     * @param operateDetail
+     */
+    public void addLog(String login,String operateRef,String operateType,String operateContent,String operateDetail){
+        //增加日志信息
+        Map<String,Object> vuMap=new HashMap<>();
+        vuMap.put("operator",login);
+        vuMap.put("operateTime",new Date());
+        vuMap.put("operateRef",operateRef);
+        vuMap.put("operateType", operateType);
+        vuMap.put("operateContent", operateContent);
+        vuMap.put("operateDetail",operateDetail);
+        operateRecordService.addRecord(vuMap);
     }
 }

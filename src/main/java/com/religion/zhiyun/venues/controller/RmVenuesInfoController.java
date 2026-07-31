@@ -156,4 +156,10 @@ public class RmVenuesInfoController {
         return rmVenuesInfoService.getVenuesScore();
     }
 
+    //获取三人驻堂管理的场所
+    @RequestMapping("/getVeUs")
+    public AppResponse getVenueByUser(@RequestParam("uvUserId") String uvUserId){
+        return rmVenuesInfoService.getVenueByUser(uvUserId);
+    }
+
 }

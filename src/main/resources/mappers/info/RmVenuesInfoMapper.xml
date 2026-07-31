@@ -234,8 +234,13 @@
 
     <select id="getVenueByID" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
         select
-            <include refid="venuesColumn"/>
-        from RM_VENUES_INFO
+            <include refid="venuesColumn"/>,
+            (select GROUP_CONCAT(us.USER_NM SEPARATOR ",")
+            from RM_USER_VENUES_MAP uv
+            left join RM_SYS_USER_INFO us on us.USER_ID=uv.UV_USER_ID
+            where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1'
+            ) as userSr
+        from RM_VENUES_INFO ve
         where VENUES_ID=#{venuesId}
     </select>
 
@@ -610,8 +615,26 @@
         v.VENUES_ID as venuesId,CONCAT('瓯海区 ',t.TOWN_NAME) as organization
         from RM_VENUES_INFO v left join rm_town_info t on v.TOWN=t.TOWN_CODE
     </select>
+
     <update id="updateOra">
         UPDATE RM_VENUES_INFO set ORGANIZATION=#{organization} WHERE VENUES_ID = #{venuesId}
     </update>
 
+
+    <select id="getVenueByUser" resultType="com.religion.zhiyun.venues.entity.VenuesEntity">
+        select
+            VENUES_ID as venuesId,
+            VENUES_NAME as venuesName,
+            RELIGIOUS_SECT as religiousSect,
+            REGISTER_NBR as registerNbr,
+            VENUES_PHONE as venuesPhone,
+            ORGANIZATION as organization,
+            VENUES_ADDRES as venuesAddres
+        from RM_USER_VENUES_MAP uv
+        left join RM_VENUES_INFO ve on uv.UV_VENUES_ID=ve.VENUES_ID
+        where uv.UV_VALID_IND='1'
+        <if test="uvUserId != null and uvUserId != ''">
+            and uv.UV_USER_ID =#{uvUserId}
+        </if>
+    </select>
 </mapper>

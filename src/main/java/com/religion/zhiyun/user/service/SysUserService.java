@@ -23,7 +23,7 @@ public interface SysUserService {
      * 新增
      * @param sysUserEntity
      */
-    RespPageBean add(SysUserEntity sysUserEntity,String token);
+    RespPageBean addUser(SysUserEntity sysUserEntity,String token);
 
     /**
      * 修改
@@ -104,4 +104,20 @@ public interface SysUserService {
      * @return
      */
     PageResponse addSr(Map<String,Object> map,String token);
+
+    /**
+     * 删除三人驻堂人员关联场所
+     * @param map
+     * @param token
+     * @return
+     */
+    PageResponse deleteSrVenue(Map<String,Object> map,String token);
+    /**
+     * 添加场所
+     * @param map
+     * @param token
+     * @return
+     */
+    PageResponse addVenue(Map<String,Object> map,String token);
+
 }

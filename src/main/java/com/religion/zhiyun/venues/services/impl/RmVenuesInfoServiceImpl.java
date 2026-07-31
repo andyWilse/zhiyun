@@ -5,8 +5,10 @@ import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.service.RmFileService;
+import com.religion.zhiyun.user.dao.RmUserVenuesMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.user.entity.UserVenuesEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Service
@@ -48,6 +51,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     private RmFileService rmFileService;
     @Autowired
     private OperateRecordService operateRecordService;
+    @Autowired
+    private RmUserVenuesMapper rmUserVenuesMapper;
 
     long code= ResultCode.FAILED.getCode();
     String message="场所信息数据处理！";
@@ -180,6 +185,12 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         String veId = String.valueOf(venuesId);
         VenuesEntity venueByID = rmVenuesInfoMapper.getVenueByID(veId);
         int delete = rmVenuesInfoMapper.delete(venuesId);
+        //处理其他表格
+        UserVenuesEntity vo=new UserVenuesEntity();
+        vo.setUvVenuesId(venuesId);
+        vo.setUvModifyTime(new Timestamp(new Date().getTime()));
+        rmUserVenuesMapper.deleteSrMap(vo);
+
         //增加日志信息
         Map<String,Object> vuMap=new HashMap<>();
         vuMap.put("operator",this.getLogin(token));
@@ -938,6 +949,26 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
         }
 
         return new AppResponse(code,message,list.toArray());
+    }
+
+    @Override
+    public AppResponse getVenueByUser(String uvUserId) {
+        long code=ResultCode.FAILED.getCode();
+        String message="获取三人驻堂管理的场所失败！";
+        List<VenuesEntity> venueByUser =new ArrayList<>();
+        try {
+            venueByUser = rmVenuesInfoMapper.getVenueByUser(uvUserId);
+            code= ResultCode.SUCCESS.getCode();
+            message="获取三人驻堂管理的场所成功！";
+        } catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+        }
+
+        return new AppResponse(code,message,venueByUser.toArray());
     }
 
 }

@@ -12,15 +12,36 @@
 
     <insert id="add" parameterType="com.religion.zhiyun.user.entity.UserVenuesEntity" useGeneratedKeys="true" keyProperty="uvId" >
         INSERT INTO RM_USER_VENUES_MAP (UV_USER_ID,UV_VENUES_ID,UV_VALID_IND,UV_CREATE_TIME,UV_MODIFY_TIME,UV_MARK )
-        VALUES ( #{userId}, #{venuesId}, #{validInd}, #{createTime}, #{lastModifyTime}, #{mark})
+        VALUES ( #{uvUserId}, #{uvVenuesId}, #{uvValidInd}, #{uvCreateTime}, #{uvModifyTime}, #{uvMark})
     </insert>
 
-    <update id="deleteSrUser">
+    <update id="deleteSrMap">
         update RM_USER_VENUES_MAP
         set
         UV_VALID_IND = '0',
-        UV_MODIFY_TIME = #{lastModifyTime}
-        WHERE UV_ID = #{uvId}
+        UV_MODIFY_TIME = #{vo.uvModifyTime}
+        WHERE 1=1
+        <if test="vo.uvId != null and vo.uvId != ''">
+            and UV_ID = #{vo.uvId}
+        </if>
+        <if test="vo.uvVenuesId != null and vo.uvVenuesId != ''">
+            and UV_VENUES_ID = #{vo.uvVenuesId}
+        </if>
+        <if test="vo.uvUserId != null and vo.uvUserId != ''">
+            and UV_USER_ID = #{vo.uvUserId}
+        </if>
     </update>
+
+    <select id="getUserVenues" resultType="com.religion.zhiyun.user.entity.UserVenuesEntity">
+        select UV_ID as uvId
+        from RM_USER_VENUES_MAP uv
+        where uv.UV_VALID_IND='1'
+        <if test="uvUserId != null and uvUserId != 0">
+            and uv.UV_USER_ID=#{uvUserId}
+        </if>
+        <if test="uvVenuesId != null and uvVenuesId != 0">
+            and uv.UV_VENUES_ID=#{uvVenuesId}
+        </if>
+    </select>
 
 </mapper>
