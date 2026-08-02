@@ -8,7 +8,7 @@ import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
@@ -242,7 +242,7 @@ public class MinZonServiceImpl implements MinZonService {
 
     @Override
     public AppResponse mzSubmitSum() {
-        AppResponse mzSubmitSum = rmEventInfoService.getMzSubmitSum(ParamCode.EVENT_STATE_05.getCode());
+        AppResponse mzSubmitSum = rmEventInfoService.getMzSubmitSum(EventParamCode.EVENT_STATE_05.getCode());
         return mzSubmitSum;
     }
 

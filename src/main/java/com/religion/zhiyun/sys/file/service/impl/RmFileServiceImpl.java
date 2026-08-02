@@ -11,7 +11,7 @@ import com.religion.zhiyun.utils.fileutil.*;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -64,7 +64,7 @@ public class RmFileServiceImpl implements RmFileService {
                     FileEntity fileEntity = fileEntities.get(i);
                     String filePath =pathDown + fileEntity.getFilePath();
                     fileEntity.setFilePath(filePath);
-                    fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+                    fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
                     fileEntity.setCreateTime(TimeTool.getYmdHms());
                     //String nbr = request.getHeader("login-name");
                     fileEntity.setCreator("admin");
@@ -142,7 +142,7 @@ public class RmFileServiceImpl implements RmFileService {
             FileEntity fileEntity = new FileEntity();
             fileEntity.setFileName(newVideoName);
             fileEntity.setFilePath(videoUrl);
-            fileEntity.setFileType(ParamCode.FILE_TYPE_03.getCode());
+            fileEntity.setFileType(EventParamCode.FILE_TYPE_03.getCode());
             fileEntity.setCreateTime(TimeTool.getYmdHms());
             //String nbr = request.getHeader("login-name");
             //fileEntity.setCreator("admin");

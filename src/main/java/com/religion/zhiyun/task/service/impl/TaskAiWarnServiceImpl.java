@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
+import cn.hutool.core.date.DateTime;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
@@ -10,7 +11,11 @@ import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
+import com.religion.zhiyun.task.dao.TaskActAssigneeMapper;
+import com.religion.zhiyun.task.dao.TaskActInstMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.ActInstEntity;
+import com.religion.zhiyun.task.entity.AssEntity;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskAiWarnService;
@@ -18,8 +23,9 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.TaskActEnums;
 import com.religion.zhiyun.utils.enums.CallEnums;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
@@ -68,6 +74,10 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     private RepositoryService repositoryService;
     @Autowired
     private RuntimeService runtimeService;
+    @Autowired
+    private TaskActInstMapper taskActInstMapper;
+    @Autowired
+    private TaskActAssigneeMapper taskActAssigneeMapper;
 
     @Override
     public AppResponse launch(TaskEntity taskEntity, List<String> userList, String loginNm) {
@@ -95,13 +105,50 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             //发起人
             taskInfoMapper.updateHiActinst(loginNm,procInstId);
 
-            //保存任务信息
+            //1.保存任务信息
             taskEntity.setLaunchPerson(loginNm);
             taskEntity.setLaunchTime(TimeTool.getYmdHms());
             taskEntity.setProcInstId(procInstId);
+            taskEntity.setHandleResults(TaskActEnums.AI_WARN_STATE_00.getCode());
             taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_05.getName());
             taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode());
             taskInfoMapper.addTask(taskEntity);
+            //2.保存节点信息
+            //2.1.保存本节点信息
+            Boolean nowFlag = this.saveActNode(
+                    TaskActEnums.AI_WARN_NODE_01.getCode(),
+                    loginNm,
+                    new DateTime(),
+                    loginNm,
+                    new DateTime(),
+                    "",
+                    TaskActEnums.AI_NODE_STATE_01.getCode(),
+                    procInstId,
+                    "",
+                    "",
+                    null
+            );
+            if(nowFlag){
+                throw new RuntimeException("节点信息保存错误，请联系管理员！");
+            }
+            //2.2.保存下节点信息
+            Boolean nextFlag = this.saveActNode(
+                    TaskActEnums.AI_WARN_NODE_02.getCode(),
+                    JsonUtils.listTOJson(userList),
+                    new DateTime(),
+                    "",
+                    null,
+                    "",
+                    TaskActEnums.AI_NODE_STATE_00.getCode(),
+                    procInstId,
+                    "",
+                    "",
+                    userList
+            );
+            if(nextFlag){
+                throw new RuntimeException("节点信息保存错误，请联系管理员！");
+            }
+
             log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
 
         } catch (RuntimeException r) {
@@ -129,8 +176,10 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             //处理自己的待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                String taskId="";
                 Boolean flag=true;
                 for (Task item : T) {
+                    taskId=item.getId();
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
                         flag=false;
@@ -153,10 +202,33 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                         taskService.complete(item.getId(), variables);
                     }
                 }
+
                 //任务已被处理
                 if(flag){
                     throw new RuntimeException("流程异常，请联系管理员！");
                 }
+
+                //3.更新系统数据
+                //3.1.参数封装
+                Map<String, Object> map=new HashMap<>();
+                map.put("procInstId",procInstId);
+                map.put("loginNm",loginNm);
+                //任务
+                map.put("taskResult",TaskActEnums.AI_WARN_STATE_01.getCode());
+                //更新节点
+                map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
+                map.put("taskId",taskId);
+                map.put("lastState",TaskActEnums.AI_NODE_STATE_00.getCode());
+                map.put("actComment",review);
+                //新增节点
+                map.put("actReceiver","");
+                map.put("nextNode",TaskActEnums.AI_WARN_NODE_03.getCode());
+                map.put("userList",JsonUtils.listTOJson(userList));
+                map.put("nextState",TaskActEnums.AI_NODE_STATE_00.getCode());
+
+                //3.2.更新
+                this.updateAiWarnInfo(map);
+
             }else{
                 throw new RuntimeException("流程异常，请联系管理员！！！");
             }
@@ -196,18 +268,18 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         String venuesAddres = (String) mapCall.get("venuesAddres");
         String venuesName = (String) mapCall.get("venuesNm");
         Integer eventId = (Integer) mapCall.get("eventId");
-        String message = ParamCode.getMessage(eventType);
+        String message = EventParamCode.getMessage(eventType);
         //短信模板
         String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+message+"”预警，请您立刻前去处理！";
-        if(ParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
+        if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
             contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
-        }else if(ParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
+        }else if(EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
             contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
         }
         /*** 2.处理人员查询 ***/
         List<Map<String, Object>> userList = new ArrayList<>();
         //获取通知对象
-        if ("01".equals(emergencyLevel) || ParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
+        if ("01".equals(emergencyLevel) || EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
             //根据场所获取场所有相关人员
             userList = sysUserMapper.getAllByVenues(relVenuesId);
         } else {
@@ -236,7 +308,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
         //3.2.管理人员
         String manager = "";// 管理
-        if (ParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
+        if (EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
             //根据场所获取场所相关的管理人员
             manager = rmStaffInfoMapper.getManagerByVenuesId(relVenuesId);
             if (null != manager && !manager.isEmpty()) {
@@ -257,7 +329,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         String openFlag = sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
         if ("1".equals(openFlag)) {//1-开；0-关 （短信开关）
             //3.1.1.电话通知
-            if (tmFlag && ParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
+            if (tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
                 mapCall.put("phone", user + "," + manager);
                 String sessionId = VoiceCall.voiceCall(mapCall);
                 //保存数据
@@ -276,7 +348,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         String event = (String) mapCall.get("event");
         notifiedEntity.setEventType(event);//内容
         notifiedEntity.setRefEventId(eventId);
-        notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_03.getCode());
+        notifiedEntity.setNotifiedFlag(EventParamCode.NOTIFIED_FLAG_03.getCode());
         notifiedEntity.setNotifiedTime(new Date());
         eventNotifiedMapper.addNotified(notifiedEntity);
         
@@ -330,14 +402,43 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                         log.info("任务id："+procInstId+" 已处理，流程结束！");
 
                         //2.更新处理结果
-                        TaskEntity taskEntity=new TaskEntity();
-                        taskEntity.setHandlePerson(loginNm);
-                        taskEntity.setHandleTime(TimeTool.getYmdHms());
-                        taskEntity.setHandleResults(handleResults);
-                        taskEntity.setProcInstId(procInstId);
-                        taskInfoMapper.updateTask(taskEntity);
+                        /*Map<String, Object> taskEven = taskInfoMapper.getEvTaDetail(procInstId);
+                        int backFlag=0;
+                        String currentState= TaskActEnums.AI_NODE_STATE_00.getCode();
+                        String actState= TaskActEnums.AI_NODE_STATE_01.getCode();
+                        if(null!=taskEven){
+                            backFlag = taskEven.get("backFlag")==null?0:(int) taskEven.get("backFlag");
+                            if(1==backFlag){
+                                currentState= TaskActEnums.AI_WARN_STATE_02.getCode();
+                                actState= TaskActEnums.AI_WARN_STATE_02.getCode();
+                            }
+                        }*/
+                        String currentState= TaskActEnums.AI_NODE_STATE_00.getCode();
+                        String actState= TaskActEnums.AI_NODE_STATE_01.getCode();
+
+                        //2.1参数封装
+                        Map<String, Object> map=new HashMap<>();
+                        map.put("procInstId",procInstId);
+                        map.put("loginNm",loginNm);
+                        //2.2.1任务
+                        map.put("taskResult",TaskActEnums.AI_WARN_STATE_02.getCode());
+
+                        //2.2.2更新节点
+                        map.put("curState",actState);
+                        map.put("taskId",item.getId());
+                        map.put("lastState",currentState);
+                        map.put("actComment",handleResults);
+                        //2.2.3新增节点
+                        map.put("nextNode",TaskActEnums.AI_WARN_NODE_04.getCode());
+                        map.put("userList",JsonUtils.listTOJson(finalList));
+                        map.put("nextState",TaskActEnums.AI_NODE_STATE_00.getCode());
+                        map.put("actReceiver","");
+
+                        //2.2.更新系统数据
+                        this.updateAiWarnInfo(map);
                     }
                 }
+
                 //任务已被处理
                 if(flag){
                     throw new RuntimeException("任务已被他人处理，流程已结束！");
@@ -395,10 +496,38 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                         log.info("任务id："+procInstId+" 已处理，流程结束！");
 
                         //2.更新处理结果
-                        TaskEntity taskEntity=new TaskEntity();
-                        taskEntity.setEvaluation(evaluation);
-                        taskEntity.setProcInstId(procInstId);
-                        taskInfoMapper.updateTaskEvaluation(taskEntity);
+                        //2.1参数封装
+                        Map<String, Object> map=new HashMap<>();
+                        map.put("procInstId",procInstId);
+                        map.put("loginNm",loginNm);
+                        //2.2.1.任务
+                        map.put("taskResult",TaskActEnums.AI_WARN_STATE_03.getCode());//评价通过
+                        //2.2.2.预警
+                        Map<String, Object> taskEven = taskInfoMapper.getEvTaDetail(procInstId);
+                        Integer eventId =0;
+                        if(null!=taskEven) {
+                            eventId = (Integer) taskEven.get("eventId");
+                        }else{
+                            throw new RuntimeException("预警信息丢失，请联系管理员！");
+                        }
+
+                        map.put("eventId",String.valueOf(eventId));
+                        map.put("eventState",EventParamCode.EVENT_STATE_01.getCode());
+                        map.put("eventResult",EventParamCode.EVENT_HANDLE_1.getCode());
+
+                        //更新本节点信息
+                        map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
+                        map.put("taskId",item.getId());
+                        map.put("lastState",TaskActEnums.AI_NODE_STATE_00.getCode());
+                        map.put("actComment",evaluation);
+                        //新增下节点信息
+                        map.put("nextNode",TaskActEnums.AI_WARN_NODE_05.getCode());
+                        map.put("userList","");
+                        map.put("nextState",TaskActEnums.AI_NODE_STATE_01.getCode());
+
+                        //修改
+                        AppResponse updateResponse = this.updateAiWarnInfo(map);
+
                     }
                 }
                 //任务已被处理
@@ -437,23 +566,46 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
+                //获取上节点处理人
+                List<String> userList = taskInfoMapper.getNodeHandler(procInstId, TaskActEnums.AI_WARN_NODE_03.getEnglishNm());
+                String taskId="";
                 Boolean flag=true;
                 for (Task item : T) {
+                    taskId=item.getId();
                     String assignee = item.getAssignee();
                     if(assignee.equals(loginNm)){
                         //1.反馈处置完继续流程
                         flag=false;
+
+                        //退回处理
                         this.revoke(procInstId,loginNm,"manage",evaluation);
                         log.info("任务id："+procInstId+" 已退回！");
-
-                        //2.更新处理结果
-                        TaskEntity taskEntity=new TaskEntity();
-                        taskEntity.setEvaluation(evaluation);
-                        taskEntity.setProcInstId(procInstId);
-                        taskEntity.setBackFlag(1);
-                        taskInfoMapper.updateTaskEvaluation(taskEntity);
                     }
                 }
+
+
+                //3.更新处理结果
+                //3.1.参数封装
+                Map<String, Object> map=new HashMap<>();
+                map.put("procInstId",procInstId);
+                map.put("loginNm",loginNm);
+                //任务
+                map.put("backFlag",1);
+                map.put("taskResult",TaskActEnums.AI_WARN_STATE_04.getCode());
+                //更新节点
+                map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
+                map.put("taskId",taskId);
+                map.put("lastState",TaskActEnums.AI_NODE_STATE_00.getCode());
+                map.put("actComment",evaluation);
+                //新增节点
+                map.put("actReceiver","");
+                map.put("nextNode",TaskActEnums.AI_WARN_NODE_03.getCode());
+                map.put("userList",JsonUtils.listTOJson(userList));
+                map.put("nextState",TaskActEnums.AI_NODE_STATE_00.getCode());
+
+                AppResponse updateResponse = this.updateAiWarnInfo(map);
+
+
                 //任务已被处理
                 if(flag){
                     throw new RuntimeException("任务已被他人处理，流程已结束！");
@@ -492,16 +644,21 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 map.put("handleResults","1");
                 map.put("feedBack","误报解除");
                 map.put("picture","");
-                map.put("eventSta", ParamCode.NOTIFIED_FLAG_04.getCode());
+                map.put("eventSta", EventParamCode.NOTIFIED_FLAG_04.getCode());
+
+                String taskId="";
+
                 if(1==backFlag){
                     //1.1回退结束流程
-                    this.revoke(procInstId,loginNm,"aiEnd","回退流程后进行误报解除");
+                    String revoke = this.revoke(procInstId, loginNm, "aiEnd", "回退流程后进行误报解除");
+                    taskId=revoke;
                 }else{
                     //获取岗位
                     Task task = taskService.createTaskQuery().processInstanceId(procInstId).taskAssignee(loginNm).singleResult();
                     if (task == null) {
                         throw new Exception("流程未启动或已执行完成，无法撤回");
                     }
+                    taskId=task.getId();
                     Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
                     String operation = execution.getActivityId();
                     if("review".equals(operation)){
@@ -516,9 +673,32 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     if(endResponse.getCode()==ResultCode.FAILED.getCode()){
                         return new AppResponse(code,endResponse.getMessage());
                     }
+
                 }
-                //2.修改信息
-                AppResponse updateResponse = this.updateAiWarnInfo(map, loginNm, procInstId, String.valueOf(eventId));
+
+                //2.修改业务表信息
+                map.put("loginNm",loginNm);
+                map.put("procInstId",procInstId);
+                //2.2.1.任务
+                map.put("taskResult",TaskActEnums.AI_WARN_STATE_05.getCode());
+                //2.2.2.预警
+                map.put("eventId",String.valueOf(eventId));
+                map.put("eventState",EventParamCode.EVENT_STATE_04.getCode());
+                map.put("eventResult",EventParamCode.EVENT_HANDLE_1.getCode());
+                //2.2.2更新节点
+                map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
+                map.put("taskId",taskId);
+                map.put("lastState",TaskActEnums.AI_NODE_STATE_00.getCode());
+                map.put("actComment","误报解除");
+                //2.2.3新增节点
+                map.put("nextNode",TaskActEnums.AI_WARN_NODE_07.getCode());
+                map.put("userList","");
+                map.put("nextState",TaskActEnums.AI_NODE_STATE_01.getCode());
+                map.put("actReceiver","误报解除");
+
+                //修改
+                AppResponse updateResponse = this.updateAiWarnInfo(map);
+
                 if(updateResponse.getCode()==ResultCode.FAILED.getCode()){
                     return new AppResponse(code,updateResponse.getMessage());
                 }
@@ -598,45 +778,101 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
          * 误报解除后上报
          * 更新预警任务及信息
          * @param map
-         * @param loginNm
          * @return
          */
-    public AppResponse updateAiWarnInfo(Map<String, Object> map,String loginNm,String procInstId, String eventId) {
+    public AppResponse updateAiWarnInfo(Map<String, Object> map) {
         long code=ResultCode.FAILED.getCode();
         String message="更新预警任务及信息";
         try {
+            String loginNm = map.get("loginNm") == null ? "" : (String) map.get("loginNm");
+            String procInstId = map.get("procInstId") == null ? "" : (String) map.get("procInstId");
+            String curState = map.get("curState") == null ? "" : (String) map.get("curState");
+
+
             //1.更新任务处理结果
+            String taskResult = map.get("taskResult") == null ? "" : (String) map.get("taskResult");
+            Integer backFlag= map.get("backFlag") == null ? 0 : (Integer) map.get("backFlag");
+
             TaskEntity taskEntity=new TaskEntity();
-            taskEntity.setHandlePerson(loginNm);
-            taskEntity.setHandleTime(TimeTool.getYmdHms());
-            taskEntity.setHandleResults((String) map.get("handleResults"));
+            taskEntity.setHandleResults(taskResult);
             taskEntity.setProcInstId(procInstId);
+            taskEntity.setBackFlag(backFlag);
             taskInfoMapper.updateTask(taskEntity);
 
             //2.修改事件表
-            String eventSta= (String)map.get("eventSta");
-            String eventState ="";
-            String notice ="";
+            //修改事件表:0:否；1：是
+            if(backFlag!=1 &&
+                    (TaskActEnums.AI_WARN_STATE_03.getCode().equals(taskResult)
+                    || TaskActEnums.AI_WARN_STATE_05.getCode().equals(taskResult))
+            ){
+                String eventId = map.get("eventId") == null ? "" : (String) map.get("eventId");
+                String eventState= map.get("eventState") == null ? "" :(String)map.get("eventState");
+                String eventResult= map.get("eventResult") == null ? "" : (String) map.get("eventResult");
+                //更新预警事件表
+                EventEntity ev=new EventEntity();
+                ev.setEventId(Integer.parseInt(eventId));
+                ev.setEventState(eventState);
+                ev.setHandleResults(eventResult);
+                ev.setHandleTime(TimeTool.getYmdHms());
+                rmEventInfoMapper.updateEventState(ev);
+    /*            //修改事件表
+                if(EventParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
+                    eventState= EventParamCode.EVENT_STATE_04.getCode();
+                    notice = EventParamCode.NOTIFIED_FLAG_04.getCode();
+                }if(EventParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
+                    eventState= EventParamCode.EVENT_STATE_05.getCode();
+                    notice = EventParamCode.NOTIFIED_FLAG_05.getCode();
+                }else{
+                    eventState= EventParamCode.EVENT_STATE_01.getCode();
+                    notice = EventParamCode.NOTIFIED_FLAG_01.getCode();
+                }*/
 
-            if(ParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
-                eventState=ParamCode.EVENT_STATE_04.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_04.getCode();
-            }if(ParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
-                eventState=ParamCode.EVENT_STATE_05.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_05.getCode();
-            }else{
-                eventState=ParamCode.EVENT_STATE_01.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_01.getCode();
+                //4.更新通知
+                eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(),eventState);
+
             }
-            //更新预警事件表
-            EventEntity ev=new EventEntity();
-            ev.setEventId(Integer.parseInt(eventId));
-            ev.setEventState(eventState);
-            ev.setHandleResults(loginNm);
-            ev.setHandleTime(TimeTool.getYmdHms());
-            rmEventInfoMapper.updateEventState(ev);
-            //3.更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(),notice);
+
+            //3.1.更新本节点信息
+            String taskId = map.get("taskId") == null ? "" : (String) map.get("taskId");
+            String lastState = map.get("lastState") == null ? "" : (String) map.get("lastState");
+            String actComment = map.get("actComment") == null ? "" : (String) map.get("actComment");
+            Boolean nowFlag = this.updateActNode(loginNm,
+                    new DateTime(),
+                    "",
+                    curState,
+                    "",
+                    taskId,
+                    lastState
+            );
+            if(nowFlag){
+                throw new RuntimeException("流程处理失败，请联系管理员！");
+            }
+
+            //3.2.保存下节点信息
+            String nextNode = map.get("nextNode") == null ? "" : (String) map.get("nextNode");
+            String nextState = map.get("nextState") == null ? "" : (String) map.get("nextState");
+            String userList = map.get("userList") == null ? "" : (String) map.get("userList");
+            String actReceiver = map.get("actReceiver") == null ? "" : (String) map.get("actReceiver");
+            List<String> users=new ArrayList<>();
+            if(""!=userList){
+                users=JsonUtils.jsonTOList(userList,String.class);
+            }
+            Boolean nextFlag = this.saveActNode(
+                    nextNode,
+                    userList,
+                    new DateTime(),
+                    actReceiver,
+                    new DateTime(),
+                    "",
+                    nextState,
+                    procInstId,
+                    "",
+                    "",
+                    users
+            );
+            if(nextFlag){
+                throw new RuntimeException("流程处理失败，请联系管理员！");
+            }
 
             code= ResultCode.SUCCESS.getCode();
             message="更新预警任务及信息成功！";
@@ -694,11 +930,9 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
      * @throws RuntimeException
      * @throws Exception
      */
-    public void revoke(String processInstanceId, String nowUser,String backNode,String evaluation) throws RuntimeException,Exception {
+    public String revoke(String processInstanceId, String nowUser,String backNode,String evaluation) throws RuntimeException,Exception {
         //Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).singleResult();
-        TaskQuery taskQuery = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(nowUser);
         Task task = taskService.createTaskQuery().processInstanceId(processInstanceId).taskAssignee(nowUser).singleResult();
-
         if (task == null) {
             throw new Exception("流程未启动或已执行完成，无法撤回");
         }
@@ -763,5 +997,103 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         taskService.complete(task.getId());
         //恢复原方向
         flowNode.setOutgoingFlows(oriSequenceFlows);
+
+        return task.getId();
     }
+
+    /**
+     * 保存节点数据
+     * @param actCode
+     * @param actReceiver
+     * @param actReceiveTm
+     * @param actHandler
+     * @param actHandleTm
+     * @param actComment
+     * @param actState
+     * @param actInstId
+     * @param actTaskId
+     * @param actMark
+     * @return
+     */
+    public Boolean saveActNode(String actCode,
+                               String actReceiver,
+                               DateTime actReceiveTm,
+                               String actHandler,
+                               DateTime actHandleTm,
+                               String actComment,
+                               String actState,
+                               String actInstId,
+                               String actTaskId,
+                               String actMark,
+                               List<String> userList){
+
+        try {
+            //流程处理记录新增
+            ActInstEntity actEntity=new ActInstEntity();
+            actEntity.setActCode(Integer.parseInt(actCode));
+            actEntity.setActReceiver(actReceiver);
+            actEntity.setActReceiveTm(actReceiveTm);
+            actEntity.setActHandler(actHandler);
+            actEntity.setActHandleTm(actHandleTm);
+            actEntity.setActComment(actComment);
+            actEntity.setActState(actState);
+            actEntity.setActInstId(actInstId);
+            actEntity.setActTaskId(actTaskId);
+            actEntity.setActMark(actMark);
+            taskActInstMapper.addAct(actEntity);
+
+            //流程处理记录新增处理人
+            if(null!=userList && userList.size()>0){
+                int actId = actEntity.getActId();
+                for(int h=0;h<userList.size();h++){
+                    AssEntity assEntity=new AssEntity();
+                    assEntity.setAssActId(actId);
+                    assEntity.setAssAssignee(userList.get(h));
+                    assEntity.setAssModifyTm(actReceiveTm);
+                    assEntity.setAssState(TaskActEnums.ASS_STATE_01.getCode());
+                    taskActAssigneeMapper.addAssignee(assEntity);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 修改节点数据
+     * @param actHandler
+     * @param actHandleTm
+     * @param actComment
+     * @param actState
+     * @param actMark
+     * @return
+     */
+    public Boolean updateActNode(String actHandler,
+                               DateTime actHandleTm,
+                               String actComment,
+                               String actState,
+                               String actMark,
+                               String actTaskId,
+                               String currentState
+        ){
+        try {
+            ActInstEntity actEntity=new ActInstEntity();
+            actEntity.setActHandler(actHandler);
+            actEntity.setActHandleTm(actHandleTm);
+            actEntity.setActComment(actComment);
+            actEntity.setActState(actState);
+            actEntity.setActMark(actMark);
+            actEntity.setActTaskId(actTaskId);
+            actEntity.setCurrentState(currentState);
+            taskActInstMapper.updateAct(actEntity);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+        return false;
+    }
+
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.task.dao.TaskActInstMapper">
+
+    <insert id="addAct" parameterType="com.religion.zhiyun.task.entity.ActInstEntity"
+            keyColumn="actId" useGeneratedKeys="true" keyProperty="actId">
+        INSERT INTO TASK_ACT_INST(
+            ACT_CODE,
+            ACT_RECEIVER,
+            ACT_RECEIVE_TM,
+            ACT_HANDLER,
+            ACT_HANDLE_TM,
+            ACT_COMMENT,
+            ACT_STATE,
+            ACT_INST_ID,
+            ACT_TASK_ID,
+            ACT_MARK
+        )
+        VALUES(
+            #{actCode},
+            #{actReceiver},
+            #{actReceiveTm},
+            #{actHandler},
+            #{actHandleTm},
+            #{actComment},
+            #{actState},
+            #{actInstId},
+            #{actTaskId},
+            #{actMark}
+        );
+    </insert>
+
+    <update id="updateAct">
+        update TASK_ACT_INST act
+        set ACT_HANDLER = #{actHandler},
+            ACT_HANDLE_TM = #{actHandleTm},
+            ACT_STATE = #{actState},
+            ACT_TASK_ID=#{actTaskId}
+        where ACT_STATE = #{currentState}
+    </update>
+
+
+
+</mapper>

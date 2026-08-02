@@ -28,7 +28,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.OutInterfaceResponse;
@@ -121,32 +121,32 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             AiEntity dataEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
             String data = dataEntity.getData();
             AiEntity aiEntity = JsonUtils.jsonTOBean(data, AiEntity.class);
-            event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
+            event.setEventResource(EventParamCode.EVENT_FILE_01.getCode());
             //2.预警信息处理
             event.setWarnTime(TimeTool.getYmdHms());
             //“人员聚集”、“发现重点人员”、“明火检测” 01-明火;02-超限;03-重点;04-集聚
             //程度
-            String eventLevel=ParamCode.EVENT_LEVEL_02.getCode();
+            String eventLevel= EventParamCode.EVENT_LEVEL_02.getCode();
             String content = aiEntity.getContent();
             event.setDeviceCode(content);
             String eventType="";
             String cont="";
             if(content.contains("明火")){
-                eventType=ParamCode.EVENT_TYPE_01.getCode();
-                eventLevel=ParamCode.EVENT_LEVEL_01.getCode();
-                cont=ParamCode.EVENT_TYPE_01.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_01.getCode();
+                eventLevel= EventParamCode.EVENT_LEVEL_01.getCode();
+                cont= EventParamCode.EVENT_TYPE_01.getMessage();
             }else if(content.contains("重点")){
-                eventType=ParamCode.EVENT_TYPE_03.getCode();
-                cont=ParamCode.EVENT_TYPE_03.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_03.getCode();
+                cont= EventParamCode.EVENT_TYPE_03.getMessage();
             }else if(content.contains("聚集")){
-                eventType=ParamCode.EVENT_TYPE_04.getCode();
-                cont=ParamCode.EVENT_TYPE_04.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_04.getCode();
+                cont= EventParamCode.EVENT_TYPE_04.getMessage();
             }else if(content.contains("未成年")){//未成年检测
-                eventType=ParamCode.EVENT_TYPE_03.getCode();
-                cont=ParamCode.EVENT_TYPE_03.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_03.getCode();
+                cont= EventParamCode.EVENT_TYPE_03.getMessage();
             }else if(content.contains("画面异常")){//画面异常
-                eventType=ParamCode.EVENT_TYPE_06.getCode();
-                cont=ParamCode.EVENT_TYPE_06.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_06.getCode();
+                cont= EventParamCode.EVENT_TYPE_06.getMessage();
             }else{
                 throw new RuntimeException("("+content+")不属于宗教智治系统预警类型，不接收！！！");
             }
@@ -154,7 +154,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //预警类型
             event.setEventType(eventType);
             event.setEventLevel(eventLevel);//普通
-            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            event.setEventState(EventParamCode.EVENT_STATE_03.getCode());
             //获取场所id
             String deviceId = aiEntity.getDeviceId();//监控通道编码
             String venue = monitorBaseMapper.getVenue(deviceId);
@@ -175,7 +175,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String eventFile = aiEntity.getEventFile();
             FileEntity fileEntity=new FileEntity();
             fileEntity.setFilePath(eventFile);
-            fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+            fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
             fileEntity.setCreator("AI预警图片");
             fileEntity.setCreateTime(TimeTool.getYmdHms());
             //AI图片下载
@@ -205,9 +205,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
             //短信模板
             String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！";
-            if(ParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
+            if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
                 contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
-            }else if(ParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
+            }else if(EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
                 contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
             }
                 //封装
@@ -362,7 +362,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 event.setEventLevel("0");//普通
             }*/
             event.setEventLevel(alarmLevelName);//普通
-            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            event.setEventState(EventParamCode.EVENT_STATE_03.getCode());
             event.setRelVenuesId(relVenuesId);
             event.setHandleResults("0");
             event.setHandleTime(timeStamp);
@@ -770,11 +770,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 event.setAccessNumber(deviceId);
                 event.setDeviceType(deviceType);
                 event.setWarnTime(TimeTool.getYmdHms());
-                event.setEventType(ParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
+                event.setEventType(EventParamCode.EVENT_TYPE_01.getCode());//默认传来的都是火警
                 event.setEventData(eventEntity);
                 event.setEventLevel("01");//火警默认严重
                 event.setLocation(location);
-                event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+                event.setEventState(EventParamCode.EVENT_STATE_03.getCode());
                 event.setHandleResults("待处理");
                 event.setRelVenuesId(relVenuesId);
                 event.setDeviceCode(streamId);
@@ -782,7 +782,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 Timestamp timestamp = new Timestamp(new Date().getTime());
                 String format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(timestamp);
                 event.setHandleTime(format);
-                event.setEventResource(ParamCode.EVENT_FILE_02.getCode());//烟感
+                event.setEventResource(EventParamCode.EVENT_FILE_02.getCode());//烟感
                 //1.事件数据保存
                 rmEventInfoMapper.addEventByNB(event);
 
@@ -796,7 +796,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 }
                 String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“烟感”预警，请您立刻前去处理！！";
                 HashMap<String,Object> mapCall=new HashMap<>();
-                mapCall.put("eventType",ParamCode.EVENT_TYPE_01.getCode());
+                mapCall.put("eventType", EventParamCode.EVENT_TYPE_01.getCode());
                 mapCall.put("relVenuesId",relVenuesId);
                 mapCall.put("eventId",event.getEventId());
                 mapCall.put("contents",contents);
@@ -900,7 +900,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     map.put("handleResults","1");
                     map.put("feedBack","误报解除");
                     map.put("picture","");
-                    map.put("eventSta",ParamCode.NOTIFIED_FLAG_04.getCode());
+                    map.put("eventSta", EventParamCode.NOTIFIED_FLAG_04.getCode());
                     this.reportOneHandle(map,token);
                 }
             }
@@ -933,7 +933,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     map.put("handleResults","1");
                     map.put("feedBack","民宗快响推送");
                     map.put("picture","");
-                    map.put("eventSta",ParamCode.NOTIFIED_FLAG_05.getCode());
+                    map.put("eventSta", EventParamCode.NOTIFIED_FLAG_05.getCode());
                     this.reportOneHandle(map,token);
                 }
             }
@@ -1248,7 +1248,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         /*** 2.处理人员查询 ***/
         List<Map<String, Object>> userList =new ArrayList<>();
         //获取通知对象
-        if("01".equals(emergencyLevel) || ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+        if("01".equals(emergencyLevel) || EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
             //1.根据场所获取场所有相关人员
             userList =sysUserMapper.getAllByVenues(relVenuesId);
         }else{
@@ -1278,7 +1278,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
         //3.2.管理人员
         String manager="";// 管理
-        if(ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+        if(EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
             //根据场所获取场所相关的管理人员
             manager = rmStaffInfoMapper.getManagerByVenuesId(relVenuesId);
             if(null!=manager && !manager.isEmpty()){
@@ -1300,7 +1300,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String openFlag=sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
         if("1".equals(openFlag)){//1-开；0-关 （短信开关）
             //3.1.1.电话通知
-            if(tmFlag && ParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
+            if(tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
                 mapCall.put("phone",user+","+manager);
                         /*String sessionId = VoiceCall.voiceCall(mapCall);
                         //保存数据
@@ -1320,7 +1320,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String event= (String) mapCall.get("event");
         notifiedEntity.setEventType(event);//内容
         notifiedEntity.setRefEventId(relEventId);
-        notifiedEntity.setNotifiedFlag(ParamCode.NOTIFIED_FLAG_03.getCode());
+        notifiedEntity.setNotifiedFlag(EventParamCode.NOTIFIED_FLAG_03.getCode());
         notifiedEntity.setNotifiedTime(new Date());
         eventNotifiedMapper.addNotified(notifiedEntity);
 
@@ -1335,15 +1335,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         String venuesName = venueByID.getVenuesName();
         String tnm="预警事件：一键上报（监管）";
         if("01".equals(eventType)){
-            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_01.getMessage();
+            tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_01.getMessage();
         }else if("02".equals(eventType)){
-            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_02.getMessage();
+            tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_02.getMessage();
         }else if("03".equals(eventType)){
-            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_03.getMessage();
+            tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_03.getMessage();
         }else if("04".equals(eventType)){
-            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_04.getMessage();
+            tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_04.getMessage();
         }else if("05".equals(eventType)){
-            tnm=venuesName+"-"+ParamCode.EVENT_TYPE_05.getMessage();
+            tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_05.getMessage();
         }
         taskEntity.setTaskName(tnm);
         taskEntity.setTaskContent("预警事件,请处理");
@@ -1493,7 +1493,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String eventId =String.valueOf((Integer) evTaDetail.get("eventId")) ;
             EventEntity event=new EventEntity();
             event.setEventId(Integer.parseInt(eventId));
-            event.setEventState(ParamCode.EVENT_STATE_02.getCode());
+            event.setEventState(EventParamCode.EVENT_STATE_02.getCode());
             event.setHandleResults("上报");
             event.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(event);
@@ -1600,15 +1600,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
 
             //修改事件表
-            if(ParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
-                eventState=ParamCode.EVENT_STATE_04.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_04.getCode();
-            }if(ParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
-                eventState=ParamCode.EVENT_STATE_05.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_05.getCode();
+            if(EventParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
+                eventState= EventParamCode.EVENT_STATE_04.getCode();
+                notice = EventParamCode.NOTIFIED_FLAG_04.getCode();
+            }if(EventParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
+                eventState= EventParamCode.EVENT_STATE_05.getCode();
+                notice = EventParamCode.NOTIFIED_FLAG_05.getCode();
             }else{
-                eventState=ParamCode.EVENT_STATE_01.getCode();
-                notice =ParamCode.NOTIFIED_FLAG_01.getCode();
+                eventState= EventParamCode.EVENT_STATE_01.getCode();
+                notice = EventParamCode.NOTIFIED_FLAG_01.getCode();
             }
             //修改通知表
             //更新预警事件表
@@ -1647,16 +1647,16 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         if(null!=eventByVo && eventByVo.size()>0){
             event = eventByVo.get(0);
             String eventState = event.getEventState();
-            if(ParamCode.EVENT_STATE_01.getCode().equals(eventState)){
-                throw new RuntimeException("该预警"+ParamCode.EVENT_STATE_01.getMessage());
-            }else if(ParamCode.EVENT_STATE_02.getCode().equals(eventState)){
-                throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_02.getMessage());
-            }else if(ParamCode.EVENT_STATE_03.getCode().equals(eventState)){
-                throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_03.getMessage());
-            }else if(ParamCode.EVENT_STATE_04.getCode().equals(eventState)){
-                throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_04.getMessage());
-            }else if(ParamCode.EVENT_STATE_05.getCode().equals(eventState)){
-                throw new RuntimeException("该预警已"+ParamCode.EVENT_STATE_05.getMessage());
+            if(EventParamCode.EVENT_STATE_01.getCode().equals(eventState)){
+                throw new RuntimeException("该预警"+ EventParamCode.EVENT_STATE_01.getMessage());
+            }else if(EventParamCode.EVENT_STATE_02.getCode().equals(eventState)){
+                throw new RuntimeException("该预警已"+ EventParamCode.EVENT_STATE_02.getMessage());
+            }else if(EventParamCode.EVENT_STATE_03.getCode().equals(eventState)){
+                throw new RuntimeException("该预警已"+ EventParamCode.EVENT_STATE_03.getMessage());
+            }else if(EventParamCode.EVENT_STATE_04.getCode().equals(eventState)){
+                throw new RuntimeException("该预警已"+ EventParamCode.EVENT_STATE_04.getMessage());
+            }else if(EventParamCode.EVENT_STATE_05.getCode().equals(eventState)){
+                throw new RuntimeException("该预警已"+ EventParamCode.EVENT_STATE_05.getMessage());
             }
         }else{
             throw new RuntimeException("预警信息丢失，请联系管理员");
@@ -1896,39 +1896,40 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             AiEntity dataEntity = JsonUtils.jsonTOBean(eventJson, AiEntity.class);
             String data = dataEntity.getData();
             AiEntity aiEntity = JsonUtils.jsonTOBean(data, AiEntity.class);
-            event.setEventResource(ParamCode.EVENT_FILE_01.getCode());
+            event.setEventResource(EventParamCode.EVENT_FILE_01.getCode());
             //2.预警信息处理
             event.setWarnTime(TimeTool.getYmdHms());
             //01-明火;02-超限;03-重点;04-集聚;06-画面异常
             //程度
-            String eventLevel=ParamCode.EVENT_LEVEL_02.getCode();
+            String eventLevel= EventParamCode.EVENT_LEVEL_02.getCode();
             String content = aiEntity.getContent();
             event.setDeviceCode(content);
             String eventType="";
             String cont="";
             if(content.contains("明火")){
-                eventType=ParamCode.EVENT_TYPE_01.getCode();
-                eventLevel=ParamCode.EVENT_LEVEL_01.getCode();
-                cont=ParamCode.EVENT_TYPE_01.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_01.getCode();
+                eventLevel= EventParamCode.EVENT_LEVEL_01.getCode();
+                cont= EventParamCode.EVENT_TYPE_01.getMessage();
             }else if(content.contains("重点")){
-                eventType=ParamCode.EVENT_TYPE_03.getCode();
-                cont=ParamCode.EVENT_TYPE_03.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_03.getCode();
+                cont= EventParamCode.EVENT_TYPE_03.getMessage();
             }else if(content.contains("聚集")){
-                eventType=ParamCode.EVENT_TYPE_04.getCode();
-                cont=ParamCode.EVENT_TYPE_04.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_04.getCode();
+                cont= EventParamCode.EVENT_TYPE_04.getMessage();
             }else if(content.contains("未成年")){//未成年检测
-                eventType=ParamCode.EVENT_TYPE_03.getCode();
-                cont=ParamCode.EVENT_TYPE_03.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_03.getCode();
+                cont= EventParamCode.EVENT_TYPE_03.getMessage();
             }else if(content.contains("画面异常")){//画面异常
-                eventType=ParamCode.EVENT_TYPE_06.getCode();
-                cont=ParamCode.EVENT_TYPE_06.getMessage();
+                eventType= EventParamCode.EVENT_TYPE_06.getCode();
+                cont= EventParamCode.EVENT_TYPE_06.getMessage();
             }else{
                 eventType="0";
             }
             //预警类型
             event.setEventType(eventType);
             event.setEventLevel(eventLevel);//普通
-            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            //已接收未处置
+            event.setEventState(EventParamCode.EVENT_STATE_00.getCode());
             //获取场所id
             String deviceId = aiEntity.getDeviceId();//监控通道编码
             String venue = monitorBaseMapper.getVenue(deviceId);
@@ -1937,7 +1938,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
             int relVenuesId = Integer.parseInt(venue);
             event.setRelVenuesId(relVenuesId);
-            event.setHandleResults("预警已发起！");
+            //未完成
+            event.setHandleResults(EventParamCode.EVENT_HANDLE_0.getCode());
             event.setHandleTime(TimeTool.getYmdHms());
             event.setAccessNumber(deviceId);//设备编码
 
@@ -1949,7 +1951,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String eventFile = aiEntity.getEventFile();
             FileEntity fileEntity=new FileEntity();
             fileEntity.setFilePath(eventFile);
-            fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+            fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
             fileEntity.setCreator("AI预警图片");
             fileEntity.setCreateTime(TimeTool.getYmdHms());
             rmFileMapper.add(fileEntity);
@@ -1972,15 +1974,15 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String venuesName = venueByID.getVenuesName();
             String tnm="预警事件：人工审核";
             if("01".equals(eventType)){
-                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_01.getMessage();
+                tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_01.getMessage();
             }else if("02".equals(eventType)){
-                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_02.getMessage();
+                tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_02.getMessage();
             }else if("03".equals(eventType)){
-                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_03.getMessage();
+                tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_03.getMessage();
             }else if("04".equals(eventType)){
-                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_04.getMessage();
+                tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_04.getMessage();
             }else if("06".equals(eventType)){
-                tnm=venuesName+"-"+ParamCode.EVENT_TYPE_06.getMessage();
+                tnm=venuesName+"-"+ EventParamCode.EVENT_TYPE_06.getMessage();
             }
             taskEntity.setTaskName(tnm);
             taskEntity.setTaskContent("预警事件,请处理");

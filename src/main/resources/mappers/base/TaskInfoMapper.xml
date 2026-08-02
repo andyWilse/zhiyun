@@ -1096,8 +1096,7 @@
         select
             ev.EVENT_ID as eventId,
             ev.EVENT_LEVEL as eventLevel,
-            ev.EVENT_TYPE as eventType,
-            ta.back_flag as backFlag
+            ev.EVENT_TYPE as eventType
         from rm_task_info ta
         left join rm_event_info ev on ta.REL_EVENT_ID=ev.EVENT_ID
         where ta.PROC_INST_ID=#{procInstId}

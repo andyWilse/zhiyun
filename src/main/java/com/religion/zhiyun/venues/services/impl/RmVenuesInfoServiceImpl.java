@@ -17,7 +17,7 @@ import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
@@ -75,7 +75,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             venuesEntity.setCreateTime(TimeTool.getYmdHms());
             venuesEntity.setLastModifier(loginNm);
             venuesEntity.setLastModifyTime(TimeTool.getYmdHms());
-            venuesEntity.setVenuesStatus(ParamCode.VENUES_STATUS_01.getCode());
+            venuesEntity.setVenuesStatus(EventParamCode.VENUES_STATUS_01.getCode());
             //处理图片
             String picturesPath = venuesEntity.getPicturesPath();
             String picturesPathRemove = venuesEntity.getPicturesPathRemove();

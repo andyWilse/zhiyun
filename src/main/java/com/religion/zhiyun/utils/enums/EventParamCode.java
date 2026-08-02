@@ -4,7 +4,7 @@ package com.religion.zhiyun.utils.enums;
 import lombok.Getter;
 
 @Getter
-public enum ParamCode {
+public enum EventParamCode {
     //场所使用情况
     VENUES_STATUS_00("00", "未使用"),
     VENUES_STATUS_01("01", "使用中"),
@@ -40,11 +40,13 @@ public enum ParamCode {
     EVENT_TYPE_05("05", "设备报修"),
     EVENT_TYPE_06("06", "画面异常"),
     //事件状态
+    EVENT_STATE_00("00", "未处理"),
     EVENT_STATE_01("01", "已处理"),
     EVENT_STATE_02("02", "已上报"),
     EVENT_STATE_03("03", "已通知"),
     EVENT_STATE_04("04", "误报解除"),
     EVENT_STATE_05("05", "已推送民宗快响"),
+
     //预警通知
     NOTIFIED_FLAG_01("01", "已处理"),
     NOTIFIED_FLAG_02("02", "已上报"),
@@ -55,19 +57,20 @@ public enum ParamCode {
     MONITOR_STATE_01("01", "在线"),
     MONITOR_STATE_02("02", "报修"),
 
-
+    EVENT_HANDLE_0("0", "未完成"),
+    EVENT_HANDLE_1("1", "已完成"),
     ;
 
     private String code;
     private String message;
 
-    private ParamCode(String code, String message) {
+    private EventParamCode(String code, String message) {
         this.code = code;
         this.message = message;
     }
 
     public static String getMessage(String code) {
-        for (ParamCode item : ParamCode.values()) {
+        for (EventParamCode item : EventParamCode.values()) {
             if (item.name().equals(code)) {
                 return item.message;
             }

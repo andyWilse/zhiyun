@@ -13,7 +13,7 @@ import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.utils.TokenUtils;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.DetailVo.AppDetailRes;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -56,7 +56,7 @@ public class RmStaffInfoServiceimpl implements RmStaffInfoService {
             }
             staffEntity.setCreator(entity.getLoginNm());
             staffEntity.setLastModifier(entity.getLoginNm());
-            staffEntity.setStaffStatus(ParamCode.STAFF_STATUS_01.getCode());
+            staffEntity.setStaffStatus(EventParamCode.STAFF_STATUS_01.getCode());
             Long maxStaffCd = staffInfoMapper.getMaxStaffCd();
             if(null==maxStaffCd){
                 maxStaffCd=1001l;

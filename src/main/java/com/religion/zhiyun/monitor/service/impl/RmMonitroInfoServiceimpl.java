@@ -18,7 +18,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.enums.ParamCode;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -126,7 +126,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
                     String pictureRec = pictureRecs.get(i);
                     FileEntity fileEntity=new FileEntity();
                     fileEntity.setFilePath(pictureRec);
-                    fileEntity.setFileType(ParamCode.FILE_TYPE_01.getCode());
+                    fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
                     fileEntity.setCreator("监控设备报修");
                     fileEntity.setCreateTime(TimeTool.getYmdHms());
                     rmFileMapper.add(fileEntity);
@@ -139,18 +139,18 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             event.setWarnTime(repairTime);
             event.setRelVenuesId(Integer.parseInt(venuesId));
             event.setAccessNumber(repairAccessNumber);
-            event.setEventType(ParamCode.EVENT_TYPE_05.getCode());
-            event.setEventLevel(ParamCode.EVENT_LEVEL_02.getCode());
-            event.setEventResource(ParamCode.EVENT_TYPE_05.getCode());
+            event.setEventType(EventParamCode.EVENT_TYPE_05.getCode());
+            event.setEventLevel(EventParamCode.EVENT_LEVEL_02.getCode());
+            event.setEventResource(EventParamCode.EVENT_TYPE_05.getCode());
             event.setLocation(locationName);
             event.setPicturesPath(picturePath);
-            event.setEventState(ParamCode.EVENT_STATE_03.getCode());
+            event.setEventState(EventParamCode.EVENT_STATE_03.getCode());
             event.setHandleResults("0");
             event.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.addEvent(event);
 
             //4.添加通知
-            String nextHandler = this.addNotifiedParty(ParamCode.EVENT_TYPE_05.getCode(), Integer.parseInt(venuesId), event.getEventId(), locationName);
+            String nextHandler = this.addNotifiedParty(EventParamCode.EVENT_TYPE_05.getCode(), Integer.parseInt(venuesId), event.getEventId(), locationName);
             //5.发起任务
             this.launch(event,nextHandler);
 
@@ -320,7 +320,7 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             String eventId =String.valueOf((Integer) evTaDetail.get("eventId")) ;
             EventEntity event=new EventEntity();
             event.setEventId(Integer.parseInt(eventId));
-            event.setEventState(ParamCode.EVENT_STATE_02.getCode());
+            event.setEventState(EventParamCode.EVENT_STATE_02.getCode());
             event.setHandleResults("上报");
             event.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(event);
@@ -432,12 +432,12 @@ public class RmMonitroInfoServiceimpl implements RmMonitroInfoService {
             //更新预警事件表
             EventEntity ev=new EventEntity();
             ev.setEventId(Integer.parseInt(eventId));
-            ev.setEventState(ParamCode.EVENT_STATE_01.getCode());
+            ev.setEventState(EventParamCode.EVENT_STATE_01.getCode());
             ev.setHandleResults(this.getLogin(token));
             ev.setHandleTime(TimeTool.getYmdHms());
             rmEventInfoMapper.updateEventState(ev);
             //更新通知
-            eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(),ParamCode.NOTIFIED_FLAG_01.getCode());
+            eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(), EventParamCode.NOTIFIED_FLAG_01.getCode());
 
             code= ResultCode.SUCCESS.getCode();
             message="设备报修流程处理成功！流程id(唯一标识)procInstId:"+ procInstId;
