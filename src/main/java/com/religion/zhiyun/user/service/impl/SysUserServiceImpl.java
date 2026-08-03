@@ -404,8 +404,15 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public void delete(int userId,String token) {
         //删除
+        //1.修改用户表
         sysUserMapper.delete(userId);
-        //增加日志信息
+        //2.更新用户场所关联表
+        Timestamp timestamp = new Timestamp(new Date().getTime());
+        UserVenuesEntity vo=new UserVenuesEntity();
+        vo.setUvUserId(userId);
+        vo.setUvModifyTime(timestamp);
+        rmUserVenuesMapper.deleteSrMap(vo);
+        //3.增加日志信息
         SysUserEntity sysUserEntity = sysUserMapper.queryByUserId(String.valueOf(userId));
         Map<String,Object> vuMap=new HashMap<>();
         vuMap.put("operator",this.getLogin(token));

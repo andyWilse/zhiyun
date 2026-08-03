@@ -1,7 +1,6 @@
 package com.religion.zhiyun.task.entity;
 
 
-import cn.hutool.core.date.DateTime;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -9,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -30,13 +30,13 @@ public class ActInstEntity implements Serializable {
     private String actReceiver;//接收人
 
     @Column(name = "ACT_RECEIVE_TM")
-    private DateTime actReceiveTm;//接收时间
+    private Timestamp  actReceiveTm;//接收时间
 
     @Column(name = "ACT_HANDLER")
     private String actHandler;//处理人
 
     @Column(name = "ACT_HANDLE_TM")
-    private DateTime actHandleTm;//处理时间
+    private Timestamp actHandleTm;//处理时间
 
     @Column(name = "ACT_COMMENT")
     private String actComment;//意见
@@ -54,4 +54,6 @@ public class ActInstEntity implements Serializable {
     private String actMark;//备注
 
     private String currentState;//当前处理状态
+    private String actNode;//节点
+    private String actHandleTime;//节点
 }

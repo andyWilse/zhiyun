@@ -49,4 +49,7 @@ public interface TaskService {
 
     /*** APP我的任务详情 **/
     public PageResponse getTaskDetail(String procInstId,String token);
+
+    /*** 我的任务详情（20260802流程升级） **/
+    public PageResponse getAiTaskDetail(String procInstId,String token);
 }

@@ -4,13 +4,13 @@ import lombok.Getter;
 
 @Getter
 public enum TaskActEnums {
-    AI_WARN_NODE_01("10030001", "预警发起","aiStart"),
-    AI_WARN_NODE_02("10030002", "人工审核","review"),
-    AI_WARN_NODE_03("10030003", "基层处理","manage"),
-    AI_WARN_NODE_04("10030004", "终审评价","final"),
-    AI_WARN_NODE_05("10030005", "预警结束","aiEnd"),
-    AI_WARN_NODE_06("10030006", "退回","back"),
-    AI_WARN_NODE_07("10030007", "误报解除","out"),
+    AI_WARN_NODE_01("20010001", "预警发起","aiStart"),
+    AI_WARN_NODE_02("20010002", "人工审核","review"),
+    AI_WARN_NODE_03("20010003", "基层处理","manage"),
+    AI_WARN_NODE_04("20010004", "终审评价","final"),
+    AI_WARN_NODE_05("20010005", "预警结束","aiEnd"),
+    AI_WARN_NODE_06("20010006", "退回","back"),
+    AI_WARN_NODE_07("20010007", "误报解除","dismiss"),
 
     AI_NODE_STATE_00("00", "未处理",""),
     AI_NODE_STATE_01("01", "已处理",""),

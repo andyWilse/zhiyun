@@ -150,7 +150,7 @@
         left join rm_venues_manager_info u on u.MANAGER_MOBILE=ti.ASSIGNEE_ and u.VALID_IND='1'
         where ti.END_TIME_ is null
         and ti.PROC_INST_ID_=#{procInstId}
-        group by ti.PROC_INST_ID_,ti.END_TIME_
+        group by ti.PROC_INST_ID_,ti.END_TIME_,ti.START_TIME_,ti.act_id_
         )
         ) task
         where task.taskNm is not null

@@ -3,7 +3,9 @@ package com.religion.zhiyun.task.service.impl;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
+import com.religion.zhiyun.task.dao.TaskActInstMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
+import com.religion.zhiyun.task.entity.ActInstEntity;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.ProcdefEntity;
 import com.religion.zhiyun.task.entity.UpFillEntity;
@@ -46,6 +48,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     private org.activiti.engine.TaskService taskService;
+
+    @Autowired
+    private TaskActInstMapper taskActInstMapper;
 
     @Override
     public AppResponse deployment(String taskKey) {
@@ -561,7 +566,7 @@ public class TaskServiceImpl implements TaskService {
                             String handleResults = (String) cmap.get("handleResults");
                             String results ="";
                             if("1".equals(handleResults)){
-                                results ="已解决不";
+                                results ="已解决";
                             }else if("0".equals(handleResults)){
                                 results ="未解决";
                             }else{
@@ -602,11 +607,64 @@ public class TaskServiceImpl implements TaskService {
             code= ResultCode.SUCCESS.getCode();
             message= "获取详情成功！";
         }catch (RuntimeException r){
-            message=r.getMessage();
             r.printStackTrace();
+            return new PageResponse(code,r.getMessage());
         } catch (Exception e) {
-            message= "获取详情失败！";
             e.printStackTrace();
+            return new PageResponse(code,e.getMessage());
+        }
+        return new PageResponse(code,message,taskList.toArray());
+    }
+
+    @Override
+    public PageResponse getAiTaskDetail(String procInstId, String token) {
+        long code= ResultCode.FAILED.getCode();
+        String message= "获取Ai任务详情";
+        List<Map<String,Object>> taskList = new ArrayList<>();
+
+        try {
+            if(null==procInstId || procInstId.isEmpty()){
+                throw new RuntimeException("任务id不能为空！");
+            }
+            String login = this.getLogin(token);
+            //查询
+            taskList =taskActInstMapper.getAiTaskDetail(login,procInstId);
+            if(null!=taskList && taskList.size()>0){
+                //返回
+                Map<String, Object> taskMap = taskList.get(0);
+                String taskContent= (String) taskMap.get("taskContent");
+                String flowType= (String) taskMap.get("flowType");
+                if(!GeneTool.isEmpty(taskContent) && (flowType.equals("03") || flowType.equals("04"))){
+                    UpFillEntity upFillEntity = JsonUtils.jsonTOBean(taskContent, UpFillEntity.class);
+                    String picturesPath = upFillEntity.getTaskPicture();
+                    //图片
+                    if(!GeneTool.isEmpty(picturesPath)){
+                        String[] split = picturesPath.split(",");
+                        List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
+                        upFillEntity.setPicturesUrl(fileUrl.toArray());
+                        String con = JsonUtils.beanToJson(upFillEntity);
+                        taskMap.put("taskContent",con);
+                    }
+                }
+
+                //返回意见
+                List<Map<String, Object>> commentList = new ArrayList<>();
+                //获取意见
+                List<ActInstEntity> mapList = taskActInstMapper.getAiTaskAct(procInstId);
+                taskMap.put("taskComment",mapList.toArray());
+                //一键上报人
+                String reportMen = taskInfoMapper.getReportMen(procInstId);
+                taskMap.put("reportMen",reportMen==null?"":reportMen);
+
+            }
+            code= ResultCode.SUCCESS.getCode();
+            message= "获取Ai详情成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new PageResponse(code,r.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new PageResponse(code,e.getMessage());
         }
         return new PageResponse(code,message,taskList.toArray());
     }

@@ -20,6 +20,8 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     @ResponseBody
     @RequestMapping("/deploy")
     public AppResponse deployment(@RequestBody JSONObject jsonObject){
@@ -73,12 +75,16 @@ public class TaskController {
         return taskService.getTaskCommon(procInstId,token);
     }
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     //APP我的任务
     @RequestMapping("/app/getMyTask")
     public PageResponse getMyTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         return taskService.getMyTask(map,token);
     }
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     //APP我的任务
     @RequestMapping("/app/getFirstTask")
     public PageResponse getFirstTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
@@ -91,8 +97,27 @@ public class TaskController {
         return taskService.getPcTask(map,token);
     }
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
     @RequestMapping("/app/getTaskDetail")
     public PageResponse getTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
         return taskService.getTaskDetail(procInstId,token);
+    }
+
+    @DecryptRequest(false)
+    @EncryptResponse(false)
+    @RequestMapping("/app/getAiTaskDetail")
+    public PageResponse getAiTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
+        return taskService.getAiTaskDetail(procInstId,token);
+    }
+
+    @RequestMapping("/pc/getTaskDetail")
+    public PageResponse getPcTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
+        return taskService.getTaskDetail(procInstId,token);
+    }
+
+    @RequestMapping("/pc/getAiTaskDetail")
+    public PageResponse getPcAiTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
+        return taskService.getAiTaskDetail(procInstId,token);
     }
 }

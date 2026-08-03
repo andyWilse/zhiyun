@@ -1,6 +1,5 @@
 package com.religion.zhiyun.task.entity;
 
-import cn.hutool.core.date.DateTime;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -8,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -28,7 +28,7 @@ public class AssEntity implements Serializable {
     private String assAssignee;//接收人
 
     @Column(name = "ASS_MODIFY_TM")
-    private DateTime assModifyTm;//修改时间
+    private Timestamp assModifyTm;//修改时间
 
     @Column(name = "ASS_STATE")
     private String assState;//状态：00：删除；01：新增；02：修改

@@ -20,6 +20,7 @@ import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.task.service.TaskAiWarnService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
+import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
@@ -30,6 +31,7 @@ import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.utils.sms.sm.MessageSend;
+import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowNode;
@@ -46,6 +48,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -78,6 +81,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     private TaskActInstMapper taskActInstMapper;
     @Autowired
     private TaskActAssigneeMapper taskActAssigneeMapper;
+    @Autowired
+    private VenuesManagerMapper venuesManagerMapper;
 
     @Override
     public AppResponse launch(TaskEntity taskEntity, List<String> userList, String loginNm) {
@@ -115,12 +120,14 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskInfoMapper.addTask(taskEntity);
             //2.保存节点信息
             //2.1.保存本节点信息
+            Date date = new Date();
+            Timestamp timestamp = new Timestamp(date.getTime());
             Boolean nowFlag = this.saveActNode(
                     TaskActEnums.AI_WARN_NODE_01.getCode(),
                     loginNm,
-                    new DateTime(),
+                    timestamp,
                     loginNm,
-                    new DateTime(),
+                    timestamp,
                     "",
                     TaskActEnums.AI_NODE_STATE_01.getCode(),
                     procInstId,
@@ -135,7 +142,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             Boolean nextFlag = this.saveActNode(
                     TaskActEnums.AI_WARN_NODE_02.getCode(),
                     JsonUtils.listTOJson(userList),
-                    new DateTime(),
+                    timestamp,
                     "",
                     null,
                     "",
@@ -150,15 +157,15 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             }
 
             log.info("任务id："+processInstanceId+" 发起申请，任务开始！");
+            return new AppResponse(ResultCode.SUCCESS.getCode(),"AI预警任务发起成功："+"流程procInstId（"+procInstId+")");
 
         } catch (RuntimeException r) {
             r.printStackTrace();
-            return new AppResponse(ResultCode.FAILED.getCode(),"AI预警任务发起失败！");
+            return new AppResponse(ResultCode.FAILED.getCode(),r.getMessage());
         }catch (Exception e) {
             e.printStackTrace();
+            return new AppResponse(ResultCode.FAILED.getCode(),e.getMessage());
         }
-
-        return new AppResponse(ResultCode.SUCCESS.getCode(),"AI预警任务发起成功！","流程id(唯一标识)procInstId:"+procInstId);
 
     }
 
@@ -599,7 +606,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 map.put("actComment",evaluation);
                 //新增节点
                 map.put("actReceiver","");
-                map.put("nextNode",TaskActEnums.AI_WARN_NODE_03.getCode());
+                map.put("nextNode",TaskActEnums.AI_WARN_NODE_06.getCode());
                 map.put("userList",JsonUtils.listTOJson(userList));
                 map.put("nextState",TaskActEnums.AI_NODE_STATE_00.getCode());
 
@@ -694,7 +701,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 map.put("nextNode",TaskActEnums.AI_WARN_NODE_07.getCode());
                 map.put("userList","");
                 map.put("nextState",TaskActEnums.AI_NODE_STATE_01.getCode());
-                map.put("actReceiver","误报解除");
+                map.put("actReceiver",loginNm);
 
                 //修改
                 AppResponse updateResponse = this.updateAiWarnInfo(map);
@@ -797,6 +804,11 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskEntity.setHandleResults(taskResult);
             taskEntity.setProcInstId(procInstId);
             taskEntity.setBackFlag(backFlag);
+            if(TaskActEnums.AI_WARN_STATE_03.getCode().equals(taskResult)
+                    || TaskActEnums.AI_WARN_STATE_05.getCode().equals(taskResult)){
+                taskEntity.setHandlePerson(loginNm);
+                taskEntity.setHandleTime(TimeTool.getYmdHms());
+            }
             taskInfoMapper.updateTask(taskEntity);
 
             //2.修改事件表
@@ -815,29 +827,19 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 ev.setHandleResults(eventResult);
                 ev.setHandleTime(TimeTool.getYmdHms());
                 rmEventInfoMapper.updateEventState(ev);
-    /*            //修改事件表
-                if(EventParamCode.EVENT_STATE_04.getCode().equals(eventSta)){
-                    eventState= EventParamCode.EVENT_STATE_04.getCode();
-                    notice = EventParamCode.NOTIFIED_FLAG_04.getCode();
-                }if(EventParamCode.EVENT_STATE_05.getCode().equals(eventSta)){
-                    eventState= EventParamCode.EVENT_STATE_05.getCode();
-                    notice = EventParamCode.NOTIFIED_FLAG_05.getCode();
-                }else{
-                    eventState= EventParamCode.EVENT_STATE_01.getCode();
-                    notice = EventParamCode.NOTIFIED_FLAG_01.getCode();
-                }*/
 
                 //4.更新通知
                 eventNotifiedMapper.updateNotifiedFlag(eventId,TimeTool.getYmdHms(),eventState);
 
             }
-
+            Date date = new Date();
+            Timestamp timestamp = new Timestamp(date.getTime());
             //3.1.更新本节点信息
             String taskId = map.get("taskId") == null ? "" : (String) map.get("taskId");
             String lastState = map.get("lastState") == null ? "" : (String) map.get("lastState");
             String actComment = map.get("actComment") == null ? "" : (String) map.get("actComment");
             Boolean nowFlag = this.updateActNode(loginNm,
-                    new DateTime(),
+                    timestamp,
                     "",
                     curState,
                     "",
@@ -857,12 +859,13 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             if(""!=userList){
                 users=JsonUtils.jsonTOList(userList,String.class);
             }
+
             Boolean nextFlag = this.saveActNode(
                     nextNode,
                     userList,
-                    new DateTime(),
+                    timestamp,
                     actReceiver,
-                    new DateTime(),
+                    timestamp,
                     "",
                     nextState,
                     procInstId,
@@ -1017,9 +1020,9 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
      */
     public Boolean saveActNode(String actCode,
                                String actReceiver,
-                               DateTime actReceiveTm,
+                               Timestamp actReceiveTm,
                                String actHandler,
-                               DateTime actHandleTm,
+                               Timestamp actHandleTm,
                                String actComment,
                                String actState,
                                String actInstId,
@@ -1046,9 +1049,24 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             if(null!=userList && userList.size()>0){
                 int actId = actEntity.getActId();
                 for(int h=0;h<userList.size();h++){
+                    String mobile = userList.get(h);
+                    List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(mobile);
+                    int userId =0;
+                    if(null!=sysUserEntities && sysUserEntities.size()>0){
+                        userId = sysUserEntities.get(0).getUserId();
+                    }else{
+                        List<Map<String, Object>> managerList = venuesManagerMapper.getManagerByNm(mobile);
+                        if(null!=managerList && managerList.size()>0){
+                            userId= (Integer) managerList.get(0).get("managerId");
+                        }else{
+                            throw new RuntimeException("用户("+mobile+")已被冻结，请联系管理员");
+                        }
+                    }
+                    //获取用户id
                     AssEntity assEntity=new AssEntity();
                     assEntity.setAssActId(actId);
-                    assEntity.setAssAssignee(userList.get(h));
+
+                    assEntity.setAssAssignee(String.valueOf(userId));
                     assEntity.setAssModifyTm(actReceiveTm);
                     assEntity.setAssState(TaskActEnums.ASS_STATE_01.getCode());
                     taskActAssigneeMapper.addAssignee(assEntity);
@@ -1072,7 +1090,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
      * @return
      */
     public Boolean updateActNode(String actHandler,
-                               DateTime actHandleTm,
+                                 Timestamp actHandleTm,
                                String actComment,
                                String actState,
                                String actMark,

@@ -204,7 +204,22 @@
     </select>
 
     <select id="getEventsByPage" resultType="map">
-        select al.* from
+        select al.eventId,
+                al.accessNumber,
+                al.deviceName,
+                al.warnTime,
+                al.venuesAddres,
+                al.venuesName,
+                al.eventType,
+                al.eventData,
+                al.location,
+                al.handleResults,
+                al.eventState,
+                case when al.eventState='已完成' then al.handleTime else '' end as handleTime,
+                case when al.eventState='已完成' then al.handlePerson else '' end as handlePerson,
+                al.procInstId
+
+        from
             (select
                 e.EVENT_ID as eventId,
                 e.ACCESS_NUMBER as accessNumber,
@@ -311,7 +326,15 @@
 
     <select id="getEventExport" resultType="map">
         select
-            al.*
+            al.warnTime,
+            al.venuesAddres,
+            al.venuesName,
+            al.eventType,
+            al.eventData,
+            al.handleResults,
+            al.eventState,
+            case when al.eventState='已完成' then al.handleTime else '' end as handleTime,
+            case when al.eventState='已完成' then al.handlePerson else '' end as handlePerson
         from (select
                 e.WARN_TIME as warnTime,
                 ve.VENUES_ADDRES as venuesAddres,

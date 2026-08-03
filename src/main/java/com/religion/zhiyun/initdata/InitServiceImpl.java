@@ -52,6 +52,8 @@ public class InitServiceImpl implements InitService{
                                 uvEntity.setUvMark("success");
                             }else{
                                 uvEntity.setUvMark("false");
+                                System.out.println("遇到未知错误！");
+                                continue;
                             }
                             //增加
                             initMapper.add(uvEntity);
