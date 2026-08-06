@@ -59,6 +59,9 @@ public enum EventParamCode {
 
     EVENT_HANDLE_0("0", "未完成"),
     EVENT_HANDLE_1("1", "已完成"),
+
+    TASK_HANDLE_0("0", "未解决"),
+    TASK_HANDLE_1("1", "已解决"),
     ;
 
     private String code;

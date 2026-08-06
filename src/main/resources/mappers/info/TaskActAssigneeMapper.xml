@@ -7,6 +7,8 @@
             keyColumn="assId" useGeneratedKeys="true" keyProperty="assId">
         INSERT INTO TASK_ACT_ASSIGNEE(
             ASS_ACT_ID,
+            ASS_USER_ID,
+            ASS_MOBILE,
             ASS_ASSIGNEE,
             ASS_MODIFY_TM,
             ASS_STATE,
@@ -14,6 +16,8 @@
         )
         VALUES(
             #{assActId},
+            #{assUserId},
+            #{assMobile},
             #{assAssignee},
             #{assModifyTm},
             #{assState},
@@ -21,6 +25,39 @@
         );
     </insert>
 
+    <update id="updateAssignee">
+        update TASK_ACT_ASSIGNEE ass
+        <set>
+            <if test="assState!=null and assState!=''">
+                ass.ASS_STATE = #{assState},
+            </if>
+            <if test="assModifyTm!=null">
+                ass.ASS_MODIFY_TM = #{assModifyTm}
+            </if>
+        </set>
+        where 1=1
+        <if test="assActId!=null and assActId!=0">
+            and ass.ASS_ACT_ID = #{assActId}
+        </if>
+        <if test="assId!=null and assId!=0">
+            and ass.ASS_ID = #{assId}
+        </if>
+    </update>
+
+    <select id="getAssignee" resultType="com.religion.zhiyun.task.entity.AssEntity">
+        select
+            ASS_ID as assId,
+            ASS_MOBILE as assMobile,
+            ASS_ASSIGNEE as assAssignee
+        from TASK_ACT_ASSIGNEE ass
+        where ass.ASS_STATE!='03'
+        <if test="actId!=null and actId!=0">
+            and ass.ASS_ACT_ID = #{actId}
+        </if>
+        <if test="assId!=null and assId!=0">
+            and ass.ASS_ID = #{assId}
+        </if>
+    </select>
 
 
 </mapper>

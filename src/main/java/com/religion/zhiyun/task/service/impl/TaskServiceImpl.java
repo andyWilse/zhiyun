@@ -632,25 +632,21 @@ public class TaskServiceImpl implements TaskService {
             if(null!=taskList && taskList.size()>0){
                 //返回
                 Map<String, Object> taskMap = taskList.get(0);
-                String taskContent= (String) taskMap.get("taskContent");
-                String flowType= (String) taskMap.get("flowType");
-                if(!GeneTool.isEmpty(taskContent) && (flowType.equals("03") || flowType.equals("04"))){
-                    UpFillEntity upFillEntity = JsonUtils.jsonTOBean(taskContent, UpFillEntity.class);
-                    String picturesPath = upFillEntity.getTaskPicture();
-                    //图片
-                    if(!GeneTool.isEmpty(picturesPath)){
-                        String[] split = picturesPath.split(",");
-                        List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
-                        upFillEntity.setPicturesUrl(fileUrl.toArray());
-                        String con = JsonUtils.beanToJson(upFillEntity);
-                        taskMap.put("taskContent",con);
+                //获取意见
+                List<Map<String, Object>> mapList = taskActInstMapper.getAiTaskActDetail(procInstId,0);
+                if(null==mapList || mapList.size()<=0){
+                    throw new RuntimeException("流程("+procInstId+")信息丢失，请联系管理员！");
+                }
+                for(int k=0;k<mapList.size();k++){
+                    Map<String, Object> actInstMap = mapList.get(k);
+                    //处置岗图片
+                    String actPicture =actInstMap.get("actPicture")==null?"": (String) actInstMap.get("actPicture");
+                    List<Map<String, Object>> fileUrl =new ArrayList<>();
+                    if(null!=actPicture && !actPicture.isEmpty()){
+                        fileUrl = rmFileMapper.getFileUrl(actPicture.split(","));
+                        actInstMap.put("picture",fileUrl);
                     }
                 }
-
-                //返回意见
-                List<Map<String, Object>> commentList = new ArrayList<>();
-                //获取意见
-                List<ActInstEntity> mapList = taskActInstMapper.getAiTaskAct(procInstId);
                 taskMap.put("taskComment",mapList.toArray());
                 //一键上报人
                 String reportMen = taskInfoMapper.getReportMen(procInstId);

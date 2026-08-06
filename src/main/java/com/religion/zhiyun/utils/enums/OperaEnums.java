@@ -27,8 +27,17 @@ public enum OperaEnums {
 
     user_venue_delete("100741", "场所三人驻堂成员去除"),
     user_venue_add("100742", "场所三人驻堂成员添加"),
+
     venue_user_delete("100751", "三人驻堂成员关联场所去除"),
     venue_user_add("100752", "三人驻堂成员加入场所"),
+
+    act_add("100761", "流程节点新增"),
+    act_update("100762", "流程节点修改"),
+    act_delete("100763", "流程节点删除"),
+
+    ass_add("100766", "预警接收人新增"),
+    ass_update("100767", "预警接收人修改"),
+    ass_delete("100768", "预警接收人删除"),
 
     ;
     private String code;

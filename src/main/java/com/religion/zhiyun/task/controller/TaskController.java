@@ -100,7 +100,7 @@ public class TaskController {
     @DecryptRequest(false)
     @EncryptResponse(false)
     @RequestMapping("/app/getTaskDetail")
-    public PageResponse getTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
+    public PageResponse getAppTaskDetail(@RequestParam String procInstId,@RequestHeader("token")String token) {
         return taskService.getTaskDetail(procInstId,token);
     }
 

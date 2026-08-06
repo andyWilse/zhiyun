@@ -10,6 +10,7 @@
             ACT_RECEIVER,
             ACT_RECEIVE_TM,
             ACT_HANDLER,
+            ACT_HAND_NM,
             ACT_HANDLE_TM,
             ACT_COMMENT,
             ACT_STATE,
@@ -22,6 +23,7 @@
             #{actReceiver},
             #{actReceiveTm},
             #{actHandler},
+            #{actHandNm},
             #{actHandleTm},
             #{actComment},
             #{actState},
@@ -33,11 +35,50 @@
 
     <update id="updateAct">
         update TASK_ACT_INST act
-        set ACT_HANDLER = #{actHandler},
-            ACT_HANDLE_TM = #{actHandleTm},
-            ACT_STATE = #{actState},
-            ACT_TASK_ID=#{actTaskId}
-        where ACT_STATE = #{currentState}
+        <set>
+            <if test="actHandler!=null and actHandler!=''">
+                act.ACT_HANDLER = #{actHandler},
+            </if>
+
+            <if test="actHandNm!=null and actHandNm!=''">
+                act.ACT_HAND_NM = #{actHandNm},
+            </if>
+
+            <if test="actReceiveTm!=null">
+                act.ACT_RECEIVE_TM = #{actReceiveTm},
+            </if>
+
+            <if test="actHandleTm!=null">
+                act.ACT_HANDLE_TM = #{actHandleTm},
+            </if>
+
+            <if test="actState!=null and actState!=''">
+                act.ACT_STATE = #{actState},
+            </if>
+
+            <if test="actTaskId!=null and actTaskId!=''">
+                act.ACT_TASK_ID = #{actTaskId},
+            </if>
+
+            <if test="actComment!=null and actComment!=''">
+                act.ACT_COMMENT = #{actComment},
+            </if>
+
+            <if test="actPicture!=null and actPicture!=''">
+                act.ACT_PICTURE = #{actPicture},
+            </if>
+
+            <if test="actModifyTm!=null">
+                act.ACT_MODIFY_TM = #{actModifyTm}
+            </if>
+        </set>
+        where 1=1
+        <if test="currentState!=null and currentState!=''">
+            and act.ACT_STATE = #{currentState}
+        </if>
+        <if test="actId!=null and actId!=0">
+            and act.ACT_ID = #{actId}
+        </if>
     </update>
 
     <select id="getAiTaskAct" resultType="com.religion.zhiyun.task.entity.ActInstEntity">
@@ -47,22 +88,61 @@
             (select dc.DICT_CN_DESC from rm_sys_dict dc where dc.DICT_TYPE_CD='2001' and dc.DICT_CD=act.ACT_CODE) as actNode,
             case act.ACT_CODE
                 when '20010001' then act. ACT_RECEIVER
-                when '20010005' then (select uu.USER_NM from RM_SYS_USER_INFO uu where ta.HANDLE_PERSON=uu.USER_MOBILE)
                 when '20010007' then (select uu.USER_NM from RM_SYS_USER_INFO uu where ta.HANDLE_PERSON=uu.USER_MOBILE)
-            else (select GROUP_CONCAT(us.USER_NM SEPARATOR ",") from TASK_ACT_ASSIGNEE ass
-                    left join RM_SYS_USER_INFO us on ass.ASS_ASSIGNEE=us.USER_ID where ass.ASS_ACT_ID=act.ACT_ID)
+            else (select GROUP_CONCAT(ass.ASS_ASSIGNEE SEPARATOR ",")
+                    from TASK_ACT_ASSIGNEE ass where ass.ASS_ACT_ID=act.ACT_ID and ass.ASS_STATE!='03')
             end as actReceiver,
             act.ACT_RECEIVE_TM as actReceiveTm,
+            DATE_FORMAT(act.ACT_RECEIVE_TM,"%Y-%m-%d %H:%i:%s") as actReceiveTime,
+            act.ACT_HAND_NM as actHandNm,
             act.ACT_HANDLER as actHandler,
             act.ACT_HANDLE_TM as actHandleTm,
             DATE_FORMAT(act.ACT_HANDLE_TM,"%Y-%m-%d %H:%i:%s") as actHandleTime,
             act.ACT_COMMENT as actComment,
-            act.ACT_STATE as actState,
+            case act.ACT_STATE when '01' then '已处理' else '未处理' end as actState,
             act.ACT_INST_ID as actInstId,
-            act.ACT_MARK as actMark
+            act.ACT_MARK as actMark,
+            act.ACT_PICTURE as actPicture
         from TASK_ACT_INST act
         left join RM_TASK_INFO ta on ta.PROC_INST_ID=act.ACT_INST_ID
-        where act.act_inst_id=#{procInstId}
+        where act.ACT_STATE !='03'
+        <if test="procInstId!=null and procInstId!=''">
+            and act.act_inst_id = #{procInstId}
+        </if>
+        <if test="actId!=null and actId!=0">
+            and act.ACT_ID = #{actId}
+        </if>
+    </select>
+
+    <select id="getAiTaskActDetail" resultType="map">
+        select
+            act.ACT_ID as actId,
+            act.ACT_CODE AS actCode,
+            (select dc.DICT_CN_DESC from rm_sys_dict dc where dc.DICT_TYPE_CD='2001' and dc.DICT_CD=act.ACT_CODE) as actNode,
+            case act.ACT_CODE
+            when '20010001' then act. ACT_RECEIVER
+            when '20010007' then (select uu.USER_NM from RM_SYS_USER_INFO uu where ta.HANDLE_PERSON=uu.USER_MOBILE)
+            else (select GROUP_CONCAT(ass.ASS_ASSIGNEE SEPARATOR ",")
+            from TASK_ACT_ASSIGNEE ass where ass.ASS_ACT_ID=act.ACT_ID and ass.ASS_STATE!='03')
+            end as actReceiver,
+            DATE_FORMAT(act.ACT_RECEIVE_TM,"%Y-%m-%d %H:%i:%s") as actReceiveTime,
+            act.ACT_HAND_NM as actHandNm,
+            act.ACT_HANDLER as actHandler,
+            DATE_FORMAT(act.ACT_HANDLE_TM,"%Y-%m-%d %H:%i:%s") as actHandleTime,
+            act.ACT_COMMENT as actComment,
+            case act.ACT_STATE when '01' then '已处理' else '未处理' end as actState,
+            act.ACT_INST_ID as actInstId,
+            act.ACT_MARK as actMark,
+            act.ACT_PICTURE as actPicture
+        from TASK_ACT_INST act
+        left join RM_TASK_INFO ta on ta.PROC_INST_ID=act.ACT_INST_ID
+        where act.ACT_STATE !='03'
+        <if test="procInstId!=null and procInstId!=''">
+            and act.act_inst_id = #{procInstId}
+        </if>
+        <if test="actId!=null and actId!=0">
+            and act.ACT_ID = #{actId}
+        </if>
     </select>
 
     <select id="getAiTaskDetail" resultType="map">

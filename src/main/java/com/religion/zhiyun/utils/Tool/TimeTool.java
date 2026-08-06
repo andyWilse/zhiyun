@@ -70,4 +70,12 @@ public class TimeTool {
         Date strToDate = format.parse(date);
         return strToDate;
     }
+    public static Timestamp getTimestamp() throws ParseException {
+        Date date = new Date();
+        Timestamp timestamp = new Timestamp(date.getTime());
+        return timestamp;
+    }
+
+
+
 }

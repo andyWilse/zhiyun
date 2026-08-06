@@ -24,8 +24,14 @@ public class AssEntity implements Serializable {
     @Column(name = "ASS_ACT_ID")
     private int assActId;//流程处理记录ID
 
+    @Column(name = "ASS_USER_ID")
+    private int assUserId;//接收人
+
+    @Column(name = "ASS_MOBILE")
+    private String assMobile;//电话
+
     @Column(name = "ASS_ASSIGNEE")
-    private String assAssignee;//接收人
+    private String assAssignee;//接收人名字
 
     @Column(name = "ASS_MODIFY_TM")
     private Timestamp assModifyTm;//修改时间

@@ -35,14 +35,23 @@ public class ActInstEntity implements Serializable {
     @Column(name = "ACT_HANDLER")
     private String actHandler;//处理人
 
+    @Column(name = "ACT_HAND_NM")
+    private String actHandNm;//处理人姓名
+
     @Column(name = "ACT_HANDLE_TM")
     private Timestamp actHandleTm;//处理时间
 
     @Column(name = "ACT_COMMENT")
     private String actComment;//意见
 
+    @Column(name = "ACT_PICTURE")
+    private String actPicture;//图片关联id
+
     @Column(name = "ACT_STATE")
-    private String actState;//状态：01：未处理；02：已处理；03：回退；04：误报解除
+    private String actState;//状态：00：未处理；01：已处理；02：修改；03：删除
+
+    @Column(name = "ACT_MODIFY_TM")
+    private Timestamp actModifyTm;//修改时间
 
     @Column(name = "ACT_INST_ID")
     private String actInstId;//流程id
@@ -53,7 +62,13 @@ public class ActInstEntity implements Serializable {
     @Column(name = "ACT_MARK")
     private String actMark;//备注
 
-    private String currentState;//当前处理状态
-    private String actNode;//节点
-    private String actHandleTime;//节点
+    //当前处理状态
+    private String currentState;
+    //节点
+    private String actNode;
+    //接收时间
+    private String actReceiveTime;
+    //处理时间
+    private String actHandleTime;
+
 }
