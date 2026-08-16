@@ -26,6 +26,15 @@ public interface RmFileService {
      */
     public PageResponse uploadVideo(MultipartFile file, HttpServletRequest request);
 
+    /**
+     * 视频文件上传
+     * @param fileBase64
+     * @param fileName
+     * @return
+     */
+    public PageResponse uploadVideo(String fileBase64, String fileName);
+
+
     //图片展示
     RespPageBean showPicture(String picture);
 

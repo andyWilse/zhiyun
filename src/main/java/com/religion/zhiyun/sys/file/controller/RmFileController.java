@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -84,9 +84,7 @@ public class RmFileController {
      * @return
      * @throws Exception
      */
-    @DecryptRequest(false)
-    @EncryptResponse(false)
-    @RequestMapping(value ="/uploadVideo")
+    @RequestMapping(value ="/uploadVi")
     public PageResponse uploadVideo(HttpServletRequest httpServletRequest) throws Exception{
         MultipartFile multipartFile =null;
         MultipartHttpServletRequest mulReq = (MultipartHttpServletRequest) httpServletRequest;
@@ -101,10 +99,22 @@ public class RmFileController {
     }
 
     /**
-     * Excel文件上传
-     * @param file
+     * 视频上传（最新）
+     * @param map
      * @return
      */
+    @PostMapping(value ="/uploadVideo")
+    public PageResponse uploadVideos(@RequestBody Map<String,Object> map ){
+        String fileContent = map.get("fileContent")==null?"": (String) map.get("fileContent");
+        String fileName = map.get("fileName")==null?"": (String) map.get("fileName");
+        return rmFileService.uploadVideo(fileContent,fileName);
+    }
+
+        /**
+         * Excel文件上传
+         * @param file
+         * @return
+         */
     @EncryptResponse(false)
     @RequestMapping("/excel/upload")
     public PageResponse importExcel(@RequestParam("file") MultipartFile file){

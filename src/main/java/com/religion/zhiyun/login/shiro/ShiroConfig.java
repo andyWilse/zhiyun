@@ -46,7 +46,7 @@ public class ShiroConfig {
         filterMap.put("/app/updatePassword","anon");  //放行updatePassword
 
         filterMap.put("/file/images/upload","anon");
-        filterMap.put("/file/uploadVideo","anon");
+        //filterMap.put("/file/uploadVideo","anon");
         filterMap.put("/user/import","anon");
         filterMap.put("/init/uv","anon");
 

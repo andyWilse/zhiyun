@@ -18,6 +18,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.util.StringUtils;
@@ -119,6 +120,95 @@ public class RmFileServiceImpl implements RmFileService {
             }
             //将内存中的数据写入磁盘
             file.transferTo(newFile);
+
+            //视频封面图处理
+            String newImgName = time+".jpg";
+            String framePath = rootPath + newImgName;
+
+            //访问地址
+            String basePath = pathDown+"video"+File.separator+ymd+File.separator;
+            //图片最终位置路径
+            String imgUrl = basePath+newImgName;
+            //视频上传保存url
+            String videoUrl = basePath + newVideoName;
+            //videoUrl="http://183.246.59.33:8088/video/20240201/1706771054111.mp4";
+            //imgUrl="http://183.246.59.33:8088/20240201/20240201145321.jpg";
+
+            //视频截取封面图
+            System.out.println("视频保存url: "+videoUrl);
+            System.out.println("本机url: "+videoPath);
+            //VideoUpDown.getVedioImg(videoPath, framePath, "");
+            GetVideoGainImg.getTempPath(framePath,videoPath);
+            //保存文件信息
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setFileName(newVideoName);
+            fileEntity.setFilePath(videoUrl);
+            fileEntity.setFileType(EventParamCode.FILE_TYPE_03.getCode());
+            fileEntity.setCreateTime(TimeTool.getYmdHms());
+            //String nbr = request.getHeader("login-name");
+            //fileEntity.setCreator("admin");
+            rmFileMapper.add(fileEntity);
+            String fileId="";
+            if(null!=fileEntity){
+                fileId+=fileEntity.getFileId();
+            }
+
+            resultMap.put("videoLink", videoUrl);
+            resultMap.put("url", "");
+            resultMap.put("fileId", fileId);
+            resultMap.put("isShowPopup", true);
+            resultMap.put("imgUrl", imgUrl);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="视频上传成功！";
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new PageResponse(code,message,resultMap);
+
+    }
+
+    @Override
+    public PageResponse uploadVideo(String fileBase64, String fileName) {
+        long code= ResultCode.FAILED.getCode();
+        String message="视频上传失败！";
+        Map<String, Object> resultMap=new HashMap<String, Object>();
+        String ymd = TimeTool.getYmd();
+        //String basePath = request.getScheme() + "://" + request.getServerName()+ ":" + request.getServerPort()+"/video/"+ymd+"/";
+
+        try {
+            String[] parts = fileBase64.split(",");
+            String contentType = parts[0].split(";")[0].split(":")[1];
+            String base64String = parts[1].split("\"")[0];
+            //String cleanedBase64String = base64String.replaceAll("[^A-Za-z0-9+/=]", "");
+            byte[] bytes = Base64.getDecoder().decode(base64String);
+            MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "file", contentType, bytes);
+
+            //文件原始名称
+            //String fileName = file.getOriginalFilename();
+            //从最后一个.开始截取。截取fileName的后缀名
+            String suffixName = fileName.substring(fileName.lastIndexOf("."));
+            //文件新名称
+            Long time = new Date().getTime();
+            String newVideoName = time+suffixName;
+
+            //设置文件存储路径，可以存放在你想要指定的路径里面
+            String rootPath="F:\\13files\\20260816\\";
+          //String rootPath=pathUpload+"video"+File.separator+ymd+File.separator;
+            //** 上传视频存放位置**//
+            String videoPath = rootPath+newVideoName;
+            File newFile = new File(videoPath);
+            //判断目标文件所在目录是否存在
+            if(!newFile.getParentFile().exists()){
+                //如果目标文件所在的目录不存在，则创建父目录
+                newFile.getParentFile().mkdirs();
+            }
+            //将内存中的数据写入磁盘
+            mockMultipartFile.transferTo(newFile);
 
             //视频封面图处理
             String newImgName = time+".jpg";
