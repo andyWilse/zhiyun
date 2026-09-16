@@ -12,13 +12,13 @@ public interface TaskAiWarnService {
     public AppResponse launch(TaskEntity taskEntity, List<String> userList, String loginNm);
 
     /** 人工审核：审核通过短信通知基层管理人员 **/
-    public AppResponse review(String review,String procInstId,String token);
+    public AppResponse review(String review,String procInstId,String token,String loginNm);
 
     /** 反馈处置 **/
-    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token);
+    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture,String token,String loginNm);
 
     /** 评价 **/
-    public AppResponse evaluate(String procInstId, String evaluation,String token);
+    public AppResponse evaluate(String procInstId, String evaluation,String token,String loginNm);
 
     /** 退回 **/
     public AppResponse backup(String procInstId, String evaluation,String token);

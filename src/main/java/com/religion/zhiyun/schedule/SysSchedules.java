@@ -45,4 +45,13 @@ public class SysSchedules {
     public void metricRecord() {
         schedulesService.metricRecord();
     }
+
+
+    /** 每隔1分钟执行一次 **/
+    @Scheduled(cron ="0 */1 * * * ?")
+    public void repeatMessage() {
+        schedulesService.repeatMessage();
+    }
+
+
 }

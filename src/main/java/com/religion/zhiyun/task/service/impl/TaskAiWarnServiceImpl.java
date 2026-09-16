@@ -174,7 +174,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     }
 
     @Override
-    public AppResponse review(String review,String procInstId, String token) {
+    public AppResponse review(String review,String procInstId, String token,String loginNm) {
         long code=ResultCode.FAILED.getCode();
         String message="预警流程人工审核处理失败！";
         //审核通过，通知下一岗人员并继续流程
@@ -182,7 +182,9 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             //1.通知
             List<String> userList = this.addNotifiedParty(procInstId);
             //2.继续流程
-            String loginNm = this.getLogin(token);
+            if(GeneTool.isEmpty(loginNm)){
+                loginNm = this.getLogin(token);
+            }
             Authentication.setAuthenticatedUserId(loginNm);
             //处理自己的待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
@@ -367,15 +369,17 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     }
 
     @Override
-    public AppResponse handle(String procInstId, String handleResults, String feedBack, String picture, String token) {
+    public AppResponse handle(String procInstId, String handleResults, String feedBack,
+                              String picture, String token,String loginNm) {
         long code=ResultCode.FAILED.getCode();
         String message="基层干部反馈处置流程失败！";
-        String loginNm ="";
         try {
             if(null==procInstId || procInstId.isEmpty()){
                 throw new RuntimeException("流程id丢失，请联系管理员！");
             }
-            loginNm = this.getLogin(token);
+            if(GeneTool.isEmpty(loginNm)){
+                loginNm = this.getLogin(token);
+            }
             Authentication.setAuthenticatedUserId(loginNm);
 
             //根据角色信息获取自己的待办
@@ -449,6 +453,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
                         //2.2.更新系统数据
                         this.updateAiWarnInfo(map);
+                        //2.3.短信通知
+                        this.sendMsg(procInstId,finalList,null,null, null,null);;
                     }
                 }
 
@@ -475,14 +481,16 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
 
     @Override
-    public AppResponse evaluate(String procInstId,  String evaluation, String token) {
+    public AppResponse evaluate(String procInstId,  String evaluation, String token,String loginNm) {
         long code=ResultCode.FAILED.getCode();
         String message="终审用户评价通过流程失败！";
         try {
             if(null==procInstId || procInstId.isEmpty()){
                 throw new RuntimeException("流程id丢失，请联系管理员！");
             }
-            String loginNm = this.getLogin(token);
+            if(GeneTool.isEmpty(loginNm)){
+                loginNm = this.getLogin(token);
+            }
             Authentication.setAuthenticatedUserId(loginNm);
 
             //处理待办
@@ -1504,5 +1512,62 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             return new AppResponse(ResultCode.FAILED.getCode(),e.getMessage());
         }
     }
+
+    /**
+     * 短信通知
+     * @param procInstId
+     * @param userNextList
+     * @param venuesAddres
+     * @param venuesName
+     * @param message
+     * @param eventType
+     */
+    public void sendMsg(String procInstId,
+                        List <String>  userNextList,
+                        String venuesAddres,
+                        String venuesName,
+                        String message,
+                        String eventType
+                        ){
+        if(!GeneTool.isEmpty(procInstId)){
+            /*** 1.参数获取 ***/
+            List<Map<String, Object>> eventVe = rmEventInfoMapper.getEventVe(procInstId);
+            if(eventVe.size()<1 || eventVe.size()>1){
+                throw new RuntimeException("预警信息异常：“+eventId+”，请联系管理员！");
+            }
+
+            Map<String, Object> mapCall = eventVe.get(0);
+            eventType = (String) mapCall.get("eventType");
+            venuesAddres = (String) mapCall.get("venuesAddres");
+            venuesName = (String) mapCall.get("venuesNm");
+            message = EventParamCode.getMessage(eventType);
+        }
+        //短信模板
+        String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+message+"”预警，请您立刻前去处理！";
+        if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
+            contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
+        }else if(EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
+            contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
+        }
+       /* //查询是否语音通知开关，通知
+        boolean tmFlag = GeneTool.calendarCompare("08:30", "17:30");
+        String openFlag = sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
+        if ("1".equals(openFlag)) {//1-开；0-关 （短信开关）
+        //3.1.1.电话通知
+        if (tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
+            mapCall.put("phone", user + "," + manager);
+            String sessionId = VoiceCall.voiceCall(mapCall);
+            //保存数据
+            FeeInfo feeInfo = new FeeInfo();
+            feeInfo.setSessionId(sessionId);
+            feeInfo.setEventType(CallEnums.fee.getCode());
+            feeInfo.setRefEventId(String.valueOf(eventId));
+            eventNotifiedMapper.addCall(feeInfo);
+
+        }*/
+        //3.1.2.短信通知
+        MessageSend.sendSmsMass(contents, userNextList);
+    }
+
 
 }

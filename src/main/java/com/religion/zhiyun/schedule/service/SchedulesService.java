@@ -19,4 +19,9 @@ public interface SchedulesService {
      * 系统运行计数
      */
     void metricRecord();
+
+    /**
+     * 预警未处理重复提醒
+     */
+    void repeatMessage();
 }

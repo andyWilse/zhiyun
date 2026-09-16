@@ -9,7 +9,7 @@ public enum TaskActEnums {
     AI_WARN_NODE_03("20010003", "基层处理","manage"),
     AI_WARN_NODE_04("20010004", "评价结束","final"),
     AI_WARN_NODE_05("20010005", "评价退回","aiEnd"),
-    AI_WARN_NODE_06("20010006", "退回","back"),
+    AI_WARN_NODE_06("20010006", "退回接收","back"),
     AI_WARN_NODE_07("20010007", "误报解除","dismiss"),
 
     AI_NODE_STATE_00("00", "未处理",""),

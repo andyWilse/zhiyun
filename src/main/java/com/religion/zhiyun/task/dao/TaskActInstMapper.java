@@ -40,4 +40,12 @@ public interface TaskActInstMapper {
      */
     List<Map<String,Object>> getAiTaskActDetail(@Param("procInstId") String procInstId,@Param("actId") Integer actId);
 
+    /**
+     * 获取未处理任务流程信息
+     * @param actCode
+     * @return
+     */
+    List<ActInstEntity> getUnAiTaskAct(@Param("period") Integer period,
+                                       @Param("actCode") String actCode);
+
 }

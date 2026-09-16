@@ -3,13 +3,15 @@ package com.religion.zhiyun.schedule.service.impl;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
-import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import com.religion.zhiyun.schedule.service.SchedulesService;
 import com.religion.zhiyun.sys.log.dao.AppmetricLogMapper;
 import com.religion.zhiyun.sys.log.entity.AppmetricLogEntity;
+import com.religion.zhiyun.task.dao.TaskActInstMapper;
+import com.religion.zhiyun.task.entity.ActInstEntity;
+import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
-import com.religion.zhiyun.utils.enums.CallEnums;
-import com.religion.zhiyun.utils.sms.call.VoiceCall;
+import com.religion.zhiyun.utils.enums.TaskActEnums;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
@@ -30,6 +32,11 @@ public class SchedulesServiceImpl implements SchedulesService {
     private EventNotifiedMapper eventNotifiedMapper;
     @Autowired
     private AppmetricLogMapper appmetricLogMapper;
+    @Autowired
+    private TaskActInstMapper taskActInstMapper;
+    @Autowired
+    private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
+
 
     @Override
     public void UrgentAutoReport() {
@@ -150,5 +157,76 @@ public class SchedulesServiceImpl implements SchedulesService {
                 appmetricLogMapper.add(metricLog);
             }
         }
+    }
+
+    @Override
+    public void repeatMessage() {
+        //1.初审岗：在15分钟内未处理的预警事件，再次通知
+        List<ActInstEntity> unReviewTask = taskActInstMapper.getUnAiTaskAct(15, TaskActEnums.AI_WARN_NODE_02.getCode());
+        if(null!=unReviewTask && unReviewTask.size()>0){
+            for(int i=0;i<unReviewTask.size();i++){
+                ActInstEntity actInstEntity = unReviewTask.get(i);
+                String actInstId = actInstEntity.getActInstId();
+                String actReceiver = actInstEntity.getActReceiver();
+                List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                //短信通知
+                taskAiWarnServiceImpl.sendMsg(actInstId,
+                        userSend,
+                        null,
+                        null,
+                        null,
+                        null);
+            }
+        }
+        //2.如果30分钟内未处理
+        List<ActInstEntity> thirtyTask = taskActInstMapper.getUnAiTaskAct(30, null);
+        if(null!=thirtyTask && thirtyTask.size()>0){
+            for(int j=0;j<thirtyTask.size();j++){
+                ActInstEntity thirtyEntity = thirtyTask.get(j);
+                String actInstId = thirtyEntity.getActInstId();
+                String actReceiver = thirtyEntity.getActReceiver();
+                int actCode = thirtyEntity.getActCode();
+                String acCode = String.valueOf(actCode);
+                //2.1.初审岗：直接进入下一岗
+                if(TaskActEnums.AI_WARN_NODE_02.getCode().equals(acCode)){
+                    //继续流程
+                    List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                    taskAiWarnServiceImpl.review("初审通过",actInstId,"",userSend.get(0));
+                }else {
+                    //2.2.其他岗位：再次通知
+                    //短信通知
+                    List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                    taskAiWarnServiceImpl.sendMsg(actInstId,
+                            userSend,
+                            null,
+                            null,
+                            null,
+                            null);
+                }
+            }
+        }
+
+        //3.如果60分钟内未处理
+        List<ActInstEntity> sixtyTask = taskActInstMapper.getUnAiTaskAct(60, null);
+        if(null!=sixtyTask && sixtyTask.size()>0){
+            for(int j=0;j<sixtyTask.size();j++){
+                ActInstEntity sixtyEntity = sixtyTask.get(j);
+                String actInstId = sixtyEntity.getActInstId();
+                String actReceiver = sixtyEntity.getActReceiver();
+                List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                int actCode = sixtyEntity.getActCode();
+                String acCode = String.valueOf(actCode);
+                //继续流程
+                if(TaskActEnums.AI_WARN_NODE_03.getCode().equals(acCode)
+                    || TaskActEnums.AI_WARN_NODE_06.getCode().equals(acCode)){
+                    //处置岗
+                    taskAiWarnServiceImpl.handle(actInstId,"1","系统自动处理","","",userSend.get(0));
+                }else if(TaskActEnums.AI_WARN_NODE_04.getCode().equals(acCode)){
+                    //评审岗
+                    taskAiWarnServiceImpl.evaluate(actInstId,"系统自动处理","",userSend.get(0));
+                }
+            }
+        }
+
     }
 }

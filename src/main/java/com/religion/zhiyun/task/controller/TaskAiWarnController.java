@@ -38,7 +38,7 @@ public class TaskAiWarnController {
     public AppResponse reviewTask(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String review = (String)map.get("review");
-        AppResponse report = aiWarnService.review(review,procInstId,token);
+        AppResponse report = aiWarnService.review(review,procInstId,token,"");
         return report;
     }
 
@@ -52,7 +52,7 @@ public class TaskAiWarnController {
         String feedBack = (String)map.get("feedBack");
         String picture = (String)map.get("picture");
 
-        AppResponse handle = aiWarnService.handle(procInstId, handleResults, feedBack, picture,token);
+        AppResponse handle = aiWarnService.handle(procInstId, handleResults, feedBack, picture,token,"");
         return handle;
     }
 
@@ -63,7 +63,7 @@ public class TaskAiWarnController {
     public AppResponse evaluateTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String evaluation = (String)map.get("evaluation");
-        AppResponse handle = aiWarnService.evaluate(procInstId, evaluation,token);
+        AppResponse handle = aiWarnService.evaluate(procInstId, evaluation,token,"");
         return handle;
     }
     //终审退回基层处置岗

@@ -197,8 +197,8 @@ public class RmFileServiceImpl implements RmFileService {
             String newVideoName = time+suffixName;
 
             //设置文件存储路径，可以存放在你想要指定的路径里面
-            String rootPath="F:\\13files\\20260816\\";
-          //String rootPath=pathUpload+"video"+File.separator+ymd+File.separator;
+            //String rootPath="F:\\13files\\20260816\\";
+            String rootPath=pathUpload+"video"+File.separator+ymd+File.separator;
             //** 上传视频存放位置**//
             String videoPath = rootPath+newVideoName;
             File newFile = new File(videoPath);

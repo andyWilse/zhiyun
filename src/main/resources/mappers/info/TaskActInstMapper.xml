@@ -181,4 +181,17 @@
         </if>
     </select>
 
+    <select id="getUnAiTaskAct" resultType="com.religion.zhiyun.task.entity.ActInstEntity">
+        select
+            ist.ACT_RECEIVER as actReceiver,
+            ist.ACT_INST_ID as actInstId,
+            ist.ACT_CODE as actCode
+        from task_act_inst ist
+        where ist.ACT_HANDLER =''
+        and ist.ACT_RECEIVE_TM &lt;= DATE_SUB(NOW(),INTERVAL #{period} MINUTE)
+        <if test="actCode!=null and actCode!=0">
+            and ist.ACT_CODE = #{actCode}
+        </if>
+    </select>
+
 </mapper>

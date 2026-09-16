@@ -1998,6 +1998,14 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
             //5.2.任务发起
             AppResponse res = taskAiWarnServiceImpl.launch(taskEntity, review, "预警平台");
+            //5.3.短信通知
+            taskAiWarnServiceImpl.sendMsg("",
+                    review,
+                    venueByID.getVenuesAddres(),
+                    venuesName,
+                    cont,
+                    eventType);
+
             return new AppResponse(res.getCode(),res.getMessage());
         } catch (RuntimeException r) {
             r.printStackTrace();
