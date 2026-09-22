@@ -98,9 +98,10 @@ public  class VenuesEntity implements Serializable {
     private String picturesPathRemove;
     private Object[] fileList;
 
-
     private String latitudes;//纬度
 
     private String userSr;//三人驻堂成员
+    private String orderBy;
 
+    private String veUserSr;
 }

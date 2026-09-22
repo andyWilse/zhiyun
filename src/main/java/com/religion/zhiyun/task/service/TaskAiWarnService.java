@@ -3,6 +3,7 @@ package com.religion.zhiyun.task.service;
 import com.religion.zhiyun.task.entity.TaskEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 
 import java.util.List;
 import java.util.Map;
@@ -39,9 +40,12 @@ public interface TaskAiWarnService {
     public AppResponse saveTaskAct(Map<String, Object> map,String token);
 
     /** 删除预警任务接收人 **/
-    public AppResponse deleteTaskAss(int actId,String token);
+    public AppResponse deleteTaskAss(Map<String, Object> map);
 
     /** 流程新增接收人 **/
     public AppResponse saveTaskAss(Map<String, Object> map,String token);
+
+    /** 获取流程操作记录 **/
+    public AppResponse getActHis(ParamsVo vo);
 
 }

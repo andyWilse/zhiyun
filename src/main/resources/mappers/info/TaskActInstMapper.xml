@@ -33,6 +33,26 @@
         );
     </insert>
 
+    <insert id="addActHis" parameterType="com.religion.zhiyun.task.entity.ActInstHisEntity"
+            keyColumn="hisId" useGeneratedKeys="true" keyProperty="hisId">
+        INSERT INTO TASK_ACT_INST_HIS(
+            HIS_ACT_ID,
+            HIS_ACT_NEW,
+            HIS_ACT_OLD,
+            HIS_ACT_TYPE,
+            HIS_ACT_MODIFIER,
+            HIS_ACT_MODIFY_TM
+        )
+        VALUES(
+            #{hisActId},
+            #{hisActNew},
+            #{hisActOld},
+            #{hisActType},
+            #{hisActModifier},
+            #{hisActModifyTm}
+        );
+    </insert>
+
     <update id="updateAct">
         update TASK_ACT_INST act
         <set>
@@ -194,4 +214,38 @@
         </if>
     </select>
 
+    <select id="getActHis" resultType="com.religion.zhiyun.task.entity.ActInstHisEntity">
+        select
+            his.HIS_ACT_NEW as hisActNew,
+            his.HIS_ACT_OLD as hisActOld,
+            (select DICT_CN_DESC from rm_sys_dict dict where dict.DICT_CD=his.HIS_ACT_TYPE) as hisActType,
+            his.HIS_ACT_MODIFIER as hisActModifier,
+            DATE_FORMAT(his.HIS_ACT_MODIFY_TM,'%Y-%m-%d %H:%i:%s') as hisActModifyTm
+        from TASK_ACT_INST_HIS his
+        left join TASK_ACT_INST act on act.ACT_ID = his.HIS_ACT_ID
+        <where>
+            <if test="vo.searchSix!=null and vo.searchSix!=''">
+                act.ACT_INST_ID= #{vo.searchSix}
+            </if>
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                his.HIS_ACT_TYPE= #{vo.searchOne}
+            </if>
+        </where>
+        order by his.HIS_ACT_MODIFY_TM desc
+    </select>
+
+    <select id="getActHisTotal" resultType="long">
+        select
+            count(his.HIS_ID)
+        from TASK_ACT_INST_HIS his
+        left join TASK_ACT_INST act on act.ACT_ID = his.HIS_ACT_ID
+        <where>
+            <if test="vo.searchSix!=null and vo.searchSix!=''">
+                act.ACT_INST_ID= #{vo.searchSix}
+            </if>
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                his.HIS_ACT_TYPE= #{vo.searchOne}
+            </if>
+        </where>
+    </select>
 </mapper>

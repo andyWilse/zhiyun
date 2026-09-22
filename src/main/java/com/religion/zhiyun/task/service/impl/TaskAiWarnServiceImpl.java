@@ -1,5 +1,6 @@
 package com.religion.zhiyun.task.service.impl;
 
+import com.religion.zhiyun.color.entity.ThreeColorEntity;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
@@ -15,22 +16,21 @@ import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskActAssigneeMapper;
 import com.religion.zhiyun.task.dao.TaskActInstMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
-import com.religion.zhiyun.task.entity.ActInstEntity;
-import com.religion.zhiyun.task.entity.AssEntity;
-import com.religion.zhiyun.task.entity.CommentEntity;
-import com.religion.zhiyun.task.entity.TaskEntity;
+import com.religion.zhiyun.task.entity.*;
 import com.religion.zhiyun.task.service.TaskAiWarnService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.base.TransParam;
 import com.religion.zhiyun.utils.enums.*;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.utils.sms.sm.MessageSend;
 import com.religion.zhiyun.venues.dao.VenuesManagerMapper;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FlowNode;
@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -270,8 +271,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
         /*** 1.参数获取 ***/
         List<Map<String, Object>> eventVe = rmEventInfoMapper.getEventVe(procInstId);
-        if(eventVe.size()<1 || eventVe.size()>1){
-            throw new RuntimeException("预警信息异常：“+eventId+”，请联系管理员！");
+        if(eventVe.size()!=1){
+            throw new RuntimeException("预警信息异常：("+procInstId+")，请联系管理员！"+eventVe.size());
         }
 
         Map<String, Object> mapCall = eventVe.get(0);
@@ -613,6 +614,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 //任务
                 map.put("backFlag",1);
                 map.put("taskResult",TaskActEnums.AI_WARN_STATE_04.getCode());
+                map.put("handleResults","0");
                 //更新节点
                 map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
                 map.put("taskId",taskId);
@@ -819,13 +821,12 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             String handleResults = map.get("handleResults") == null ? "" : (String) map.get("handleResults");
 
             TaskEntity taskEntity=new TaskEntity();
-            taskEntity.setHandleResults(taskResult);
+            taskEntity.setHandleResults(handleResults);
             taskEntity.setProcInstId(procInstId);
             taskEntity.setBackFlag(backFlag);
             if(TaskActEnums.AI_WARN_STATE_03.getCode().equals(taskResult)
                     || TaskActEnums.AI_WARN_STATE_05.getCode().equals(taskResult)){
                 taskEntity.setHandlePerson(loginNm);
-                taskEntity.setHandleResults(handleResults);
                 taskEntity.setHandleTime(TimeTool.getYmdHms());
             }
             taskInfoMapper.updateTask(taskEntity);
@@ -1259,7 +1260,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskActAssigneeMapper.updateAssignee(assVo);
             //2.添加日志
             this.addLog(this.getLogin(token),String.valueOf(actId), OperaEnums.act_delete.getCode(),"","");
-
+            //添加操作记录
+            this.addActInstHis(actId,ActEnums.ACT_OPERATION_06.getName(),String.valueOf(actId),ActEnums.ACT_OPERATION_06.getCode());
             return new AppResponse(ResultCode.SUCCESS.getCode(),"Ai流程节点删除成功！");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1285,7 +1287,9 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             List<AssEntity> assigneeList = taskActAssigneeMapper.getAssignee(actId,0);
             actMap.put("actReceiver",assigneeList);
             //处理人
-            actMap.put("actHandler",aiTaskAct);
+            //actMap.put("actHandler",aiTaskAct);
+            actMap.put("actHandler",actInstEntity.getActHandler());
+            actMap.put("actHandNm",actInstEntity.getActHandNm());
 
             return new PageResponse(ResultCode.SUCCESS.getCode(),"Ai流程节点信息获取成功！",actMap);
         } catch (Exception e) {
@@ -1298,143 +1302,106 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     public AppResponse saveTaskAct(Map<String, Object> actMap, String token) {
 
         try {
-            //更新接收时间，处理时间
-            if(null!=actMap.get("actDetail")){
-                String content="";
-                Map<String,Object> actInstMap = (Map<String, Object>) actMap.get("actDetail");
-                Integer actId = actInstMap.get("actId") == null ? 0 : (Integer) actInstMap.get("actId");
 
-                List<ActInstEntity> aiTaskActList = taskActInstMapper.getAiTaskAct("", actId);
-                if(null==aiTaskActList || aiTaskActList.size()<=0){
-                    throw new RuntimeException("流程信息丢失，请联系管理员！");
-                }
+            //校验
+            Integer actId = actMap.get("actId") == null ? 0 : (Integer) actMap.get("actId");
+            List<ActInstEntity> aiTaskActList = taskActInstMapper.getAiTaskAct("", actId);
+            if(null==aiTaskActList || aiTaskActList.size()<=0){
+                throw new RuntimeException("流程信息丢失，请联系管理员！");
+            }
+            //原数据
+            ActInstEntity actInst = aiTaskActList.get(0);
+            ActInstEntity actCurrVo=new ActInstEntity();
+            Boolean uFlag=false;
+            String content="";
 
-                //原数据
-                ActInstEntity actInst = aiTaskActList.get(0);
-                Timestamp actReceiveTm = actInst.getActReceiveTm();
-                Timestamp actHandleTm = actInst.getActHandleTm();
-                String actHandler = actInst.getActHandler();
-                String actHandNm = actInst.getActHandNm();
-
-                //1.时间
-                ActInstEntity actCurrVo=new ActInstEntity();
-                Boolean uFlag=false;
-                //页面数据
-                String actReceiveTime = actInstMap.get("actReceiveTime") == null ? "" : (String) actInstMap.get("actReceiveTime");
-                Date dateReceive = TimeTool.strYmdHmsToDate(actReceiveTime);
+            //1.接收时间
+            //页面参数
+            String actReceiveTm=actMap.get("actReceiveTm")==null?"": (String) actMap.get("actReceiveTm");
+            if(!GeneTool.isEmpty(actReceiveTm)){
+                //原
+                Timestamp actReTm = actInst.getActReceiveTm();
+                //新
+                Date dateReceive = TimeTool.strYmdHmsToDate(actReceiveTm);
                 Timestamp  receiveTm= new Timestamp(dateReceive.getTime());
-                if(!actReceiveTm.equals(receiveTm)){
+                if(!actReTm.equals(receiveTm)){
                     uFlag=true;
                     actCurrVo.setActReceiveTm(receiveTm);
                     content=content+"actReceiveTm:"+receiveTm+";";
+                    //保存修改记录
+                    this.addActInstHis(actId,actReceiveTm,TimeTool.getTimestamp(actReTm),ActEnums.ACT_OPERATION_01.getCode());
                 }
-
-                String actHandleTime = actInstMap.get("actHandleTime") == null ? "" : (String) actInstMap.get("actHandleTime");
-                Date dateHand = TimeTool.strYmdHmsToDate(actHandleTime);
+            }
+            //2.处理时间
+            //页面参数
+            String actHandleTm=actMap.get("actHandleTm")==null?"": (String) actMap.get("actHandleTm");
+            if(!GeneTool.isEmpty(actHandleTm)){
+                //原
+                Timestamp actHaTm = actInst.getActHandleTm();
+                //新
+                Date dateHand = TimeTool.strYmdHmsToDate(actHandleTm);
                 Timestamp  handTm= new Timestamp(dateHand.getTime());
-                if(!actHandleTm.equals(handTm)){
+                if(!actHaTm.equals(handTm)){
                     uFlag=true;
                     actCurrVo.setActHandleTm(handTm);
                     content=content+"actHandleTm:"+handTm+";";
+                    //保存修改记录
+                    this.addActInstHis(actId,actHandleTm,TimeTool.getTimestamp(actHaTm),ActEnums.ACT_OPERATION_05.getCode());
                 }
+            }
 
-                //2.处理人
-                if(null==actMap.get("actHandler")){
-                    throw new RuntimeException("流程处理人信息丢失，请联系管理员！");
-                }
-                List<Map<String,Object>> aiTaskAct = (List<Map<String,Object>>) actMap.get("actHandler");
-                //页面数据
-                Map<String,Object> actInstHandMap = aiTaskAct.get(0);
-                String actHandMobil = actInstHandMap.get("actHandler") == null ? "" : (String) actInstHandMap.get("actHandler");
-                String actHandName = actInstHandMap.get("actHandNm") == null ? "" : (String) actInstHandMap.get("actHandNm");
-                if(!actHandler.equals(actHandMobil)){
-                    uFlag=true;
-                    actCurrVo.setActHandler(actHandMobil);
-                    content=content+"actHandler:"+actHandMobil+";";
-                }
-                if(!actHandNm.equals(actHandName)){
-                    uFlag=true;
-                    actCurrVo.setActHandNm(actHandName);
-                    content=content+"actHandNm:"+actHandName+";";
-                }
-
-                if(uFlag){
-                    actCurrVo.setActModifyTm(TimeTool.getTimestamp());
-                    actCurrVo.setActId(actId);
-                    actCurrVo.setActState(TaskActEnums.AI_NODE_STATE_02.getCode());
-                    taskActInstMapper.updateAct(actCurrVo);
-                }
-
-                //3.接收人
-                if(null==actMap.get("actReceiver")){
-                    throw new RuntimeException("流程接收人信息丢失，请联系管理员！");
-                }
-                List<Map<String,Object>> assigneeList = (List<Map<String,Object>>) actMap.get("actReceiver");
+            //3.接收人
+            List<Map<String,Object>> assigneeList = (List<Map<String,Object>>) actMap.get("addAssignee");
+            if(null!=assigneeList && assigneeList.size()>0){
+                String cont="";
                 for(int a=0;a<assigneeList.size();a++){
                     Map<String,Object> assEntityMap = assigneeList.get(a);
-                    Integer assId = assEntityMap.get("assId") == null ? 0 : (Integer) assEntityMap.get("assId");
-                    String assAssignee = assEntityMap.get("assAssignee") == null ? "" : (String) assEntityMap.get("assAssignee");
-                    String assMobile = assEntityMap.get("assMobile") == null ? "" : (String) assEntityMap.get("assMobile");
-
+                    String assAssignee = assEntityMap.get("userNm") == null ? "" : (String) assEntityMap.get("userNm");
+                    String assMobile = assEntityMap.get("userMobile") == null ? "" : (String) assEntityMap.get("userMobile");
+                    Integer userId = assEntityMap.get("userId") == null ? 0 : (Integer) assEntityMap.get("userId");
+                    cont=assMobile+","+cont;
                     //数据处理
                     AssEntity assVo=new AssEntity();
-                    if(0==assId){
-                        //3.1.新增
-                        SysUserEntity user = this.getUser(assMobile);
-                        int userId=0;
-                        if(null!=user){
-                            userId=user.getUserId();
-                        }
-                        assVo.setAssActId(actId);
-                        assVo.setAssUserId(userId);
-                        assVo.setAssAssignee(assAssignee);
-                        assVo.setAssModifyTm(TimeTool.getTimestamp());
-                        assVo.setAssMobile(assMobile);
-                        assVo.setAssState(TaskActEnums.AI_ASS_STATE_01.getCode());
-                        taskActAssigneeMapper.addAssignee(assVo);
+                    //3.1.新增
+                    assVo.setAssActId(actId);
+                    assVo.setAssUserId(userId);
+                    assVo.setAssAssignee(assAssignee);
+                    assVo.setAssModifyTm(TimeTool.getTimestamp());
+                    assVo.setAssMobile(assMobile);
+                    assVo.setAssState(TaskActEnums.AI_ASS_STATE_01.getCode());
+                    taskActAssigneeMapper.addAssignee(assVo);
 
-                        content=content+"assEntity:"+JsonUtils.listTOJson(assVo)+";";
-                    }else{
-                        //3.1.2.查询系统是否存在
-                        List<AssEntity> assignee = taskActAssigneeMapper.getAssignee(0, assId);
-                        if(null!=assignee && assignee.size()>0){
-                            AssEntity assEn = assignee.get(0);
-                            String assAss = assEn.getAssAssignee();
-                            String assMo = assEn.getAssMobile();
-                            Boolean assFlag=false;
-                            if(!assAss.equals(assAssignee)){
-                                assFlag=true;
-                                assVo.setAssAssignee(assAssignee);
-                                content=content+"assAssignee:"+assAssignee+";";
-                            }
-                            if(!assMo.equals(assMobile)){
-                                assFlag=true;
-                                assVo.setAssMobile(assMobile);
-                                content=content+"assMobile:"+assMobile+";";
-
-                            }
-                            if(assFlag) {
-                                assVo.setAssModifyTm(TimeTool.getTimestamp());
-                                assVo.setAssState(TaskActEnums.AI_ASS_STATE_02.getCode());
-                                assVo.setAssId(assId);
-                                //修改
-                                taskActAssigneeMapper.updateAssignee(assVo);
-                            }
-
-                        }else{
-                            throw new RuntimeException("流程接收人信息处理错误，请联系管理员！");
-                        }
-                    }
+                    content=content+"assEntity:"+JsonUtils.listTOJson(assVo)+";";
                 }
-
-                //4.添加日志
-                String login = this.getLogin(token);
-                this.addLog(login,String.valueOf(actId),OperaEnums.act_update.getCode(),content,"修改流程信息");
-
-
-            }else{
-                throw new RuntimeException("流程信息丢失，请联系管理员！");
+                //保存修改记录
+                this.addActInstHis(actId,cont,"",ActEnums.ACT_OPERATION_02.getCode());
             }
+
+
+            //4.处理人
+            String changeHandler = (String) actMap.get("changeHandler");
+            if(!GeneTool.isEmpty(changeHandler)){
+                String actHandler = actInst.getActHandler();
+                if(!actHandler.equals(changeHandler)){
+                    uFlag=true;
+                    actCurrVo.setActHandler(changeHandler);
+                    content=content+"actHandler:"+changeHandler+";";
+                    //保存修改记录
+                    this.addActInstHis(actId,changeHandler,actHandler,ActEnums.ACT_OPERATION_04.getCode());
+                }
+            }
+
+            if(uFlag){
+                actCurrVo.setActModifyTm(TimeTool.getTimestamp());
+                actCurrVo.setActId(actId);
+                actCurrVo.setActState(TaskActEnums.AI_NODE_STATE_02.getCode());
+                taskActInstMapper.updateAct(actCurrVo);
+            }
+
+            //4.添加日志
+            String login = this.getLogin(token);
+            this.addLog(login,String.valueOf(actId),OperaEnums.act_update.getCode(),content,"修改流程信息");
+
             return new AppResponse(ResultCode.SUCCESS.getCode(),"流程节点信息修改成功！");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1442,11 +1409,32 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         }
     }
 
+    /**
+     *添加历史操作记录
+     * @param actId
+     * @param hisActNew
+     * @param hisActType
+     * @throws ParseException
+     */
+    public void addActInstHis(int actId,String hisActNew,String hisActOld,String hisActType ) throws ParseException {
+        //添加历史操作记录
+        ActInstHisEntity his=new ActInstHisEntity();
+        his.setHisActId(actId);
+        his.setHisActNew(hisActNew);
+        his.setHisActOld(hisActOld);
+        his.setHisActType(hisActType);
+        his.setHisActModifier(TransParam.loginName);
+        his.setHisActModifyTm(TimeTool.getTimestamp());
+        taskActInstMapper.addActHis(his);
+    }
+
     @Override
-    public AppResponse deleteTaskAss(int assId, String token) {
+    public AppResponse deleteTaskAss(Map<String, Object> map) {
 
         try {
-
+            Integer assId = map.get("assId")==null?0: (Integer) map.get("assId");
+            Integer actId = map.get("actId")==null?0: (Integer) map.get("actId");
+            String assMobile = map.get("assMobile")==null?"": (String) map.get("assMobile");
             if(0==assId){
                 throw new RuntimeException("用户丢失，请联系管理员！");
             }
@@ -1459,8 +1447,10 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             ass.setAssModifyTm(timestamp);
             ass.setAssState(TaskActEnums.AI_ASS_STATE_03.getCode());
             taskActAssigneeMapper.updateAssignee(ass);
+            //删除记录
+            this.addActInstHis(actId,assMobile,"",ActEnums.ACT_OPERATION_03.getCode());
             //2.添加日志
-            this.addLog(this.getLogin(token),String.valueOf(assId), OperaEnums.ass_delete.getCode(),"","");
+            this.addLog(TransParam.loginName,String.valueOf(assId), OperaEnums.ass_delete.getCode(),"","");
 
             return new AppResponse(ResultCode.SUCCESS.getCode(),"Ai预警接收人删除成功！");
         } catch (Exception e) {
@@ -1513,6 +1503,31 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         }
     }
 
+    @Override
+    public AppResponse getActHis(ParamsVo vo) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取任务修改记录列表失败！";
+
+        List<ActInstHisEntity> actInstHisList=null;
+        Long actInstHisTotal =0l;
+        try{
+
+            actInstHisList = taskActInstMapper.getActHis(vo);
+            actInstHisTotal = taskActInstMapper.getActHisTotal(vo);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取任务修改记录列表成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+
+        }
+        return new AppResponse(code,message,actInstHisTotal,actInstHisList.toArray());
+    }
+
     /**
      * 短信通知
      * @param procInstId
@@ -1532,8 +1547,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         if(!GeneTool.isEmpty(procInstId)){
             /*** 1.参数获取 ***/
             List<Map<String, Object>> eventVe = rmEventInfoMapper.getEventVe(procInstId);
-            if(eventVe.size()<1 || eventVe.size()>1){
-                throw new RuntimeException("预警信息异常：“+eventId+”，请联系管理员！");
+            if(eventVe.size()!=1){
+                throw new RuntimeException("预警信息异常：("+procInstId+")，请联系管理员！"+eventVe.size());
             }
 
             Map<String, Object> mapCall = eventVe.get(0);

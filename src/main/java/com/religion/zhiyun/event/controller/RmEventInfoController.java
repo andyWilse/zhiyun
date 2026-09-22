@@ -2,7 +2,6 @@ package com.religion.zhiyun.event.controller;
 
 import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
-import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.login.http.inter.DecryptRequest;
 import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.JsonUtils;

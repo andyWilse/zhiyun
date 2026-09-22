@@ -404,7 +404,15 @@
                 #{value}
             </foreach>
         </if>
-        order by (select count(uv.UV_USER_ID) from rm_user_venues_map uv  where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1')  desc,ve.LAST_MODIFY_TIME desc
+        <if test="venue.orderBy == '01'">
+            order by (select count(uv.UV_USER_ID) from rm_user_venues_map uv  where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1')  desc
+        </if>
+        <if test="venue.orderBy == '02'">
+            order by (select count(uv.UV_USER_ID) from rm_user_venues_map uv  where uv.UV_VENUES_ID=ve.VENUES_ID and uv.UV_VALID_IND='1')  asc
+        </if>
+        <if test="venue.orderBy == '03'">
+            order by ve.LAST_MODIFY_TIME desc
+        </if>
         limit #{page},#{size}
     </select>
 

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.religion.zhiyun.color.dao.ThreeColorMapper">
+
+    <sql id="threeColorColumn">
+        CO_VENUES_ID as coVenuesId,
+        CO_COLOR as coColor,
+        CO_TYPE as coType,
+        CO_OCCUR_TM as coOccurTm,
+        CO_CONTENT as coContent,
+        CO_STATE as coState,
+        CO_PROGRESS as coProgress,
+        CO_HANDLE_TM as coHandleTm,
+        CO_REMARK as coRemark,
+        CO_CREATOR as coCreator,
+        CO_CREATE_TM as coCreateTm,
+        CO_MODIFIER as coModifier,
+        CO_MODIFY_TM as coModifyTm
+    </sql>
+
+    <insert id="addThreeColor" parameterType="com.religion.zhiyun.color.entity.ThreeColorEntity"
+            keyColumn="coId" useGeneratedKeys="true" keyProperty="coId">
+        INSERT INTO RM_THREE_COLOR(
+            CO_VENUES_ID,
+            CO_COLOR,
+            CO_TYPE,
+            CO_OCCUR_TM,
+            CO_CONTENT,
+            CO_STATE,
+            CO_PROGRESS,
+            CO_HANDLE_TM,
+            CO_REMARK,
+            CO_CREATOR,
+            CO_CREATE_TM,
+            CO_MODIFIER,
+            CO_MODIFY_TM
+        )
+        VALUES(
+            #{coVenuesId},
+            #{coColor},
+            #{coType},
+            #{coOccurTm},
+            #{coContent},
+            #{coState},
+            #{coProgress},
+            #{coHandleTm},
+            #{coRemark},
+            #{coCreator},
+            #{coCreateTm},
+            #{coModifier},
+            #{coModifyTm}
+        );
+    </insert>
+
+    <update id="updateThreeColor">
+        update RM_THREE_COLOR tc
+        <set>
+            <if test="coVenuesId!=null and coVenuesId!=''">
+                tc.CO_VENUES_ID = #{coVenuesId},
+            </if>
+            <if test="coColor!=null and coColor!=''">
+                tc.CO_COLOR = #{coColor},
+            </if>
+            <if test="coType!=null and coType!=''">
+                tc.CO_TYPE = #{coType},
+            </if>
+            <if test="coOccurTm!=null">
+                tc.CO_OCCUR_TM = #{coOccurTm},
+            </if>
+            <if test="coContent!=null and coContent!=''">
+                tc.CO_CONTENT = #{coContent},
+            </if>
+            <if test="coState!=null and coState!=''">
+                tc.CO_STATE = #{coState},
+            </if>
+            <if test="coProgress!=null and coProgress!=''">
+                tc.CO_PROGRESS = #{coProgress},
+            </if>
+            <if test="coHandleTm!=null || coState!='01'">
+                tc.CO_HANDLE_TM = #{coHandleTm}
+            </if>
+            <if test="coRemark!=null and coRemark!=''">
+                tc.CO_REMARK = #{coRemark},
+            </if>
+            <if test="coModifier!=null and coModifier!=''">
+                tc.CO_MODIFIER = #{coModifier},
+            </if>
+            <if test="coModifyTm!=null">
+                tc.CO_MODIFY_TM = #{coModifyTm},
+            </if>
+        </set>
+        <where>
+            <if test="coId!=null and coId!=''">
+                CO_ID=#{coId}
+            </if>
+        </where>
+    </update>
+
+    <update id="deleteThreeColor">
+        update RM_THREE_COLOR tc set tc.CO_VALID='0',tc.CO_MODIFIER=#{coModifier},tc.CO_MODIFY_TM=NOW() where tc.CO_ID=#{coId}
+    </update>
+
+    <select id="getThreeColor" resultType="com.religion.zhiyun.color.entity.ThreeColorEntity">
+        select
+            <include refid="threeColorColumn"/>
+        from RM_THREE_COLOR tc
+        <where>
+            <if test="coId!=null and coId!=''">
+                tc.CO_ID=#{coId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getThreeColorList" resultType="com.religion.zhiyun.color.entity.ThreeColorEntity">
+        select
+            ve.VENUES_NAME as venuesName,
+            (select dict.DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_TYPE_CD='5001' and dict.DICT_CD=tc.CO_COLOR) as coColorNm,
+            (select dict.DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_TYPE_CD='5002' and dict.DICT_CD=tc.CO_TYPE) as coTypeNm,
+            (select dict.DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_TYPE_CD='7001' and dict.DICT_CD=tc.CO_STATE) as coStateNm,
+            DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m-%d %H:%i:%s') as occurTm,
+            DATE_FORMAT(tc.CO_HANDLE_TM,'%Y-%m-%d %H:%i:%s') as handleTm,
+            tc.CO_ID as coId,
+            tc.CO_CONTENT as coContent,
+            tc.CO_PROGRESS as coProgress,
+            tc.CO_REMARK as coRemark,
+            tc.CO_COLOR as coColor,
+            tc.CO_TYPE as coType,
+            tc.CO_STATE as coState,
+            ve.VENUES_ID as coVenuesId,
+            tc.CO_OCCUR_TM as coOccurTm,
+            tc.CO_HANDLE_TM as coHandleTm,
+            tc.CO_ID as coId
+        from RM_THREE_COLOR tc
+        left join RM_VENUES_INFO ve on ve.VENUES_ID=tc.CO_VENUES_ID
+        <where>
+        tc.CO_VALID='1'
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and tc.CO_COLOR=#{vo.searchOne}
+        </if>
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and tc.CO_TYPE=#{vo.searchTwo}
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venuesArr != null and vo.venuesArr.length>0">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        </where>
+        limit #{vo.page},#{vo.size}
+    </select>
+
+    <select id="getThreeColorTotal" resultType="java.lang.Long">
+        SELECT
+            count(tc.CO_ID)
+        from RM_THREE_COLOR tc
+        left join RM_VENUES_INFO ve on ve.VENUES_ID=tc.CO_VENUES_ID
+        <where>
+            tc.CO_VALID='1'
+            <if test="vo.searchOne!=null and vo.searchOne!=''">
+                and tc.CO_COLOR=#{vo.searchOne}
+            </if>
+            <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+                and tc.CO_TYPE=#{vo.searchTwo}
+            </if>
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venuesArr != null and vo.venuesArr.length>0">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

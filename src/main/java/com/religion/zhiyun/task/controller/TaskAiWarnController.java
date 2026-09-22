@@ -7,9 +7,11 @@ import com.religion.zhiyun.task.service.TaskAiWarnService;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @DecryptRequest(true)
@@ -22,8 +24,6 @@ public class TaskAiWarnController {
     private TaskAiWarnService aiWarnService;
 
     //发起流程
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @PostMapping("/launch")
     public AppResponse launchTask(@RequestBody String taskJson, @RequestHeader("token")String token){
         TaskEntity taskEntity = JsonUtils.jsonTOBean(taskJson, TaskEntity.class);
@@ -32,10 +32,8 @@ public class TaskAiWarnController {
     }
 
    //人工审核
-   @DecryptRequest(false)
-   @EncryptResponse(false)
     @PostMapping("/review")
-    public AppResponse reviewTask(@RequestParam Map<String, Object> map, @RequestHeader("token")String token){
+    public AppResponse reviewTask(@RequestBody Map<String, Object> map, @RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String review = (String)map.get("review");
         AppResponse report = aiWarnService.review(review,procInstId,token,"");
@@ -43,10 +41,8 @@ public class TaskAiWarnController {
     }
 
     //基层干部
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @PostMapping("/handle")
-    public AppResponse handleTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+    public AppResponse handleTask(@RequestBody Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String handleResults = (String)map.get("handleResults");
         String feedBack = (String)map.get("feedBack");
@@ -57,20 +53,16 @@ public class TaskAiWarnController {
     }
 
     //评价通过
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @PostMapping("/evaluate")
-    public AppResponse evaluateTask(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+    public AppResponse evaluateTask(@RequestBody Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String evaluation = (String)map.get("evaluation");
         AppResponse handle = aiWarnService.evaluate(procInstId, evaluation,token,"");
         return handle;
     }
     //终审退回基层处置岗
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @PostMapping("/backup")
-    public AppResponse goBack(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
+    public AppResponse goBack(@RequestBody Map<String, Object> map,@RequestHeader("token")String token){
         String procInstId = (String)map.get("procInstId");
         String evaluation = (String)map.get("evaluation");
         AppResponse handle = aiWarnService.backup(procInstId, evaluation,token);
@@ -78,10 +70,8 @@ public class TaskAiWarnController {
     }
 
     //解除误报
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @PostMapping("/dismiss")
-    public AppResponse dismissAi(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
+    public AppResponse dismissAi(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
         String procInstId = (String)map.get("procInstId");
         return aiWarnService.dismissAI(procInstId,token);
     }
@@ -107,19 +97,25 @@ public class TaskAiWarnController {
     //流程修改保存
     @PostMapping("/saveAct")
     public AppResponse saveTaskAct(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
+
         return aiWarnService.saveTaskAct(map,token);
     }
 
     //删除任务接收人
-    @PostMapping("/delAss/{assId}")
-    public AppResponse deleteTaskAss(@PathVariable int assId,@RequestHeader("token")String token) {
-        return aiWarnService.deleteTaskAss(assId,token);
+    @PostMapping("/delAss")
+    public AppResponse deleteTaskAss(@RequestBody Map<String, Object> map) {
+        return aiWarnService.deleteTaskAss(map);
     }
 
     //流程修改保存
     @PostMapping("/saveAss")
     public AppResponse saveTaskAss(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         return aiWarnService.saveTaskAss(map,token);
+    }
+
+    @GetMapping("/history")
+    public AppResponse getThreeColorList(ParamsVo vo) {
+        return aiWarnService.getActHis(vo);
     }
 
 }

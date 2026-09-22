@@ -76,6 +76,37 @@ public class TimeTool {
         return timestamp;
     }
 
+    /**
+     * Timestamp 转 String
+     * @param timestamp
+     * @return
+     */
+    public static String getTimestamp(Timestamp timestamp){
+        // 定义日期格式化对象
+        SimpleDateFormat sdf = new SimpleDateFormat(ymdHms);
+        // 格式化 Timestamp 为 String
+        String strTimestamp = sdf.format(timestamp);
+        return strTimestamp;
+    }
+
+    /**
+     * String 转 Timestamp
+     * @param time
+     * @return
+     */
+    public static Timestamp toTimestamp(String time)  {
+        Timestamp  timestamp=null;
+        try {
+            Date timeDate = TimeTool.strYmdHmsToDate(time);
+            timestamp= new Timestamp(timeDate.getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return timestamp;
+    }
+
+
+
 
 
 }

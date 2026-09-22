@@ -398,7 +398,8 @@
             SUM(CASE WHEN EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
             SUM(CASE WHEN EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS face,
             SUM(CASE WHEN EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS task,
-            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd
+            SUM(CASE WHEN EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS crowd,
+            SUM(CASE WHEN EVENT_TYPE = 06 THEN 1 ELSE 0 END) AS unusual
         FROM rm_event_info ev
         left join RM_VENUES_INFO ve on ev.REL_VENUES_ID=ve.VENUES_ID
         where ev.EVENT_TYPE!='05'
@@ -693,7 +694,8 @@
                 IFNULL(ev.fire,0) as fire,
                 IFNULL(ev.super,0) as super,
                 IFNULL(ev.important,0) as important,
-                IFNULL(ev.part,0) as part
+                IFNULL(ev.part,0) as part,
+                IFNULL(ev.unusual,0) as unusual
         FROM (
             SELECT DATE_FORMAT(date_add(CURDATE(), INTERVAL i MONTH),'%Y-%m')  AS tmDate
             FROM num a where a.i &gt; #{vo.size} and type='month'
@@ -703,8 +705,9 @@
                     SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
                     SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS super,
                     SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS important,
-                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part
-            from rm_event_info ev
+                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 06 THEN 1 ELSE 0 END) AS unusual
+        from rm_event_info ev
             left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
             where ve.VENUES_STATUS='01'
             and DATE_FORMAT(ev.WARN_TIME,'%Y-%m-%d') > date_add(CURDATE(), interval 31*#{vo.size} day)
@@ -1124,7 +1127,8 @@
             SUM(CASE WHEN ev.EVENT_TYPE = '01' THEN 1 ELSE 0 END) AS fire,
             SUM(CASE WHEN ev.EVENT_TYPE = '02' THEN 1 ELSE 0 END) AS limits,
             SUM(CASE WHEN ev.EVENT_TYPE = '03' THEN 1 ELSE 0 END) AS important,
-            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect
+            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect,
+            SUM(CASE WHEN ev.EVENT_TYPE = '06' THEN 1 ELSE 0 END) AS unusual
         from RM_EVENT_INFO ev
         left join RM_VENUES_INFO ve  on ev.REL_VENUES_ID=ve.VENUES_ID
     </select>
@@ -1136,7 +1140,8 @@
             SUM(CASE WHEN ev.EVENT_TYPE = '01' THEN 1 ELSE 0 END) AS fire,
             SUM(CASE WHEN ev.EVENT_TYPE = '02' THEN 1 ELSE 0 END) AS limits,
             SUM(CASE WHEN ev.EVENT_TYPE = '03' THEN 1 ELSE 0 END) AS important,
-            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect
+            SUM(CASE WHEN ev.EVENT_TYPE = '04' THEN 1 ELSE 0 END) AS collect,
+            SUM(CASE WHEN ev.EVENT_TYPE = '06' THEN 1 ELSE 0 END) AS unusual
         from rm_town_info tt
         left join RM_VENUES_INFO ve on tt.TOWN_CODE=ve.TOWN
         left join RM_EVENT_INFO ev  on ev.REL_VENUES_ID=ve.VENUES_ID

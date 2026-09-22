@@ -1,6 +1,8 @@
 package com.religion.zhiyun.task.dao;
 
 import com.religion.zhiyun.task.entity.ActInstEntity;
+import com.religion.zhiyun.task.entity.ActInstHisEntity;
+import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,8 @@ public interface TaskActInstMapper {
 
     /**新增**/
     void addAct(ActInstEntity actEntity);
+    /**流程修改记录新增**/
+    void addActHis(ActInstHisEntity actInstHisEntity);
 
     /**更新**/
     void updateAct(ActInstEntity actEntity);
@@ -48,4 +52,13 @@ public interface TaskActInstMapper {
     List<ActInstEntity> getUnAiTaskAct(@Param("period") Integer period,
                                        @Param("actCode") String actCode);
 
+
+
+    /**
+     * 获取任务流程信息
+     * @param vo
+     * @return
+     */
+    List<ActInstHisEntity> getActHis(@Param("vo") ParamsVo vo);
+    Long getActHisTotal(@Param("vo") ParamsVo vo);
 }

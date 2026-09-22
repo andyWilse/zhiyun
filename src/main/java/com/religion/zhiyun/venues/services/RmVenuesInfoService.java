@@ -59,16 +59,10 @@ public interface RmVenuesInfoService {
 
     /**
      * 分页查询
-     * @param page
-     * @param size
-     * @param venuesName
-     * @param responsiblePerson
-     * @param religiousSect
+     * @param map
      * @return
      */
-    RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName,
-                                 String responsiblePerson, String religiousSect,String venuesPhone,
-                                 String token);
+    RespPageBean getVenuesByPage(Map<String, Object> map);
 
     /**
      * 场所下拉(监管)

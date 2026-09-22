@@ -104,16 +104,8 @@ public class RmVenuesInfoController {
 
     //@RequiresPermissions("venues:get")
     @GetMapping("/find")
-    public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
-        String venuesName = (String)map.get("venuesName");
-        String responsiblePerson = (String)map.get("responsiblePerson");
-        String religiousSect = (String)map.get("religiousSect");
-        String venuesPhone = (String)map.get("venuesPhone");
-        String pages = (String) map.get("page");
-        String sizes = (String)map.get("size");
-        Integer page = Integer.valueOf(pages);
-        Integer size = Integer.valueOf(sizes);
-        return rmVenuesInfoService.getVenuesByPage(page,size,venuesName,responsiblePerson,religiousSect,venuesPhone,token);
+    public RespPageBean getVenuesByPage(@RequestParam Map<String, Object> map){
+        return rmVenuesInfoService.getVenuesByPage(map);
     }
 
     //场所更新：app下拉使用(管理)

@@ -83,16 +83,18 @@
 
     <select id="queryByName" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-            <include refid="userColumn"/>
-        from RM_SYS_USER_INFO
-        where LOGIN_NM = #{loginNm} or USER_NM= #{loginNm} or USER_MOBILE= #{loginNm}
+            <include refid="userColumn"/>,
+            (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=su.USER_ID) as relVenuesId
+        from RM_SYS_USER_INFO su
+        where su.LOGIN_NM = #{loginNm} or su.USER_NM= #{loginNm} or su.USER_MOBILE= #{loginNm}
     </select>
 
     <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-             <include refid="userColumn"/>
-        from RM_SYS_USER_INFO
-        where USER_ID = #{userId}
+             <include refid="userColumn"/>,
+            (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=su.USER_ID) as relVenuesId
+        from RM_SYS_USER_INFO su
+        where su.USER_ID = #{userId}
     </select>
 
     <select id="getUserId" resultType="map">
@@ -118,14 +120,16 @@
 
     <select id="queryByNbr" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-            <include refid="userColumn"/>
-        from RM_SYS_USER_INFO where USER_NBR = #{userNbr}
+            <include refid="userColumn"/>,
+            (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=su.USER_ID) as relVenuesId
+        from RM_SYS_USER_INFO su where USER_NBR = #{userNbr}
     </select>
 
     <select id="queryByTel" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-        <include refid="userColumn"/>
-        from RM_SYS_USER_INFO
+        <include refid="userColumn"/>,
+        (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=su.USER_ID) as relVenuesId
+        from RM_SYS_USER_INFO su
         where VALID_IND='1'
         and (USER_MOBILE= #{userMobile}
         or LOGIN_NM LIKE CONCAT('%',#{userMobile},'%')
@@ -142,7 +146,8 @@
 
     <select id="getUsersByPage" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
         select
-            <include refid="userColumn"/>
+            <include refid="userColumn"/>,
+            (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=ve.USER_ID) as relVenuesId
         from RM_SYS_USER_INFO ve
         left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
         where ve.VALID_IND='1'

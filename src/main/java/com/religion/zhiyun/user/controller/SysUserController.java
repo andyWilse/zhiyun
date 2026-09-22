@@ -4,13 +4,19 @@ import com.religion.zhiyun.login.http.inter.DecryptRequest;
 import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.service.SysUserService;
+import com.religion.zhiyun.utils.RedisUtils;
+import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.redis.AppRedisCacheManager;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @DecryptRequest(true)
 @EncryptResponse(true)
@@ -20,6 +26,8 @@ public class SysUserController {
 
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private AppRedisCacheManager redisCacheManager;
 
     @GetMapping("/find")
     public PageResponse getUsersByPage(@RequestParam Map<String, Object> map,@RequestHeader("token")String token){
@@ -95,6 +103,16 @@ public class SysUserController {
     @PostMapping("/addVenue")
     public PageResponse addVenue(@RequestBody Map<String,Object> map,@RequestHeader("token")String token) {
         return sysUserService.addVenue(map,token);
+    }
+
+    //场所新增（添加三人驻堂）
+    @PostMapping("/venueSr")
+    public PageResponse addVenuesSr(@RequestBody Map<String,Object> map) {
+        //放入缓存
+        String key= String.valueOf(UUID.randomUUID());
+        redisCacheManager.hmset(key,map,30*60);
+        //Object o = redisCacheManager.hmget(key);
+        return new PageResponse(200,"添加三人驻堂",key);
     }
 
 }

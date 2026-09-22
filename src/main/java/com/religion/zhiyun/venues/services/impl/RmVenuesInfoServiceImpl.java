@@ -9,9 +9,11 @@ import com.religion.zhiyun.user.dao.RmUserVenuesMapper;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.user.entity.UserVenuesEntity;
+import com.religion.zhiyun.user.service.impl.SysUserServiceImpl;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.base.TransParam;
 import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.map.GetLngAndLagGaoDe;
 import com.religion.zhiyun.utils.response.AppResponse;
@@ -53,6 +55,8 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     private OperateRecordService operateRecordService;
     @Autowired
     private RmUserVenuesMapper rmUserVenuesMapper;
+    @Autowired
+    private SysUserServiceImpl sysUserServiceImpl;
 
     long code= ResultCode.FAILED.getCode();
     String message="场所信息数据处理！";
@@ -98,7 +102,19 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             }
             //场所信息数据保存
             rmVenuesInfoMapper.add(venuesEntity);
-
+            int venuesId = venuesEntity.getVenuesId();
+            //三人驻堂
+            String userSrList = venuesEntity.getVeUserSr();
+            String[] sr = userSrList.split(",");
+            if(null!=sr && sr.length>0){
+                for(int r=0;r<sr.length;r++){
+                    String userId=sr[r];
+                    if(!GeneTool.isEmpty(userId)){
+                        //2.增加
+                        sysUserServiceImpl.saveUv(Integer.parseInt(userId), venuesId);
+                    }
+                }
+            }
             //增加日志信息
             Map<String,Object> vuMap=new HashMap<>();
             vuMap.put("operator",loginNm);
@@ -381,18 +397,29 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public RespPageBean getVenuesByPage(Integer page, Integer size, String venuesName, String responsiblePerson,
-                                        String religiousSect,String venuesPhone,String token) {
+    public RespPageBean getVenuesByPage(Map<String, Object> map) {
         long code=ResultCode.FAILED.getCode();
         String message="PC场所信息获取";
         Long total=0l;
         List<VenuesEntity>  dataList=new ArrayList<>();
         String[] relVenuesArr={};
         try {
+            String venuesName = (String)map.get("venuesName");
+            String responsiblePerson = (String)map.get("responsiblePerson");
+            String religiousSect = (String)map.get("religiousSect");
+            String venuesPhone = (String)map.get("venuesPhone");
+            String orderBy = (String)map.get("orderBy");
+            String pages = (String) map.get("page");
+            String sizes = (String)map.get("size");
+            Integer page = Integer.valueOf(pages);
+            Integer size = Integer.valueOf(sizes);
+
+
             if(page!=null&&size!=null){
                 page=(page-1)*size;
             }
-            String login = this.getLogin(token);
+            //String login = this.getLogin(token);
+            String login = TransParam.loginName;
             SysUserEntity sysUserEntity = sysUserMapper.queryByName(login);
             String area="";
             String town ="";
@@ -412,6 +439,7 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             ve.setArea(area);
             ve.setTown(town);
             ve.setVenuesAddres(relVenuesId);
+            ve.setOrderBy(orderBy);
             if(null!=relVenuesId && !relVenuesId.isEmpty()){
                 relVenuesArr=relVenuesId.split(",");
             }
