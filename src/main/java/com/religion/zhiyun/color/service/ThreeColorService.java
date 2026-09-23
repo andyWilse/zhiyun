@@ -16,7 +16,7 @@ public interface ThreeColorService {
     /** 三色要素（excel导入）**/
     AppResponse threeColorUpload(Map<String,Object> map);
     //保存数据
-    AppResponse threeColorImport(List<ThreeColorEntity> threeColorList);
+    AppResponse threeColorImport(Map<String,Object> map);
 
     /** 三色要素（修改）**/
     AppResponse threeColorUpdate(ThreeColorEntity threeColorEntity);

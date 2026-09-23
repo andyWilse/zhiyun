@@ -87,6 +87,8 @@
             (select GROUP_CONCAT(uv_venues_id,',')  from  RM_USER_VENUES_MAP uv where uv.UV_USER_ID=su.USER_ID) as relVenuesId
         from RM_SYS_USER_INFO su
         where su.LOGIN_NM = #{loginNm} or su.USER_NM= #{loginNm} or su.USER_MOBILE= #{loginNm}
+        order by su.LAST_MODIFY_TIME desc
+        limit 1
     </select>
 
     <select id="queryByUserId" resultType="com.religion.zhiyun.user.entity.SysUserEntity">

@@ -1359,7 +1359,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     String assAssignee = assEntityMap.get("userNm") == null ? "" : (String) assEntityMap.get("userNm");
                     String assMobile = assEntityMap.get("userMobile") == null ? "" : (String) assEntityMap.get("userMobile");
                     Integer userId = assEntityMap.get("userId") == null ? 0 : (Integer) assEntityMap.get("userId");
-                    cont=assMobile+","+cont;
+                    String ass=assAssignee+"-"+assMobile;
+                    cont=ass+";"+cont;
                     //数据处理
                     AssEntity assVo=new AssEntity();
                     //3.1.新增
@@ -1380,14 +1381,24 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
             //4.处理人
             String changeHandler = (String) actMap.get("changeHandler");
+            SysUserEntity sysUserEntity = sysUserMapper.queryByName(changeHandler);
+            String changeHandlerNm = sysUserEntity!=null?sysUserEntity.getUserNm():"";
+
             if(!GeneTool.isEmpty(changeHandler)){
                 String actHandler = actInst.getActHandler();
+                SysUserEntity sysUserEn = sysUserMapper.queryByName(actHandler);
+                String actHandlerNm = sysUserEn!=null?sysUserEn.getUserNm():"";
+
                 if(!actHandler.equals(changeHandler)){
                     uFlag=true;
                     actCurrVo.setActHandler(changeHandler);
+                    actCurrVo.setActHandNm(changeHandlerNm);
                     content=content+"actHandler:"+changeHandler+";";
                     //保存修改记录
-                    this.addActInstHis(actId,changeHandler,actHandler,ActEnums.ACT_OPERATION_04.getCode());
+                    this.addActInstHis(actId,
+                            changeHandlerNm+"-"+changeHandler,
+                            actHandlerNm+"-"+actHandler,
+                            ActEnums.ACT_OPERATION_04.getCode());
                 }
             }
 
@@ -1435,6 +1446,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             Integer assId = map.get("assId")==null?0: (Integer) map.get("assId");
             Integer actId = map.get("actId")==null?0: (Integer) map.get("actId");
             String assMobile = map.get("assMobile")==null?"": (String) map.get("assMobile");
+            String assAssignee = map.get("assAssignee")==null?"": (String) map.get("assAssignee");
             if(0==assId){
                 throw new RuntimeException("用户丢失，请联系管理员！");
             }
@@ -1448,7 +1460,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             ass.setAssState(TaskActEnums.AI_ASS_STATE_03.getCode());
             taskActAssigneeMapper.updateAssignee(ass);
             //删除记录
-            this.addActInstHis(actId,assMobile,"",ActEnums.ACT_OPERATION_03.getCode());
+            this.addActInstHis(actId,assAssignee+"-"+assMobile,"",ActEnums.ACT_OPERATION_03.getCode());
             //2.添加日志
             this.addLog(TransParam.loginName,String.valueOf(assId), OperaEnums.ass_delete.getCode(),"","");
 

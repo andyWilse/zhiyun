@@ -42,4 +42,7 @@ public class ActInstHisEntity implements Serializable {
     private Timestamp hisActModifyTm;//修改时间
 
 
+    private String hisActMoTm;
+
+
 }

@@ -1,5 +1,6 @@
 package com.religion.zhiyun.color.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.religion.zhiyun.color.dao.ThreeColorMapper;
 import com.religion.zhiyun.color.entity.ThreeColorEntity;
 import com.religion.zhiyun.color.service.ThreeColorService;
@@ -9,6 +10,7 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.base.TransParam;
+import com.religion.zhiyun.utils.enums.CellEnums;
 import com.religion.zhiyun.utils.excel.CellValueTrans;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -60,7 +62,7 @@ public class ThreeColorServiceImpl implements ThreeColorService {
     public AppResponse threeColorUpload(Map<String, Object> map) {
         long code= ResultCode.FAILED.getCode();
         String message="三色要素excel上传失败！";
-        ArrayList<ThreeColorEntity> threeColorList = new ArrayList<>();
+        ArrayList<ThreeColorEntity> tcUploadList = new ArrayList<>();
         try{
             String fileContent = map.get("fileContent")==null?"": (String) map.get("fileContent");
             String fileName = map.get("fileName")==null?"": (String) map.get("fileName");
@@ -80,9 +82,10 @@ public class ThreeColorServiceImpl implements ThreeColorService {
             }
             //2. 获取 workbook 中表单的数量
             int numberOfSheets = workbook.getNumberOfSheets();
-            for (int i = 0; i < numberOfSheets; i++) {
+            if (numberOfSheets!=0) {
                 //3. 获取表单
-                Sheet sheet = workbook.getSheetAt(i);
+                //只读第一张表格
+                Sheet sheet = workbook.getSheetAt(0);
                 //4. 获取表单中的行数
                 int physicalNumberOfRows = sheet.getPhysicalNumberOfRows();
                 for (int j = 0; j < physicalNumberOfRows; j++) {
@@ -92,7 +95,10 @@ public class ThreeColorServiceImpl implements ThreeColorService {
                     }
                     //6. 获取行
                     Row row = sheet.getRow(j);
-                    if (row == null) {
+                    //跳过空行
+                    Row rowCheck = row;
+                    boolean skipRow = this.skipRow(rowCheck);
+                    if (row == null || skipRow) {
                         continue;//防止数据中间有空行
                     }
                     //7. 获取列数
@@ -100,12 +106,21 @@ public class ThreeColorServiceImpl implements ThreeColorService {
                     //三色要素
                     ThreeColorEntity threeColorEntity=new ThreeColorEntity();
                     //不能为空的列
-                    List<Integer> listCellEmpty = Arrays.asList(0,1, 2, 3,4,5,6,7,8,9,10,11);
+                    //List<Integer> listCellEmpty = Arrays.asList(0,1, 2, 3,4,5,6,7,8,9,10,11);
+                    List<Integer> listCellEmpty = Arrays.asList(0,3,5,7,8,9);
                     //列遍历
                     for (int k = 0; k < physicalNumberOfCells; k++) {
                         Cell cell = row.getCell(k);
+                        int ro = j + 1;
                         //获取值
+                        if(null==cell){
+                            //break;
+                            if(listCellEmpty.contains(k)){
+                                throw new RuntimeException("第"+ro+"行"+ CellEnums.getName(k)+"列,字段不能为空！");
+                            }
+                        }
                         String cellValue = CellValueTrans.getCellValue(cell, workbook, j, k, listCellEmpty);
+
                         //处理值
                         if(k==2){
                             threeColorEntity.setCoVenuesId(cellValue);
@@ -114,21 +129,20 @@ public class ThreeColorServiceImpl implements ThreeColorService {
                         }else if(k==6){
                             threeColorEntity.setCoColor(cellValue);
                         }else if(k==7){
-                            threeColorEntity.setCoOccurTm(Timestamp.valueOf(cellValue));
+                            threeColorEntity.setOccurTm(cellValue.replace("\n",""));
                         }else if(k==8){
                             threeColorEntity.setCoContent(cellValue);
                         }else if(k==10){
                             threeColorEntity.setCoState(cellValue);
                         }else if(k==11){
                             //已处理，完成时间不能为空
+                            threeColorEntity.setHandleTm(cellValue.replace("\n",""));
                             if("01".equals(threeColorEntity.getCoState())){
                                 if(GeneTool.isEmpty(cellValue)){
-                                    int ro = j + 1;
-                                    int ce = k + 1;
-                                    throw new RuntimeException("第"+ro+"行,第"+ce+"列,字段不能为空！");
+                                    throw new RuntimeException("第"+ro+"行"+k+"列,字段不能为空！");
                                 }
                             }
-                            threeColorEntity.setCoHandleTm(Timestamp.valueOf(cellValue));
+
                         }else if(k==12){
                             threeColorEntity.setCoProgress(cellValue);
                         }else if(k==13){
@@ -137,7 +151,7 @@ public class ThreeColorServiceImpl implements ThreeColorService {
 
                     }
                     //添加list
-                    threeColorList.add(threeColorEntity);
+                    tcUploadList.add(threeColorEntity);
                 }
             }
 
@@ -151,25 +165,72 @@ public class ThreeColorServiceImpl implements ThreeColorService {
             return new AppResponse(code,e.getMessage());
 
         }
-        return new AppResponse(code,message,threeColorList.toArray());
+        return new AppResponse(code,message,tcUploadList.toArray());
+    }
+
+    /**
+     * 为空校验
+     * @param rowCheck
+     * @return
+     */
+    public boolean skipRow(Row rowCheck) {
+        //去掉公式单元格
+       /* Cell cell1 = rowCheck.getCell(1);
+        if (cell1 != null) {
+            rowCheck.removeCell(cell1);
+        }
+        Cell cell2 = rowCheck.getCell(2);
+        if (cell2 != null) {
+            rowCheck.removeCell(cell2);
+        }
+        Cell cell4= rowCheck.getCell(4);
+        if (cell4 != null) {
+            rowCheck.removeCell(cell4);
+        }
+        Cell cell6 = rowCheck.getCell(6);
+        if (cell6 != null) {
+            rowCheck.removeCell(cell6);
+        }
+        Cell cell10 = rowCheck.getCell(10);
+        if (cell10 != null) {
+            rowCheck.removeCell(cell10);
+        }*/
+
+        if (rowCheck == null) return true;
+
+        int[] colColumns={0,3,5,7,8,9};
+        //同时为空跳过
+        for (int col : colColumns) {
+            Cell cell = rowCheck.getCell(col);
+            if (cell != null && cell.getCellType() != 3) {
+                return false; // 常规列有数据，不跳过
+            }
+        }
+        return true; // 所有常规列都为空，跳过该行
     }
 
     @Override
-    public AppResponse threeColorImport(List<ThreeColorEntity> threeColorList) {
+    public AppResponse threeColorImport(Map<String,Object> map) {
         long code= ResultCode.FAILED.getCode();
         String message="三色要素excel数据保存失败！";
 
         try{
-            if(null!=threeColorList && threeColorList.size()>0){
-                for(int h=0;h<threeColorList.size();h++){
-                    ThreeColorEntity threeColorEntity = threeColorList.get(h);
-                    String loginName = TransParam.loginName;
-                    threeColorEntity.setCoCreateTm(TimeTool.getTimestamp());
-                    threeColorEntity.setCoCreator(loginName);
-                    threeColorMapper.addThreeColor(threeColorEntity);
-                }
+            Object threeColorList = map.get("threeColorList");
+            Object[] tcArr=null;
+            if(null!=threeColorList){
+                tcArr = ((List<?>) threeColorList).toArray();
             }
+            for(int i=0;i<tcArr.length;i++) {
+                HashMap<String, Object> threeColor = (HashMap<String, Object>) tcArr[i];
+                ThreeColorEntity threeColorEntity = BeanUtil.mapToBean(threeColor, ThreeColorEntity.class, false);
+                threeColorEntity.setCoOccurTm(threeColor.get("occurTm")==null?null:TimeTool.toTimestamp((String) threeColor.get("occurTm")));
+                threeColorEntity.setCoHandleTm(threeColor.get("handleTm")==null?null:TimeTool.toTimestamp((String) threeColor.get("handleTm")));
+                threeColorEntity.setCoCreateTm(TimeTool.getTimestamp());
+                threeColorEntity.setCoCreator(TransParam.loginName);
+                threeColorMapper.addThreeColor(threeColorEntity);
 
+
+            }
             code= ResultCode.SUCCESS.getCode();
             message="三色要素excel数据保存成功！";
         }catch (RuntimeException r){

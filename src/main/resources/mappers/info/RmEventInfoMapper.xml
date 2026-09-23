@@ -733,7 +733,8 @@
                 IFNULL(ev.fire,0) as fire,
                 IFNULL(ev.super,0) as super,
                 IFNULL(ev.important,0) as important,
-                IFNULL(ev.part,0) as part
+                IFNULL(ev.part,0) as part,
+                IFNULL(ev.unusual,0) as unusual
         FROM(
             SELECT date_add(CURDATE(), interval i day) AS tmDate FROM num a where a.i &gt; #{vo.size} and type='day'
         ) tm
@@ -742,7 +743,8 @@
                     SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
                     SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS super,
                     SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS important,
-                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part
+                    SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part,
+                    SUM(CASE WHEN ev.EVENT_TYPE = 06 THEN 1 ELSE 0 END) AS unusual
             from rm_event_info ev
             left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
             where ve.VENUES_STATUS='01'
@@ -769,7 +771,8 @@
                 IFNULL(zh.fire,0) as fire,
                 IFNULL(zh.super,0) as super,
                 IFNULL(zh.important,0) as important,
-                IFNULL(zh.part,0) as part
+                IFNULL(zh.part,0) as part,
+                IFNULL(zh.unusual,0) as unusual
         FROM(
             SELECT i AS tmDate FROM num a where a.i > #{vo.size} and type='day'
         ) tm
@@ -779,14 +782,16 @@
                     IFNULL(ors.fire,0) as fire,
                     IFNULL(ors.super,0) as super,
                     IFNULL(ors.important,0) as important,
-                    IFNULL(ors.part,0) as part
+                    IFNULL(ors.part,0) as part,
+                    IFNULL(ors.unusual,0) as unusual
             from (
                 (
                     select  WEEK(ev.WARN_TIME,3) -(WEEK(CURDATE(),3)) as weeks,
                             SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
                             SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS super,
                             SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS important,
-                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part
+                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 06 THEN 1 ELSE 0 END) AS unusual
                     from rm_event_info  ev
                     left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
                     where ve.VENUES_STATUS='01'
@@ -811,7 +816,8 @@
                             SUM(CASE WHEN ev.EVENT_TYPE = 01 THEN 1 ELSE 0 END) AS fire,
                             SUM(CASE WHEN ev.EVENT_TYPE = 02 THEN 1 ELSE 0 END) AS super,
                             SUM(CASE WHEN ev.EVENT_TYPE = 03 THEN 1 ELSE 0 END) AS important,
-                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part
+                            SUM(CASE WHEN ev.EVENT_TYPE = 04 THEN 1 ELSE 0 END) AS part,
+                            SUM(CASE WHEN ev.EVENT_TYPE = 06 THEN 1 ELSE 0 END) AS unusual
                     from rm_event_info  ev
                     left join rm_venues_info ve on ve.VENUES_ID=ev.REL_VENUES_ID
                     where ve.VENUES_STATUS='01'

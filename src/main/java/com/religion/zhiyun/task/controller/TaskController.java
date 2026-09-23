@@ -52,8 +52,8 @@ public class TaskController {
     }
 
     //折线图（总图）
-    @RequestMapping("/zxt/getTaskZxt")
-    public AppResponse getZxt(@RequestBody String dateType,@RequestHeader("token")String token) {
+    @GetMapping("/zxt/getTaskZxt")
+    public AppResponse getZxt(@RequestParam String dateType,@RequestHeader("token")String token) {
         return taskService.getTaskZxt(-10,dateType,token);
     }
 

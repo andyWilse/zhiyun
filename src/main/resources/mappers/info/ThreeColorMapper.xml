@@ -119,7 +119,10 @@
             (select dict.DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_TYPE_CD='5002' and dict.DICT_CD=tc.CO_TYPE) as coTypeNm,
             (select dict.DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_TYPE_CD='7001' and dict.DICT_CD=tc.CO_STATE) as coStateNm,
             DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m-%d %H:%i:%s') as occurTm,
-            DATE_FORMAT(tc.CO_HANDLE_TM,'%Y-%m-%d %H:%i:%s') as handleTm,
+            case tc.CO_STATE  when '01'
+                 then DATE_FORMAT(tc.CO_HANDLE_TM,'%Y-%m-%d %H:%i:%s')
+            else null
+            end as handleTm,
             tc.CO_ID as coId,
             tc.CO_CONTENT as coContent,
             tc.CO_PROGRESS as coProgress,
@@ -129,7 +132,7 @@
             tc.CO_STATE as coState,
             ve.VENUES_ID as coVenuesId,
             tc.CO_OCCUR_TM as coOccurTm,
-            tc.CO_HANDLE_TM as coHandleTm,
+            case tc.CO_STATE  when '01' then tc.CO_HANDLE_TM  else null end as coHandleTm,
             tc.CO_ID as coId
         from RM_THREE_COLOR tc
         left join RM_VENUES_INFO ve on ve.VENUES_ID=tc.CO_VENUES_ID
@@ -154,6 +157,7 @@
             </foreach>
         </if>
         </where>
+        order by  tc.CO_MODIFY_TM desc,tc.CO_CREATE_TM desc
         limit #{vo.page},#{vo.size}
     </select>
 

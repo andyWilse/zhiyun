@@ -25,7 +25,6 @@ public class ThreeColorController {
     private ThreeColorService threeColorService;
 
     @PostMapping("/add")
-    @ResponseBody
     public AppResponse threeColorAdd(@RequestBody ThreeColorEntity threeColorEntity) {
         return threeColorService.threeColorAdd(threeColorEntity);
     }
@@ -44,18 +43,20 @@ public class ThreeColorController {
     public AppResponse getThreeColor(@PathVariable int coId) {
         return threeColorService.getThreeColor(coId);
     }
+
     @GetMapping("/list")
     public AppResponse getThreeColorList(ParamsVo vo) {
         return threeColorService.getThreeColorList(vo);
     }
+
     @PostMapping("/upload")
     public AppResponse coExcelUpload(@RequestBody Map<String,Object> map ) {
         return threeColorService.threeColorUpload(map);
     }
 
     @PostMapping("/import")
-    public AppResponse excelImportAdd(@RequestBody List<ThreeColorEntity> threeColorList) {
-        return threeColorService.threeColorImport(threeColorList);
+    public AppResponse excelImportAdd(@RequestBody Map<String,Object> map) {
+        return threeColorService.threeColorImport(map);
     }
 
 

@@ -97,7 +97,6 @@ public class TaskAiWarnController {
     //流程修改保存
     @PostMapping("/saveAct")
     public AppResponse saveTaskAct(@RequestBody Map<String, Object> map,@RequestHeader("token")String token) {
-
         return aiWarnService.saveTaskAct(map,token);
     }
 
@@ -107,7 +106,7 @@ public class TaskAiWarnController {
         return aiWarnService.deleteTaskAss(map);
     }
 
-    //流程修改保存
+    //接收人修改保存
     @PostMapping("/saveAss")
     public AppResponse saveTaskAss(@RequestParam Map<String, Object> map,@RequestHeader("token")String token) {
         return aiWarnService.saveTaskAss(map,token);
