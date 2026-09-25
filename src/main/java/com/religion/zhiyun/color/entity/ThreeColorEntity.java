@@ -47,6 +47,9 @@ public class ThreeColorEntity implements Serializable {
     @Column(name = "CO_REMARK")
     private String coRemark;//备注
 
+    @Column(name = "CO_SHOW")
+    private String coShow;//是否纳入统计（是否在终端展示）：0-否；1-是
+
     @Column(name = "CO_VALID")
     private String coValid;//是否删除：0-已删除；1-正常
 

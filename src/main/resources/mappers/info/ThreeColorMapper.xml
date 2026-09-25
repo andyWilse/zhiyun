@@ -78,17 +78,21 @@
                 tc.CO_PROGRESS = #{coProgress},
             </if>
             <if test="coHandleTm!=null || coState!='01'">
-                tc.CO_HANDLE_TM = #{coHandleTm}
+                tc.CO_HANDLE_TM = #{coHandleTm},
             </if>
             <if test="coRemark!=null and coRemark!=''">
                 tc.CO_REMARK = #{coRemark},
+            </if>
+            <if test="coShow!=null and coShow!=''">
+                tc.CO_SHOW = #{coShow},
             </if>
             <if test="coModifier!=null and coModifier!=''">
                 tc.CO_MODIFIER = #{coModifier},
             </if>
             <if test="coModifyTm!=null">
-                tc.CO_MODIFY_TM = #{coModifyTm},
+                tc.CO_MODIFY_TM = #{coModifyTm}
             </if>
+
         </set>
         <where>
             <if test="coId!=null and coId!=''">
@@ -133,7 +137,8 @@
             ve.VENUES_ID as coVenuesId,
             tc.CO_OCCUR_TM as coOccurTm,
             case tc.CO_STATE  when '01' then tc.CO_HANDLE_TM  else null end as coHandleTm,
-            tc.CO_ID as coId
+            tc.CO_ID as coId,
+            tc.CO_SHOW as coShow
         from RM_THREE_COLOR tc
         left join RM_VENUES_INFO ve on ve.VENUES_ID=tc.CO_VENUES_ID
         <where>
@@ -143,6 +148,9 @@
         </if>
         <if test="vo.searchTwo!=null and vo.searchTwo!=''">
             and tc.CO_TYPE=#{vo.searchTwo}
+        </if>
+        <if test="vo.searchThree!=null and vo.searchThree!=''">
+            and tc.CO_VENUES_ID=#{vo.searchThree}
         </if>
         <if test="vo.town != null and vo.town != ''">
             AND  ve.TOWN = #{vo.town}
@@ -157,7 +165,7 @@
             </foreach>
         </if>
         </where>
-        order by  tc.CO_MODIFY_TM desc,tc.CO_CREATE_TM desc
+        order by  tc.CO_SHOW desc,tc.CO_MODIFY_TM desc,tc.CO_CREATE_TM desc
         limit #{vo.page},#{vo.size}
     </select>
 
@@ -174,6 +182,9 @@
             <if test="vo.searchTwo!=null and vo.searchTwo!=''">
                 and tc.CO_TYPE=#{vo.searchTwo}
             </if>
+            <if test="vo.searchThree!=null and vo.searchThree!=''">
+                and tc.CO_VENUES_ID=#{vo.searchThree}
+            </if>
             <if test="vo.town != null and vo.town != ''">
                 AND  ve.TOWN = #{vo.town}
             </if>
@@ -189,5 +200,22 @@
         </where>
     </select>
 
+    <select id="getFinalColor" resultType="string">
+        select CO_COLOR
+        from RM_THREE_COLOR co
+        where co.CO_VENUES_ID=#{coVenuesId}
+        and co.CO_VALID='1'
+        and co.CO_SHOW='1'
+        order by CO_COLOR asc
+        limit 1
+    </select>
+
+    <update id="updateVenueColor">
+        update RM_VENUES_INFO ve
+        set ve.THREE_COLOR = #{coColor} ,
+            ve.LAST_MODIFIER  = #{coModifier},
+            ve.LAST_MODIFY_TIME  = #{coModifyTm}
+        where ve.VENUES_ID=#{coVenuesId}
+    </update>
 
 </mapper>

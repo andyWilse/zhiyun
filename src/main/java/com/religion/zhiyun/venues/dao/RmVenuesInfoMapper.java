@@ -184,4 +184,20 @@ public interface RmVenuesInfoMapper {
      */
     List<VenuesEntity> getVenueByUser(@Param("uvUserId")String uvUserId);
 
+    /**
+     * 场所三色要素地图
+     * @param vo
+     * @return
+     */
+    public List<Map<String,Object>> getVenuesColorMap(@Param("vo") ParamsVo vo);
+
+    /**
+     * 场所三色要素数量汇总
+     * @param vo
+     * @return
+     */
+    Map<String,Object> getColorNum(@Param("vo") ParamsVo vo );
+
+
+    void getVenuesColorMap();
 }

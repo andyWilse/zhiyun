@@ -53,7 +53,7 @@ public interface RmVenuesInfoService {
      * @return
      */
     PageResponse getAllNum(String token);
-    PageResponse getVenueNum(String type,String token);
+    PageResponse getVenueNum(String token);
 
     PageResponse getDialogVenue(Map<String, Object> map,String token);
 

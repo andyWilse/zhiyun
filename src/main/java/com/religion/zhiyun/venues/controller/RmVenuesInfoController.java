@@ -85,8 +85,8 @@ public class RmVenuesInfoController {
 
     //统计场所数量（app地图）
     @RequestMapping("/map/getVeNum")
-    public PageResponse getVeNum(@RequestParam String type,@RequestHeader("token")String token){
-        return rmVenuesInfoService.getVenueNum(type,token);
+    public PageResponse getVeNum(@RequestHeader("token")String token){
+        return rmVenuesInfoService.getVenueNum(token);
     }
 
     //统计场所弹框（app首页）

@@ -15,6 +15,7 @@ public interface ThreeColorService {
 
     /** 三色要素（excel导入）**/
     AppResponse threeColorUpload(Map<String,Object> map);
+
     //保存数据
     AppResponse threeColorImport(Map<String,Object> map);
 
@@ -22,11 +23,14 @@ public interface ThreeColorService {
     AppResponse threeColorUpdate(ThreeColorEntity threeColorEntity);
 
     /** 三色要素（删除）**/
-    AppResponse threeColorDelete(int coId);
+    AppResponse threeColorDelete(Map<String,Object> map);
 
     /** 三色要素（单条数据获取）**/
     AppResponse getThreeColor(int coId);
 
     /** 三色要素（列表数据获取）**/
     AppResponse getThreeColorList(ParamsVo vo);
+
+    //三色要素（是否纳入统计（是否在终端展示））
+    AppResponse threeColorShow(Map<String,Object> map);
 }

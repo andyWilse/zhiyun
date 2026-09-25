@@ -4,9 +4,7 @@ import com.religion.zhiyun.color.entity.ThreeColorEntity;
 import com.religion.zhiyun.color.service.ThreeColorService;
 import com.religion.zhiyun.login.http.inter.DecryptRequest;
 import com.religion.zhiyun.login.http.inter.EncryptResponse;
-import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
-import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,9 +32,9 @@ public class ThreeColorController {
         return threeColorService.threeColorUpdate(threeColorEntity);
     }
 
-    @PostMapping("/delete/{coId}")
-    public AppResponse threeColorDelete(@PathVariable int coId) {
-        return threeColorService.threeColorDelete(coId);
+    @PostMapping("/delete")
+    public AppResponse threeColorDelete(@RequestBody Map<String,Object> map) {
+        return threeColorService.threeColorDelete(map);
     }
 
     @GetMapping("/query/{coId}")
@@ -57,6 +55,11 @@ public class ThreeColorController {
     @PostMapping("/import")
     public AppResponse excelImportAdd(@RequestBody Map<String,Object> map) {
         return threeColorService.threeColorImport(map);
+    }
+
+    @PostMapping("/show")
+    public AppResponse showThreeColor(@RequestBody Map<String,Object> map) {
+        return threeColorService.threeColorShow(map);
     }
 
 

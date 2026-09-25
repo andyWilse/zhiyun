@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.*;
 
 @Slf4j
@@ -44,6 +44,9 @@ public class ThreeColorServiceImpl implements ThreeColorService {
             threeColorEntity.setCoCreateTm(TimeTool.getTimestamp());
             threeColorEntity.setCoCreator(loginName);
             threeColorMapper.addThreeColor(threeColorEntity);
+
+            //更新场所颜色
+            this.changeVenueColor(threeColorEntity.getCoVenuesId());
 
             code= ResultCode.SUCCESS.getCode();
             message="三色要素信息新增成功！";
@@ -224,10 +227,13 @@ public class ThreeColorServiceImpl implements ThreeColorService {
                 HashMap<String, Object> threeColor = (HashMap<String, Object>) tcArr[i];
                 ThreeColorEntity threeColorEntity = BeanUtil.mapToBean(threeColor, ThreeColorEntity.class, false);
                 threeColorEntity.setCoOccurTm(threeColor.get("occurTm")==null?null:TimeTool.toTimestamp((String) threeColor.get("occurTm")));
-                threeColorEntity.setCoHandleTm(threeColor.get("handleTm")==null?null:TimeTool.toTimestamp((String) threeColor.get("handleTm")));
+                threeColorEntity.setCoHandleTm(threeColor.get("handleTm")==null || threeColor.get("handleTm")==""?null:TimeTool.toTimestamp((String) threeColor.get("handleTm")));
                 threeColorEntity.setCoCreateTm(TimeTool.getTimestamp());
                 threeColorEntity.setCoCreator(TransParam.loginName);
                 threeColorMapper.addThreeColor(threeColorEntity);
+
+                //更新场所颜色
+                this.changeVenueColor(threeColorEntity.getCoVenuesId());
 
 
             }
@@ -255,6 +261,12 @@ public class ThreeColorServiceImpl implements ThreeColorService {
             threeColorEntity.setCoModifier(loginName);
             threeColorMapper.updateThreeColor(threeColorEntity);
 
+            //颜色是否修改
+            if(!GeneTool.isEmpty(threeColorEntity.getCoColor())){
+                //更新场所颜色
+                this.changeVenueColor(threeColorEntity.getCoVenuesId());
+            }
+
             code= ResultCode.SUCCESS.getCode();
             message="三色要素信息修改成功！";
         }catch (RuntimeException r){
@@ -269,14 +281,18 @@ public class ThreeColorServiceImpl implements ThreeColorService {
     }
 
     @Override
-    public AppResponse threeColorDelete(int coId) {
+    public AppResponse threeColorDelete(Map<String,Object> map) {
         long code= ResultCode.FAILED.getCode();
         String message="三色要素信息删除失败！";
 
         try{
-            String loginName = TransParam.loginName;
+            Integer coId=map.get("coId")==null?0: (Integer) map.get("coId");
+            String coVenuesId=map.get("coVenuesId")==null?"": (String) map.get("coVenuesId");
+            //1.删除
+            threeColorMapper.deleteThreeColor(coId,TransParam.loginName);
 
-            threeColorMapper.deleteThreeColor(coId,loginName);
+            //2.更新场所颜色
+            this.changeVenueColor(coVenuesId);
 
             code= ResultCode.SUCCESS.getCode();
             message="三色要素信息删除成功！";
@@ -335,5 +351,65 @@ public class ThreeColorServiceImpl implements ThreeColorService {
 
         }
         return new AppResponse(code,message,threeColorTotal,threeColorList.toArray());
+    }
+
+    @Override
+    public AppResponse threeColorShow(Map<String, Object> map) {
+        long code= ResultCode.FAILED.getCode();
+        String message="三色要素是否在终端展示更改失败！";
+
+        try{
+            Integer coId = map.get("coId")==null?0:(Integer)map.get("coId");
+            String coShow = map.get("coId")==null?"1":(String)map.get("coShow");
+            String coVenuesId = map.get("coVenuesId")==null?"":(String)map.get("coVenuesId");
+            ThreeColorEntity coEn=new ThreeColorEntity();
+            coEn.setCoShow(coShow);
+            coEn.setCoId(coId);
+            coEn.setCoModifier(TransParam.loginName);
+            coEn.setCoModifyTm(TimeTool.getTimestamp());
+            threeColorMapper.updateThreeColor(coEn);
+
+            //2.更新场所颜色
+            this.changeVenueColor(coVenuesId);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="三色要素是否在终端展示更改成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+
+        }
+        return new AppResponse(code,message);
+    }
+
+    /**
+     * 更新场所颜色
+     * @param coVenuesId
+     * @throws ParseException
+     */
+    public void changeVenueColor(String coVenuesId) throws ParseException {
+        if(GeneTool.isEmpty(coVenuesId) ){
+            throw new RuntimeException("三色要素关联场所信息丢失，请联系管理员！");
+        }
+        //场所颜色
+        //获取已有颜色
+        String venueColor = threeColorMapper.getFinalColor(coVenuesId);
+        //判断颜色
+        if(GeneTool.isEmpty(venueColor)){
+            //默认绿色
+            venueColor="500103";
+        }
+
+        //更新场所颜色
+        ThreeColorEntity en=new ThreeColorEntity();
+        en.setCoVenuesId(coVenuesId);
+        en.setCoColor(venueColor);
+        en.setCoModifier(TransParam.loginName);
+        en.setCoModifyTm(TimeTool.getTimestamp());
+        threeColorMapper.updateVenueColor(en);
+
     }
 }

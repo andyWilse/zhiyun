@@ -336,19 +336,36 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
     }
 
     @Override
-    public PageResponse getVenueNum(String type,String token) {
+    public PageResponse getVenueNum(String token) {
         long code=ResultCode.FAILED.getCode();
         String message="地图统计场所数量";
         List<Map<String, Object>> list=new ArrayList<>();
         try {
-            ParamsVo auth = new ParamsVo();
+            /*ParamsVo auth = new ParamsVo();
             if("01".equals(type)){
 
             }else if("02".equals(type)){
                 auth =this.getAuth(token);
             }
-            Map<String, Object> allNum = rmVenuesInfoMapper.getAllNum(auth);
-            list.add(allNum);
+            Map<String, Object> allNum = rmVenuesInfoMapper.getAllNum(auth);*/
+            //获取宗教类别数量
+            //1.1.全部
+            Map<String, Object> allReligiousNum = rmVenuesInfoMapper.getAllNum(null);
+            //2.2.我的辖区
+            Map<String, Object> myReligiousNum = rmVenuesInfoMapper.getAllNum(this.getAuth(token));
+
+            //获取三色要素数量
+            //2.1.全部场所
+            Map<String, Object> allColorNum = rmVenuesInfoMapper.getColorNum(null);
+            //2.2.我的辖区
+            Map<String, Object> myColorNum = rmVenuesInfoMapper.getColorNum(this.getAuth(token));
+            Map<String, Object> numMap=new HashMap<>();
+            numMap.put("allReligiousNum",allReligiousNum);
+            numMap.put("myReligiousNum",myReligiousNum);
+            numMap.put("allColorNum",allColorNum);
+            numMap.put("myColorNum",myColorNum);
+
+            list.add(numMap);
             code=ResultCode.SUCCESS.getCode();
             message="地图统计场所数量成功";
         }catch (RuntimeException r) {
@@ -670,10 +687,13 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             if(null!=religiousSect && !religiousSect.isEmpty()){
                 religiousSectArr = religiousSect.split(",");
             }
+            if(GeneTool.isEmpty(type)){
+                type="01";//获取全部
+            }
             ParamsVo auth = new ParamsVo();
-            if("01".equals(type)){//全部
+            if("01".equals(type) || "03".equals(type)){//全部
 
-            }else if("02".equals(type)){//我的辖区
+            }else if("02".equals(type) || "04".equals(type) ){//我的辖区
                 auth =this.getAuth(token);
             }
             auth.setSearchOne(search);
@@ -681,7 +701,13 @@ public class RmVenuesInfoServiceImpl implements RmVenuesInfoService {
             auth.setSearchThree(town);
 
             auth.setSearchArr(religiousSectArr);
-            mapVenues = rmVenuesInfoMapper.getMapVenues(auth);
+            //教堂
+            if("01".equals(type) || "02".equals(type)){
+                mapVenues = rmVenuesInfoMapper.getMapVenues(auth);
+            }else if("03".equals(type) || "04".equals(type)){
+                mapVenues = rmVenuesInfoMapper.getVenuesColorMap(auth);
+            }
+
 
             code= ResultCode.SUCCESS.getCode();
             message="获取地图场所信息成功！";

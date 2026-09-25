@@ -31,6 +31,19 @@ public interface ThreeColorMapper {
     void deleteThreeColor(@Param("coId") Integer coId,@Param("coModifier") String coModifier);
 
     /**
+     * 获取三色要素场所颜色
+     * @param coVenuesId
+     * @return
+     */
+    String getFinalColor(@Param("coVenuesId")String coVenuesId);
+
+    /**
+     * 三色要素场所颜色更新
+     * @param threeColorEntity
+     */
+    void updateVenueColor(ThreeColorEntity threeColorEntity);
+
+    /**
      * 获取三色要素
      * @param coId
      * @return

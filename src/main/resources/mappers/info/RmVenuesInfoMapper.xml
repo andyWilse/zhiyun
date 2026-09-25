@@ -254,18 +254,21 @@
             SUM(CASE WHEN RELIGIOUS_SECT = '100100000002' THEN 1 ELSE 0 END) AS Taoism
         FROM rm_venues_info ve
         where ve.VENUES_STATUS='01'
-        <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
+        <if test="vo!= null">
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
         </if>
-        <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
-        </if>
-        <if test="vo.venues != null and vo.venues != ''">
-            and ve.VENUES_ID IN
-            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
-                #{value}
-            </foreach>
-        </if>
+
     </select>
 
     <select id="getDialogVenue" resultType="map">
@@ -645,4 +648,93 @@
             and uv.UV_USER_ID =#{uvUserId}
         </if>
     </select>
+
+    <select id="getVenuesColorMap" resultType="map">
+        select
+            ve.VENUES_ID as venuesId,
+            ve.VENUES_NAME as venuesName,
+            ve.LONGITUDE as longitude,
+            ve.LATITUDE as Latitude,
+            (select DICT_CN_DESC from RM_SYS_DICT dict where dict.DICT_CD=ve.THREE_COLOR and dict.VALID_IND='1' ) as coColorNm,
+            ve.THREE_COLOR as coColor,
+            ve.RELIGIOUS_SECT as religiousSect,
+            case
+                when (ve.RELIGIOUS_SECT='100100000001' and ve.THREE_COLOR='500101') then 'f-red'
+                when (ve.RELIGIOUS_SECT='100100000001' and ve.THREE_COLOR='500102') then 'f-yellow'
+                when (ve.RELIGIOUS_SECT='100100000001' and ve.THREE_COLOR='500103') then 'f-green'
+                when (ve.RELIGIOUS_SECT='100100000002' and ve.THREE_COLOR='500101') then 'd-red'
+                when (ve.RELIGIOUS_SECT='100100000002' and ve.THREE_COLOR='500102') then 'd-yellow'
+                when (ve.RELIGIOUS_SECT='100100000002' and ve.THREE_COLOR='500103') then 'd-green'
+                when (ve.RELIGIOUS_SECT='100100000003' and ve.THREE_COLOR='500101') then 'j-red'
+                when (ve.RELIGIOUS_SECT='100100000003' and ve.THREE_COLOR='500102') then 'j-yellow'
+                when (ve.RELIGIOUS_SECT='100100000003' and ve.THREE_COLOR='500103') then 'j-green'
+                when (ve.RELIGIOUS_SECT='100100000004' and ve.THREE_COLOR='500101') then 't-red'
+                when (ve.RELIGIOUS_SECT='100100000004' and ve.THREE_COLOR='500102') then 't-yellow'
+                when (ve.RELIGIOUS_SECT='100100000004' and ve.THREE_COLOR='500103') then 't-green'
+                when (ve.RELIGIOUS_SECT='100100000005' and ve.THREE_COLOR='500101') then 'y-red'
+                when (ve.RELIGIOUS_SECT='100100000005' and ve.THREE_COLOR='500102') then 'y-yellow'
+                when (ve.RELIGIOUS_SECT='100100000005' and ve.THREE_COLOR='500103') then 'y-green'
+            else ""
+            end as colorIcon
+        from RM_VENUES_INFO ve
+        where ve.VENUES_STATUS='01'
+        and ve.LONGITUDE is not null
+        and ve.LATITUDE is not null
+        <if test="vo.searchThree!=null and vo.searchThree!=''">
+            and ve.TOWN = #{vo.searchThree}
+        </if>
+        <if test="vo.searchTwo!=null and vo.searchTwo!=''">
+            and ve.THREE_COLOR in
+            <foreach collection="vo.searchArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        <if test="vo.searchOne!=null and vo.searchOne!=''">
+            and (
+            ve.RESPONSIBLE_PERSON LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_ADDRES LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_NAME LIKE concat('%',#{vo.searchOne},'%')
+            or ve.VENUES_ID=#{vo.searchOne}
+            )
+        </if>
+        <if test="vo.town != null and vo.town != ''">
+            and  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            and  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venues != null and vo.venues != ''">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                #{value}
+            </foreach>
+        </if>
+        order by ve.VENUES_ID desc
+    </select>
+
+    <select id="getColorNum" resultType="map">
+        select
+            COUNT(ve.VENUES_ID) AS total,
+            SUM(CASE WHEN ve.THREE_COLOR = '500101' THEN 1 ELSE 0 END) AS red,
+            SUM(CASE WHEN ve.THREE_COLOR = '500102' THEN 1 ELSE 0 END) AS yellow,
+            SUM(CASE WHEN ve.THREE_COLOR = '500103' THEN 1 ELSE 0 END) AS green
+        from RM_VENUES_INFO ve
+        where ve.VENUES_STATUS='01'
+        <if test="vo != null ">
+            <if test="vo.town != null and vo.town != ''">
+                and  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                and  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venues != null and vo.venues != ''">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesArr" item="value" separator="," open="(" close=")">
+                    #{value}
+                </foreach>
+            </if>
+        </if>
+    </select>
+
+
 </mapper>
