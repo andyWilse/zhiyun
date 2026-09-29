@@ -1,6 +1,7 @@
 package com.religion.zhiyun.interfaces.service.impl;
 
 import com.religion.zhiyun.interfaces.entity.xueliang.AccessToken;
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.XueLiangService;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
@@ -290,6 +291,56 @@ public class XueLiangServiceImpl implements XueLiangService {
             e.printStackTrace();
         }
         return new AppResponse(codes,message);
+    }
+
+    /**
+     * 历史视频下载
+     * @param hisPlayReqParam
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public String downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception {
+        String url=baseUrl+"/v2/deviceAction/download";
+
+        if(null==hisPlayReqParam){
+            throw new RuntimeException("历史视频下载请求参数丢失，请联系管理员！");
+        }
+
+        /**1.Header**/
+        HttpHeader header=new HttpHeader();
+        //授权信息访问业务数据请求头,Hearder 需要包含 token信息
+        String accessToken = this.getAccessToken();
+        //System.out.println("accessToken:"+accessToken);
+        header.addParam("Authorization","Bearer "+accessToken);
+        header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
+
+        /**2.params***/
+
+        HttpParamers params=new HttpParamers(HttpMethod.POST);
+        //通道编码
+        params.addParam("channelId",hisPlayReqParam.getChannelId());
+        //开始时间
+        params.addParam("startTime",hisPlayReqParam.getStartTime());
+        //结束时间
+        params.addParam("endTime",hisPlayReqParam.getEndTime());
+        //接收 ip 地址
+        params.addParam("ipAddr",hisPlayReqParam.getIpAddr());
+        //接收端口
+        params.addParam("port",String.valueOf(hisPlayReqParam.getPort()));
+        //下载速度
+        params.addParam("speed",String.valueOf(hisPlayReqParam.getSpeed()));
+
+        /**3.接口调用***/
+        HttpService httpService=new HttpService(url);
+        String response = httpService.service(url, params,header);
+
+        /**4.结果解析***/
+        System.out.println("结果接收："+response);
+        //PlayEntity entity= JsonUtils.jsonTOBean(response, PlayEntity.class);
+        //存放位置
+        String position="";
+        return position;
     }
 
 }

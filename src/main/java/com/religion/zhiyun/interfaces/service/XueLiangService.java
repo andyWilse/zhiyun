@@ -1,5 +1,6 @@
 package com.religion.zhiyun.interfaces.service;
 
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 
@@ -20,4 +21,8 @@ public interface XueLiangService {
     AppResponse getPlaySyncOne(String channelId);
 
     AppResponse getPlays(Map<String,Object> map);
+
+
+    /* 下载历史视频*/
+    String downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception;
 }

@@ -1,6 +1,5 @@
 package com.religion.zhiyun.task.service.impl;
 
-import com.religion.zhiyun.color.entity.ThreeColorEntity;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
@@ -12,6 +11,7 @@ import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskActAssigneeMapper;
 import com.religion.zhiyun.task.dao.TaskActInstMapper;
@@ -86,6 +86,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     private VenuesManagerMapper venuesManagerMapper;
     @Autowired
     private OperateRecordMapper rmUserLogsInfoMapper;
+    @Autowired
+    private RmFileMapper rmFileMapper;
 
     @Override
     public AppResponse launch(TaskEntity taskEntity, List<String> userList, String loginNm) {
@@ -121,6 +123,18 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_05.getName());
             taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode());
             taskInfoMapper.addTask(taskEntity);
+
+            //保存截图信息
+            Date vpDate = new Date();
+            String taskVideo = taskEntity.getTaskVideo();
+            for(int i=1;i<7;i++){
+                int inc = 20 * 60 * 1000;
+                vpDate.setTime(vpDate.getTime()+inc);
+                rmFileMapper.addVideoPicture(procInstId,taskVideo,vpDate);
+            }
+
+
+
             //2.保存节点信息
             //2.1.保存本节点信息
             Date date = new Date();
@@ -355,7 +369,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
             }
             //3.1.2.短信通知
-            MessageSend.sendSmsMass(contents, userNextList);
+            //MessageSend.sendSmsMass(contents, userNextList);
         }
 
         /*** 4.保存通知 ***/
@@ -1593,7 +1607,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
         }*/
         //3.1.2.短信通知
-        MessageSend.sendSmsMass(contents, userNextList);
+        //MessageSend.sendSmsMass(contents, userNextList);
     }
 
 

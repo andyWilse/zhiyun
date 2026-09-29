@@ -489,7 +489,7 @@ public class SysLoginServiceImpl implements SysLoginService {
         messageList.add(smap);
         //发送
         //SendVerifyCode.sendVerifyCode(contents, username);
-        MessageSend.sendSmsOne(messageList);
+       // MessageSend.sendSmsOne(messageList);
         //封装参数
         JSONObject json = new JSONObject();
         json.put("username",username);

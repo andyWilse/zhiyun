@@ -85,4 +85,22 @@
         where CREATOR LIKE concat('%',#{creator},'%')
     </select>
 
+    <insert id="addVideoPicture" keyColumn="vpId" useGeneratedKeys="true" keyProperty="vpId">
+        insert into RM_VIDEO_PICTURE (VP_PROC_INST_ID,VP_CHANNEL_ID, VP_TIME) values( #{vpProcInstId}, #{vpChannelId}, #{vpTime})
+    </insert>
+
+    <update id="updateVideoPicture" >
+        update RM_VIDEO_PICTURE vp set VP_FILE_ID=#{vpFileId},VP_VALID='1',VP_MODIFY_TM=#{vpModifyTm}  where VP_ID=#{vpId}
+    </update>
+
+    <select id="getUnVp" resultType="java.util.Map">
+        select
+            vp.VP_ID as vpId,
+            vp.VP_CHANNEL_ID as vpChannelId,
+            vp.VP_TIME as vpTime
+        from RM_VIDEO_PICTURE vp
+        where vp.VP_VALID='0'
+        and vp.VP_TIME &lt;= NOW()
+    </select>
+
 </mapper>

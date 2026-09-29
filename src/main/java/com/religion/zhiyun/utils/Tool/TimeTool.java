@@ -10,6 +10,7 @@ public class TimeTool {
 
     public static String ymdHms="yyyy-MM-dd HH:mm:ss";
     public static String ymd="yyyyMMdd";
+    public static String HhMmSs="HHmmss";
     public static String year="yyyy";
     public static String month="MM";
     public static String day="dd ";
@@ -21,6 +22,12 @@ public class TimeTool {
         SimpleDateFormat format=new SimpleDateFormat(ymdHms);
         String format1 = format.format(date);
         return format1;
+    }
+    public static String getHhMmSs(){
+        Date date = new Date();
+        SimpleDateFormat format=new SimpleDateFormat(HhMmSs);
+        String hms = format.format(date);
+        return hms;
     }
 
     public static String getYmd(){

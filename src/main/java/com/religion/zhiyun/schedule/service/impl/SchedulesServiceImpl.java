@@ -3,7 +3,9 @@ package com.religion.zhiyun.schedule.service.impl;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.schedule.service.SchedulesService;
+import com.religion.zhiyun.sys.file.service.impl.RmFileServiceImpl;
 import com.religion.zhiyun.sys.log.dao.AppmetricLogMapper;
 import com.religion.zhiyun.sys.log.entity.AppmetricLogEntity;
 import com.religion.zhiyun.task.dao.TaskActInstMapper;
@@ -36,6 +38,8 @@ public class SchedulesServiceImpl implements SchedulesService {
     private TaskActInstMapper taskActInstMapper;
     @Autowired
     private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
+    @Autowired
+    private RmFileServiceImpl rmFileServiceImpl;
 
 
     @Override
@@ -228,5 +232,37 @@ public class SchedulesServiceImpl implements SchedulesService {
             }
         }
 
+    }
+
+    @Override
+    public void handleCutPicture() {
+        try {
+            //获取未截图
+            List<Map<String, Object>> unVp = rmFileServiceImpl.getUnVp();
+            if(null!=unVp && unVp.size()>0){
+                for(int i=0;i<unVp.size();i++){
+                    Map<String, Object> vpMap = unVp.get(i);
+                    if(null!=vpMap){
+                        Integer vpId = (Integer) vpMap.get("vpId");
+                        String vpChannelId = (String) vpMap.get("vpChannelId");
+                        String vpTime = (String) vpMap.get("vpTime");
+                        //下载视频并截图
+                        HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
+                        hisPlayReqParam.setChannelId(vpChannelId);
+                        hisPlayReqParam.setStartTime(vpTime);
+                        hisPlayReqParam.setEndTime(vpTime);
+                        hisPlayReqParam.setIpAddr("");
+                        hisPlayReqParam.setPort(8083);
+                        hisPlayReqParam.setSpeed(4);
+
+                        int fileId = rmFileServiceImpl.cutPicture(hisPlayReqParam);
+                        //更新截图处理表
+                        rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

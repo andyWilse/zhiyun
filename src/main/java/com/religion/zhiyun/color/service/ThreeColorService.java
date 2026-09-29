@@ -28,6 +28,9 @@ public interface ThreeColorService {
     /** 三色要素（单条数据获取）**/
     AppResponse getThreeColor(int coId);
 
+    /** 三色要素（单条数据获取场所）**/
+    AppResponse getVenueThreeColor(int venueId);
+
     /** 三色要素（列表数据获取）**/
     AppResponse getThreeColorList(ParamsVo vo);
 

@@ -113,6 +113,20 @@
             <if test="coId!=null and coId!=''">
                 tc.CO_ID=#{coId}
             </if>
+            <if test="coVenuesId!=null and coVenuesId!=''">
+                tc.CO_VENUES_ID=#{coVenuesId}
+            </if>
+        </where>
+    </select>
+
+    <select id="getVenueThreeColor" resultType="com.religion.zhiyun.color.entity.ThreeColorEntity">
+        select
+        <include refid="threeColorColumn"/>
+        from RM_THREE_COLOR tc
+        <where>
+            <if test="coVenuesId!=null and coVenuesId!=''">
+                tc.CO_VENUES_ID=#{coVenuesId}
+            </if>
         </where>
     </select>
 

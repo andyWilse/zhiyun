@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @DecryptRequest(true)
@@ -40,6 +39,13 @@ public class ThreeColorController {
     @GetMapping("/query/{coId}")
     public AppResponse getThreeColor(@PathVariable int coId) {
         return threeColorService.getThreeColor(coId);
+    }
+
+    @DecryptRequest(false)
+    @EncryptResponse(false)
+    @GetMapping("/query")
+    public AppResponse getVenueThreeColor(@RequestParam Integer venuesId) {
+        return threeColorService.getVenueThreeColor(venuesId);
     }
 
     @GetMapping("/list")

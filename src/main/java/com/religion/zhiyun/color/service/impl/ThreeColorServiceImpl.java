@@ -313,6 +313,27 @@ public class ThreeColorServiceImpl implements ThreeColorService {
     }
 
     @Override
+    public AppResponse getVenueThreeColor(int venueId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="获取场所三色要素信息失败！";
+        List<ThreeColorEntity> venueThreeColor =new ArrayList<>();
+        try{
+            venueThreeColor = threeColorMapper.getVenueThreeColor(venueId);
+
+            code= ResultCode.SUCCESS.getCode();
+            message="获取场所三色要素信息成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+
+        }
+        return new AppResponse(code,message,venueThreeColor.toArray());
+    }
+
+    @Override
     public AppResponse getThreeColorList(ParamsVo vo) {
         long code= ResultCode.FAILED.getCode();
         String message="获取三色要素信息列表失败！";

@@ -24,4 +24,9 @@ public interface SchedulesService {
      * 预警未处理重复提醒
      */
     void repeatMessage();
+
+    /**
+     * 视频截图处理
+     */
+    void handleCutPicture();
 }

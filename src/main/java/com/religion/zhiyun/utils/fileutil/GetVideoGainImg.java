@@ -5,11 +5,14 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 获取视频首帧图片用于界面展示
@@ -143,10 +146,70 @@ public class GetVideoGainImg {
         return false;
     }
 
-    public static void main(String[] args) throws Exception {
-        boolean tempPath = GetVideoGainImg.getTempPath("F:/temporary/542.jpg", "F:/temporary/123456789.mp4");
-        System.out.println("获取首帧是否成功！"+tempPath);
+    /**
+     * 视频关键帧截图
+     * @param videoPath 视频路径
+     * @param second 需要截取关键帧的视频时间
+     * @return
+     */
+    public static String generateImage(String videoPath, long second){
+        String picName  = UUID.randomUUID().toString().replaceAll("-", "") + ".jpg";
+        String uploadFilePath="E:\\0file\\xiazai";
+        File tempFileDir = new File(uploadFilePath);
+        if(!tempFileDir.exists()){
+            tempFileDir.mkdirs();
+        }
+        String imagePath = uploadFilePath + picName;
+
+        try {
+            FFmpegFrameGrabber ff = new FFmpegFrameGrabber(videoPath);
+            ff.start();
+
+            Frame f  = null;
+
+            //传入的参数是秒，这里需要处理的时间戳是按微秒走的,需要转换一下
+            /*Double d = Double.parseDouble(secs);
+            long targetFrameNum = (long) (d * 1000 * 1000);*/
+            long targetFrameNum = second * 1_000_000L;
+
+            ff.setTimestamp(targetFrameNum);
+
+            //根据传入的时间戳，抓取指定时间的视频关键帧
+            f = ff.grabImage();
+            if (f != null) {
+                //处理并生成图片
+                int owidth = f.imageWidth;
+                int oheight = f.imageHeight;
+                // 对截取的帧进行等比例缩放
+                int width = 800;
+                int height = (int) (((double) width / owidth) * oheight);
+                Java2DFrameConverter converter = new Java2DFrameConverter();
+                BufferedImage fecthedImage = converter.getBufferedImage(f);
+                BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+                bi.getGraphics().drawImage(fecthedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH),
+                        0, 0, null);
+                ImageIO.write(bi, "jpg", new File(imagePath));
+            }
+
+            ff.stop();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return picName;
     }
+
+    public static void main(String[] args) throws Exception {
+        //boolean tempPath = GetVideoGainImg.getTempPath("F:/temporary/542.jpg", "F:/temporary/123456789.mp4");
+
+        String tempPath = GetVideoGainImg.generateImage("F:\\13files\\101.mp4", 1);
+
+        System.out.println("获取首帧是否成功！"+tempPath);
+
+        //generate("F:\\13files\\101.mp4", "E:\\0file\\xiazai\\thumb.jpg", 1); // 截取第 10 秒
+
+    }
+
 }
 
 

@@ -1313,7 +1313,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
             //3.1.2.短信通知
             //SendMassage.sendSms(contents, userMobile);
-            MessageSend.sendSmsMass(contents,userNextList);
+            //MessageSend.sendSmsMass(contents,userNextList);
         }
 
         /*** 4.保存通知 ***/
@@ -1989,6 +1989,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             taskEntity.setRelVenuesId(venue);
             taskEntity.setEmergencyLevel(eventLevel);
             taskEntity.setRelEventId(String.valueOf(event.getEventId()));
+            taskEntity.setTaskVideo(deviceId);
 
             //获取人工审核人
             List<String> review = sysUserMapper.getReview(RoleEnums.REVIEW.getCode(), RoleEnums.OF_ID_2.getCode());
@@ -1997,6 +1998,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
 
             //5.2.任务发起
+
             AppResponse res = taskAiWarnServiceImpl.launch(taskEntity, review, "预警平台");
             //5.3.短信通知
             taskAiWarnServiceImpl.sendMsg("",

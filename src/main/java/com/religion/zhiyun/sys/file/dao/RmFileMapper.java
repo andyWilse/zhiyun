@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -52,4 +53,27 @@ public interface RmFileMapper {
 
 
     List<Map<String,Object>> getInit(@Param("creator") String creator);
+
+    /**
+     * 增加视频截图信息
+     * @param vpProcInstId
+     * @param vpTime
+     */
+    void addVideoPicture (@Param("vpProcInstId") String vpProcInstId,
+                          @Param("vpChannelId") String vpChannelId,
+                          @Param("vpTime") Date vpTime);
+
+    /**
+     * 修改视频截图信息
+     * @param vpId
+     * @param vpFileId
+     * @param vpModifyTm
+     */
+    void updateVideoPicture (@Param("vpId") Integer vpId,@Param("vpFileId") String vpFileId,@Param("vpModifyTm") Date vpModifyTm);
+
+    /**
+     * 获取未截图时间信息
+     * @return
+     */
+    List<Map<String,Object>> getUnVp();
 }

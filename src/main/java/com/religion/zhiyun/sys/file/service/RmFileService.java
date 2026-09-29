@@ -1,5 +1,6 @@
 package com.religion.zhiyun.sys.file.service;
 
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
@@ -71,5 +72,12 @@ public interface RmFileService {
      * @return
      */
     PageResponse importExcel(MultipartFile file);
+
+    /**
+     * 历史视频截图
+     * @param hisPlayReqParam
+     * @return
+     */
+   int cutPicture(HisPlayReqParam hisPlayReqParam) throws Exception;
 
 }

@@ -51,6 +51,13 @@ public interface ThreeColorMapper {
     List<ThreeColorEntity> getThreeColor(@Param("coId") String coId);
 
     /**
+     * 获取场所三色要素
+     * @param coVenuesId
+     * @return
+     */
+    List<ThreeColorEntity> getVenueThreeColor(@Param("coVenuesId") Integer coVenuesId);
+
+    /**
      * 获取三色要素列表
      * @param vo
      * @return

@@ -46,11 +46,16 @@ public class SysSchedules {
         schedulesService.metricRecord();
     }
 
-
-    /** 每隔1分钟执行一次 **/
+    /** 短信提醒查询提醒人：每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void repeatMessage() {
         //schedulesService.repeatMessage();
+    }
+
+    /** 每隔分钟执行一次 **/
+    @Scheduled(cron ="0 */1 * * * ?")
+    public void cutPicture() {
+        schedulesService.handleCutPicture();
     }
 
 
