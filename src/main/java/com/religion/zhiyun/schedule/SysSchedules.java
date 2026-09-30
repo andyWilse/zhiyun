@@ -55,7 +55,7 @@ public class SysSchedules {
     /** 每隔分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void cutPicture() {
-        schedulesService.handleCutPicture();
+        //schedulesService.handleCutPicture();
     }
 
 

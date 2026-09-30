@@ -554,4 +554,14 @@
         </if>
     </select>
 
+    <select id="getRoleUser" resultType="com.religion.zhiyun.user.entity.SysUserEntity">
+        select
+            CONCAT(us.USER_NM,'(',r.ROLE_NM,')') as userNm,
+            USER_ID as userId
+        from RM_SYS_USER_INFO us
+        left join rm_sys_role r on r.ROLE_ID=us.IDENTITY
+        where us.USER_MOBILE= #{userMobile}
+        order by us.LAST_MODIFY_TIME desc limit 1
+    </select>
+
 </mapper>

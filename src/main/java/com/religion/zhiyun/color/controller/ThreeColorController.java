@@ -41,8 +41,6 @@ public class ThreeColorController {
         return threeColorService.getThreeColor(coId);
     }
 
-    @DecryptRequest(false)
-    @EncryptResponse(false)
     @GetMapping("/query")
     public AppResponse getVenueThreeColor(@RequestParam Integer venuesId) {
         return threeColorService.getVenueThreeColor(venuesId);

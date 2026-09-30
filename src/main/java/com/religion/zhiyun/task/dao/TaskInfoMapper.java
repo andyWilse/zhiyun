@@ -185,9 +185,6 @@ public interface TaskInfoMapper {
      */
     void deleteRmTaskInfo(@Param("eventId") String eventId);
 
-    /**更新评价**/
-    void updateTaskEvaluation(TaskEntity taskEntity);
-
     /**
      * 获取节点处理人
      * @param procInstId

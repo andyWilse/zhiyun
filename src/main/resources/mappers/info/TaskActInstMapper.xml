@@ -150,7 +150,8 @@
             act.ACT_HANDLER as actHandler,
             DATE_FORMAT(act.ACT_HANDLE_TM,"%Y-%m-%d %H:%i:%s") as actHandleTime,
             act.ACT_COMMENT as actComment,
-            case act.ACT_STATE when '01' then '已处理' else '未处理' end as actState,
+            case act.ACT_STATE when '01' then '已处理' else '未处理' end as actStateNm,
+            act.ACT_STATE as actState,
             act.ACT_INST_ID as actInstId,
             act.ACT_MARK as actMark,
             act.ACT_PICTURE as actPicture

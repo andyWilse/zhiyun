@@ -44,10 +44,22 @@
 
     <update id="updateTask" >
         update rm_task_info t
-            set t.HANDLE_PERSON=#{handlePerson},
-            t.HANDLE_RESULTS=#{handleResults},
-            t.HANDLE_TIME=#{handleTime}
-        where PROC_INST_ID=#{procInstId}
+        <set>
+            <if test="handlePerson!=null and handlePerson!=''">
+                t.HANDLE_PERSON=#{handlePerson},
+            </if>
+            <if test="handleResults!=null and handleResults!=''">
+                t.HANDLE_RESULTS=#{handleResults},
+            </if>
+            <if test="handleTime!=null">
+                t.HANDLE_TIME=#{handleTime},
+            </if>
+        </set>
+        <where>
+            <if test="procInstId!=null and procInstId!=''">
+                t.PROC_INST_ID=#{procInstId}
+            </if>
+        </where>
     </update>
 
     <sql id="taskColumn">
@@ -1295,10 +1307,6 @@
     <delete id="deleteRmTaskInfo">
         delete from rm_task_info  where REL_EVENT_ID = #{eventId}
     </delete>
-
-    <update id="updateTaskEvaluation" >
-        update rm_task_info t set t.EVALUATION=#{evaluation},t.BACK_FLAG=#{backFlag} where PROC_INST_ID=#{procInstId}
-    </update>
 
     <select id="getNodeHandler" resultType="String">
         select distinct aha.assignee_ as assignee

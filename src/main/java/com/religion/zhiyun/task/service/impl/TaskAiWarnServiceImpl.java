@@ -119,7 +119,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskEntity.setLaunchPerson(loginNm);
             taskEntity.setLaunchTime(TimeTool.getYmdHms());
             taskEntity.setProcInstId(procInstId);
-            taskEntity.setHandleResults(TaskActEnums.AI_WARN_STATE_00.getCode());
+            taskEntity.setHandleResults("0");
             taskEntity.setTaskType(TaskParamsEnum.TASK_FLOW_TYPE_05.getName());
             taskEntity.setFlowType(TaskParamsEnum.TASK_FLOW_TYPE_05.getCode());
             taskInfoMapper.addTask(taskEntity);
@@ -200,6 +200,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             if(GeneTool.isEmpty(loginNm)){
                 loginNm = this.getLogin(token);
             }
+            log.info("流程review：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+","+review+";");
             Authentication.setAuthenticatedUserId(loginNm);
             //处理自己的待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
@@ -242,6 +243,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 map.put("procInstId",procInstId);
                 map.put("loginNm",loginNm);
                 //任务
+                map.put("handleResults","0");
                 map.put("taskResult",TaskActEnums.AI_WARN_STATE_01.getCode());
                 //更新节点
                 map.put("curState",TaskActEnums.AI_NODE_STATE_01.getCode());
@@ -329,7 +331,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 user = user + userMobile + ",";//通知人员
             }
             notifiedEntity.setNotifiedUser(user);
-            System.out.println(contents + ":共发送" + (userList.size()) + "条短信");
+            log.info(contents + ":共发送" + (userList.size()) + "条短信");
         } else {
             throw new RuntimeException("该场所内尚未添加相关成员！");
         }
@@ -347,7 +349,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     String managerMobile = split[i];
                     userNextList.add(managerMobile);//下节点流程处理人员
                 }
-                System.out.println(contents + ":共发送" + (split.length) + "条短信");
+                log.info(contents + ":共发送" + (split.length) + "条短信");
             } else {
                 throw new RuntimeException("该场所内尚未添加职员信息！");
             }
@@ -396,6 +398,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 loginNm = this.getLogin(token);
             }
             Authentication.setAuthenticatedUserId(loginNm);
+            log.info("handle：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+","+handleResults+","+feedBack+";");
 
             //根据角色信息获取自己的待办
             //List<Task> T = taskService.createTaskQuery().taskAssignee(nbr).list();
@@ -507,6 +510,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 loginNm = this.getLogin(token);
             }
             Authentication.setAuthenticatedUserId(loginNm);
+            log.info("流程evaluate：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+","+evaluation+";");
 
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
@@ -598,6 +602,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             }
             String loginNm = this.getLogin(token);
             Authentication.setAuthenticatedUserId(loginNm);
+            log.info("流程backup：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+","+evaluation+";");
 
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
@@ -671,6 +676,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         String message="误报解除失败！";
         try {
             String loginNm = this.getLogin(token);
+            log.info("流程backup：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+";");
+
             //查询任务，如果存在做结束处理
             //List<TaskEntity> taskEven = taskInfoMapper.getTaskByEventId(eventId);
             Map<String, Object> taskEven = taskInfoMapper.getEvTaDetail(procInstId);
@@ -772,6 +779,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             if(null==procInstId || procInstId.isEmpty()){
                 throw new RuntimeException("流程id丢失，请联系管理员！");
             }
+            log.info("流程endTask：（"+procInstId+"),"+loginNm+","+TimeTool.getYmdHms()+";");
+
             //处理待办
             List<Task> T = taskService.createTaskQuery().processInstanceId(procInstId).list();
             if(!ObjectUtils.isEmpty(T)) {
@@ -837,7 +846,6 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             TaskEntity taskEntity=new TaskEntity();
             taskEntity.setHandleResults(handleResults);
             taskEntity.setProcInstId(procInstId);
-            taskEntity.setBackFlag(backFlag);
             if(TaskActEnums.AI_WARN_STATE_03.getCode().equals(taskResult)
                     || TaskActEnums.AI_WARN_STATE_05.getCode().equals(taskResult)){
                 taskEntity.setHandlePerson(loginNm);
@@ -874,14 +882,15 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             String actComment = map.get("actComment") == null ? "" : (String) map.get("actComment");
             String actCode = map.get("actCode") == null ? "" : (String) map.get("actCode");
             String actPicture = map.get("actPicture") == null ? "" : (String) map.get("actPicture");
-            List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(loginNm);
+            //List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(loginNm);
+            SysUserEntity sysUserEntities = sysUserMapper.getRoleUser(loginNm);
             String actHandNm ="";
-            if(null!=sysUserEntities && sysUserEntities.size()>0){
-                actHandNm = sysUserEntities.get(0).getUserNm();
+            if(null!=sysUserEntities){
+                actHandNm = sysUserEntities.getUserNm();
             }else{
                 List<Map<String, Object>> managerList = venuesManagerMapper.getManagerByNm(loginNm);
                 if(null!=managerList && managerList.size()>0){
-                    actHandNm = managerList.get(0).get("managerCnNm")==null?"":(String) managerList.get(0).get("managerCnNm");
+                    actHandNm = managerList.get(0).get("managerCnNm")==null?"":(String) managerList.get(0).get("managerCnNm")+"(负责人)";
                 }else{
                     throw new RuntimeException("用户("+loginNm+")已被冻结，请联系管理员");
                 }
@@ -1117,17 +1126,17 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                 int actId = actEntity.getActId();
                 for(int h=0;h<userList.size();h++){
                     String mobile = userList.get(h);
-                    List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(mobile);
+                    SysUserEntity sysUserEntities =sysUserMapper.getRoleUser(mobile);
                     int userId =0;
                     String userNm ="";
-                    if(null!=sysUserEntities && sysUserEntities.size()>0){
-                        userId = sysUserEntities.get(0).getUserId();
-                        userNm = sysUserEntities.get(0).getUserNm();
+                    if(null!=sysUserEntities){
+                        userId = sysUserEntities.getUserId();
+                        userNm = sysUserEntities.getUserNm();
                     }else{
                         List<Map<String, Object>> managerList = venuesManagerMapper.getManagerByNm(mobile);
                         if(null!=managerList && managerList.size()>0){
                             userId = managerList.get(0).get("managerId")==null?0:(Integer) managerList.get(0).get("managerId");
-                            userNm = managerList.get(0).get("managerCnNm")==null?"":(String) managerList.get(0).get("managerCnNm");
+                            userNm = managerList.get(0).get("managerCnNm")==null?"":(String) managerList.get(0).get("managerCnNm")+"(负责人)";
                         }else{
                             throw new RuntimeException("用户("+mobile+")已被冻结，请联系管理员");
                         }
@@ -1380,6 +1389,12 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     //3.1.新增
                     assVo.setAssActId(actId);
                     assVo.setAssUserId(userId);
+                    if("" !=assMobile){
+                        SysUserEntity roleUser = sysUserMapper.getRoleUser(assMobile);
+                        if(null!=roleUser){
+                            assAssignee=roleUser.getUserNm();
+                        }
+                    }
                     assVo.setAssAssignee(assAssignee);
                     assVo.setAssModifyTm(TimeTool.getTimestamp());
                     assVo.setAssMobile(assMobile);
@@ -1496,12 +1511,13 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             String assMobile = (String) map.get("assMobile");
             String assAssignee = (String) map.get("assAssignee");
             //根据电话获取用户id
-            List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(assMobile);
+            //List<SysUserEntity> sysUserEntities = sysUserMapper.queryByTel(assMobile);
+            SysUserEntity sysUserEntities = sysUserMapper.getRoleUser(assMobile);
             int userId =0;
             String userNm ="";
-            if(null!=sysUserEntities && sysUserEntities.size()>0){
-                userId = sysUserEntities.get(0).getUserId();
-                userNm = sysUserEntities.get(0).getUserNm();
+            if(null!=sysUserEntities){
+                userId = sysUserEntities.getUserId();
+                userNm = sysUserEntities.getUserNm();
             }else{
                 List<Map<String, Object>> managerList = venuesManagerMapper.getManagerByNm(assMobile);
                 if(null!=managerList && managerList.size()>0){

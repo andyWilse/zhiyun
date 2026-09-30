@@ -245,7 +245,8 @@ public class SchedulesServiceImpl implements SchedulesService {
                     if(null!=vpMap){
                         Integer vpId = (Integer) vpMap.get("vpId");
                         String vpChannelId = (String) vpMap.get("vpChannelId");
-                        String vpTime = (String) vpMap.get("vpTime");
+                        //String vpTime = (String) vpMap.get("vpTime");
+                        String vpTime ="";
                         //下载视频并截图
                         HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
                         hisPlayReqParam.setChannelId(vpChannelId);

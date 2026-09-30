@@ -191,5 +191,12 @@ public interface SysUserMapper {
      */
     List<VenuesEntity> getVenuesByUser(@Param("uvUserId") Integer uvUserId);
 
+    /**
+     * 获取用户名加角色
+     * @param userMobile
+     * @return
+     */
+    SysUserEntity  getRoleUser(@Param("userMobile") String userMobile);
+
 
 }
