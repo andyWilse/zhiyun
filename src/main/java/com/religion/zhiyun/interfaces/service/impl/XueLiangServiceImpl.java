@@ -310,8 +310,10 @@ public class XueLiangServiceImpl implements XueLiangService {
         /**1.Header**/
         HttpHeader header=new HttpHeader();
         //授权信息访问业务数据请求头,Hearder 需要包含 token信息
+        log.info("授权调用开始");
         String accessToken = this.getAccessToken();
-        //System.out.println("accessToken:"+accessToken);
+        log.info("授权调用结果:"+accessToken);
+        System.out.println("accessToken:"+accessToken);
         header.addParam("Authorization","Bearer "+accessToken);
         header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
 
@@ -330,13 +332,12 @@ public class XueLiangServiceImpl implements XueLiangService {
         params.addParam("port",String.valueOf(hisPlayReqParam.getPort()));
         //下载速度
         params.addParam("speed",String.valueOf(hisPlayReqParam.getSpeed()));
-
+        log.info("下载视频接口调用:"+new Date());
         /**3.接口调用***/
         HttpService httpService=new HttpService(url);
         String response = httpService.service(url, params,header);
-
+        log.info("下载视频接口调用结果:"+response);
         /**4.结果解析***/
-        System.out.println("结果接收："+response);
         //PlayEntity entity= JsonUtils.jsonTOBean(response, PlayEntity.class);
         //存放位置
         String position="";

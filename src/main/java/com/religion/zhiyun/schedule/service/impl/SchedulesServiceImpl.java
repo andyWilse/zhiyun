@@ -14,17 +14,20 @@ import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.enums.TaskActEnums;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class SchedulesServiceImpl implements SchedulesService {
 
@@ -245,20 +248,22 @@ public class SchedulesServiceImpl implements SchedulesService {
                     if(null!=vpMap){
                         Integer vpId = (Integer) vpMap.get("vpId");
                         String vpChannelId = (String) vpMap.get("vpChannelId");
-                        //String vpTime = (String) vpMap.get("vpTime");
-                        String vpTime ="";
+                        LocalDateTime vpTimes= (LocalDateTime) vpMap.get("vpTime");
+                        LocalDateTime vpTime = vpTimes.plusMinutes(10);
+                        String vpTimeStart = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTimes);
+                        String vpTimeEnd = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTime);
                         //下载视频并截图
                         HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
                         hisPlayReqParam.setChannelId(vpChannelId);
-                        hisPlayReqParam.setStartTime(vpTime);
-                        hisPlayReqParam.setEndTime(vpTime);
-                        hisPlayReqParam.setIpAddr("");
-                        hisPlayReqParam.setPort(8083);
+                        hisPlayReqParam.setStartTime(vpTimeStart);
+                        hisPlayReqParam.setEndTime(vpTimeEnd);
+                        hisPlayReqParam.setIpAddr("172.20.20.31");
+                        hisPlayReqParam.setPort(49860);
                         hisPlayReqParam.setSpeed(4);
-
+                        log.info("处理视频开始:"+new Date());
                         int fileId = rmFileServiceImpl.cutPicture(hisPlayReqParam);
                         //更新截图处理表
-                        rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
+                        //rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
                     }
                 }
             }

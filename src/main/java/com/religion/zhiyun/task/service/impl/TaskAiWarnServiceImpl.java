@@ -503,6 +503,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         long code=ResultCode.FAILED.getCode();
         String message="终审用户评价通过流程失败！";
         try {
+            evaluation="办结";
             if(null==procInstId || procInstId.isEmpty()){
                 throw new RuntimeException("流程id丢失，请联系管理员！");
             }

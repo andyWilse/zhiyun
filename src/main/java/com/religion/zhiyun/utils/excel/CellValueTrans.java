@@ -16,7 +16,7 @@ public class CellValueTrans {
      * @param workbook
      * @param rowNum
      * @param cellNum
-     * @param cellEmptyList
+     * @param cellEmptyList 不能为空字段
      * @return
      */
     public static String getCellValue(Cell cell,
@@ -101,7 +101,22 @@ public class CellValueTrans {
         return cellValue;
     }
 
-
+    /**
+     * 检查空行
+     * @param rowCheck
+     * @return
+     */
+    public static boolean checkRow(Row rowCheck,int[] colColumns) {
+        if (rowCheck == null) return true;
+        //同时为空跳过
+        for (int col : colColumns) {
+            Cell cell = rowCheck.getCell(col);
+            if (cell != null && cell.getCellType() != 3 && cell.getCellType() != 2) {
+                return false; // 常规列有数据，不跳过
+            }
+        }
+        return true; // 所有常规列都为空，跳过该行
+    }
 
 
 }

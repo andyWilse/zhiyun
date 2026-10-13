@@ -468,6 +468,7 @@ public class RmFileServiceImpl implements RmFileService {
     public int cutPicture(HisPlayReqParam hisPlayReqParam) throws Exception {
         //获取视频位置
         String path = xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
+        log.info("截图开始:"+new Date());
         //图片存放地址
         //String rootPath="D:/mimi/"+File.separator+"upload/video/";
         String fileDir=File.separator+TimeTool.getYmd()+File.separator;

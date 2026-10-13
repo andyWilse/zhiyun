@@ -573,7 +573,8 @@
 
     <select id="getVenuesByNm" resultType="map">
         select
-            VENUES_ID as venuesId
+            VENUES_ID as venuesId,
+            TOWN as  town
         from RM_VENUES_INFO
         where VENUES_STATUS!='02'
         <if test="venuesName!=null and venuesName!=''">

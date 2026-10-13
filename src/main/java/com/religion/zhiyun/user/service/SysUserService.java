@@ -71,18 +71,17 @@ public interface SysUserService {
 
     /**
      * 三人驻堂excel数据验证解析
-     * @param file
+     * @param map
      * @return
      */
-    PageResponse excelImport(MultipartFile file);
+    PageResponse excelImport(Map<String,Object> map);
 
     /**
      * 三人驻堂excel数据保存
-     * @param sysUserList
-     * @param token
+     * @param map
      * @return
      */
-    PageResponse excelImportAdd(List<SysUserEntity> sysUserList,String token);
+    PageResponse excelImportAdd(Map<String,Object> map);
 
     /**
      * 根据场所获取三人驻堂

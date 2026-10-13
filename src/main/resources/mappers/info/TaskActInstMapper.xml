@@ -141,7 +141,7 @@
             (select dc.DICT_CN_DESC from rm_sys_dict dc where dc.DICT_TYPE_CD='2001' and dc.DICT_CD=act.ACT_CODE) as actNode,
             case act.ACT_CODE
             when '20010001' then act. ACT_RECEIVER
-            when '20010007' then (select uu.USER_NM from RM_SYS_USER_INFO uu where ta.HANDLE_PERSON=uu.USER_MOBILE)
+            when '20010007' then ""
             else (select GROUP_CONCAT(ass.ASS_ASSIGNEE SEPARATOR ",")
             from TASK_ACT_ASSIGNEE ass where ass.ASS_ACT_ID=act.ACT_ID and ass.ASS_STATE!='03')
             end as actReceiver,

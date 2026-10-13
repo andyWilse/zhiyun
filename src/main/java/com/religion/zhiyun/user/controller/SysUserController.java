@@ -71,14 +71,13 @@ public class SysUserController {
     }
 
     //三人驻堂Excel数据导入
-    @EncryptResponse(false)
     @PostMapping("/import")
-       public PageResponse importData(@RequestParam("file") MultipartFile file){
-        return sysUserService.excelImport(file);
+       public PageResponse importData(@RequestBody Map<String,Object> map){
+        return sysUserService.excelImport(map);
     }
     @PostMapping("/import/add")
-    public PageResponse excelImportAdd(@RequestBody List<SysUserEntity> sysUserList,@RequestHeader("token")String token) {
-        return sysUserService.excelImportAdd(sysUserList,token);
+    public PageResponse excelImportAdd(@RequestBody Map<String,Object> map) {
+        return sysUserService.excelImportAdd(map);
     }
 
     //获取三人驻堂

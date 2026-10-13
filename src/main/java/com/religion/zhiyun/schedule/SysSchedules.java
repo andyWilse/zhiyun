@@ -15,14 +15,14 @@ public class SysSchedules {
     @Autowired
     private SchedulesService schedulesService;
 
-    /** 每隔1分钟执行一次 **/
+    /** 自动上报：每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */5 * * * ?")
     public void AutoReport() {
         //自动上报
         //schedulesService.UrgentAutoReport();
     }
 
-    /** 每天9点执行一次 **/
+    /**明火提醒： 每天9点执行一次 **/
     @Scheduled(cron ="0 20 17 * * ?")
     public void AutoFill() {
         //普通通知
@@ -35,7 +35,7 @@ public class SysSchedules {
         VoiceCall.voiceCall(map);*/
     }
 
-    /** 每天8:30-17:30 ,5分钟执行一次 **/
+    /** 电话提醒：每天8:30-17:30 ,5分钟执行一次 **/
     @Scheduled(cron ="0 30/5 8-17 * * ? ")
     public void warnCall() {
        // schedulesService.warnCallReport();
@@ -52,7 +52,7 @@ public class SysSchedules {
         //schedulesService.repeatMessage();
     }
 
-    /** 每隔分钟执行一次 **/
+    /** 下载历史视频：每隔分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void cutPicture() {
         //schedulesService.handleCutPicture();

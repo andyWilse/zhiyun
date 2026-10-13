@@ -1,5 +1,6 @@
 package com.religion.zhiyun.user.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
@@ -16,8 +17,11 @@ import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.base.TransParam;
+import com.religion.zhiyun.utils.enums.CellEnums;
 import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.enums.RoleEnums;
+import com.religion.zhiyun.utils.excel.CellValueTrans;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
@@ -36,12 +40,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class SysUserServiceImpl implements SysUserService {
@@ -526,27 +529,36 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
-    public PageResponse excelImport(MultipartFile file) {
+    public PageResponse excelImport(Map<String,Object> map) {
         long code= ResultCode.FAILED.getCode();
         String message="三人驻堂信息Excel导入失败";
         List<SysUserEntity> userList=new ArrayList<>();
         try {
+            String fileContent = map.get("fileContent")==null?"": (String) map.get("fileContent");
+            String fileName = map.get("fileName")==null?"": (String) map.get("fileName");
+            //数据转换
+            String[] parts = fileContent.split(",");
+            String base64File = parts[1].split("\"")[0];
+            byte[] bytes = Base64.getDecoder().decode(base64File);
+            InputStream inputStream = new ByteArrayInputStream(bytes);
             //1. 创建一个 workbook 对象
             //获得原始文件名
-            String oriName = file.getOriginalFilename();
+            //String oriName = file.getOriginalFilename();
             Workbook workbook=null;
-            if (oriName.endsWith("xls")) {
+            if (fileName.endsWith("xls")) {
                 //使用 HSSFWorkbook 解析
-                workbook = new HSSFWorkbook(file.getInputStream());
+                workbook = new HSSFWorkbook(inputStream);
             } else {
                 //使用 XSSFWorkbook 解析
-                workbook = new XSSFWorkbook(file.getInputStream());
+                workbook = new XSSFWorkbook(inputStream);
             }
             //2. 获取 workbook 中表单的数量
             int numberOfSheets = workbook.getNumberOfSheets();
-            for (int i = 0; i < numberOfSheets; i++) {
+            //for (int i = 0; i < numberOfSheets; i++) {
+            if(numberOfSheets!=0){
                 //3. 获取表单
-                Sheet sheet = workbook.getSheetAt(i);
+                //Sheet sheet = workbook.getSheetAt(0);
+                Sheet sheet = workbook.getSheet("info");
                 //4. 获取表单中的行数
                 int physicalNumberOfRows = sheet.getPhysicalNumberOfRows();
                 Long maxCustCd = sysUserMapper.getMaxUserNbr();
@@ -557,76 +569,70 @@ public class SysUserServiceImpl implements SysUserService {
                     }
                     //6. 获取行
                     Row row = sheet.getRow(j);
-                    if (row == null) {
+                    int[] colColumns={5,6,7,3,4};
+                    boolean skipRow = CellValueTrans.checkRow(row, colColumns);
+                    if (skipRow) {
                         continue;//防止数据中间有空行
                     }
                     //7. 获取列数
-                    int physicalNumberOfCells =row.getPhysicalNumberOfCells();
+                    //int physicalNumberOfCells =row.getPhysicalNumberOfCells();
                     SysUserEntity sysUserEntity=new SysUserEntity();
-                    for (int k = 0; k < physicalNumberOfCells; k++) {
+                    List<Integer> listCellEmpty = Arrays.asList(5,6,7,3,4);
+                    for (int k = 0; k < 8; k++) {
                         Cell cell = row.getCell(k);
-                        int cellType = cell.getCellType();
-                        String cellValue="";
                         int rowNo = j+1;
-                        int cellNo = k+1;
-                        if(0==cellType){
-                            //数值型
-                            cellValue= new BigDecimal(cell.getNumericCellValue()).toPlainString();
-                        }else if(1==cellType){
-                            //字符串
-                            cellValue=cell.getStringCellValue();
-                        }else if(4==cellType){
-                            //布尔型
-                            boolean booleanCellValue = cell.getBooleanCellValue();
-                            cellValue=String.valueOf(booleanCellValue);
-                        }else if(2==cellType){
-                            //公式型
-                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,公式型单元格错误！");
-                        }else if(3==cellType){
-                            //单元格为空!
-                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,字段不能为空！");
-                        }else if(5==cellType){
-                            //单元格错误
-                            throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,单元格错误！");
-                        }else{
-                            throw new RuntimeException("未知错误！");
+                        if(null==cell){
+                            if(listCellEmpty.contains(k)){
+                                throw new RuntimeException("第"+rowNo+"行"+ CellEnums.getName(k)+"列,字段不能为空！");
+                            }
+                            continue;
                         }
-
+                        String cellValue = CellValueTrans.getCellValue(cell, workbook, j, k, listCellEmpty);
                         //数据校验
                         if(0==k){
-                            sysUserEntity.setUserNm(cellValue);
-                            sysUserEntity.setLoginNm(cellValue);
+                            //角色
+                            sysUserEntity.setIdentity(cellValue);
+
+                            if(!GeneTool.isEmpty(cellValue)){
+                            }else{
+                                sysUserEntity.setIdentity(cellValue);
+                            }
+
                         }if(1==k){
-                            sysUserEntity.setIdentity("组长".equals(cellValue)?"10000006":"10000007");
+                            //town
+                            sysUserEntity.setTown(cellValue);
                         }if(2==k){
                             //场所
-                            //获取场所信息
-                            VenuesEntity venue = rmVenuesInfoMapper.getVenueByID(cellValue);
-                            if(null==venue){
-                                throw new RuntimeException("第"+rowNo+"行,第"+cellNo+"列,场所信息填写错误！");
-                            }
                             sysUserEntity.setRelVenuesId(cellValue);
-                            sysUserEntity.setProvince(venue.getProvince());
-                            sysUserEntity.setCity(venue.getCity());
-                            sysUserEntity.setArea(venue.getArea());
-                            sysUserEntity.setTown(venue.getTown());
                         }if(3==k){
+                            sysUserEntity.setUserNm(cellValue);
+                            sysUserEntity.setLoginNm(cellValue);
+                        }if(4==k){
                             //电话
                             sysUserEntity.setUserMobile(cellValue);
+                            //电话不能重复
+                            long numTel = sysUserMapper.queryTelNum(cellValue);
+                            if(numTel>0l){
+                                throw new RuntimeException("电话号码："+cellValue+"已被占用");
+                            }
+                        }if(5==k && GeneTool.isEmpty(sysUserEntity.getIdentity())){
+                            //角色
+                            sysUserEntity.setIdentity("组长".equals(cellValue)?"10000006":"10000007");
+                        }if(7==k && GeneTool.isEmpty(sysUserEntity.getRelVenuesId())){
+                            //场所
+                            //获取场所信息
+                            List<Map<String, Object>> venues = rmVenuesInfoMapper.getVenuesByNm(cellValue);
+                            if(null==venues || venues.size()<1){
+                                throw new RuntimeException("第"+rowNo+"行,H列,场所信息填写错误！");
+                            }
+                            Integer venuesId = (Integer) venues.get(0).get("venuesId");
+                            sysUserEntity.setRelVenuesId(String.valueOf(venuesId));
+                            sysUserEntity.setTown((String) venues.get(0).get("town"));
                         }
                     }
                     userList.add(sysUserEntity);
-                    Timestamp timestamp = new Timestamp(new Date().getTime());
-                    //电话不能重复
-                    long numTel = sysUserMapper.queryTelNum(sysUserEntity.getUserMobile());
-                    if(numTel>0l){
-                        throw new RuntimeException("电话号码："+sysUserEntity.getUserMobile()+"已被占用");
-                    }
-                    sysUserEntity.setCreateTime(timestamp);
-                    sysUserEntity.setLastModifyTime(timestamp);
                     maxCustCd++;
                     sysUserEntity.setUserNbr(String.valueOf(maxCustCd));
-
                 }
             }
             code= ResultCode.SUCCESS.getCode();
@@ -639,20 +645,33 @@ public class SysUserServiceImpl implements SysUserService {
             return  new PageResponse(code,message);
         }
 
-        return  new PageResponse(code,message,userList);
+        return  new PageResponse(code,message,userList.toArray());
     }
 
     @Override
-    public PageResponse excelImportAdd(List<SysUserEntity> sysUserList, String token) {
+    public PageResponse excelImportAdd(Map<String,Object> map) {
 
         long code= ResultCode.FAILED.getCode();
         String message="三人驻堂Excel数据保存失败";
 
         List<Map<String, Object>> list=new ArrayList<>();
         try {
-            if(null!=sysUserList && sysUserList.size()>0){
-                for(int i=0;i<sysUserList.size();i++){
-                    SysUserEntity sysUserEntity = sysUserList.get(i);
+            Object sysUserList = map.get("sysUserList");
+            Object[] tcArr=null;
+            if(null!=sysUserList){
+                tcArr = ((List<?>) sysUserList).toArray();
+            }
+
+            if(null!=sysUserList){
+                for(int i=0;i<tcArr.length;i++){
+                    //SysUserEntity sysUserEntity = sysUserList.get(i);
+                    HashMap<String, Object> user = (HashMap<String, Object>) tcArr[i];
+                    SysUserEntity sysUserEntity = BeanUtil.mapToBean(user, SysUserEntity.class, false);
+                    sysUserEntity.setCreateTime(TimeTool.getTimestamp());
+                    sysUserEntity.setLastModifyTime(TimeTool.getTimestamp());
+                    sysUserEntity.setProvince("330000");
+                    sysUserEntity.setCity("330300");
+                    sysUserEntity.setArea("330304");
                     //1.新增用户
                     sysUserMapper.addUser(sysUserEntity);
                     //2.密码加密
@@ -692,13 +711,12 @@ public class SysUserServiceImpl implements SysUserService {
                 //日志记录
                 //增加日志信息
                 Map<String,Object> vuMap=new HashMap<>();
-                String login = this.getLogin(token);
-                vuMap.put("operator",login);
+                vuMap.put("operator", TransParam.loginName);
                 vuMap.put("operateTime",new Date());
                 vuMap.put("operateRef","三人驻堂");
                 vuMap.put("operateType", OperaEnums.user_add.getCode());
                 vuMap.put("operateContent", "三人驻堂excel数据");
-                vuMap.put("operateDetail","三人驻堂excel导入共:"+sysUserList.size()+"条");
+                vuMap.put("operateDetail","三人驻堂excel导入共:"+tcArr.length+"条");
                 operateRecordService.addRecord(vuMap);
 
             }
@@ -1058,4 +1076,6 @@ public class SysUserServiceImpl implements SysUserService {
         vuMap.put("operateDetail",operateDetail);
         operateRecordService.addRecord(vuMap);
     }
+
+
 }
