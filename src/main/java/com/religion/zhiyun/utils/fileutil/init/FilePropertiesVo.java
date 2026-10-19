@@ -27,5 +27,15 @@ public class FilePropertiesVo {
         FilePropertiesVo.uploadUrl = uploadUrl;
     }
 
+    /**
+     * 历史视频获取
+     */
+    @Getter
+    private static String  streamUrl;
+    @Value("${xue.liang.his.streamUrl}")
+    public void setStreamUrl(String streamUrl) {
+        FilePropertiesVo.streamUrl = streamUrl;
+    }
+
 
 }

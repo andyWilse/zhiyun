@@ -42,6 +42,9 @@ public class RmFileServiceImpl implements RmFileService {
     @Value("${images.down.url}")
     private String  pathDown;
 
+    @Value("${picture.cut.format}")
+    private String  pictureFormat;
+
     @Autowired
     private RmFileMapper rmFileMapper;
     @Autowired
@@ -465,23 +468,34 @@ public class RmFileServiceImpl implements RmFileService {
      * @return
      * @throws Exception
      */
-    public int cutPicture(HisPlayReqParam hisPlayReqParam) throws Exception {
+    public int cutStreamPicture(HisPlayReqParam hisPlayReqParam,Integer vpFrame,String hisFolder) throws Exception {
         //获取视频位置
-        //xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
-        log.info("截图开始:"+new Date());
-        //图片存放地址
-        //String rootPath="D:/mimi/"+File.separator+"upload/video/";
-        String fileDir=File.separator+TimeTool.getYmd()+File.separator;
-        String rootPath=pathUpload+"cut"+fileDir;
-        String newImgName = TimeTool.getHhMmSs()+".jpg";
-        //截图并保存
-        //GetVideoGainImg.getTempPath(rootPath,path);
-        log.info("截图开始path:"+rootPath);
-        GetVideoGainImg.cutPic(rootPath);
-        //保存
-        /*fileEntity.setFileName(newImgName);
-        fileEntity.setImgPath(rootPath);
-        rmFileMapper.add(fileEntity);*/
+        Boolean downFlag = xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
+        downFlag=false;
+        if(downFlag){
+            log.info("截图开始:"+new Date());
+            //图片存放地址
+            String fileDir=File.separator+TimeTool.getYmd()+File.separator;
+            String rootPath=pathUpload+hisFolder+fileDir;
+            String newImgName = TimeTool.getYMDHms()+pictureFormat;
+            //截图并保存
+            //GetVideoGainImg.getTempPath(rootPath,path);
+            log.info("截图开始path:"+rootPath);
+            Boolean getImgFlag = GetVideoGainImg.cutStreamPicture(rootPath, newImgName, vpFrame);
+            if(getImgFlag){
+                log.info("截图已完成！");
+                //保存
+                /*fileEntity.setFileName(newImgName);
+                fileEntity.setImgPath(rootPath);
+                rmFileMapper.add(fileEntity);*/
+            }else{
+                log.info("截图已失败！");
+            }
+        }else{
+            log.info("视频获取已失败！");
+        }
+
+
 
         return 0;
     }

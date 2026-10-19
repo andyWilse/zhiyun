@@ -1,6 +1,6 @@
 package com.religion.zhiyun.utils.fileutil;
 
-import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -211,23 +211,26 @@ public class GetVideoGainImg {
 
     }
 
-
-    public static void cutPic(String rootPath){
+    /**
+     * 获取历史视频
+     * @param rootPath
+     * @param newImgName
+     * @param vpFrame
+     * @return
+     */
+    public static Boolean cutStreamPicture(String rootPath,String newImgName,Integer vpFrame){
         // 替换为你的实际 TCP 地址
-        String streamUrl = "tcp://131.28.0.7:7082?listen";
+        //String streamUrl = "tcp://131.28.0.7:7082?listen";
+        String streamUrl = FilePropertiesVo.getStreamUrl();
         // 目标截取第几帧
-        int targetFrameNumber = 10;
-
-        String newImgName = TimeTool.getHhMmSs()+".jpg";
+        int targetFrameNumber = vpFrame;
         // 保存图片的路径
         String outputPath = rootPath+newImgName;
-
+        boolean isSaved = false;
         // 1. 创建 Grabber 实例
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(streamUrl)) {
-
             // 如果是 RTSP 流，建议设置超时和传输协议（此处为 TCP，不需要）
             // grabber.setOption("rtsp_transport", "tcp");
-
             // 设置超时时间（毫秒），防止流断开时一直卡住
             grabber.setOption("timeout", "5000000");
 
@@ -236,13 +239,9 @@ public class GetVideoGainImg {
 
             Frame frame;
             int currentFrame = 0;
-            boolean isSaved = false;
-
             // 用于将 JavaCV 的 Frame 转换为 Java 标准的 BufferedImage
             Java2DFrameConverter converter = new Java2DFrameConverter();
-
             System.out.println("开始读取视频流...");
-
             // 3. 逐帧读取
             while ((frame = grabber.grabImage()) != null) {
                 currentFrame++;
@@ -273,6 +272,8 @@ public class GetVideoGainImg {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return isSaved;
     }
 
 

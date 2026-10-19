@@ -125,15 +125,16 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             taskInfoMapper.addTask(taskEntity);
 
             //保存截图信息
-            Date vpDate = new Date();
+            Date startDate = new Date();
+            Date endDate = new Date();
             String taskVideo = taskEntity.getTaskVideo();
             for(int i=1;i<7;i++){
                 int inc = 20 * 60 * 1000;
-                vpDate.setTime(vpDate.getTime()+inc);
-                rmFileMapper.addVideoPicture(procInstId,taskVideo,vpDate);
+                startDate.setTime(startDate.getTime()+inc);
+                int end = 22 * 60 * 1000;
+                endDate.setTime(endDate.getTime()+end);
+                rmFileMapper.addVideoPicture(procInstId,taskVideo,startDate,endDate,10);
             }
-
-
 
             //2.保存节点信息
             //2.1.保存本节点信息

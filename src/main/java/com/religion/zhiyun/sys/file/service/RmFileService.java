@@ -78,6 +78,6 @@ public interface RmFileService {
      * @param hisPlayReqParam
      * @return
      */
-   int cutPicture(HisPlayReqParam hisPlayReqParam) throws Exception;
+   int cutStreamPicture(HisPlayReqParam hisPlayReqParam,Integer vpFrame,String hisFolder) throws Exception;
 
 }

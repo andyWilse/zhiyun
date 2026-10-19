@@ -57,11 +57,12 @@ public interface RmFileMapper {
     /**
      * 增加视频截图信息
      * @param vpProcInstId
-     * @param vpTime
      */
     void addVideoPicture (@Param("vpProcInstId") String vpProcInstId,
                           @Param("vpChannelId") String vpChannelId,
-                          @Param("vpTime") Date vpTime);
+                          @Param("vpTime") Date vpTmStart,
+                          @Param("vpTime") Date vpTmEnd,
+                          @Param("vpTime") Integer vpFrame);
 
     /**
      * 修改视频截图信息

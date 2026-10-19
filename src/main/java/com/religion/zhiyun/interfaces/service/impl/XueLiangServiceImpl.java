@@ -2,6 +2,7 @@ package com.religion.zhiyun.interfaces.service.impl;
 
 import com.religion.zhiyun.interfaces.entity.xueliang.AccessToken;
 import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayResponse;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.XueLiangService;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
@@ -45,6 +46,9 @@ public class XueLiangServiceImpl implements XueLiangService {
     private String downUserName;
     @Value("${xue.liang.down.password}")
     private String downPassword;
+    @Value("${xue.liang.his.down.url}")
+    private String downUrl;
+
 
     @Autowired
     private MonitorBaseMapper monitorBaseMapper;
@@ -304,9 +308,9 @@ public class XueLiangServiceImpl implements XueLiangService {
      * @throws Exception
      */
     @Override
-    public String downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception {
-        String url=downBaseUrl+"/v2/deviceAction/download";
-
+    public Boolean downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception {
+        String url=downBaseUrl+downUrl;
+        Boolean res=false;
         if(null==hisPlayReqParam){
             throw new RuntimeException("历史视频下载请求参数丢失，请联系管理员！");
         }
@@ -345,11 +349,14 @@ public class XueLiangServiceImpl implements XueLiangService {
         String response = httpService.service(url, params,header);
         log.info("下载视频接口调用结果:"+response);
         //存放位置
-        String position="";
         /**4.结果解析***/
-        /*if(!GeneTool.isEmpty(response)){
+        if(!GeneTool.isEmpty(response)){
             HisPlayResponse hisPlayResponse = JsonUtils.jsonTOBean(response, HisPlayResponse.class);
-            int port = 7082;
+            Integer size=GeneTool.isEmpty(hisPlayResponse.getSize())?0: Integer.valueOf(hisPlayResponse.getSize().trim());
+            if(size>0){
+                res=true;
+            }
+            /*int port = 7082;
             String name=hisPlayResponse.getSsrc();
             position = "/home/zhiyun/files/video/"+name+".raw";
             try (ServerSocket serverSocket = new ServerSocket(port);
@@ -367,10 +374,10 @@ public class XueLiangServiceImpl implements XueLiangService {
 
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-        }*/
+            }*/
+        }
 
-        return position;
+        return res;
     }
 
 }

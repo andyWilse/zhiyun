@@ -23,6 +23,7 @@ import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.enums.TaskActEnums;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.util.StringUtils;
 
@@ -34,6 +35,17 @@ import java.util.*;
 @Slf4j
 @Service
 public class SchedulesServiceImpl implements SchedulesService {
+
+    @Value("${xue.liang.accept.url}")
+    private String  acceptUrl;
+    @Value("${xue.liang.accept.ip}")
+    private Integer  acceptIp;
+    @Value("${xue.liang.accept.speed}")
+    private Integer  acceptSpeed;
+    @Value("${xue.liang.accept.stream}")
+    private Integer  acceptStream;
+    @Value("${picture.his.folder}")
+    private String  hisFolder;
 
     @Autowired
     private RmEventInfoMapper rmEventInfoMapper;
@@ -257,21 +269,22 @@ public class SchedulesServiceImpl implements SchedulesService {
                     if(null!=vpMap){
                         Integer vpId = (Integer) vpMap.get("vpId");
                         String vpChannelId = (String) vpMap.get("vpChannelId");
-                        LocalDateTime vpTimes= (LocalDateTime) vpMap.get("vpTime");
-                        LocalDateTime vpTime = vpTimes.plusMinutes(5);
-                        String vpTimeStart = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTimes);
-                        String vpTimeEnd = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTime);
+                        LocalDateTime vpTmStart= (LocalDateTime) vpMap.get("vpTmStart");
+                        LocalDateTime vpTmEnd= (LocalDateTime) vpMap.get("vpTmEnd");
+                        Integer vpFrame= (Integer) vpMap.get("vpFrame");
+                        String vpTimeStart = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTmStart);
+                        String vpTimeEnd = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTmEnd);
                         //下载视频并截图
                         HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
                         hisPlayReqParam.setChannelId(vpChannelId);
                         hisPlayReqParam.setDeviceId(vpChannelId);
                         hisPlayReqParam.setStartTime(vpTimeStart);
                         hisPlayReqParam.setEndTime(vpTimeEnd);
-                        hisPlayReqParam.setIpAddr("10.56.105.1");
-                        hisPlayReqParam.setPort(7082);
-                        hisPlayReqParam.setSpeed(4);
-                        hisPlayReqParam.setStreamMode(0);
-                        int fileId = rmFileServiceImpl.cutPicture(hisPlayReqParam);
+                        hisPlayReqParam.setIpAddr(acceptUrl);
+                        hisPlayReqParam.setPort(acceptIp);
+                        hisPlayReqParam.setSpeed(acceptSpeed);
+                        hisPlayReqParam.setStreamMode(acceptStream);
+                        int fileId = rmFileServiceImpl.cutStreamPicture(hisPlayReqParam,vpFrame,hisFolder);
                         //更新截图处理表
                         //rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
                     }

@@ -23,5 +23,5 @@ public interface XueLiangService {
     AppResponse getPlays(Map<String,Object> map);
 
     /* 下载历史视频*/
-    String downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception;
+    Boolean downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception;
 }
