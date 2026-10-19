@@ -905,7 +905,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     "",
                     taskId,
                     lastState,
-                    actCode
+                    actCode,
+                    procInstId
             );
             if(nowFlag){
                 throw new RuntimeException("流程处理失败，请联系管理员！");
@@ -1180,7 +1181,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                             String actMark,
                             String actTaskId,
                             String currentState,
-                            String actCode
+                            String actCode,
+                            String procInstId
         ){
         try {
             ActInstEntity actEntity=new ActInstEntity();
@@ -1196,6 +1198,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             if(null!=actCode && ""!=actCode){
                 actEntity.setActCode(Integer.parseInt(actCode));
             }
+            actEntity.setActInstId(procInstId);
             taskActInstMapper.updateAct(actEntity);
         } catch (Exception e) {
             e.printStackTrace();

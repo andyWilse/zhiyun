@@ -232,4 +232,165 @@
         where ve.VENUES_ID=#{coVenuesId}
     </update>
 
+    <select id="colorGatherDay" resultType="map">
+        SELECT
+            DATE_FORMAT(period.periodDate,'%Y-%m-%d') as date,
+            IFNULL(color.venue,0) as venue,
+            IFNULL(color.cases,0) as cases,
+            IFNULL(color.complaint,0) as complaint,
+            IFNULL(color.works,0) as works,
+            IFNULL(color.safe,0) as safe,
+            IFNULL(color.manage,0) as manage
+        FROM(
+            SELECT DATE_SUB(CURDATE(), interval PERIOD_NO day) AS periodDate FROM RM_SYS_PERIOD sp where sp.PERIOD_NO &lt; #{vo.size} and PERIOD_TYPE='day'
+        ) period
+        LEFT JOIN(
+            select
+                DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m-%d') coOccurTm,
+                SUM(CASE WHEN tc.CO_TYPE = '500201' THEN 1 ELSE 0 END) AS venue,
+                SUM(CASE WHEN tc.CO_TYPE = '500202' THEN 1 ELSE 0 END) AS cases,
+                SUM(CASE WHEN tc.CO_TYPE = '500203' THEN 1 ELSE 0 END) AS complaint,
+                SUM(CASE WHEN tc.CO_TYPE = '500204' THEN 1 ELSE 0 END) AS works,
+                SUM(CASE WHEN tc.CO_TYPE = '500205' THEN 1 ELSE 0 END) AS safe,
+                SUM(CASE WHEN tc.CO_TYPE = '500206' THEN 1 ELSE 0 END) AS manage
+            from RM_THREE_COLOR tc
+            left join rm_venues_info ve on ve.VENUES_ID=tc.CO_VENUES_ID
+            where ve.VENUES_STATUS='01'
+            and tc.CO_COLOR in ('500101','500102')
+            and DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m-%d') > DATE_SUB(CURDATE(), interval #{vo.size} day)
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venuesList != null and vo.venuesList.size() > 0">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            group by tc.CO_OCCUR_TM
+        )color on period.periodDate= color.coOccurTm
+        ORDER BY period.periodDate
+    </select>
+
+    <select id="colorGatherWeek" resultType="map">
+        SELECT
+            (@rownum := @rownum + 1) AS date,
+            IFNULL(zh.venue,0) as venue,
+            IFNULL(zh.cases,0) as cases,
+            IFNULL(zh.complaint,0) as complaint,
+            IFNULL(zh.works,0) as works,
+            IFNULL(zh.safe,0) as safe,
+            IFNULL(zh.manage,0) as manage
+        FROM(
+            SELECT sp.PERIOD_NO AS periodNo FROM RM_SYS_PERIOD sp
+            where sp.PERIOD_TYPE='week'
+                AND sp.PERIOD_NO &lt;= DATE_FORMAT(CURDATE(),'%u')
+                AND sp.PERIOD_NO &gt; DATE_FORMAT(CURDATE(),'%u') - #{vo.size}
+            order by PERIOD_NO) period
+        LEFT JOIN (
+            select
+                DATE_FORMAT(tc.CO_OCCUR_TM,'%u') weeks,
+                DATE_FORMAT(tc.CO_OCCUR_TM,'%Y%u') years,
+                SUM(CASE WHEN tc.CO_TYPE = '500201' THEN 1 ELSE 0 END) AS venue,
+                SUM(CASE WHEN tc.CO_TYPE = '500202' THEN 1 ELSE 0 END) AS cases,
+                SUM(CASE WHEN tc.CO_TYPE = '500203' THEN 1 ELSE 0 END) AS complaint,
+                SUM(CASE WHEN tc.CO_TYPE = '500204' THEN 1 ELSE 0 END) AS works,
+                SUM(CASE WHEN tc.CO_TYPE = '500205' THEN 1 ELSE 0 END) AS safe,
+                SUM(CASE WHEN tc.CO_TYPE = '500206' THEN 1 ELSE 0 END) AS manage
+            from RM_THREE_COLOR tc
+            left join rm_venues_info ve on ve.VENUES_ID=tc.CO_VENUES_ID
+            where ve.VENUES_STATUS='01'
+            and tc.CO_COLOR in ('500101','500102')
+            and DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m-%d') &gt; DATE_SUB(CURDATE(), interval #{vo.size}*7 day)
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venuesList != null and vo.venuesList.size() > 0">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            GROUP BY weeks
+            ORDER BY years
+        ) zh on period.periodNo=zh.weeks
+        join (SELECT @rownum := 0) AS rn
+        order by period.periodNo
+    </select>
+
+    <select id="colorGatherMonth" resultType="map">
+        SELECT  period.periodDate as date,
+            IFNULL(color.venue,0) as venue,
+            IFNULL(color.cases,0) as cases,
+            IFNULL(color.complaint,0) as complaint,
+            IFNULL(color.works,0) as works,
+            IFNULL(color.safe,0) as safe,
+            IFNULL(color.manage,0) as manage
+        FROM (
+            SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL sp.PERIOD_NO MONTH),'%Y-%m')  AS periodDate
+            FROM RM_SYS_PERIOD sp where sp.PERIOD_NO &lt; #{vo.size} and PERIOD_TYPE='day'
+        ) period
+        LEFT JOIN (
+            select  DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m') coOccurTm,
+                    SUM(CASE WHEN tc.CO_TYPE = '500201' THEN 1 ELSE 0 END) AS venue,
+                    SUM(CASE WHEN tc.CO_TYPE = '500202' THEN 1 ELSE 0 END) AS cases,
+                    SUM(CASE WHEN tc.CO_TYPE = '500203' THEN 1 ELSE 0 END) AS complaint,
+                    SUM(CASE WHEN tc.CO_TYPE = '500204' THEN 1 ELSE 0 END) AS works,
+                    SUM(CASE WHEN tc.CO_TYPE = '500205' THEN 1 ELSE 0 END) AS safe,
+                    SUM(CASE WHEN tc.CO_TYPE = '500206' THEN 1 ELSE 0 END) AS manage
+            from RM_THREE_COLOR tc
+            left join rm_venues_info ve on ve.VENUES_ID=tc.CO_VENUES_ID
+            where ve.VENUES_STATUS='01'
+            and tc.CO_COLOR in ('500101','500102')
+            and DATE_FORMAT(tc.CO_OCCUR_TM,'%Y-%m') > DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL #{vo.size} MONTH),'%Y-%m')
+            <if test="vo.town != null and vo.town != ''">
+                AND  ve.TOWN = #{vo.town}
+            </if>
+            <if test="vo.area != null and vo.area != ''">
+                AND  ve.AREA = #{vo.area}
+            </if>
+            <if test="vo.venuesList != null and vo.venuesList.size() > 0">
+                and ve.VENUES_ID IN
+                <foreach collection="vo.venuesList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            group by coOccurTm
+        ) color on period.periodDate= color.coOccurTm
+        ORDER BY period.periodDate
+    </select>
+
+    <select id="colorStatistic" resultType="map">
+        select
+            SUM(CASE WHEN tc.CO_TYPE = '500201' THEN 1 ELSE 0 END) AS venue,
+            SUM(CASE WHEN tc.CO_TYPE = '500202' THEN 1 ELSE 0 END) AS cases,
+            SUM(CASE WHEN tc.CO_TYPE = '500203' THEN 1 ELSE 0 END) AS complaint,
+            SUM(CASE WHEN tc.CO_TYPE = '500204' THEN 1 ELSE 0 END) AS works,
+            SUM(CASE WHEN tc.CO_TYPE = '500205' THEN 1 ELSE 0 END) AS safe,
+            SUM(CASE WHEN tc.CO_TYPE = '500206' THEN 1 ELSE 0 END) AS manage
+        from RM_THREE_COLOR tc
+        left join rm_venues_info ve on ve.VENUES_ID=tc.CO_VENUES_ID
+        where ve.VENUES_STATUS='01'
+        and tc.CO_COLOR in ('500101','500102')
+        <if test="vo.town != null and vo.town != ''">
+            AND  ve.TOWN = #{vo.town}
+        </if>
+        <if test="vo.area != null and vo.area != ''">
+            AND  ve.AREA = #{vo.area}
+        </if>
+        <if test="vo.venuesList != null and vo.venuesList.size() > 0">
+            and ve.VENUES_ID IN
+            <foreach collection="vo.venuesList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+
 </mapper>

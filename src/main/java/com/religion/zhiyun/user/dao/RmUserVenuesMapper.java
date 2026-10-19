@@ -39,4 +39,12 @@ public interface RmUserVenuesMapper {
      * @return
      */
     List<UserVenuesEntity> getUserVenues(@Param("uvUserId") int uvUserId,@Param("uvVenuesId") int uvVenuesId);
+
+    /**
+     * 获取用户
+     * @param uvUserId
+     * @param uvVenuesId
+     * @return
+     */
+    List<Integer> getUserVenueList(@Param("uvUserId") int uvUserId,@Param("uvVenuesId") int uvVenuesId);
 }

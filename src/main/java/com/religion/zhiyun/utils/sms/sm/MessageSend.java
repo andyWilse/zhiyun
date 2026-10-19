@@ -4,7 +4,7 @@ import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.sms.call.util.HwCallVo;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import com.religion.zhiyun.utils.sms.sm.util.SendParam;
 import org.springframework.http.HttpMethod;
@@ -62,7 +62,7 @@ public class MessageSend {
             String ymdHms = TimeTool.getYmdHms();
             bodys.put("sendTime", ymdHms);
 
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             params.setJsonParamer(bodys);
 
             /*** 3.调用接口 ***/
@@ -139,7 +139,7 @@ public class MessageSend {
             //用户回传数据，最大长度 64。用户若传递此参数将在回执推送时回传给用户。
             //bodys.put("callData", "");
 
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             params.setJsonParamer(bodys);
 
             /*** 3.调用接口 ***/

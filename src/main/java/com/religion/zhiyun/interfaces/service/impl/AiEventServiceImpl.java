@@ -11,7 +11,7 @@ import com.religion.zhiyun.utils.fileutil.DownloadPicture;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,14 +19,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class AiEventServiceImpl implements AiEventService {
@@ -123,7 +118,7 @@ public class AiEventServiceImpl implements AiEventService {
             header.addParam("Authorization",authorization);
             header.addParam("Content-Type",contentType);
             //1.2.body参数封装
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             params.addParam("grant_type","password");//授权类型，"password"
             params.addParam("username",userNameAI);
             params.addParam("password",passWordAI);
@@ -147,7 +142,7 @@ public class AiEventServiceImpl implements AiEventService {
             //固定为：multipart/form-data
             picHeader.addParam("Content-Type","multipart/form-data");
             //1.2.body参数封装
-            HttpParamers picParams=new HttpParamers(HttpMethod.GET);
+            HttpParams picParams=new HttpParams(HttpMethod.GET);
             picParams.addParam("storageId", storageId);//存储桶
             picParams.addParam("fileName",fileName);
             //1.3.发送请求
@@ -232,7 +227,7 @@ public class AiEventServiceImpl implements AiEventService {
                     header.addParam("Authorization",authorization);
                     header.addParam("Content-Type",contentType);
                     //1.2.body参数封装
-                    HttpParamers params=new HttpParamers(HttpMethod.POST);
+                    HttpParams params=new HttpParams(HttpMethod.POST);
                     params.addParam("grant_type","password");//授权类型，"password"
                     params.addParam("username",userNameAI);
                     params.addParam("password",passWordAI);
@@ -256,7 +251,7 @@ public class AiEventServiceImpl implements AiEventService {
                     //固定为：multipart/form-data
                     picHeader.addParam("Content-Type","multipart/form-data");
                     //1.2.body参数封装
-                    HttpParamers picParams=new HttpParamers(HttpMethod.GET);
+                    HttpParams picParams=new HttpParams(HttpMethod.GET);
                     picParams.addParam("storageId", storageId);//存储桶
                     picParams.addParam("fileName",fileName);
                     //1.3.发送请求

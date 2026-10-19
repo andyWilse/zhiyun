@@ -7,7 +7,7 @@ import com.religion.zhiyun.utils.sms.call.util.CallResponse;
 import com.religion.zhiyun.utils.sms.call.util.HwCallVo;
 import com.religion.zhiyun.utils.sms.call.util.PlayContentInfo;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -88,7 +88,7 @@ public class VoiceCall {
             //用户附属信息，此标识由第三方服务器定义，会在后续的通知消息中携带此信息。
             bodys.put("userData", "1");//非必输*/
 
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             params.setJsonParamer(bodys);
 
             /*** 3.调用接口 ***/

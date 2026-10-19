@@ -44,4 +44,13 @@
         </if>
     </select>
 
+    <select id="getUserVenueList" resultType="integer">
+        select uv.UV_VENUES_ID as uvVenuesId
+        from RM_USER_VENUES_MAP uv
+        where uv.UV_VALID_IND='1'
+        <if test="uvUserId != null and uvUserId != 0">
+            and uv.UV_USER_ID=#{uvUserId}
+        </if>
+    </select>
+
 </mapper>

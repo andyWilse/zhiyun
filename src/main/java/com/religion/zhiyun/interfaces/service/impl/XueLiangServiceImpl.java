@@ -13,12 +13,10 @@ import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import com.religion.zhiyun.venues.entity.ParamsVo;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -27,20 +25,26 @@ import org.springframework.util.DigestUtils;
 
 import java.util.*;
 
-import static org.activiti.engine.impl.util.json.XMLTokener.entity;
-
 @Service
 @Slf4j
 public class XueLiangServiceImpl implements XueLiangService {
 
     @Value("${xue.liang.client}")
     private String client;
-    @Value("${xue.liang.username}")
-    private String username;
-    @Value("${xue.liang.password}")
-    private String password;
+
     @Value("${xue.liang.baseUrl}")
     private String baseUrl;
+    @Value("${xue.liang.username}")
+    private String playUserName;
+    @Value("${xue.liang.password}")
+    private String playPassword;
+
+    @Value("${xue.liang.down.baseUrl}")
+    private String downBaseUrl;
+    @Value("${xue.liang.down.username}")
+    private String downUserName;
+    @Value("${xue.liang.down.password}")
+    private String downPassword;
 
     @Autowired
     private MonitorBaseMapper monitorBaseMapper;
@@ -58,13 +62,13 @@ public class XueLiangServiceImpl implements XueLiangService {
         /**1.Header**/
         HttpHeader header=new HttpHeader();
         //授权信息访问业务数据请求头,Hearder 需要包含 token信息
-        String accessToken = this.getAccessToken();
+        String accessToken = this.getAccessToken(playUserName,playPassword,baseUrl);
         //System.out.println("accessToken:"+accessToken);
         header.addParam("Authorization","Bearer "+accessToken);
         header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
 
         /**2.params***/
-        HttpParamers params=new HttpParamers(HttpMethod.POST);
+        HttpParams params=new HttpParams(HttpMethod.POST);
         params.addParam("channelId",channelId);//通道编码
         /**3.接口调用***/
         HttpService httpService=new HttpService(url+"/"+channelId);
@@ -82,10 +86,10 @@ public class XueLiangServiceImpl implements XueLiangService {
      * @return
      * @throws Exception
      */
-    public String getAccessToken() throws Exception {
+    public String getAccessToken(String username,String password,String targetUrl) throws Exception {
 
         String token="";
-        String url=baseUrl+"/v2/oauth/token";
+        String url=targetUrl+"/v2/oauth/token";
 
         /**1.Header**/
         HttpHeader header=new HttpHeader();
@@ -96,7 +100,7 @@ public class XueLiangServiceImpl implements XueLiangService {
         header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
 
         /**2.params***/
-        HttpParamers params=new HttpParamers(HttpMethod.POST);
+        HttpParams params=new HttpParams(HttpMethod.POST);
         params.addParam("username",username);//申请到的用户名
         String hashedPwd1 = DigestUtils.md5DigestAsHex((password).getBytes());
         params.addParam("password",hashedPwd1);//申请到的密码->小写 32 位 md5 加密
@@ -301,7 +305,7 @@ public class XueLiangServiceImpl implements XueLiangService {
      */
     @Override
     public String downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception {
-        String url=baseUrl+"/v2/deviceAction/download";
+        String url=downBaseUrl+"/v2/deviceAction/download";
 
         if(null==hisPlayReqParam){
             throw new RuntimeException("历史视频下载请求参数丢失，请联系管理员！");
@@ -310,18 +314,18 @@ public class XueLiangServiceImpl implements XueLiangService {
         /**1.Header**/
         HttpHeader header=new HttpHeader();
         //授权信息访问业务数据请求头,Hearder 需要包含 token信息
-        log.info("授权调用开始");
-        String accessToken = this.getAccessToken();
-        log.info("授权调用结果:"+accessToken);
-        System.out.println("accessToken:"+accessToken);
+        String accessToken = this.getAccessToken(downUserName,downPassword,downBaseUrl);
+        //log.info("授权调用结果:"+accessToken);
         header.addParam("Authorization","Bearer "+accessToken);
         header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
 
         /**2.params***/
-
-        HttpParamers params=new HttpParamers(HttpMethod.POST);
+        log.info("下载视频接口调用地址:"+url);
+        HttpParams params=new HttpParams(HttpMethod.POST);
         //通道编码
         params.addParam("channelId",hisPlayReqParam.getChannelId());
+        //设备编码
+        params.addParam("deviceId",hisPlayReqParam.getDeviceId());
         //开始时间
         params.addParam("startTime",hisPlayReqParam.getStartTime());
         //结束时间
@@ -329,18 +333,43 @@ public class XueLiangServiceImpl implements XueLiangService {
         //接收 ip 地址
         params.addParam("ipAddr",hisPlayReqParam.getIpAddr());
         //接收端口
-        params.addParam("port",String.valueOf(hisPlayReqParam.getPort()));
+        params.addParam("port",hisPlayReqParam.getPort());
         //下载速度
-        params.addParam("speed",String.valueOf(hisPlayReqParam.getSpeed()));
-        log.info("下载视频接口调用:"+new Date());
+        params.addParam("speed",hisPlayReqParam.getSpeed());
+        //流模式，1:udp0:tcp
+        params.addParam("streamMode",hisPlayReqParam.getStreamMode());
+
+        log.info("下载视频接口调用参数:"+params);
         /**3.接口调用***/
         HttpService httpService=new HttpService(url);
         String response = httpService.service(url, params,header);
         log.info("下载视频接口调用结果:"+response);
-        /**4.结果解析***/
-        //PlayEntity entity= JsonUtils.jsonTOBean(response, PlayEntity.class);
         //存放位置
         String position="";
+        /**4.结果解析***/
+        /*if(!GeneTool.isEmpty(response)){
+            HisPlayResponse hisPlayResponse = JsonUtils.jsonTOBean(response, HisPlayResponse.class);
+            int port = 7082;
+            String name=hisPlayResponse.getSsrc();
+            position = "/home/zhiyun/files/video/"+name+".raw";
+            try (ServerSocket serverSocket = new ServerSocket(port);
+                 Socket socket = serverSocket.accept();
+                 InputStream in = socket.getInputStream();
+                 FileOutputStream fos = new FileOutputStream(position)) {
+
+                System.out.println("对方已连接，开始保存...");
+                byte[] buffer = new byte[8192]; // 缓冲区尽量大一些
+                int len;
+                while ((len = in.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
+                }
+                System.out.println("连接断开，保存结束。");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }*/
+
         return position;
     }
 

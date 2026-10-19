@@ -46,4 +46,23 @@
         </if>
     </select>
 
+
+    <insert id="addMas" parameterType="com.religion.zhiyun.interfaces.entity.mas.MasEntity"
+            keyColumn="masId" useGeneratedKeys="true" keyProperty="masId">
+        INSERT INTO RM_MAS_INFO(
+            MAS_DEVICE_ID,
+            MAS_MONITOR_TIME,
+            MAS_ACCT_TIME,
+            MAS_STATE,
+            MAS_REMARK
+        )
+        VALUES(
+            #{masDeviceId},
+            #{masMonitorTime},
+            #{masAcctTime},
+            #{masState},
+            #{masRemark}
+        );
+    </insert>
+
 </mapper>

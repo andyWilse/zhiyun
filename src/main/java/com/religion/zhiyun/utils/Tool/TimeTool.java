@@ -77,9 +77,14 @@ public class TimeTool {
         Date strToDate = format.parse(date);
         return strToDate;
     }
-    public static Timestamp getTimestamp() throws ParseException {
-        Date date = new Date();
-        Timestamp timestamp = new Timestamp(date.getTime());
+    public static Timestamp getTimestamp(){
+        Timestamp timestamp = null;
+        try {
+            Date date = new Date();
+            timestamp = new Timestamp(date.getTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return timestamp;
     }
 

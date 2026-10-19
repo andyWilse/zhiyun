@@ -39,6 +39,10 @@ public enum OperaEnums {
     ass_update("100767", "预警接收人修改"),
     ass_delete("100768", "预警接收人删除"),
 
+    //系统操作
+    mas_accept("100791", "MAS短信接收"),
+    mas_accept_err("100792", "MAS短信接收错误"),
+
     ;
     private String code;
     private String name;

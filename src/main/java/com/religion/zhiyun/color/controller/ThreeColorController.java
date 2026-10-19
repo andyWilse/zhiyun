@@ -62,9 +62,20 @@ public class ThreeColorController {
     }
 
     @PostMapping("/show")
-    public AppResponse showThreeColor(@RequestBody Map<String,Object> map) {
+    public AppResponse RM_SYS_period(@RequestBody Map<String,Object> map) {
         return threeColorService.threeColorShow(map);
     }
+
+    @GetMapping("/statistic")
+    public AppResponse getThreeColorStatistic() {
+        return threeColorService.threeColorStatistic();
+    }
+
+    @GetMapping("/gather")
+    public AppResponse getThreeColorGather(@RequestParam String coType,@RequestParam Integer period) {
+        return threeColorService.threeColorGather(coType,period);
+    }
+
 
 
 }

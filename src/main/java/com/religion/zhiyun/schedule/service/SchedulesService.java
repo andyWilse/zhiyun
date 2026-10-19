@@ -29,4 +29,10 @@ public interface SchedulesService {
      * 视频截图处理
      */
     void handleCutPicture();
+
+
+    /**
+     * 公安短信获取：未成年（重点）预警
+     */
+    void getMasMessage();
 }

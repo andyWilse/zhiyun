@@ -2,12 +2,11 @@ package com.religion.zhiyun.utils.sms;
 
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.DigestUtils;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ public class SendVerifyCode {
         password = DigestUtils.md5DigestAsHex((password+ymdHms).getBytes());//密码加密
 
         //参数封装
-        HttpParamers params=new HttpParamers(HttpMethod.POST);
+        HttpParams params=new HttpParams(HttpMethod.POST);
         params.addParam("username",username);
         params.addParam("password",password);
         params.addParam("mobiles",mobiles);

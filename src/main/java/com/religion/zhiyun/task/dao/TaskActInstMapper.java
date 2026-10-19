@@ -22,6 +22,9 @@ public interface TaskActInstMapper {
     /**更新**/
     void updateAct(ActInstEntity actEntity);
 
+    /**更新**/
+    void updateActInst(ActInstEntity actEntity);
+
     /**
      * 获取任务主信息
      * @param procInstId

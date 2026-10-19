@@ -12,7 +12,7 @@ import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.ResultCode;
 import com.religion.zhiyun.utils.sms.http.HttpHeader;
-import com.religion.zhiyun.utils.sms.http.HttpParamers;
+import com.religion.zhiyun.utils.sms.http.HttpParams;
 import com.religion.zhiyun.utils.sms.http.HttpService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class MinZonServiceImpl implements MinZonService {
         String state= String.valueOf(new Random().nextInt(999999));
 
         //1.请求参数封装
-        HttpParamers params=new HttpParamers(HttpMethod.GET);
+        HttpParams params=new HttpParams(HttpMethod.GET);
         params.addParam("appId",appId);//服务端分配的客户端id
         params.addParam("responseType",responseType);//此值固定传：code
         //用于保持请求和回调的状态，授权请求后原样带回给第三方。该参数可用于防止csrf攻击（跨站请求伪造攻击），建议第三方带上该参数，
@@ -88,7 +88,7 @@ public class MinZonServiceImpl implements MinZonService {
 
         //请求参数
         //1.请求参数封装
-        HttpParamers params=new HttpParamers(HttpMethod.GET);
+        HttpParams params=new HttpParams(HttpMethod.GET);
         params.addParam("appId",appId);//服务端分配的客户端id
         params.addParam("appSecret",appSecret);//服务端分配的客户端秘钥
         params.addParam("authorizeCode",authorizeCode);//上一步获取到的授权码
@@ -115,7 +115,7 @@ public class MinZonServiceImpl implements MinZonService {
             HttpHeader header = this.getHttpHeader();
 
             /**3.2.请求参数封装 json**/
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             //上报内容
             Map<String,Object> jsonParamer=this.getParam(procInstId,token);
             params.setJsonParamer(jsonParamer);
@@ -174,7 +174,7 @@ public class MinZonServiceImpl implements MinZonService {
             /**1.请求头*/
             HttpHeader header = this.getHttpHeader();
             /**2.请求参数封装 json**/
-            HttpParamers params=new HttpParamers(HttpMethod.POST);
+            HttpParams params=new HttpParams(HttpMethod.POST);
             FinishEntity vo=new FinishEntity();
 
             //获取上报人
@@ -215,7 +215,7 @@ public class MinZonServiceImpl implements MinZonService {
     public SceneEntity getScene(String code, String type) throws Exception {
         String sceneUrl=baseUrl+"/open/v1/scene";
         HttpHeader header = this.getHttpHeader();
-        HttpParamers params=new HttpParamers(HttpMethod.GET);
+        HttpParams params=new HttpParams(HttpMethod.GET);
         if("01".equals(type)){
             params.addParam("eventType",code);
         }else if("02".equals(type)){
@@ -233,7 +233,7 @@ public class MinZonServiceImpl implements MinZonService {
         String dictUrl=baseUrl+"/open/v1/dict‑biz";
 
         HttpHeader httpHeader = this.getHttpHeader();
-        HttpParamers params=new HttpParamers(HttpMethod.GET);
+        HttpParams params=new HttpParams(HttpMethod.GET);
         params.addParam("code",code);//字典编码
         HttpService httpService=new HttpService(dictUrl);
         String service = httpService.service(dictUrl, params,httpHeader);

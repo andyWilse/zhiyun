@@ -1,5 +1,6 @@
 package com.religion.zhiyun.utils.fileutil;
 
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -209,6 +210,71 @@ public class GetVideoGainImg {
         //generate("F:\\13files\\101.mp4", "E:\\0file\\xiazai\\thumb.jpg", 1); // 截取第 10 秒
 
     }
+
+
+    public static void cutPic(String rootPath){
+        // 替换为你的实际 TCP 地址
+        String streamUrl = "tcp://131.28.0.7:7082?listen";
+        // 目标截取第几帧
+        int targetFrameNumber = 10;
+
+        String newImgName = TimeTool.getHhMmSs()+".jpg";
+        // 保存图片的路径
+        String outputPath = rootPath+newImgName;
+
+        // 1. 创建 Grabber 实例
+        try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(streamUrl)) {
+
+            // 如果是 RTSP 流，建议设置超时和传输协议（此处为 TCP，不需要）
+            // grabber.setOption("rtsp_transport", "tcp");
+
+            // 设置超时时间（毫秒），防止流断开时一直卡住
+            grabber.setOption("timeout", "5000000");
+
+            // 2. 启动抓取器
+            grabber.start();
+
+            Frame frame;
+            int currentFrame = 0;
+            boolean isSaved = false;
+
+            // 用于将 JavaCV 的 Frame 转换为 Java 标准的 BufferedImage
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+
+            System.out.println("开始读取视频流...");
+
+            // 3. 逐帧读取
+            while ((frame = grabber.grabImage()) != null) {
+                currentFrame++;
+
+                // 判断是否到达目标帧
+                if (currentFrame == targetFrameNumber) {
+                    // 4. 转换并保存图片
+                    BufferedImage bufferedImage = converter.convert(frame);
+
+                    if (bufferedImage != null) {
+                        File outputFile = new File(outputPath);
+                        // 确保目录存在
+                        if (!outputFile.getParentFile().exists()) {
+                            outputFile.getParentFile().mkdirs();
+                        }
+                        ImageIO.write(bufferedImage, "jpg", outputFile);
+                        System.out.println("成功截取第 " + targetFrameNumber + " 帧，已保存至: " + outputPath);
+                        isSaved = true;
+                    }
+                    break; // 截取到目标帧后退出循环
+                }
+            }
+
+            if (!isSaved) {
+                System.out.println("未能读取到第 " + targetFrameNumber + " 帧，流可能提前结束或帧数不足。");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
 

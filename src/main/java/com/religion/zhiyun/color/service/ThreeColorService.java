@@ -36,4 +36,11 @@ public interface ThreeColorService {
 
     //三色要素（是否纳入统计（是否在终端展示））
     AppResponse threeColorShow(Map<String,Object> map);
+
+    /** 三色要素（按类型统计数量）**/
+    AppResponse threeColorStatistic();
+
+    /** 三色要素折线图（天/周/月）**/
+    AppResponse threeColorGather(String coType,int period);
+
 }

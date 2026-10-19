@@ -467,7 +467,7 @@ public class RmFileServiceImpl implements RmFileService {
      */
     public int cutPicture(HisPlayReqParam hisPlayReqParam) throws Exception {
         //获取视频位置
-        String path = xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
+        //xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
         log.info("截图开始:"+new Date());
         //图片存放地址
         //String rootPath="D:/mimi/"+File.separator+"upload/video/";
@@ -475,18 +475,15 @@ public class RmFileServiceImpl implements RmFileService {
         String rootPath=pathUpload+"cut"+fileDir;
         String newImgName = TimeTool.getHhMmSs()+".jpg";
         //截图并保存
-        GetVideoGainImg.getTempPath(rootPath,path);
+        //GetVideoGainImg.getTempPath(rootPath,path);
+        log.info("截图开始path:"+rootPath);
+        GetVideoGainImg.cutPic(rootPath);
         //保存
-        FileEntity fileEntity=new FileEntity();
-        fileEntity.setFilePath(pathDown+fileDir+newImgName);
-        fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
-        fileEntity.setCreator("AI预警历史视频截图");
-        fileEntity.setCreateTime(TimeTool.getYmdHms());
-        fileEntity.setFileName(newImgName);
+        /*fileEntity.setFileName(newImgName);
         fileEntity.setImgPath(rootPath);
-        rmFileMapper.add(fileEntity);
+        rmFileMapper.add(fileEntity);*/
 
-        return fileEntity.getFileId();
+        return 0;
     }
 
 }

@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 @Repository
@@ -64,5 +65,36 @@ public interface ThreeColorMapper {
      */
     List<ThreeColorEntity> getThreeColorList(@Param("vo") ParamsVo vo);
     Long getThreeColorTotal(@Param("vo") ParamsVo vo);
+
+
+    /**
+     * 天
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> colorGatherDay(@Param("vo") ParamsVo vo);
+
+    /**
+     * 周
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> colorGatherWeek(@Param("vo") ParamsVo vo);
+
+    /**
+     * 月
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> colorGatherMonth(@Param("vo") ParamsVo vo);
+
+    /**
+     * 数量
+     * @param vo
+     * @return
+     */
+    List<Map<String,Object>> colorStatistic(@Param("vo") ParamsVo vo);
+
+
 
 }

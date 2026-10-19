@@ -12,10 +12,10 @@ public class HttpService {
     public HttpService(String serverUrl) {
         this.serverUrl = serverUrl.trim();
     }
-    public Map<String, Object> commonService(String serviceUrl, HttpParamers paramers) throws Exception{
+    public Map<String, Object> commonService(String serviceUrl, HttpParams paramers) throws Exception{
         return commonService(serviceUrl, paramers, null);
     }
-    public Map<String, Object> commonService(String serviceUrl, HttpParamers paramers, HttpHeader header) throws Exception{
+    public Map<String, Object> commonService(String serviceUrl, HttpParams paramers, HttpHeader header) throws Exception{
         String response = service(serviceUrl, paramers, header);
         try {
             Map<String, Object> result = JSONObject.parseObject(response, new TypeReference<Map<String, Object>>() {});
@@ -31,10 +31,10 @@ public class HttpService {
             throw new Exception("返回结果异常,response:" + response, e);
         }
     }
-    public String service(String serviceUrl, HttpParamers paramers) throws Exception {
+    public String service(String serviceUrl, HttpParams paramers) throws Exception {
         return service(serviceUrl, paramers, null);
     }
-    public String service(String serviceUrl, HttpParamers paramers, HttpHeader header) throws Exception {
+    public String service(String serviceUrl, HttpParams paramers, HttpHeader header) throws Exception {
         String url = this.serverUrl;
         String responseData = "";
         try {

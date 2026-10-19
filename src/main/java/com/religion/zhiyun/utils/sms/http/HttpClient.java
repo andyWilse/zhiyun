@@ -21,7 +21,7 @@ public class HttpClient {
     public static final String JSON_CONTENT_FORM = "application/json;charset=UTF-8";
     public static final String CONTENT_FORM = "application/x-www-form-urlencoded;charset=UTF-8";
 
-    public static String doService(String url, HttpParamers paramers, HttpHeader header, int connectTimeout, int readTimeout) throws Exception {
+    public static String doService(String url, HttpParams paramers, HttpHeader header, int connectTimeout, int readTimeout) throws Exception {
         HttpMethod httpMethod = paramers.getHttpMethod();
         switch (httpMethod) {
             case GET:
@@ -42,7 +42,7 @@ public class HttpClient {
      * @return
      * @throws IOException
      */
-    public static String doPost(String url, HttpParamers paramers, HttpHeader header, int connectTimeout, int readTimeout) throws IOException  {
+    public static String doPost(String url, HttpParams paramers, HttpHeader header, int connectTimeout, int readTimeout) throws IOException  {
         String responseData = "";
         CloseableHttpClient httpClient = null;
         CloseableHttpResponse httpResponse = null;
@@ -53,7 +53,7 @@ public class HttpClient {
             if (paramers.isJson()) {
                 //json数据
                 httpPost.setHeader(HTTP.CONTENT_TYPE, JSON_CONTENT_FORM);
-                query = paramers.getJsonParamer();
+                query = paramers.getJsonParam();
             } else {
                 //表单数据
                 httpPost.setHeader(HTTP.CONTENT_TYPE, CONTENT_FORM);
@@ -97,7 +97,7 @@ public class HttpClient {
      * @return
      * @throws IOException
      */
-    public static String doGet(String url, HttpParamers params, HttpHeader header, int connectTimeout, int readTimeout) throws IOException {
+    public static String doGet(String url, HttpParams params, HttpHeader header, int connectTimeout, int readTimeout) throws IOException {
         String responseData = "";
         CloseableHttpClient httpClient = null;
         CloseableHttpResponse httpResponse = null;

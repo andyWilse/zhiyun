@@ -9,6 +9,7 @@ import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.base.ReParamPack;
 import com.religion.zhiyun.utils.base.TransParam;
 import com.religion.zhiyun.utils.enums.CellEnums;
 import com.religion.zhiyun.utils.excel.CellValueTrans;
@@ -404,6 +405,60 @@ public class ThreeColorServiceImpl implements ThreeColorService {
 
         }
         return new AppResponse(code,message);
+    }
+
+    @Override
+    public AppResponse threeColorStatistic() {
+        long code= ResultCode.FAILED.getCode();
+        String message="按类型统计三色要素数量失败！";
+        List<Map<String, Object>> colorStatistic=new ArrayList<>();
+        try{
+            //获取授权：权限参数
+            ParamsVo auth = ReParamPack.packAuthParam();
+            colorStatistic = threeColorMapper.colorStatistic(auth);
+            code= ResultCode.SUCCESS.getCode();
+            message="按类型统计三色要素数量成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+
+        }
+        return new AppResponse(code,message,colorStatistic.toArray());
+    }
+
+    @Override
+    public AppResponse threeColorGather(String dateType,int period) {
+        long code= ResultCode.FAILED.getCode();
+        String message="三色要素折线图获取失败！";
+
+        List<Map<String, Object>> colorGather=new ArrayList<>();
+        try{
+            //权限参数
+            ParamsVo auth = ReParamPack.packAuthParam();
+            auth.setSize(period);
+            //调用
+            if("month".equals(dateType)){
+                colorGather = threeColorMapper.colorGatherMonth(auth);
+            }else if("week".equals(dateType)){
+                colorGather = threeColorMapper.colorGatherWeek(auth);
+            }else if("day".equals(dateType)){
+                colorGather = threeColorMapper.colorGatherDay(auth);
+            }
+
+            code= ResultCode.SUCCESS.getCode();
+            message="三色要素折线图获取成功！";
+        }catch (RuntimeException r){
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+        }
+
+        return new AppResponse(code,message,colorGather.toArray());
     }
 
     /**

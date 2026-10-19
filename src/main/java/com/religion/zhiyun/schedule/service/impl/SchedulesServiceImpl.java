@@ -1,9 +1,15 @@
 package com.religion.zhiyun.schedule.service.impl;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.interfaces.entity.mas.MasErrEntity;
+import com.religion.zhiyun.interfaces.entity.mas.MasResponse;
 import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
+import com.religion.zhiyun.interfaces.service.impl.MasMessageServiceImpl;
+import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.schedule.service.SchedulesService;
 import com.religion.zhiyun.sys.file.service.impl.RmFileServiceImpl;
 import com.religion.zhiyun.sys.log.dao.AppmetricLogMapper;
@@ -13,6 +19,7 @@ import com.religion.zhiyun.task.entity.ActInstEntity;
 import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.enums.TaskActEnums;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +29,7 @@ import org.thymeleaf.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -43,6 +47,10 @@ public class SchedulesServiceImpl implements SchedulesService {
     private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
     @Autowired
     private RmFileServiceImpl rmFileServiceImpl;
+    @Autowired
+    private MasMessageServiceImpl masMessageServiceImpl;
+    @Autowired
+    private OperateRecordService operateRecordService;
 
 
     @Override
@@ -239,6 +247,7 @@ public class SchedulesServiceImpl implements SchedulesService {
 
     @Override
     public void handleCutPicture() {
+
         try {
             //获取未截图
             List<Map<String, Object>> unVp = rmFileServiceImpl.getUnVp();
@@ -249,18 +258,19 @@ public class SchedulesServiceImpl implements SchedulesService {
                         Integer vpId = (Integer) vpMap.get("vpId");
                         String vpChannelId = (String) vpMap.get("vpChannelId");
                         LocalDateTime vpTimes= (LocalDateTime) vpMap.get("vpTime");
-                        LocalDateTime vpTime = vpTimes.plusMinutes(10);
+                        LocalDateTime vpTime = vpTimes.plusMinutes(5);
                         String vpTimeStart = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTimes);
                         String vpTimeEnd = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(vpTime);
                         //下载视频并截图
                         HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
                         hisPlayReqParam.setChannelId(vpChannelId);
+                        hisPlayReqParam.setDeviceId(vpChannelId);
                         hisPlayReqParam.setStartTime(vpTimeStart);
                         hisPlayReqParam.setEndTime(vpTimeEnd);
-                        hisPlayReqParam.setIpAddr("172.20.20.31");
-                        hisPlayReqParam.setPort(49860);
+                        hisPlayReqParam.setIpAddr("10.56.105.1");
+                        hisPlayReqParam.setPort(7082);
                         hisPlayReqParam.setSpeed(4);
-                        log.info("处理视频开始:"+new Date());
+                        hisPlayReqParam.setStreamMode(0);
                         int fileId = rmFileServiceImpl.cutPicture(hisPlayReqParam);
                         //更新截图处理表
                         //rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
@@ -270,5 +280,69 @@ public class SchedulesServiceImpl implements SchedulesService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void getMasMessage() {
+        //增加日志信息
+        Map<String,Object> vuMap=new HashMap<>();
+        try {
+            vuMap.put("operator","admin");
+            vuMap.put("operateTime",new Date());
+            vuMap.put("operateRef","MAS");
+            vuMap.put("operateContent", "");
+            String operateDetail="";
+            String operateType="";
+
+            //1.连接mas获取短信
+            String response = masMessageServiceImpl.getMasMessage();
+
+            //2.解析mas返回
+            List<MasResponse> masResponseList=new ArrayList<>();
+            JsonElement jsonResponse = JsonParser.parseString(response);
+            if (jsonResponse.isJsonObject()) {
+                // 处理对象逻辑
+                MasErrEntity masErrEntity = JsonUtils.jsonTOBean(response, MasErrEntity.class);
+                log.info("MAS访问错误："+response);
+                throw new RuntimeException("MAS访问错误!");
+            } else if (jsonResponse.isJsonArray()) {
+                // 处理数组逻辑
+                log.info("MAS数组："+response);
+                masResponseList = JsonUtils.jsonTOList(response, MasResponse.class);
+            }else{
+                throw new RuntimeException("MAS短信接收发生未知错误!");
+            }
+
+            //3.保存返回数据
+            if(null!=masResponseList && masResponseList.size()>0){
+                operateDetail="接收短信共"+masResponseList.size()+"条";
+                operateType= OperaEnums.mas_accept.getCode();
+                for(int i=0;i<masResponseList.size();i++){
+                    MasResponse masResponse = masResponseList.get(i);
+                    //保存短信内容
+                    masMessageServiceImpl.addMasMessage(masResponse);
+                }
+            }
+
+            //3.发起流程
+
+
+            //4.保存日志
+            vuMap.put("operateType", operateType);
+            vuMap.put("operateDetail",operateDetail);
+            operateRecordService.addRecord(vuMap);
+        } catch (RuntimeException r) {
+            vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
+            vuMap.put("operateDetail",r.getMessage());
+            operateRecordService.addRecord(vuMap);
+            r.printStackTrace();
+        } catch (Exception e) {
+            vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
+            vuMap.put("operateDetail","未知错误，请联系管理员！");
+            operateRecordService.addRecord(vuMap);
+            e.printStackTrace();
+        }
+
+
     }
 }

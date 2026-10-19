@@ -223,7 +223,7 @@
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
-            <version>1.4.1</version>
+            <version>1.5.9</version>
         </dependency>
 
         <!--直播流转视频-->
@@ -232,6 +232,13 @@
             <artifactId>ffmpeg-platform</artifactId>
             <version>3.4.2-1.4.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version>
+        </dependency>
+
         <!--这个依赖Linux系统和windows系统有所不同-->
         <!-- windows -->
         <dependency>
@@ -289,6 +296,15 @@
                 <version>2.18.1</version>
                 <configuration>
                     <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                    <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
                 </configuration>
             </plugin>
 

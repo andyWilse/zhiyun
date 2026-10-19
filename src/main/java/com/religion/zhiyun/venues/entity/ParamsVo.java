@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Column;
+import java.util.List;
 
 @Setter
 @Getter
@@ -15,6 +16,7 @@ public class ParamsVo {
 
     private String venues;
     private String[]  venuesArr;
+    private List<Integer> venuesList;
 
     private Integer page;
     private Integer size;

@@ -9,7 +9,7 @@ import java.util.Map;
 public interface XueLiangService {
 
     /**Token 认证示例**/
-    String getAccessToken() throws Exception;
+    String getAccessToken(String username,String password,String targetUrl) throws Exception;
 
     /**实时视频播放**/
     PlayEntity getPlaySync(String channelId)throws Exception;

@@ -43,20 +43,20 @@ public class SysSchedules {
     /** 每天上午9点执行一次 "0 0 9 * * ? "**/
     @Scheduled(cron ="0 0 9 * * ? ")
     public void metricRecord() {
-        schedulesService.metricRecord();
+        //schedulesService.metricRecord();
     }
 
-    /** 短信提醒查询提醒人：每隔1分钟执行一次 **/
+    /** 每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void repeatMessage() {
+        //1.短信提醒查询提醒人：
         //schedulesService.repeatMessage();
-    }
 
-    /** 下载历史视频：每隔分钟执行一次 **/
-    @Scheduled(cron ="0 */1 * * * ?")
-    public void cutPicture() {
-        //schedulesService.handleCutPicture();
-    }
+        //2.下载历史视频：
+        schedulesService.handleCutPicture();
 
+        //3.公安短信获取
+        //schedulesService.getMasMessage();
+    }
 
 }

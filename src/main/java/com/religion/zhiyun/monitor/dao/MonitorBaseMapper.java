@@ -1,5 +1,6 @@
 package com.religion.zhiyun.monitor.dao;
 
+import com.religion.zhiyun.interfaces.entity.mas.MasEntity;
 import com.religion.zhiyun.venues.entity.ParamsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,5 +21,8 @@ public interface MonitorBaseMapper {
 
     /**获取所有监控**/
     List<Map<String,Object>> queryMonitors(@Param("vo") ParamsVo vo);
+
+    /**保存公安短信**/
+    void addMas(MasEntity masEntity);
 
 }

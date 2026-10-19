@@ -99,6 +99,61 @@
         <if test="actId!=null and actId!=0">
             and act.ACT_ID = #{actId}
         </if>
+        <if test="actInstId!=null and actInstId!=''">
+            and act.ACT_INST_ID = #{actInstId}
+        </if>
+    </update>
+
+
+    <update id="updateActInst">
+        update TASK_ACT_INST act
+        <set>
+            <if test="actHandler!=null and actHandler!=''">
+                act.ACT_HANDLER = #{actHandler},
+            </if>
+
+            <if test="actHandNm!=null and actHandNm!=''">
+                act.ACT_HAND_NM = #{actHandNm},
+            </if>
+
+            <if test="actReceiveTm!=null">
+                act.ACT_RECEIVE_TM = #{actReceiveTm},
+            </if>
+
+            <if test="actHandleTm!=null">
+                act.ACT_HANDLE_TM = #{actHandleTm},
+            </if>
+
+            <if test="actState!=null and actState!=''">
+                act.ACT_STATE = #{actState},
+            </if>
+
+            <if test="actTaskId!=null and actTaskId!=''">
+                act.ACT_TASK_ID = #{actTaskId},
+            </if>
+
+            <if test="actComment!=null and actComment!=''">
+                act.ACT_COMMENT = #{actComment},
+            </if>
+
+            <if test="actPicture!=null and actPicture!=''">
+                act.ACT_PICTURE = #{actPicture},
+            </if>
+
+            <if test="actModifyTm!=null">
+                act.ACT_MODIFY_TM = #{actModifyTm}
+            </if>
+        </set>
+        where act.ACT_HANDLER is null
+        <if test="currentState!=null and currentState!=''">
+            and act.ACT_STATE = #{currentState}
+        </if>
+        <if test="actId!=null and actId!=0">
+            and act.ACT_ID = #{actId}
+        </if>
+        <if test="actInstId!=null and actInstId!=''">
+            and act.ACT_INST_ID = #{actInstId}
+        </if>
     </update>
 
     <select id="getAiTaskAct" resultType="com.religion.zhiyun.task.entity.ActInstEntity">

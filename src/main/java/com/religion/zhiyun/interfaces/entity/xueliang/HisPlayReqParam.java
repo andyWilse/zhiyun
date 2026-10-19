@@ -28,5 +28,8 @@ public class HisPlayReqParam {
     //下载速度
     private int speed;
 
+    //流模式，1:udp0:tcp
+    private int streamMode;
+
 
 }
