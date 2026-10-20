@@ -48,6 +48,8 @@ public class MasMessageServiceImpl implements MasMessageService{
     以上检查都无误，请修改接口密码重试，接口密码不支持 “/”和“&”“+”，以及中文符号和特殊符号。*/
     @Override
     public String getMasMessage(){
+        String response = null;
+        try {
             /*** 1.HttpHeader参数封装 ***/
             HttpHeader header=new HttpHeader();
             //固定填写为application/json;charset=UTF-8。
@@ -69,26 +71,10 @@ public class MasMessageServiceImpl implements MasMessageService{
 
             /*** 3.调用接口 ***/
             HttpService httpService=new HttpService(masUrl);
-            //String response = httpService.service(masUrl, params, header);
-
-        String response="[{\n" +
-                "        \"addSerial\": \"1065082212070515\",\n" +
-                "        \"mobile\": \"13566299809\",\n" +
-                "        \"sendTime\": \"20261015161819\",\n" +
-                "        \"smsContent\": \"抓拍时间：2026-10-15 16:18:15:000；抓拍设备编码：33030497631320000132。\"\n" +
-                "    }, {\n" +
-                "        \"addSerial\": \"1065082212070515\",\n" +
-                "        \"mobile\": \"13566299809\",\n" +
-                "        \"sendTime\": \"20261015163121\",\n" +
-                "        \"smsContent\": \"抓拍时间：2026-10-1516:31:17:000；抓拍设备编码：33030497631320000170。\"\n" +
-                "    }, {\n" +
-                "        \"addSerial\": \"1065082212070515\",\n" +
-                "        \"mobile\": \"13566299809\",\n" +
-                "        \"sendTime\": \"20261015192015\",\n" +
-                "        \"smsContent\": \"抓拍时间：2026-10-15 19:20:10:000；抓拍设备编码：33030497631320000045。\"\n" +
-                "    }\n" +
-                "]";
-
+            response = httpService.service(masUrl, params, header);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
                 /*List<MasResponse> masResponseList=new ArrayList<>();
                 JsonElement jsonResponse = JsonParser.parseString(response);
                 if (jsonResponse.isJsonObject()) {

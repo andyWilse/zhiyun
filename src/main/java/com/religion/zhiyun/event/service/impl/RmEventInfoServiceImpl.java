@@ -7,7 +7,9 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.AiEventService;
+import com.religion.zhiyun.interfaces.service.impl.XueLiangServiceImpl;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
@@ -47,6 +49,9 @@ import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -54,6 +59,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -106,6 +114,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
 
     @Autowired
     private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
+    @Autowired
+    private XueLiangServiceImpl xueLiangServiceImpl;
 
 
     @Override
@@ -2016,6 +2026,66 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
             return new AppResponse(code,e.getMessage());
         }
+    }
+
+    @Override
+    public AppResponse aiWarnCutPicture(String vpChannelId) {
+        long code= ResultCode.FAILED.getCode();
+        String message="mas截图失败！";
+        log.info("mas截图开始时间："+TimeTool.getYmdHms());
+        String outputPath ="";
+        try {
+            //实时视频地址
+            PlayEntity playSyncs = xueLiangServiceImpl.getPlaySync(vpChannelId);
+            String data = playSyncs.getData();
+            PlayEntity playSync= JsonUtils.jsonTOBean(data, PlayEntity.class);
+            // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
+            String url ="";
+            // 输出图片路径
+            if(null!=playSync){
+                String flv = playSync.getFlv();
+                log.info("flv地址："+flv);
+                if(!GeneTool.isEmpty(flv)){
+                    url = flv;
+                    outputPath = "//home//zhiyun//files/video//flv"+ TimeTool.getYMDHms()+".jpg";
+                    // 创建抓取器
+                    FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(url);
+                    grabber.setOption("rtsp_transport", "tcp"); // RTSP 建议使用 TCP，减少丢包
+                    grabber.start();
+                    // 抓取一帧图像
+                    Frame frame = grabber.grabImage();
+                    log.info("play抓取一帧图像："+frame);
+                    if (frame != null) {
+                        Java2DFrameConverter converter = new Java2DFrameConverter();
+                        BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                        log.info("抓取一帧图像bufferedImage"+bufferedImage);
+                        if (bufferedImage != null) {
+                            File outputFile = new File(outputPath);
+                            log.info("抓取一帧图像outputFile"+outputPath);
+                            // 确保目录存在
+                            if (!outputFile.getParentFile().exists()) {
+                                outputFile.getParentFile().mkdirs();
+                            }
+                            ImageIO.write(bufferedImage, "jpg", outputFile);
+                            log.info("成功已保存至: " + outputPath);
+                        }
+                    }
+
+                    grabber.stop();
+                    grabber.release();
+                }
+            }
+            log.info("mas截图结束时间："+TimeTool.getYmdHms());
+            message="mas截图成功！";
+            code=ResultCode.SUCCESS.getCode();
+        } catch (RuntimeException r) {
+            r.printStackTrace();
+            return new AppResponse(code,r.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new AppResponse(code,e.getMessage());
+        }
+        return new AppResponse(code,message,outputPath);
     }
 
 }

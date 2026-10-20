@@ -79,7 +79,7 @@ public class XueLiangServiceImpl implements XueLiangService {
         String response = httpService.service(url+"/"+channelId, params,header);
 
         /**4.结果解析***/
-        System.out.println("结果接收："+response);
+        System.out.println("实时视频播放结果接收："+response);
         PlayEntity entity= JsonUtils.jsonTOBean(response, PlayEntity.class);
         return entity;
     }

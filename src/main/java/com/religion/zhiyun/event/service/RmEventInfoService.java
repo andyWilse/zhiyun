@@ -185,4 +185,10 @@ public interface RmEventInfoService {
      * @return
      */
     AppResponse addAiWarnEvent(String eventJson);
+
+    /**
+     * ai预警(重点mas截图)
+     * @return
+     */
+    AppResponse aiWarnCutPicture(String vpChannelId);
 }

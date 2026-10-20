@@ -1,19 +1,25 @@
 package com.religion.zhiyun.utils.fileutil;
 
 import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
+import lombok.extern.slf4j.Slf4j;
+import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.Java2DFrameConverter;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import  org.bytedeco.ffmpeg.global.avcodec.*;
 
 /**
  * 获取视频首帧图片用于界面展示
@@ -39,6 +45,8 @@ import java.util.UUID;
  *
  * @create 2022-06-13 9:41
  */
+
+@Slf4j
 public class GetVideoGainImg {
     /**
      *
@@ -227,25 +235,43 @@ public class GetVideoGainImg {
         // 保存图片的路径
         String outputPath = rootPath+newImgName;
         boolean isSaved = false;
+        log.info("开始创建 Grabber 实例");
+        FFmpegLogCallback.set();
         // 1. 创建 Grabber 实例
         try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(streamUrl)) {
             // 如果是 RTSP 流，建议设置超时和传输协议（此处为 TCP，不需要）
-            // grabber.setOption("rtsp_transport", "tcp");
+             grabber.setOption("rtsp_transport", FilePropertiesVo.getStreamMode());
             // 设置超时时间（毫秒），防止流断开时一直卡住
-            grabber.setOption("timeout", "5000000");
-
+            grabber.setOption("timeout", FilePropertiesVo.getStreamTime());
+            grabber.setOption("rw_timeout", FilePropertiesVo.getStreamTime());
+            //加大缓冲
+            grabber.setOption("buffer_size", "10240000");
+            //忽略音频流
+            grabber.setOption("an", "1");
+            grabber.setOption("analyzeduration", "5000000");
+            grabber.setOption("probesize", "5000000");
+            grabber.setVideoOption("err_detect","ignore_err");
+            grabber.setVideoOption("fflags","+discardcorrupt");
+            //grabber.setPixelFormat(org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_BGR24);
+            // 强制指定输入格式为 h264（裸流），而不是让 FFmpeg 去猜测容器
+            grabber.setFormat(FilePropertiesVo.getStreamCode());
+            // 明确视频编码，有助于解码器初始化
+            grabber.setVideoCodec(org.bytedeco.ffmpeg.global.avcodec.AV_CODEC_ID_H264);
+            //grabber.setVideoCodec(173);
             // 2. 启动抓取器
             grabber.start();
+            log.info("Grabber 启动抓取器");
 
             Frame frame;
             int currentFrame = 0;
             // 用于将 JavaCV 的 Frame 转换为 Java 标准的 BufferedImage
             Java2DFrameConverter converter = new Java2DFrameConverter();
-            System.out.println("开始读取视频流...");
+            log.info("开始读取视频流...");
             // 3. 逐帧读取
             while ((frame = grabber.grabImage()) != null) {
+                log.info("视频流:"+frame);
                 currentFrame++;
-
+                log.info("视频流帧数:"+currentFrame);
                 // 判断是否到达目标帧
                 if (currentFrame == targetFrameNumber) {
                     // 4. 转换并保存图片
@@ -258,7 +284,7 @@ public class GetVideoGainImg {
                             outputFile.getParentFile().mkdirs();
                         }
                         ImageIO.write(bufferedImage, "jpg", outputFile);
-                        System.out.println("成功截取第 " + targetFrameNumber + " 帧，已保存至: " + outputPath);
+                        log.info("成功截取第 " + targetFrameNumber + " 帧，已保存至: " + outputPath);
                         isSaved = true;
                     }
                     break; // 截取到目标帧后退出循环
@@ -266,7 +292,7 @@ public class GetVideoGainImg {
             }
 
             if (!isSaved) {
-                System.out.println("未能读取到第 " + targetFrameNumber + " 帧，流可能提前结束或帧数不足。");
+                log.info("未能读取到第 " + targetFrameNumber + " 帧，流可能提前结束或帧数不足。");
             }
 
         } catch (Exception e) {
@@ -275,6 +301,59 @@ public class GetVideoGainImg {
 
         return isSaved;
     }
+
+
+
+ /*   public void openCam() throws IOException {
+        if (!webcam.isOpen()) {
+            webcam.open();
+        }
+        Boolean isOpened = true;
+        DatagramSocket udpSocket = new DatagramSocket();
+        InetAddress targetHost = InetAddress.getByName("localhost");
+        int targetPort = 80;
+
+        while (isOpened) {
+            List<BufferedImage> list = new ArrayList<>();
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start <= 10000) {
+                BufferedImage bfi = webcam.getImage();
+                if (needsLight) {
+                    bfi = bfiOps.light(bfi, lightIndex);
+                }
+                if (needDuibidu) {
+                    bfi = bfiOps.duibidu(bfi, duibiduIndex);
+                }
+                list.add(bfi);
+            }
+            System.out.println("鹿丸！，开存！小节视频长度：" + (System.currentTimeMillis() - start));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] byteArray = outputStream.toByteArray();
+            FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(outputStream, webcam.getViewSize().width, webcam.getViewSize().height);
+            recorder.setVideoCodecName("lib264");
+            recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
+            recorder.setFormat("mp4");
+            recorder.setFrameRate(24);
+            System.out.println("recorder: " + recorder);
+            recorder.start();
+            for (int i = 0; i < list.size(); i++) {
+                Frame frame = converter.getFrame(list.get(i));
+                recorder.record(frame);
+            }
+            recorder.stop();
+            recorder.release();
+            System.out.println("后台保存完毕");
+            RawPacket rtpPacket = new RawPacket(byteArray, 0, byteArray.length);//构造中需要传入起始终结，可能表明不是让一遍传完
+            DatagramPacket udpPacket = new DatagramPacket(rtpPacket.getBuffer(), rtpPacket.getLength(), targetHost, targetPort);
+            udpSocket.send(udpPacket);
+
+            udpSocket.close();
+            websocket.sendOneMessage("0", "down");
+        }
+        webcam.close();
+    }*/
+
 
 
 }

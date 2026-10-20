@@ -37,5 +37,24 @@ public class FilePropertiesVo {
         FilePropertiesVo.streamUrl = streamUrl;
     }
 
+    @Getter
+    private static String  streamMode;
+    @Value("${xue.liang.stream.mode}")
+    public void setStreamModel(String streamMode) {
+        FilePropertiesVo.streamMode = streamMode;
+    }
+    @Getter
+    private static String  streamCode;
+    @Value("${xue.liang.stream.code}")
+    public void setStreamCode(String streamCode) {
+        FilePropertiesVo.streamCode = streamCode;
+    }
+    @Getter
+    private static String  streamTime;
+    @Value("${xue.liang.stream.time}")
+    public void setStreamTime(String streamTime) {
+        FilePropertiesVo.streamTime = streamTime;
+    }
+
 
 }

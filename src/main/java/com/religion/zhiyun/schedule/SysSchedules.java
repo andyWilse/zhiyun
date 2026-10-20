@@ -1,7 +1,12 @@
 package com.religion.zhiyun.schedule;
 
 import com.religion.zhiyun.schedule.service.SchedulesService;
+import com.religion.zhiyun.schedule.socket.VideoReceiver;
+import com.religion.zhiyun.schedule.socket.VideoServer;
+import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
+import com.religion.zhiyun.utils.sms.http.HttpClientUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,11 +14,17 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Component
 public class SysSchedules {
 
     @Autowired
     private SchedulesService schedulesService;
+
+    @Autowired
+    private VideoServer videoServer;
+    @Autowired
+    private VideoReceiver videoReceiver;
 
     /** 自动上报：每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */5 * * * ?")
@@ -53,10 +64,21 @@ public class SysSchedules {
         //schedulesService.repeatMessage();
 
         //2.下载历史视频：
-        schedulesService.handleCutPicture();
+        //schedulesService.handleCutPicture();
+
+        //videoServer.startServer(7082);
+        //videoReceiver.receiveVideo("//home//zjzz//dump.bin");
+        //videoServer.stopServer();
 
         //3.公安短信获取
-        //schedulesService.getMasMessage();
+        /*log.info("mas定时任务开始时间："+ TimeTool.getYmdHms());
+        schedulesService.getMasMessage();
+        log.info("mas定时任务结束时间："+ TimeTool.getYmdHms());*/
+
+
+        //url需要与我们在api中设置的对应，后一个是传参
+        String s = HttpClientUtil.doPost("http://47.98.212.215:7081/api/event/cut","333331122");
+        System.out.println(s);
     }
 
 }

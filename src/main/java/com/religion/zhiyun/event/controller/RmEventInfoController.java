@@ -62,6 +62,16 @@ public class RmEventInfoController {
 
     }
 
+    @DecryptRequest(false)
+    @EncryptResponse(false)
+    @PostMapping("/cut")
+    @ResponseBody
+    public AppResponse cutAiEvent(@RequestParam String vpChannelId) {
+        System.out.println("已接受s"+vpChannelId);
+        log.info("已接受："+vpChannelId);
+        return rmEventInfoService.aiWarnCutPicture(vpChannelId);
+    }
+
    /* @PostMapping("/pushAiEvent")
     @ResponseBody
     public OutInterfaceResponse addEvent(@RequestBody String eventJson) {
