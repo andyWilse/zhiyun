@@ -1,5 +1,6 @@
 package com.religion.zhiyun.interfaces.service;
 
+import com.religion.zhiyun.interfaces.entity.mas.MasEntity;
 import com.religion.zhiyun.interfaces.entity.mas.MasResponse;
 
 import java.text.ParseException;
@@ -11,6 +12,6 @@ public interface MasMessageService {
     String getMasMessage() throws Exception;
 
     /** 保存mas短信 **/
-    void addMasMessage(MasResponse masResponse) throws ParseException;
+    MasEntity addMasMessage(MasResponse masResponse) throws ParseException;
 
 }

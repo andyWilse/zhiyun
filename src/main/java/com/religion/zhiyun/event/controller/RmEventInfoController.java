@@ -5,10 +5,7 @@ import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.login.http.inter.DecryptRequest;
 import com.religion.zhiyun.login.http.inter.EncryptResponse;
 import com.religion.zhiyun.utils.JsonUtils;
-import com.religion.zhiyun.utils.response.AppResponse;
-import com.religion.zhiyun.utils.response.OutInterfaceResponse;
-import com.religion.zhiyun.utils.response.PageResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.utils.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -65,10 +62,7 @@ public class RmEventInfoController {
     @DecryptRequest(false)
     @EncryptResponse(false)
     @PostMapping("/cut")
-    @ResponseBody
-    public AppResponse cutAiEvent(@RequestParam String vpChannelId) {
-        System.out.println("已接受s"+vpChannelId);
-        log.info("已接受："+vpChannelId);
+    public AppResponse cutAiEvent(@RequestBody String vpChannelId ) {
         return rmEventInfoService.aiWarnCutPicture(vpChannelId);
     }
 

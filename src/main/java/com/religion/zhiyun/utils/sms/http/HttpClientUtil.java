@@ -19,7 +19,6 @@ public class HttpClientUtil {
             URL url = new URL(pathUrl);
             //打开和url之间的连接
             log.info("打开和url之间的连接");
-            System.out.println("打开和url之间的连接s");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             //请求方法为"POST"
             conn.setRequestMethod("POST");
@@ -35,8 +34,7 @@ public class HttpClientUtil {
             //调用，获取输出流
             out = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
             //发送请求参数
-            System.out.println("发送请求参数s"+data);
-            log.info("发送请求参数"+data);
+            //log.info("发送请求参数"+data);
             out.write(data);
             out.flush();
             //获取URLConnection对象对应的输入流
@@ -47,8 +45,6 @@ public class HttpClientUtil {
             while ((str = br.readLine()) != null){
                 result += str;
             }
-            System.out.println("发送请求参数s"+result);
-            log.info("发送请求参数"+result);
             //关闭流
             is.close();
             //断开连接，disconnect是在底层tcp socket链接空闲时才切断，如果正在被其他线程使用就不切断。

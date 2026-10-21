@@ -1,6 +1,7 @@
 package com.religion.zhiyun.sys.file.service.impl;
 
 import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
+import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.impl.XueLiangServiceImpl;
 import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
@@ -8,8 +9,11 @@ import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.user.dao.SysUserMapper;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.JsonUtils;
+import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.fileutil.*;
+import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.PageResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
@@ -17,6 +21,9 @@ import com.religion.zhiyun.utils.enums.EventParamCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -28,8 +35,11 @@ import org.thymeleaf.util.StringUtils;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.*;
 
 @Slf4j
@@ -458,7 +468,7 @@ public class RmFileServiceImpl implements RmFileService {
      * @param vpFileId
      * @param vpModifyTm
      */
-    public void updateVideoPicture (Integer vpId,  String vpFileId, Date vpModifyTm){
+    public void updateVideoPicture (Integer vpId,  String vpFileId, Timestamp vpModifyTm){
         rmFileMapper.updateVideoPicture(vpId,vpFileId,vpModifyTm);
     };
 
@@ -495,9 +505,58 @@ public class RmFileServiceImpl implements RmFileService {
             log.info("视频获取已失败！");
         }
 
-
-
         return 0;
     }
+
+    @Override
+    public AppResponse saveCutFile(String cutRequest) {
+        log.info("大屏截图101:"+cutRequest);
+        long code=ResultCode.FAILED.getCode();
+        String message="大屏截图处理失败！";
+        try {
+            if(!GeneTool.isEmpty(cutRequest)){
+                AppResponse cutRes=JsonUtils.jsonTOBean(cutRequest,AppResponse.class);
+                BigDecimal resCode = cutRes.getCode()==0?BigDecimal.ZERO: new BigDecimal(cutRes.getCode()) ;
+                String imageName = cutRes.getDirect();
+                byte[] stream = cutRes.getStream();
+                if(resCode.compareTo(new BigDecimal(200))!=0){
+                    log.info("大屏截图失败！");
+                }else{
+                    if(null==stream){
+                        log.info("大屏截图转本地失败！");
+                    }else {
+                        //2.3.处理图片
+                        String outputPath = FilePropertiesVo.getMasFolder() + File.separator + TimeTool.getYmd() + File.separator + imageName;
+                        ByteArrayInputStream inStream = new ByteArrayInputStream(stream);    //将b作为输入流；
+                        BufferedImage bufferedImage = ImageIO.read(inStream);
+                        //保存图片
+                        File outputFile = new File(outputPath);
+                        log.info("抓取一帧图像outputFile" + outputPath);
+                        // 确保目录存在
+                        if (!outputFile.getParentFile().exists()) {
+                            outputFile.getParentFile().mkdirs();
+                        }
+                        ImageIO.write(bufferedImage, "jpg", outputFile);
+                        //保存文件信息
+                        FileEntity fileEntity=new FileEntity();
+                        fileEntity.setFilePath(outputPath);
+                        fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
+                        fileEntity.setCreator("AI预警图片cutSync");
+                        fileEntity.setCreateTime(TimeTool.getYmdHms());
+                        rmFileMapper.add(fileEntity);
+                        //更新截图信息
+                        rmFileMapper.updateVideoPicture(resCode.intValue(),String.valueOf(fileEntity.getFileId()),TimeTool.getTimestamp());
+                    }
+                }
+            }
+            code=ResultCode.SUCCESS.getCode();
+            message="大屏截图处理成功！";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return new AppResponse(code,message);
+    }
+
 
 }

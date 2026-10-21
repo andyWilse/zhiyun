@@ -1227,4 +1227,16 @@
         </if>
     </select>
 
+
+    <select id="getEventByVenue" resultType="map">
+        select ev.EVENT_ID as eventId
+        from RM_EVENT_INFO ev
+        where ev.EVENT_TYPE='03'
+        <if test="warnTime != null and warnTime != ''">
+            and  ev.WARN_TIME &gt; #{warnTime}
+        </if>
+        <if test="relVenuesId != null and relVenuesId != ''">
+            and  ev.REL_VENUES_ID = #{relVenuesId}
+        </if>
+    </select>
 </mapper>

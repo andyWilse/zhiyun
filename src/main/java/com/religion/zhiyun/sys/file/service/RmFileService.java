@@ -80,4 +80,11 @@ public interface RmFileService {
      */
    int cutStreamPicture(HisPlayReqParam hisPlayReqParam,Integer vpFrame,String hisFolder) throws Exception;
 
+    /**
+     * 保存（大屏）图片
+     * @param cutRequest
+     * @return
+     */
+    AppResponse saveCutFile(String cutRequest);
+
 }

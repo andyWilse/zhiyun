@@ -7,6 +7,7 @@ import com.religion.zhiyun.event.entity.EventEntity;
 import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
+import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.AiEventService;
 import com.religion.zhiyun.interfaces.service.impl.XueLiangServiceImpl;
@@ -19,6 +20,7 @@ import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
+import com.religion.zhiyun.sys.file.entity.FilesVo;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
@@ -30,12 +32,12 @@ import com.religion.zhiyun.user.entity.SysUserEntity;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.enums.RoleEnums;
-import com.religion.zhiyun.utils.response.AppResponse;
-import com.religion.zhiyun.utils.response.OutInterfaceResponse;
-import com.religion.zhiyun.utils.response.PageResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
+import com.religion.zhiyun.utils.response.*;
+import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.utils.sms.sm.MessageSend;
 import com.religion.zhiyun.venues.dao.RmVenuesInfoMapper;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -61,6 +63,7 @@ import org.springframework.util.StringUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -1312,18 +1315,18 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             //3.1.1.电话通知
             if(tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)){
                 mapCall.put("phone",user+","+manager);
-                        /*String sessionId = VoiceCall.voiceCall(mapCall);
+                        String sessionId = VoiceCall.voiceCall(mapCall);
                         //保存数据
                         FeeInfo feeInfo =new FeeInfo();
                         feeInfo.setSessionId(sessionId);
                         feeInfo.setEventType(CallEnums.fee.getCode());
                         feeInfo.setRefEventId(String.valueOf(relEventId));
-                        eventNotifiedMapper.addCall(feeInfo);*/
+                        eventNotifiedMapper.addCall(feeInfo);
 
             }
             //3.1.2.短信通知
             //SendMassage.sendSms(contents, userMobile);
-            //MessageSend.sendSmsMass(contents,userNextList);
+            MessageSend.sendSmsMass(contents,userNextList);
         }
 
         /*** 4.保存通知 ***/
@@ -1958,16 +1961,21 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             String title = aiEntity.getTitle();
             event.setDeviceType(title);
             //图片处理
-            String eventFile = aiEntity.getEventFile();
-            FileEntity fileEntity=new FileEntity();
-            fileEntity.setFilePath(eventFile);
-            fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
-            fileEntity.setCreator("AI预警图片");
-            fileEntity.setCreateTime(TimeTool.getYmdHms());
-            rmFileMapper.add(fileEntity);
-
-            int fileId = fileEntity.getFileId();
-            event.setPicturesPath(String.valueOf(fileId));
+            String fileId ="";
+            if(content.contains("重点")){
+                fileId = aiEntity.getEventFile();
+            }else{
+                String eventFile = aiEntity.getEventFile();
+                FileEntity fileEntity=new FileEntity();
+                fileEntity.setFilePath(eventFile);
+                fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
+                fileEntity.setCreator("AI预警图片");
+                fileEntity.setCreateTime(TimeTool.getYmdHms());
+                rmFileMapper.add(fileEntity);
+                int fiId = fileEntity.getFileId();
+                fileId = String.valueOf(fiId);
+            }
+            event.setPicturesPath(fileId);
             //地址
             String eventPlaceName = aiEntity.getEventPlaceName();
             event.setLocation(eventPlaceName);
@@ -2008,7 +2016,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             }
 
             //5.2.任务发起
-
             AppResponse res = taskAiWarnServiceImpl.launch(taskEntity, review, "预警平台");
             //5.3.短信通知
             taskAiWarnServiceImpl.sendMsg("",
@@ -2016,8 +2023,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     venueByID.getVenuesAddres(),
                     venuesName,
                     cont,
-                    eventType);
-
+                    eventType,
+                    event.getEventId());
             return new AppResponse(res.getCode(),res.getMessage());
         } catch (RuntimeException r) {
             r.printStackTrace();
@@ -2031,23 +2038,23 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     @Override
     public AppResponse aiWarnCutPicture(String vpChannelId) {
         long code= ResultCode.FAILED.getCode();
-        String message="mas截图失败！";
-        log.info("mas截图开始时间："+TimeTool.getYmdHms());
-        String outputPath ="";
+        log.info("mas截图开始时间："+TimeTool.getYmdHms()+";参数（"+vpChannelId+")");
+        String typePic="jpg";
+        String imageName=TimeTool.getYMDHms()+"."+typePic;
+        String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
+        byte[] imageBytes =null;
         try {
             //实时视频地址
-            PlayEntity playSyncs = xueLiangServiceImpl.getPlaySync(vpChannelId);
-            String data = playSyncs.getData();
+            PlayEntity xueLiangPlaySync = xueLiangServiceImpl.getPlaySync(vpChannelId);
+            String data = xueLiangPlaySync.getData();
             PlayEntity playSync= JsonUtils.jsonTOBean(data, PlayEntity.class);
-            // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
-            String url ="";
             // 输出图片路径
             if(null!=playSync){
                 String flv = playSync.getFlv();
                 log.info("flv地址："+flv);
                 if(!GeneTool.isEmpty(flv)){
-                    url = flv;
-                    outputPath = "//home//zhiyun//files/video//flv"+ TimeTool.getYMDHms()+".jpg";
+                    // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
+                    String url = flv;
                     // 创建抓取器
                     FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(url);
                     grabber.setOption("rtsp_transport", "tcp"); // RTSP 建议使用 TCP，减少丢包
@@ -2060,14 +2067,23 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                         BufferedImage bufferedImage = converter.getBufferedImage(frame);
                         log.info("抓取一帧图像bufferedImage"+bufferedImage);
                         if (bufferedImage != null) {
+                            //保存图片
                             File outputFile = new File(outputPath);
                             log.info("抓取一帧图像outputFile"+outputPath);
                             // 确保目录存在
                             if (!outputFile.getParentFile().exists()) {
                                 outputFile.getParentFile().mkdirs();
                             }
-                            ImageIO.write(bufferedImage, "jpg", outputFile);
+                            ImageIO.write(bufferedImage, typePic, outputFile);
                             log.info("成功已保存至: " + outputPath);
+
+                            //返回字节流
+                            // 创建一个空的ByteArrayOutputStream对象
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            // 将BufferedImage对象编码为JPEG格式的字节流
+                            ImageIO.write(bufferedImage, typePic, outputStream);
+                            // 将ByteArrayOutputStream对象转换为字节数组
+                            imageBytes = outputStream.toByteArray();
                         }
                     }
 
@@ -2076,8 +2092,6 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 }
             }
             log.info("mas截图结束时间："+TimeTool.getYmdHms());
-            message="mas截图成功！";
-            code=ResultCode.SUCCESS.getCode();
         } catch (RuntimeException r) {
             r.printStackTrace();
             return new AppResponse(code,r.getMessage());
@@ -2085,7 +2099,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
             return new AppResponse(code,e.getMessage());
         }
-        return new AppResponse(code,message,outputPath);
+        return new AppResponse(ResultCode.SUCCESS.getCode(),"MAS截图成功",imageName,imageBytes);
     }
 
 }

@@ -4,15 +4,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.religion.zhiyun.event.dao.EventNotifiedMapper;
 import com.religion.zhiyun.event.dao.RmEventInfoMapper;
+import com.religion.zhiyun.event.entity.AiEntity;
 import com.religion.zhiyun.event.entity.EventEntity;
+import com.religion.zhiyun.event.service.impl.RmEventInfoServiceImpl;
+import com.religion.zhiyun.interfaces.entity.mas.MasEntity;
 import com.religion.zhiyun.interfaces.entity.mas.MasErrEntity;
 import com.religion.zhiyun.interfaces.entity.mas.MasResponse;
 import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.impl.MasMessageServiceImpl;
 import com.religion.zhiyun.interfaces.service.impl.XueLiangServiceImpl;
+import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.schedule.service.SchedulesService;
+import com.religion.zhiyun.sys.file.dao.RmFileMapper;
+import com.religion.zhiyun.sys.file.entity.FileEntity;
 import com.religion.zhiyun.sys.file.service.impl.RmFileServiceImpl;
 import com.religion.zhiyun.sys.log.dao.AppmetricLogMapper;
 import com.religion.zhiyun.sys.log.entity.AppmetricLogEntity;
@@ -22,8 +28,13 @@ import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.enums.EventParamCode;
 import com.religion.zhiyun.utils.enums.OperaEnums;
+import com.religion.zhiyun.utils.enums.ProcessState;
 import com.religion.zhiyun.utils.enums.TaskActEnums;
+import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
+import com.religion.zhiyun.utils.response.AppResponse;
+import com.religion.zhiyun.utils.sms.http.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -35,6 +46,8 @@ import org.thymeleaf.util.StringUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -75,6 +88,12 @@ public class SchedulesServiceImpl implements SchedulesService {
     private OperateRecordService operateRecordService;
     @Autowired
     private XueLiangServiceImpl xueLiangServiceImpl;
+    @Autowired
+    private RmFileMapper rmFileMapper;
+    @Autowired
+    private RmEventInfoServiceImpl rmEventInfoServiceImpl;
+    @Autowired
+    private MonitorBaseMapper monitorBaseMapper;
 
     @Override
     public void UrgentAutoReport() {
@@ -213,7 +232,8 @@ public class SchedulesServiceImpl implements SchedulesService {
                         null,
                         null,
                         null,
-                        null);
+                        null,
+                        0);
             }
         }
         //2.如果30分钟内未处理
@@ -239,7 +259,8 @@ public class SchedulesServiceImpl implements SchedulesService {
                             null,
                             null,
                             null,
-                            null);
+                            null,
+                            0);
                 }
             }
         }
@@ -280,7 +301,6 @@ public class SchedulesServiceImpl implements SchedulesService {
                     if(null!=vpMap){
                         Integer vpId = (Integer) vpMap.get("vpId");
                         String vpChannelId = (String) vpMap.get("vpChannelId");
-                        this.getPlaySync(vpChannelId);
                         LocalDateTime vpTmStart= (LocalDateTime) vpMap.get("vpTmStart");
                         LocalDateTime vpTmEnd= (LocalDateTime) vpMap.get("vpTmEnd");
                         Integer vpFrame= (Integer) vpMap.get("vpFrame");
@@ -308,76 +328,69 @@ public class SchedulesServiceImpl implements SchedulesService {
         }
     }
 
-
-    public void getPlaySync(String vpChannelId) throws Exception {
-        //实时视频地址
-        /*String response="{\"msg\":\"延迟:308,重新拉流:true\",\"code\":0,\"data\":{\"ssrc\":\"330300-02112466601433374721\",\"deviceID\":\"33030002002000010019\",\"cahnnelId\":\"33030497631320000026\",\"flv\":\"http://172.20.23.35:2080/rtp/330300-02112466601433374721.flv?token=6452800b8a475f196c17c6a707483dbf\",\"ws_flv\":\"ws://172.20.23.35:2080/rtp/330300-02112466601433374721.flv?token=6452800b8a475f196c17c6a707483dbf\",\"httpsFlv\":\"https://xlspgx.wenzhou.gov.cn:2443/rtp/330300-02112466601433374721.flv?token=6452800b8a475f196c17c6a707483dbf\",\"wss_flv\":\"wss://xlspgx.wenzhou.gov.cn:2443/rtp/330300-02112466601433374721.flv?token=6452800b8a475f196c17c6a707483dbf\",\"rtmp\":\"rtmp://172.20.23.35:1935/rtp/330300-02112466601433374721?token=6452800b8a475f196c17c6a707483dbf\",\"hls\":\"\",\"rtsp\":\"rtsp://172.20.23.35:1554/rtp/330300-02112466601433374721?token=6452800b8a475f196c17c6a707483dbf\",\"tracks\":\"\",\"callId\":\"04d03d079edf9ad308c83d5d877479e9@172.20.23.34\",\"ip\":\"172.20.23.35\",\"createTime\":\"2026-10-20 16:51:00\",\"mediaPort\":\"31948\",\"forwardPort\":\"\",\"upIp\":\"\",\"regist\":false}}\n";
-        PlayEntity entitys= JsonUtils.jsonTOBean(response, PlayEntity.class);
-        String data = entitys.getData();
-        PlayEntity entity= JsonUtils.jsonTOBean(data, PlayEntity.class);*/
-
-        PlayEntity playSyncs = xueLiangServiceImpl.getPlaySync(vpChannelId);
-        String data = playSyncs.getData();
-        PlayEntity playSync= JsonUtils.jsonTOBean(data, PlayEntity.class);
-
-        // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
-        String url ="";
-        // 输出图片路径
-        String output ="";
-        if(null!=playSync){
-            String flv = playSync.getFlv();
-            log.info("flv地址："+flv);
-            if(!GeneTool.isEmpty(flv)){
-                url = flv;
-                output = "//home//zhiyun//files/video//flv"+ TimeTool.getYMDHms()+".jpg";
-                this.cutPic(url,output);
-            }
-            String rtmp = playSync.getRtmp();
-            log.info("rtmp地址："+rtmp);
-
-            if(!GeneTool.isEmpty(rtmp)){
-                url = rtmp;
-                output = "//home//zhiyun//files/video//rtmp"+ TimeTool.getYMDHms()+".jpg";
-                this.cutPic(url,output);
-            }
-            String rtsp = playSync.getRtsp();
-            log.info("rtsp地址："+rtsp);
-            if(!GeneTool.isEmpty(rtsp)){
-                url = rtsp;
-                output = "//home//zhiyun//files/video//rtsp"+ TimeTool.getYMDHms()+".jpg";
-                this.cutPic(url,output);
-            }
-        }
-    }
-
-    void cutPic(String url,String outputPath){
+    @Override
+    public void cutSyncPicture(){
         try {
-            // 创建抓取器
-            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(url);
-            grabber.setOption("rtsp_transport", "tcp"); // RTSP 建议使用 TCP，减少丢包
-            grabber.start();
-            // 抓取一帧图像
-            Frame frame = grabber.grabImage();
-            log.info("play抓取一帧图像："+frame);
-            if (frame != null) {
-                Java2DFrameConverter converter = new Java2DFrameConverter();
-                BufferedImage bufferedImage = converter.getBufferedImage(frame);
-                log.info("抓取一帧图像bufferedImage"+bufferedImage);
-                if (bufferedImage != null) {
-                    File outputFile = new File(outputPath);
-                    log.info("抓取一帧图像outputFile"+outputPath);
-                    // 确保目录存在
-                    if (!outputFile.getParentFile().exists()) {
-                        outputFile.getParentFile().mkdirs();
+            //获取未截图
+            List<Map<String, Object>> unVp = rmFileServiceImpl.getUnVp();
+            //处理数据
+            if(null!=unVp && unVp.size()>0){
+                for(int i=0;i<unVp.size();i++) {
+                    Map<String, Object> vpMap = unVp.get(i);
+                    if (null != vpMap) {
+                        Integer vpId = (Integer) vpMap.get("vpId");
+                        //设备编号
+                        String vpChannelId = (String) vpMap.get("vpChannelId");
+                        //1.获取实时视频
+                        PlayEntity playSyncs = xueLiangServiceImpl.getPlaySync(vpChannelId);
+                        String data = playSyncs.getData();
+                        PlayEntity playSync = JsonUtils.jsonTOBean(data, PlayEntity.class);
+                        if (null != playSync) {
+                            //视频流地址（RTSP/RTMP/HTTP/文件都可以）
+                            String flvUrl = playSync.getFlv();
+                            //2.创建抓取器
+                            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(flvUrl);
+                            // RTSP 建议使用 TCP，减少丢包
+                            grabber.setOption("rtsp_transport", "tcp");
+                            grabber.start();
+                            //3.抓取一帧图像
+                            Frame frame = grabber.grabImage();
+                            if (frame != null) {
+                                Java2DFrameConverter converter = new Java2DFrameConverter();
+                                BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                                if (bufferedImage != null) {
+                                    String imageName="cut"+TimeTool.getYMDHms()+".jpg";
+                                    /****************************************************** 保存图片 ********************************************************/
+                                    String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
+                                    //保存图片
+                                    File outputFile = new File(outputPath);
+                                    // 确保目录存在
+                                    if (!outputFile.getParentFile().exists()) {
+                                        outputFile.getParentFile().mkdirs();
+                                    }
+                                    ImageIO.write(bufferedImage, "jpg", outputFile);
+                                    log.info("实时视频截图已保存至: " + outputPath);
+                                    /****************************************************** 推送图片至手机端 ********************************************************/
+                                    //封装字节流
+                                    // 创建一个空的ByteArrayOutputStream对象
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    // 将BufferedImage对象编码为JPEG格式的字节流
+                                    ImageIO.write(bufferedImage, "jpg", outputStream);
+                                    // 将ByteArrayOutputStream对象转换为字节数组
+                                    byte[] imageBytes = outputStream.toByteArray();
+                                    String fileCutUrl = FilePropertiesVo.getFileCutUrl();
+                                    AppResponse ar = new AppResponse(vpId, imageName, imageBytes);
+                                    //2.1.访问大屏端
+                                    HttpClientUtil.doPost(fileCutUrl,JsonUtils.beanToJson(ar));
+                                }
+                            }
+                            grabber.stop();
+                            grabber.release();
+                        }
                     }
-                    ImageIO.write(bufferedImage, "jpg", outputFile);
-                    log.info("成功已保存至: " + outputPath);
                 }
             }
-
-            grabber.stop();
-            grabber.release();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -390,18 +403,15 @@ public class SchedulesServiceImpl implements SchedulesService {
             vuMap.put("operateTime",new Date());
             vuMap.put("operateRef","MAS");
             vuMap.put("operateContent", "");
-            String operateDetail="";
-            String operateType="";
-
-            //1.连接mas获取短信
+            /************************************************ 1.MAS ************************************************/
+            //1.1.连接mas获取短信
             String response = masMessageServiceImpl.getMasMessage();
-
-            //2.解析mas返回
+            //1.2.解析mas返回
             List<MasResponse> masResponseList=new ArrayList<>();
             JsonElement jsonResponse = JsonParser.parseString(response);
             if (jsonResponse.isJsonObject()) {
                 // 处理对象逻辑
-                MasErrEntity masErrEntity = JsonUtils.jsonTOBean(response, MasErrEntity.class);
+                //MasErrEntity masErrEntity = JsonUtils.jsonTOBean(response, MasErrEntity.class);
                 log.info("MAS访问错误："+response);
                 throw new RuntimeException("MAS访问错误!");
             } else if (jsonResponse.isJsonArray()) {
@@ -411,40 +421,99 @@ public class SchedulesServiceImpl implements SchedulesService {
             }else{
                 throw new RuntimeException("MAS短信接收发生未知错误!");
             }
-
-            //3.保存返回数据
+            //1.3.保存返回数据
             if(null!=masResponseList && masResponseList.size()>0){
-                operateDetail="接收短信共"+masResponseList.size()+"条";
-                operateType= OperaEnums.mas_accept.getCode();
+                String operateDetail="接收短信共"+masResponseList.size()+"条";
+                String operateType= OperaEnums.mas_accept.getCode();
+                //保存日志
+                vuMap.put("operateType", operateType);
+                vuMap.put("operateDetail",operateDetail);
+                operateRecordService.addRecord(vuMap);
                 for(int i=0;i<masResponseList.size();i++){
                     MasResponse masResponse = masResponseList.get(i);
-                    //保存短信内容
-                    masMessageServiceImpl.addMasMessage(masResponse);
+                    //1.3.1.保存短信内容
+                    MasEntity masEntity = masMessageServiceImpl.addMasMessage(masResponse);
+                    String masState = masEntity.getMasState();
+                    if(masState.equals(ProcessState.MAS_STATE_03.getCode())){
+                        continue;
+                    }
+                    String masDeviceId =masEntity.getMasDeviceId();
+                    //设备编码
+                    if(GeneTool.isEmpty(masDeviceId)){
+                        log.info("未获取到MAS抓拍设备编码！"+masResponse.getSendTime());
+                    }else{
+                        /********************************************** 2.大屏端截图 ************************************************/
+                        String masCutUrl = FilePropertiesVo.getMasCutUrl();
+                        //2.1.访问大屏端
+                        String cutResponse = HttpClientUtil.doPost(masCutUrl,masDeviceId);
+                        //2.2.处理返回结果
+                        if(!GeneTool.isEmpty(cutResponse)){
+                            AppResponse cutRes=JsonUtils.jsonTOBean(cutResponse,AppResponse.class);
+                            BigDecimal resCode = cutRes.getCode()==0?BigDecimal.ZERO: new BigDecimal(cutRes.getCode()) ;
+                            String imageName = cutRes.getDirect();
+                            byte[] stream = cutRes.getStream();
+                            if(resCode.compareTo(new BigDecimal(200))!=0){
+                                log.info("大屏截图失败！");
+                            }else{
+                                if(null==stream){
+                                    log.info("大屏截图转本地失败！");
+                                }else{
+                                    //2.3.处理图片
+                                    String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
+                                    ByteArrayInputStream inStream = new ByteArrayInputStream(stream);    //将b作为输入流；
+                                    BufferedImage bufferedImage = ImageIO.read(inStream);
+                                    //保存图片
+                                    File outputFile = new File(outputPath);
+                                    log.info("抓取一帧图像outputFile"+outputPath);
+                                    // 确保目录存在
+                                    if (!outputFile.getParentFile().exists()) {
+                                        outputFile.getParentFile().mkdirs();
+                                    }
+                                    ImageIO.write(bufferedImage, "jpg", outputFile);
+                                    //2.4.保存图片信息
+                                    FileEntity fileEntity=new FileEntity();
+                                    fileEntity.setFilePath(outputPath);
+                                    fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
+                                    fileEntity.setCreator("AI预警图片MAS");
+                                    fileEntity.setCreateTime(TimeTool.getYmdHms());
+                                    rmFileMapper.add(fileEntity);
+
+                                    /********************************************** 3.发起流程 ************************************************/
+                                    //3.1.请求数据封装
+                                    AiEntity aiData=new AiEntity();
+                                    aiData.setContent("重点");
+                                    aiData.setDeviceId(masDeviceId);
+                                    aiData.setDeviceName("");
+                                    aiData.setTitle("MAS流程发起");
+                                    aiData.setEventFile(String.valueOf(fileEntity.getFileId()));
+                                    aiData.setEventPlaceName("");
+                                    AiEntity ai=new AiEntity();
+                                    ai.setData(JsonUtils.beanToJson(aiData));
+                                    //3.2.流程发起
+                                    String eventJson = JsonUtils.beanToJson(ai);
+                                    rmEventInfoServiceImpl.addAiWarnEvent(eventJson);
+                                    //修改MAS状态
+                                    MasEntity mas=new MasEntity();
+                                    mas.setMasId(masEntity.getMasId());
+                                    mas.setMasVenueId(masEntity.getMasVenueId());
+                                    mas.setMasState(ProcessState.MAS_STATE_02.getCode());
+                                    monitorBaseMapper.updateMasInfo(mas);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            //4.获取截图
-
-
-            //3.发起流程
-
-
-
-            //4.保存日志
-            /*vuMap.put("operateType", operateType);
-            vuMap.put("operateDetail",operateDetail);
-            operateRecordService.addRecord(vuMap);*/
         } catch (RuntimeException r) {
-            /*vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
+            vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
             vuMap.put("operateDetail",r.getMessage());
-            operateRecordService.addRecord(vuMap);*/
+            operateRecordService.addRecord(vuMap);
             r.printStackTrace();
         } catch (Exception e) {
-            /*vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
+            vuMap.put("operateType", OperaEnums.mas_accept_err.getCode());
             vuMap.put("operateDetail","未知错误，请联系管理员！");
-            operateRecordService.addRecord(vuMap);*/
+            operateRecordService.addRecord(vuMap);
             e.printStackTrace();
         }
     }
-
-
 }

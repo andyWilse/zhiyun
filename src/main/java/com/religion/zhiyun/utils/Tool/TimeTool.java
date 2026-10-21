@@ -8,14 +8,20 @@ import java.util.Date;
 
 public class TimeTool {
 
+    public static String ymdHmsTZ="yyyy-MM-dd'T'HH:mm:ss'Z'";
     public static String ymdHms="yyyy-MM-dd HH:mm:ss";
+    public static String YMDHms="yyyyMMddHHmmss";
+
     public static String ymd="yyyyMMdd";
+    public static String YMD="yyyy-MM-dd";
+
     public static String HhMmSs="HHmmss";
+
     public static String year="yyyy";
     public static String month="MM";
     public static String day="dd ";
-    public static String ymdHmsTZ="yyyy-MM-dd'T'HH:mm:ss'Z'";
-    public static String YMDHms="yyyyMMddHHmmss";
+
+
 
 
     public static String getYmdHms(){
@@ -41,6 +47,13 @@ public class TimeTool {
     public static String getYmd(){
         Date date = new Date();
         SimpleDateFormat format=new SimpleDateFormat(ymd);
+        String format1 = format.format(date);
+        return format1;
+    }
+
+    public static String getYMD(){
+        Date date = new Date();
+        SimpleDateFormat format=new SimpleDateFormat(YMD);
         String format1 = format.format(date);
         return format1;
     }

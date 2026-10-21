@@ -3,7 +3,10 @@ package com.religion.zhiyun.schedule;
 import com.religion.zhiyun.schedule.service.SchedulesService;
 import com.religion.zhiyun.schedule.socket.VideoReceiver;
 import com.religion.zhiyun.schedule.socket.VideoServer;
+import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.TimeTool;
+import com.religion.zhiyun.utils.propertie.Switch;
+import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.call.VoiceCall;
 import com.religion.zhiyun.utils.sms.http.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,25 +68,36 @@ public class SysSchedules {
     /** 每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void repeatMessage() {
-        //1.短信提醒查询提醒人：
-        //schedulesService.repeatMessage();
+        //短信提醒查询提醒人：
+        if(Switch.getAlert()){
+            schedulesService.repeatMessage();
+        }
+    }
 
-        //2.下载历史视频：
-        //schedulesService.handleCutPicture();
+    /** 每隔1分钟执行一次 **/
+    @Scheduled(cron ="0 */1 * * * ?")
+    public void cutSyncSchedule() {
+        if(Switch.getCut()){
+            //1.实时视频截图
+            schedulesService.cutSyncPicture();
 
-        //videoServer.startServer(7082);
-        //videoReceiver.receiveVideo("//home//zjzz//dump.bin");
-        //videoServer.stopServer();
+            //2.下载历史视频：
+            /*schedulesService.handleCutPicture();
+            videoServer.startServer(7082);
+            videoReceiver.receiveVideo("//home//zjzz//dump.bin");
+            videoServer.stopServer();*/
+        }
+    }
 
-        //3.公安短信获取
-        /*log.info("mas定时任务开始时间："+ TimeTool.getYmdHms());
-        schedulesService.getMasMessage();
-        log.info("mas定时任务结束时间："+ TimeTool.getYmdHms());*/
-
-
-        //url需要与我们在api中设置的对应，后一个是传参
-        String s = HttpClientUtil.doPost("http://47.98.212.215:7081/api/event/cut","333331122");
-        System.out.println(s);
+    /** 每隔20秒执行一次 **/
+    @Scheduled(cron ="0/20 * 8-17 * * ?")
+    public void masSchedule() {
+        //MAS短信获取
+        if(Switch.getMas()){
+            log.info("mas定时任务开始时间："+ TimeTool.getYmdHms());
+            schedulesService.getMasMessage();
+            log.info("mas定时任务结束时间："+ TimeTool.getYmdHms());
+        }
     }
 
 }

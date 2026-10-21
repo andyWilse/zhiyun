@@ -54,6 +54,7 @@
             MAS_MONITOR_TIME,
             MAS_ACCT_TIME,
             MAS_STATE,
+            MAS_VENUE_ID,
             MAS_REMARK
         )
         VALUES(
@@ -61,8 +62,26 @@
             #{masMonitorTime},
             #{masAcctTime},
             #{masState},
+            #{masVenueId},
             #{masRemark}
         );
     </insert>
+
+    <update id="updateMasInfo">
+        update RM_MAS_INFO mi
+        <set>
+            <if test="masState!=null and masState!=''">
+                mi.MAS_STATE = #{masState},
+            </if>
+            <if test="masEventId!=null and masEventId!=''">
+                mi.MAS_EVENT_ID = #{masEventId},
+            </if>
+        </set>
+        <where>
+            <if test="masId!=null">
+                MAS_ID=#{masId}
+            </if>
+        </where>
+    </update>
 
 </mapper>

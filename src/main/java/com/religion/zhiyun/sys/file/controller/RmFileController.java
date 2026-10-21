@@ -136,4 +136,11 @@ public class RmFileController {
 
         return null;
     }
+
+    @DecryptRequest(false)
+    @EncryptResponse(false)
+    @PostMapping("/cut")
+    public AppResponse cutAiEvent(@RequestBody String cutRequest ) {
+        return rmFileService.saveCutFile(cutRequest);
+    }
 }

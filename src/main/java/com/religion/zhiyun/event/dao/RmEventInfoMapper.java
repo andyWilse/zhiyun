@@ -330,5 +330,11 @@ public interface RmEventInfoMapper {
      */
     List<Map<String,Object>> getEventVe(@Param("procInstId") String procInstId);
 
-
+    /**
+     * 获取当日场所预警
+     * @param warnTime
+     * @param relVenuesId
+     * @return
+     */
+    List<Map<String,Object>> getEventByVenue(@Param("warnTime") String warnTime,@Param("relVenuesId") String relVenuesId);
 }

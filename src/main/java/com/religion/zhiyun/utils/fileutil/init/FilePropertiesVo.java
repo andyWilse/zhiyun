@@ -57,4 +57,37 @@ public class FilePropertiesVo {
     }
 
 
+    //mas相关预警 截图存放文件夹
+    @Getter
+    private static String  masFolder;
+    @Value("${picture.mas.cut.folder}")
+    public void setMasFolder(String masFolder) {
+        FilePropertiesVo.masFolder = masFolder;
+    }
+
+    //mas相关预警 截图地址
+    @Getter
+    private static String  masCutUrl;
+    @Value("${picture.mas.cut.url}")
+    public void setMasCutUrl(String masCutUrl) {
+        FilePropertiesVo.masCutUrl = masCutUrl;
+    }
+
+    //mas相关预警 截图地址
+    @Getter
+    private static String  fileCutUrl;
+    @Value("${file.mas.cut.url}")
+    public void setFileCutUrl(String fileCutUrl) {
+        FilePropertiesVo.fileCutUrl = fileCutUrl;
+    }
+
+    //图片存放文件夹（根）
+    @Getter
+    private static String  rootFile;
+    @Value("${images.upload.url}")
+    public void setRootFile(String rootFile) {
+        FilePropertiesVo.rootFile = rootFile;
+    }
+
+
 }

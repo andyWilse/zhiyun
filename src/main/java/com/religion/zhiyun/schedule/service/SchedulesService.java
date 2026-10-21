@@ -26,10 +26,14 @@ public interface SchedulesService {
     void repeatMessage();
 
     /**
-     * 视频截图处理
+     * 视频截图处理(历史视频)
      */
     void handleCutPicture();
 
+    /**
+     * 视频截图处理(实时)
+     */
+    void cutSyncPicture();
 
     /**
      * 公安短信获取：未成年（重点）预警

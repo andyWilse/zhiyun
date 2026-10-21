@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,7 @@ public interface RmFileMapper {
      * @param vpFileId
      * @param vpModifyTm
      */
-    void updateVideoPicture (@Param("vpId") Integer vpId,@Param("vpFileId") String vpFileId,@Param("vpModifyTm") Date vpModifyTm);
+    void updateVideoPicture (@Param("vpId") Integer vpId,@Param("vpFileId") String vpFileId,@Param("vpModifyTm") Timestamp vpModifyTm);
 
     /**
      * 获取未截图时间信息

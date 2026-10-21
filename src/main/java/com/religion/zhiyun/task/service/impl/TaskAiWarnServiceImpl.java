@@ -372,7 +372,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
 
             }
             //3.1.2.短信通知
-            //MessageSend.sendSmsMass(contents, userNextList);
+            MessageSend.sendSmsMass(contents, userNextList);
         }
 
         /*** 4.保存通知 ***/
@@ -473,7 +473,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                         //2.2.更新系统数据
                         this.updateAiWarnInfo(map);
                         //2.3.短信通知
-                        this.sendMsg(procInstId,finalList,null,null, null,null);;
+                        this.sendMsg(procInstId,finalList,null,null, null,null,0);;
                     }
                 }
 
@@ -1589,47 +1589,55 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                         String venuesAddres,
                         String venuesName,
                         String message,
-                        String eventType
-                        ){
-        if(!GeneTool.isEmpty(procInstId)){
+                        String eventType,
+                        int eventId
+                        ) {
+        Map<String, Object> mapCall =new HashMap<>();
+        //String eventId="";
+        if (!GeneTool.isEmpty(procInstId)) {
             /*** 1.参数获取 ***/
             List<Map<String, Object>> eventVe = rmEventInfoMapper.getEventVe(procInstId);
-            if(eventVe.size()!=1){
-                throw new RuntimeException("预警信息异常：("+procInstId+")，请联系管理员！"+eventVe.size());
+            if (eventVe.size() != 1) {
+                throw new RuntimeException("预警信息异常：(" + procInstId + ")，请联系管理员！" + eventVe.size());
             }
 
-            Map<String, Object> mapCall = eventVe.get(0);
+            mapCall = eventVe.get(0);
             eventType = (String) mapCall.get("eventType");
             venuesAddres = (String) mapCall.get("venuesAddres");
             venuesName = (String) mapCall.get("venuesNm");
+            eventId = (Integer) mapCall.get("eventId");
             message = EventParamCode.getMessage(eventType);
         }
         //短信模板
-        String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+message+"”预警，请您立刻前去处理！";
-        if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
-            contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
-        }else if(EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
+        String contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",触发“" + message + "”预警，请您立刻前去处理！";
+        if (EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)) {
+            contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现“集聚”活动，请您前往现场核实活动内容！";
+        } else if (EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
             contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
         }
-       /* //查询是否语音通知开关，通知
+        //查询是否语音通知开关，通知
         boolean tmFlag = GeneTool.calendarCompare("08:30", "17:30");
         String openFlag = sysBaseMapper.getOpenState(SysBaseEnum.SEND_MESSAGE_SWITCH.getCode());
         if ("1".equals(openFlag)) {//1-开；0-关 （短信开关）
-        //3.1.1.电话通知
-        if (tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
-            mapCall.put("phone", user + "," + manager);
-            String sessionId = VoiceCall.voiceCall(mapCall);
-            //保存数据
-            FeeInfo feeInfo = new FeeInfo();
-            feeInfo.setSessionId(sessionId);
-            feeInfo.setEventType(CallEnums.fee.getCode());
-            feeInfo.setRefEventId(String.valueOf(eventId));
-            eventNotifiedMapper.addCall(feeInfo);
-
-        }*/
-        //3.1.2.短信通知
-        //MessageSend.sendSmsMass(contents, userNextList);
+            //3.1.1.电话通知
+            if (tmFlag && EventParamCode.EVENT_TYPE_01.getCode().equals(eventType)) {
+                String callPhone ="";
+                if(null!=userNextList && userNextList.size()>0){
+                    String unl = JsonUtils.listTOJson(userNextList);
+                    callPhone = unl.replace("[", "").replace("]", "").replace("\"", "");
+                }
+                mapCall.put("phone",callPhone);
+                String sessionId = VoiceCall.voiceCall(mapCall);
+                //保存数据
+                FeeInfo feeInfo = new FeeInfo();
+                feeInfo.setSessionId(sessionId);
+                feeInfo.setEventType(CallEnums.fee.getCode());
+                feeInfo.setRefEventId(String.valueOf(eventId));
+                eventNotifiedMapper.addCall(feeInfo);
+            }
+            //3.1.2.短信通知
+            MessageSend.sendSmsMass(contents, userNextList);
+        }
     }
-
 
 }

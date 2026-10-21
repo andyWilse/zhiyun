@@ -1,10 +1,7 @@
 package com.religion.zhiyun.event.service;
 
 import com.religion.zhiyun.event.entity.EventEntity;
-import com.religion.zhiyun.utils.response.AppResponse;
-import com.religion.zhiyun.utils.response.OutInterfaceResponse;
-import com.religion.zhiyun.utils.response.PageResponse;
-import com.religion.zhiyun.utils.response.RespPageBean;
+import com.religion.zhiyun.utils.response.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

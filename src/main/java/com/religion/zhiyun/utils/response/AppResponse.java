@@ -16,6 +16,7 @@ public class AppResponse {
     private LoginInfo data;
     private String token;
     private List<?> resultList;
+    private byte[] stream;
 
 
     public AppResponse(){
@@ -61,5 +62,18 @@ public class AppResponse {
         this.code = code;
         this.message = message;
         this.resultList = resultList;
+    }
+
+    public AppResponse(long code, String message, String direct, byte[] stream) {
+        this.code = code;
+        this.message = message;
+        this.direct = direct;
+        this.stream = stream;
+    }
+
+    public AppResponse(long code, String direct, byte[] stream) {
+        this.code = code;
+        this.direct = direct;
+        this.stream = stream;
     }
 }

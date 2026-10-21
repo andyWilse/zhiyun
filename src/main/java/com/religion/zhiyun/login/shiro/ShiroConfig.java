@@ -54,6 +54,8 @@ public class ShiroConfig {
         filterMap.put("/event/addEventByNB","anon");  //放行烟感预警
         filterMap.put("/huawei/callStatus","anon");//华为通话状态接收
         filterMap.put("/huawei/callFee","anon");//华为通话状态接收
+        filterMap.put("/event/cut","anon");  //放行截图
+        filterMap.put("/file/cut","anon");  //放行截图
 
         filterMap.put("/event/daPing/day","anon");
         filterMap.put("/event/daPing/gather","anon");

@@ -29,10 +29,13 @@ public class MasEntity {
     private Timestamp masAcctTime;//'接收时间'
 
     @Column(name = "MAS_STATE")
-    private String masState;//状态：1-已接收；2-已推送AI
+    private String masState;//状态：00-失败；01-成功；02-发起流程。
+
+    @Column(name = "MAS_VENUE_ID")
+    private Integer masVenueId;//关联场所ID
 
     @Column(name = "MAS_EVENT_ID")
-    private String masEventId;//关联事件ID
+    private Integer masEventId;//关联事件ID
 
     @Column(name = "MAS_REMARK")
     private String masRemark;//'备注'

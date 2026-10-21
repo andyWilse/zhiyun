@@ -22,7 +22,10 @@ public interface MonitorBaseMapper {
     /**获取所有监控**/
     List<Map<String,Object>> queryMonitors(@Param("vo") ParamsVo vo);
 
-    /**保存公安短信**/
+    /**保存MAS短信**/
     void addMas(MasEntity masEntity);
+
+    /**修改MAS短信**/
+    void updateMasInfo(MasEntity masEntity);
 
 }
