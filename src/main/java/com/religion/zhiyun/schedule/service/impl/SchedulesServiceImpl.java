@@ -49,7 +49,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -359,9 +358,9 @@ public class SchedulesServiceImpl implements SchedulesService {
                                 Java2DFrameConverter converter = new Java2DFrameConverter();
                                 BufferedImage bufferedImage = converter.getBufferedImage(frame);
                                 if (bufferedImage != null) {
-                                    String imageName="cut"+TimeTool.getYMDHms()+".jpg";
+                                    String imageName=TimeTool.getYmd()+File.separator+"cut"+TimeTool.getYMDHms()+".jpg";
                                     /****************************************************** 保存图片 ********************************************************/
-                                    String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
+                                    String outputPath = FilePropertiesVo.getMasFolder()+imageName;
                                     //保存图片
                                     File outputFile = new File(outputPath);
                                     // 确保目录存在
@@ -376,12 +375,22 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                                     // 将BufferedImage对象编码为JPEG格式的字节流
                                     ImageIO.write(bufferedImage, "jpg", outputStream);
-                                    // 将ByteArrayOutputStream对象转换为字节数组
+                                   /* // 将ByteArrayOutputStream对象转换为字节数组
                                     byte[] imageBytes = outputStream.toByteArray();
                                     String fileCutUrl = FilePropertiesVo.getFileCutUrl();
                                     AppResponse ar = new AppResponse(vpId, imageName, imageBytes);
                                     //2.1.访问大屏端
-                                    HttpClientUtil.doPost(fileCutUrl,JsonUtils.beanToJson(ar));
+                                    HttpsClientUtil.doPost(fileCutUrl,JsonUtils.beanToJson(ar));*/
+
+                                    //保存文件信息
+                                    FileEntity fileEntity=new FileEntity();
+                                    fileEntity.setFilePath(FilePropertiesVo.getImageUrl()+imageName);
+                                    fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
+                                    fileEntity.setCreator("AI预警图片cutSync");
+                                    fileEntity.setCreateTime(TimeTool.getYmdHms());
+                                    rmFileMapper.add(fileEntity);
+                                    //更新截图信息
+                                    rmFileMapper.updateVideoPicture(vpId,String.valueOf(fileEntity.getFileId()),TimeTool.getTimestamp());
                                 }
                             }
                             grabber.stop();
@@ -450,7 +459,6 @@ public class SchedulesServiceImpl implements SchedulesService {
                         if(!GeneTool.isEmpty(cutResponse)){
                             AppResponse cutRes=JsonUtils.jsonTOBean(cutResponse,AppResponse.class);
                             BigDecimal resCode = cutRes.getCode()==0?BigDecimal.ZERO: new BigDecimal(cutRes.getCode()) ;
-                            String imageName = cutRes.getDirect();
                             byte[] stream = cutRes.getStream();
                             if(resCode.compareTo(new BigDecimal(200))!=0){
                                 log.info("大屏截图失败！");
@@ -458,9 +466,11 @@ public class SchedulesServiceImpl implements SchedulesService {
                                 if(null==stream){
                                     log.info("大屏截图转本地失败！");
                                 }else{
+                                    String imageName = File.separator+TimeTool.getYmd()+File.separator+cutRes.getDirect();
                                     //2.3.处理图片
-                                    String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
-                                    ByteArrayInputStream inStream = new ByteArrayInputStream(stream);    //将b作为输入流；
+                                    String outputPath = FilePropertiesVo.getMasFolder()+imageName;
+                                    //将bufferedImage作为输入流；
+                                    ByteArrayInputStream inStream = new ByteArrayInputStream(stream);
                                     BufferedImage bufferedImage = ImageIO.read(inStream);
                                     //保存图片
                                     File outputFile = new File(outputPath);
@@ -472,7 +482,7 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     ImageIO.write(bufferedImage, "jpg", outputFile);
                                     //2.4.保存图片信息
                                     FileEntity fileEntity=new FileEntity();
-                                    fileEntity.setFilePath(outputPath);
+                                    fileEntity.setFilePath(FilePropertiesVo.getBaseUrl()+imageName);
                                     fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
                                     fileEntity.setCreator("AI预警图片MAS");
                                     fileEntity.setCreateTime(TimeTool.getYmdHms());

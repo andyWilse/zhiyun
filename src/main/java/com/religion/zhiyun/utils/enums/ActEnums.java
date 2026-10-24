@@ -11,7 +11,8 @@ public enum ActEnums {
     ACT_OPERATION_04("400104", "修改处理人"),
     ACT_OPERATION_05("400105", "修改处理时间"),
     ACT_OPERATION_06("400106", "删除节点"),
-
+    ACT_OPERATION_07("400107", "修改反馈内容"),
+    ACT_OPERATION_08("400108", "修改反馈图片"),
     ;
 
     private String code;

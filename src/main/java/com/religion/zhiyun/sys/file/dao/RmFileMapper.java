@@ -78,4 +78,11 @@ public interface RmFileMapper {
      * @return
      */
     List<Map<String,Object>> getUnVp();
+
+    /**
+     * 获取截图信息（6张）
+     * @param vpProcInstId
+     * @return
+     */
+    List<Map<String,Object>> getCutPicUrl(@Param("vpProcInstId") String vpProcInstId);
 }

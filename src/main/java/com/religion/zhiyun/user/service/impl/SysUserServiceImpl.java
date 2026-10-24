@@ -91,7 +91,7 @@ public class SysUserServiceImpl implements SysUserService {
             String sizes = map.get("size")!=null?(String)map.get("size"):"";
             String venue = map.get("venue")!=null?(String)map.get("venue"):"";
             String mark = map.get("mark")!=null?(String)map.get("mark"):"";
-
+            String userMobile = map.get("userMobile")!=null?(String)map.get("userMobile"):"";
             //分页
             Integer page = Integer.valueOf(pages);
             Integer size = Integer.valueOf(sizes);
@@ -106,6 +106,7 @@ public class SysUserServiceImpl implements SysUserService {
             vo.setSearchTwo(identity);
             vo.setSearchThree(venue);
             vo.setSearchFour(mark);
+            vo.setSearchFive(userMobile);
             dataList=sysUserMapper.getUsersByPage(vo);
             //转为中文
             if(null!=dataList && dataList.size()>0){

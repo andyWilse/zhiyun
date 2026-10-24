@@ -105,4 +105,16 @@
         and vp.VP_TM_START &lt;= NOW()
     </select>
 
+    <select id="getCutPicUrl" resultType="java.util.Map">
+        select
+            FILE_ID as fileId,
+            FILE_NAME as name,
+            FILE_PATH as url,
+            FILE_TITLE as fileTitle,
+            IMG_PATH as imgPath
+        from RM_FILE_INFO
+        where FILE_ID in
+        (select VP_FILE_ID from RM_VIDEO_PICTURE where VP_PROC_INST_ID=#{vpProcInstId})
+    </select>
+
 </mapper>

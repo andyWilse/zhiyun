@@ -89,5 +89,12 @@ public class FilePropertiesVo {
         FilePropertiesVo.rootFile = rootFile;
     }
 
+    @Getter
+    private static String  imageUrl;
+    @Value("${images.down.url}")
+    public void setImageUrl(String imageUrl) {
+        FilePropertiesVo.imageUrl = imageUrl;
+    }
+
 
 }

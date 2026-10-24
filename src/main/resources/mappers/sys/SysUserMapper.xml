@@ -154,27 +154,30 @@
         left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
         where ve.VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            and  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  ve.IDENTITY = #{vo.searchTwo}
+            and  ve.IDENTITY = #{vo.searchTwo}
         </if>
         <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
+            and  ve.TOWN = #{vo.town}
         </if>
         <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
+            and  ve.AREA = #{vo.area}
         </if>
         <if test="vo.venues != null and vo.venues != ''">
-            AND uv.UV_VENUES_ID =#{vo.venues}
-            AND uv.UV_VALID_IND='1'
+            and uv.UV_VENUES_ID =#{vo.venues}
+            and uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND uv.UV_VENUES_ID =#{vo.searchThree}
-            AND uv.UV_VALID_IND='1'
+            and uv.UV_VENUES_ID =#{vo.searchThree}
+            and uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchFour == 'sr'">
-            AND ve.IDENTITY in ('10000006','10000007')
+            and ve.IDENTITY in ('10000006','10000007')
+        </if>
+        <if test="vo.searchFive != null and vo.searchFive != ''">
+            and ve.USER_MOBILE LIKE concat('%',#{vo.searchFive},'%')
         </if>
 
         order by ve.LAST_MODIFY_TIME desc
@@ -188,27 +191,30 @@
         left join RM_USER_VENUES_MAP uv on ve.USER_ID=uv.UV_USER_ID
         where  ve.VALID_IND='1'
         <if test="vo.searchOne != null and vo.searchOne != ''">
-            AND  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
+            and  ve.USER_NM LIKE CONCAT('%',#{vo.searchOne},'%')
         </if>
         <if test="vo.searchTwo != null and vo.searchTwo != ''">
-            AND  ve.IDENTITY = #{vo.searchTwo}
+            and  ve.IDENTITY = #{vo.searchTwo}
         </if>
         <if test="vo.town != null and vo.town != ''">
-            AND  ve.TOWN = #{vo.town}
+            and  ve.TOWN = #{vo.town}
         </if>
         <if test="vo.area != null and vo.area != ''">
-            AND  ve.AREA = #{vo.area}
+            and  ve.AREA = #{vo.area}
         </if>
         <if test="vo.venues != null and vo.venues != ''">
-            AND uv.UV_VENUES_ID =#{vo.venues}
-            AND uv.UV_VALID_IND='1'
+            and uv.UV_VENUES_ID =#{vo.venues}
+            and uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchThree != null and vo.searchThree != ''">
-            AND uv.UV_VENUES_ID =#{vo.searchThree}
-            AND uv.UV_VALID_IND='1'
+            and uv.UV_VENUES_ID =#{vo.searchThree}
+            and uv.UV_VALID_IND='1'
         </if>
         <if test="vo.searchFour == 'sr'">
-            AND ve.IDENTITY in ('10000006','10000007')
+            and ve.IDENTITY in ('10000006','10000007')
+        </if>
+        <if test="vo.searchFive != null and vo.searchFive != ''">
+            and ve.USER_MOBILE LIKE concat('%',#{vo.searchFive},'%')
         </if>
     </select>
 

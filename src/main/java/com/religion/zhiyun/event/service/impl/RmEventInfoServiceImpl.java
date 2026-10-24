@@ -2040,7 +2040,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         long code= ResultCode.FAILED.getCode();
         log.info("mas截图开始时间："+TimeTool.getYmdHms()+";参数（"+vpChannelId+")");
         String typePic="jpg";
-        String imageName=TimeTool.getYMDHms()+"."+typePic;
+        String imageName="mas"+TimeTool.getYMDHms()+"."+typePic;
         String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
         byte[] imageBytes =null;
         try {

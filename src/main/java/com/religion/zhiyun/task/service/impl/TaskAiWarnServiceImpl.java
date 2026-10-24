@@ -12,6 +12,7 @@ import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
+import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
 import com.religion.zhiyun.task.dao.TaskActAssigneeMapper;
 import com.religion.zhiyun.task.dao.TaskActInstMapper;
@@ -88,6 +89,8 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
     private OperateRecordMapper rmUserLogsInfoMapper;
     @Autowired
     private RmFileMapper rmFileMapper;
+    @Autowired
+    private RmFileService rmFileService;
 
     @Override
     public AppResponse launch(TaskEntity taskEntity, List<String> userList, String loginNm) {
@@ -1318,6 +1321,16 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             //actMap.put("actHandler",aiTaskAct);
             actMap.put("actHandler",actInstEntity.getActHandler());
             actMap.put("actHandNm",actInstEntity.getActHandNm());
+            //3.图片
+            String picturesPath = actInstEntity.getActPicture();
+            if(!GeneTool.isEmpty(picturesPath)){
+                String[] split = picturesPath.split(",");
+                List<Map<String, Object>> fileUrl = rmFileMapper.getFileUrl(split);
+                actMap.put("actPictureList",fileUrl.toArray());
+            }
+            //获取截图
+            List<Map<String, Object>> cutPicUrl = rmFileMapper.getCutPicUrl(actInstEntity.getActInstId());
+            actMap.put("cutPictureList",cutPicUrl.toArray());
 
             return new PageResponse(ResultCode.SUCCESS.getCode(),"Ai流程节点信息获取成功！",actMap);
         } catch (Exception e) {
@@ -1434,6 +1447,41 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                             actHandlerNm+"-"+actHandler,
                             ActEnums.ACT_OPERATION_04.getCode());
                 }
+            }
+            //5.反馈
+            String actComment=actMap.get("actComment")==null?"": (String) actMap.get("actComment");
+            if(!GeneTool.isEmpty(actComment)){
+                String actComm= actInst.getActComment();
+                if(!actComment.equals(actComm)){
+                    uFlag=true;
+                    actCurrVo.setActComment(actComment);
+                    content=content+"actComment:"+actComment+";";
+                    //保存修改记录
+                    this.addActInstHis(actId,
+                            actComment,
+                            actComm,
+                            ActEnums.ACT_OPERATION_07.getCode());
+                }
+            }
+
+            //7.图片
+            String actPicture=actMap.get("actPicture")==null?"": (String) actMap.get("actPicture");
+            String actPictureOld= actInst.getActPicture();
+            if(!actPicture.equals(actPictureOld)){
+                uFlag=true;
+                actCurrVo.setActPicture(actPicture);
+                content=content+"actPicture:"+actPicture+";";
+                //保存修改记录
+                this.addActInstHis(actId,
+                        actPicture,
+                        actPictureOld,
+                        ActEnums.ACT_OPERATION_08.getCode());
+            }
+
+            //8.先删除服务器图片；2.删除数据库数据
+            String fileRemove=actMap.get("fileRemove")==null?"": (String) actMap.get("fileRemove");
+            if(!GeneTool.isEmpty(fileRemove)){
+                rmFileService.deletePicture(fileRemove);
             }
 
             if(uFlag){
