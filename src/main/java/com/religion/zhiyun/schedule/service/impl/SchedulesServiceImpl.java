@@ -248,7 +248,7 @@ public class SchedulesServiceImpl implements SchedulesService {
                 if(TaskActEnums.AI_WARN_NODE_02.getCode().equals(acCode)){
                     //继续流程
                     List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
-                    taskAiWarnServiceImpl.review("初审通过",actInstId,"",userSend.get(0));
+                    taskAiWarnServiceImpl.review("初审自动通过",actInstId,"automatic",userSend.get(0));
                 }else {
                     //2.2.其他岗位：再次通知
                     //短信通知
@@ -278,14 +278,13 @@ public class SchedulesServiceImpl implements SchedulesService {
                 if(TaskActEnums.AI_WARN_NODE_03.getCode().equals(acCode)
                     || TaskActEnums.AI_WARN_NODE_06.getCode().equals(acCode)){
                     //处置岗
-                    taskAiWarnServiceImpl.handle(actInstId,"1","系统自动处理","","",userSend.get(0));
+                    taskAiWarnServiceImpl.handle(actInstId,"1","系统自动处理","","automatic",userSend.get(0));
                 }else if(TaskActEnums.AI_WARN_NODE_04.getCode().equals(acCode)){
                     //评审岗
-                    taskAiWarnServiceImpl.evaluate(actInstId,"系统自动处理","",userSend.get(0));
+                    taskAiWarnServiceImpl.evaluate(actInstId,"系统自动处理","automatic",userSend.get(0));
                 }
             }
         }
-
     }
 
     @Override
@@ -388,6 +387,7 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
                                     fileEntity.setCreator("AI预警图片cutSync");
                                     fileEntity.setCreateTime(TimeTool.getYmdHms());
+                                    fileEntity.setImgPath(outputPath);
                                     rmFileMapper.add(fileEntity);
                                     //更新截图信息
                                     rmFileMapper.updateVideoPicture(vpId,String.valueOf(fileEntity.getFileId()),TimeTool.getTimestamp());
@@ -466,7 +466,8 @@ public class SchedulesServiceImpl implements SchedulesService {
                                 if(null==stream){
                                     log.info("大屏截图转本地失败！");
                                 }else{
-                                    String imageName = File.separator+TimeTool.getYmd()+File.separator+cutRes.getDirect();
+                                    String dpFolder = cutRes.getMessage();
+                                    String imageName = cutRes.getDirect();
                                     //2.3.处理图片
                                     String outputPath = FilePropertiesVo.getMasFolder()+imageName;
                                     //将bufferedImage作为输入流；
@@ -486,6 +487,7 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
                                     fileEntity.setCreator("AI预警图片MAS");
                                     fileEntity.setCreateTime(TimeTool.getYmdHms());
+                                    fileEntity.setImgPath(dpFolder);
                                     rmFileMapper.add(fileEntity);
 
                                     /********************************************** 3.发起流程 ************************************************/
@@ -501,12 +503,14 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     ai.setData(JsonUtils.beanToJson(aiData));
                                     //3.2.流程发起
                                     String eventJson = JsonUtils.beanToJson(ai);
-                                    rmEventInfoServiceImpl.addAiWarnEvent(eventJson);
+                                    AppResponse warnResponse = rmEventInfoServiceImpl.addAiWarnEvent(eventJson);
                                     //修改MAS状态
                                     MasEntity mas=new MasEntity();
                                     mas.setMasId(masEntity.getMasId());
-                                    mas.setMasVenueId(masEntity.getMasVenueId());
+                                    //mas.setMasVenueId(masEntity.getMasVenueId());
                                     mas.setMasState(ProcessState.MAS_STATE_02.getCode());
+                                    BigDecimal ev = warnResponse.getCode()==0?BigDecimal.ZERO: new BigDecimal(warnResponse.getCode()) ;
+                                    mas.setMasEventId(ev.intValue());
                                     monitorBaseMapper.updateMasInfo(mas);
                                 }
                             }

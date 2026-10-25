@@ -2025,7 +2025,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     cont,
                     eventType,
                     event.getEventId());
-            return new AppResponse(res.getCode(),res.getMessage());
+            if(content.contains("重点")){
+                return new AppResponse(event.getEventId(),res.getMessage());
+            }else{
+                return new AppResponse(res.getCode(),res.getMessage());
+            }
         } catch (RuntimeException r) {
             r.printStackTrace();
             return new AppResponse(code,r.getMessage());
@@ -2040,8 +2044,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
         long code= ResultCode.FAILED.getCode();
         log.info("mas截图开始时间："+TimeTool.getYmdHms()+";参数（"+vpChannelId+")");
         String typePic="jpg";
-        String imageName="mas"+TimeTool.getYMDHms()+"."+typePic;
-        String outputPath = FilePropertiesVo.getMasFolder()+File.separator+TimeTool.getYmd()+File.separator+imageName;
+        String imageName=TimeTool.getYmd()+File.separator+"mas"+TimeTool.getYMDHms()+"."+typePic;
+        String outputPath = FilePropertiesVo.getMasFolder()+imageName;
         byte[] imageBytes =null;
         try {
             //实时视频地址
@@ -2099,7 +2103,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             e.printStackTrace();
             return new AppResponse(code,e.getMessage());
         }
-        return new AppResponse(ResultCode.SUCCESS.getCode(),"MAS截图成功",imageName,imageBytes);
+        return new AppResponse(ResultCode.SUCCESS.getCode(),outputPath,imageName,imageBytes);
     }
 
 }
