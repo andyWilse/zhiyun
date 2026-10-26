@@ -1169,6 +1169,8 @@
         (SELECT PICTURES_PATH FROM rm_event_info where EVENT_ID= #{eventId} and PICTURES_PATH is not null)
         union all
         (select TASK_PICTURE from rm_task_info where REL_EVENT_ID= #{eventId} and TASK_PICTURE is not null)
+        union all
+        (select VP_FILE_ID from RM_VIDEO_PICTURE where VP_PROC_INST_ID=#{procInstId})
     </select>
 
     <delete id="deleteActHiActinst">

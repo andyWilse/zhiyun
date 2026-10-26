@@ -43,6 +43,15 @@ public enum OperaEnums {
     mas_accept("100791", "MAS短信接收"),
     mas_accept_err("100792", "MAS短信接收错误"),
 
+    //流程
+    delete_inst("100771", "删除流程"),
+    delete_img("100772", "删除图片"),
+    delete_notice("100773", "删除通知"),
+    delete_report("100774", "删除上报"),
+    delete_task("100775", "删除任务"),
+    delete_event("100776", "删除事件"),
+    delete_act("100777", "删除流程记录"),
+
     ;
     private String code;
     private String name;

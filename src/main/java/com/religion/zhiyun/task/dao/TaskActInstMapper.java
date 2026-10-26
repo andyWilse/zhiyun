@@ -25,6 +25,11 @@ public interface TaskActInstMapper {
     /**更新**/
     void updateActInst(ActInstEntity actEntity);
 
+    /**删除节点**/
+    void deleteActInst(@Param("procInstId") String procInstId);
+    /**删除节点处理人**/
+    void deleteActAssignee(@Param("procInstId") String procInstId);
+
     /**
      * 获取任务主信息
      * @param procInstId

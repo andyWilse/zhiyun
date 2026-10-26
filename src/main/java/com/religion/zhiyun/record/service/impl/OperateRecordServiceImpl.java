@@ -6,6 +6,8 @@ import com.religion.zhiyun.record.dao.OperateRecordMapper;
 import com.religion.zhiyun.record.entity.RecordEntity;
 import com.religion.zhiyun.record.service.OperateRecordService;
 import com.religion.zhiyun.user.entity.SysUserEntity;
+import com.religion.zhiyun.utils.base.TransParam;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.response.RespPageBean;
 import com.religion.zhiyun.venues.entity.ParamsVo;
@@ -189,5 +191,24 @@ public class OperateRecordServiceImpl implements OperateRecordService {
         }
         return vo;
 
+    }
+
+
+    /**
+     * 日志保存
+     * @param operateContent 封装所有内容 json
+     * @param operateDetail 简单描述
+     * @param operateRef 关联id
+     * @param operateType 操作类型 OperaEnums
+     */
+    public void addLog(String operateContent, String operateDetail, String operateRef, OperaEnums operateType ) {
+        RecordEntity logEntity=new RecordEntity();
+        logEntity.setOperator(TransParam.loginName);
+        logEntity.setOperateContent(operateContent);
+        logEntity.setOperateDetail(operateDetail);
+        logEntity.setOperateTime(new Date());
+        logEntity.setOperateRef(operateRef);
+        logEntity.setOperateType(operateType.getCode());
+        rmUserLogsInfoMapper.add(logEntity);
     }
 }

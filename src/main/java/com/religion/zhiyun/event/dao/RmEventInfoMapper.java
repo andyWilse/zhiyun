@@ -261,7 +261,7 @@ public interface RmEventInfoMapper {
      * @param eventId
      * @return
      */
-    List<String> getFiles(@Param("eventId") String eventId);
+    List<String> getFiles(@Param("eventId") String eventId,@Param("procInstId") String procInstId);
 
     /**
      * 1.删除历史节点表数据

@@ -306,4 +306,14 @@
             </if>
         </where>
     </select>
+
+    <delete id="deleteActInst">
+        delete from TASK_ACT_INST where ACT_INST_ID=#{procInstId}
+    </delete>
+
+    <delete id="deleteActAssignee">
+        delete from TASK_ACT_ASSIGNEE
+        where ASS_ACT_ID in (select ACT_ID from TASK_ACT_INST where ACT_INST_ID=#{procInstId})
+    </delete>
+
 </mapper>

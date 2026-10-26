@@ -15,14 +15,15 @@ import com.religion.zhiyun.login.api.ResultCode;
 import com.religion.zhiyun.monitor.dao.MonitorBaseMapper;
 import com.religion.zhiyun.monitor.dao.MonitorSmokerMapper;
 import com.religion.zhiyun.monitor.dao.RmMonitroInfoMapper;
+import com.religion.zhiyun.record.service.impl.OperateRecordServiceImpl;
 import com.religion.zhiyun.staff.dao.RmStaffInfoMapper;
 import com.religion.zhiyun.sys.base.dao.SysBaseMapper;
 import com.religion.zhiyun.sys.base.enums.SysBaseEnum;
 import com.religion.zhiyun.sys.file.dao.RmFileMapper;
 import com.religion.zhiyun.sys.file.entity.FileEntity;
-import com.religion.zhiyun.sys.file.entity.FilesVo;
 import com.religion.zhiyun.sys.file.service.RmFileService;
 import com.religion.zhiyun.task.config.TaskParamsEnum;
+import com.religion.zhiyun.task.dao.TaskActInstMapper;
 import com.religion.zhiyun.task.dao.TaskInfoMapper;
 import com.religion.zhiyun.task.entity.CommentEntity;
 import com.religion.zhiyun.task.entity.TaskEntity;
@@ -34,6 +35,7 @@ import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
 import com.religion.zhiyun.utils.enums.CallEnums;
 import com.religion.zhiyun.utils.enums.EventParamCode;
+import com.religion.zhiyun.utils.enums.OperaEnums;
 import com.religion.zhiyun.utils.enums.RoleEnums;
 import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
 import com.religion.zhiyun.utils.response.*;
@@ -119,6 +121,10 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     private TaskAiWarnServiceImpl taskAiWarnServiceImpl;
     @Autowired
     private XueLiangServiceImpl xueLiangServiceImpl;
+    @Autowired
+    private TaskActInstMapper taskActInstMapper;
+    @Autowired
+    private OperateRecordServiceImpl operateRecordServiceImpl;
 
 
     @Override
@@ -437,8 +443,9 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             /************************************************************** 1.流程清理 ****************************************************************/
             //获取流程id
             List<TaskEntity> taskEvent = taskInfoMapper.getTaskByEventId(eventId);
+            String procInstId = "";
             if(null!=taskEvent && taskEvent.size()>0){
-                String procInstId = taskEvent.get(0).getProcInstId();
+                procInstId = taskEvent.get(0).getProcInstId();
                 if(!StringUtils.isEmpty(procInstId)){
                     //1.1.删除流程相关表
                     rmEventInfoMapper.deleteActHiActinst(procInstId);
@@ -454,8 +461,8 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 }
             }
             /************************************************************** 2.清理图片 ****************************************************************/
-            //获取需要处理的图片id(任务表\事件表)
-            List<String> files = rmEventInfoMapper.getFiles(eventId);
+            //2.1.获取需要处理的图片id(任务表\事件表)
+            List<String> files = rmEventInfoMapper.getFiles(eventId,procInstId);
             if(null!=files && files.size()>0){
                 for(int k=0;k<files.size();k++){
                     String fileIds = files.get(k);
@@ -472,6 +479,16 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
             taskInfoMapper.deleteRmTaskInfo(eventId);
             /************************************************************** 6.删除事件表 ****************************************************************/
             rmEventInfoMapper.deleteEvent(Integer.parseInt(eventId));
+            /************************************************************** 7.流程记录表 ****************************************************************/
+            if(!GeneTool.isEmpty(procInstId)){
+                //7.1.节点处理人
+                taskActInstMapper.deleteActAssignee(procInstId);
+                //7.2.节点
+                taskActInstMapper.deleteActInst(procInstId);
+            }
+
+            /************************************************************** 8.添加日志 ****************************************************************/
+            operateRecordServiceImpl.addLog(JsonUtils.listTOJson(taskEvent),"预警事件删除",eventId, OperaEnums.delete_event);
 
             code=ResultCode.SUCCESS.getCode();
             message=message+"成功!";
