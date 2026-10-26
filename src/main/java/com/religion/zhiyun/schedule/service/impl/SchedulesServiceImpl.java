@@ -265,7 +265,7 @@ public class SchedulesServiceImpl implements SchedulesService {
         }
 
         //3.如果60分钟内未处理
-        List<ActInstEntity> sixtyTask = taskActInstMapper.getUnAiTaskAct(60, null);
+     /*   List<ActInstEntity> sixtyTask = taskActInstMapper.getUnAiTaskAct(60, null);
         if(null!=sixtyTask && sixtyTask.size()>0){
             for(int j=0;j<sixtyTask.size();j++){
                 ActInstEntity sixtyEntity = sixtyTask.get(j);
@@ -284,7 +284,7 @@ public class SchedulesServiceImpl implements SchedulesService {
                     taskAiWarnServiceImpl.evaluate(actInstId,"系统自动处理","automatic",userSend.get(0));
                 }
             }
-        }
+        }*/
     }
 
     @Override
