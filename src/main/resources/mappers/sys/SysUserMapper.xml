@@ -516,6 +516,7 @@
         SELECT us.USER_MOBILE as userMobile
         FROM rm_sys_user_info us,rm_sys_role role
         where us.IDENTITY=role.ROLE_ID
+        and us.VALID_IND='1'
         <if test="identity != null and identity != ''">
             and us.identity=#{identity}
         </if>

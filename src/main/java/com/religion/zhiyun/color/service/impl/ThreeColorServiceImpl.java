@@ -118,9 +118,10 @@ public class ThreeColorServiceImpl implements ThreeColorService {
                         int ro = j + 1;
                         //获取值
                         if(null==cell){
-                            //break;
                             if(listCellEmpty.contains(k)){
                                 throw new RuntimeException("第"+ro+"行"+ CellEnums.getName(k)+"列,字段不能为空！");
+                            }else{
+                                continue;
                             }
                         }
                         String cellValue = CellValueTrans.getCellValue(cell, workbook, j, k, listCellEmpty);

@@ -31,4 +31,12 @@ public class Switch {
         Switch.mas = mas;
     }
 
+    /************************************************ 下载历史视频开关 *************************************************/
+    @Getter
+    private static Boolean  video;
+    @Value("${schedule.switch.video}")
+    public void setVideo(Boolean video) {
+        Switch.video = video;
+    }
+
 }
