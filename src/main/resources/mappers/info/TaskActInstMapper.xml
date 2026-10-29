@@ -16,6 +16,7 @@
             ACT_STATE,
             ACT_INST_ID,
             ACT_TASK_ID,
+            ACT_MESSAGE,
             ACT_MARK
         )
         VALUES(
@@ -29,6 +30,7 @@
             #{actState},
             #{actInstId},
             #{actTaskId},
+            #{actMessage},
             #{actMark}
         );
     </insert>
@@ -86,6 +88,10 @@
 
             <if test="actPicture!=null and actPicture!=''">
                 act.ACT_PICTURE = #{actPicture},
+            </if>
+
+            <if test="actMessage!=null and actMessage!=''">
+                act.ACT_MESSAGE = #{actMessage},
             </if>
 
             <if test="actModifyTm!=null">
@@ -262,12 +268,19 @@
         select
             ist.ACT_RECEIVER as actReceiver,
             ist.ACT_INST_ID as actInstId,
-            ist.ACT_CODE as actCode
+            ist.ACT_CODE as actCode,
+            ist.ACT_ID as actId
         from task_act_inst ist
-        where ist.ACT_HANDLER =''
+        where ist.ACT_STATE='00'
         and ist.ACT_RECEIVE_TM &lt;= DATE_SUB(NOW(),INTERVAL #{period} MINUTE)
         <if test="actCode!=null and actCode!=0">
             and ist.ACT_CODE = #{actCode}
+        </if>
+        <if test="actCode==null or actCode==0">
+            and ist.ACT_CODE !=20010002
+        </if>
+        <if test="actMessage!=null and actMessage!=''">
+            and ist.ACT_MESSAGE = #{actMessage}
         </if>
     </select>
 

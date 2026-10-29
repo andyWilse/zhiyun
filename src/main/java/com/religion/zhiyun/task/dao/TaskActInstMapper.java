@@ -58,7 +58,8 @@ public interface TaskActInstMapper {
      * @return
      */
     List<ActInstEntity> getUnAiTaskAct(@Param("period") Integer period,
-                                       @Param("actCode") String actCode);
+                                       @Param("actCode") String actCode,
+                                       @Param("actMessage") String actMessage);
 
 
 

@@ -155,6 +155,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     procInstId,
                     "",
                     "",
+                    GeneralEnum.STATE_1.getCode(),
                     null
             );
             if(nowFlag){
@@ -173,6 +174,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     procInstId,
                     "",
                     "",
+                    GeneralEnum.STATE_0.getCode(),
                     userList
             );
             if(nextFlag){
@@ -302,7 +304,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
         String venuesAddres = (String) mapCall.get("venuesAddres");
         String venuesName = (String) mapCall.get("venuesNm");
         Integer eventId = (Integer) mapCall.get("eventId");
-        String message = EventParamCode.getMessage(eventType);
+        String message = EventType.getMessage(eventType);
         //短信模板
         String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+message+"”预警，请您立刻前去处理！";
         if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
@@ -951,6 +953,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                     procInstId,
                     "",
                     "",
+                    GeneralEnum.STATE_0.getCode(),
                     users
             );
             if(nextFlag){
@@ -1109,6 +1112,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
                                String actInstId,
                                String actTaskId,
                                String actMark,
+                               String actMessage,
                                List<String> userList){
 
         try {
@@ -1125,6 +1129,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             actEntity.setActTaskId(actTaskId);
             actEntity.setActMark(actMark);
             actEntity.setActHandNm(actHandNm);
+            actEntity.setActMessage(actMessage);
             taskActInstMapper.addAct(actEntity);
 
             //流程处理记录新增处理人
@@ -1654,7 +1659,7 @@ public class TaskAiWarnServiceImpl implements TaskAiWarnService {
             venuesAddres = (String) mapCall.get("venuesAddres");
             venuesName = (String) mapCall.get("venuesNm");
             eventId = (Integer) mapCall.get("eventId");
-            message = EventParamCode.getMessage(eventType);
+            message = EventType.getMessage(eventType);
         }
         //短信模板
         String contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",触发“" + message + "”预警，请您立刻前去处理！";

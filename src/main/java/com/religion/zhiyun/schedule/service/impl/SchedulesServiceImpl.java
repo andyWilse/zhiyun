@@ -28,10 +28,7 @@ import com.religion.zhiyun.task.service.impl.TaskAiWarnServiceImpl;
 import com.religion.zhiyun.utils.JsonUtils;
 import com.religion.zhiyun.utils.Tool.GeneTool;
 import com.religion.zhiyun.utils.Tool.TimeTool;
-import com.religion.zhiyun.utils.enums.EventParamCode;
-import com.religion.zhiyun.utils.enums.OperaEnums;
-import com.religion.zhiyun.utils.enums.ProcessState;
-import com.religion.zhiyun.utils.enums.TaskActEnums;
+import com.religion.zhiyun.utils.enums.*;
 import com.religion.zhiyun.utils.fileutil.init.FilePropertiesVo;
 import com.religion.zhiyun.utils.response.AppResponse;
 import com.religion.zhiyun.utils.sms.http.HttpClientUtil;
@@ -218,14 +215,14 @@ public class SchedulesServiceImpl implements SchedulesService {
     @Override
     public void repeatMessage() {
         //1.初审岗：在15分钟内未处理的预警事件，再次通知
-        List<ActInstEntity> unReviewTask = taskActInstMapper.getUnAiTaskAct(15, TaskActEnums.AI_WARN_NODE_02.getCode());
+        List<ActInstEntity> unReviewTask = taskActInstMapper.getUnAiTaskAct(1, TaskActEnums.AI_WARN_NODE_02.getCode(),"0");
         if(null!=unReviewTask && unReviewTask.size()>0){
             for(int i=0;i<unReviewTask.size();i++){
                 ActInstEntity actInstEntity = unReviewTask.get(i);
                 String actInstId = actInstEntity.getActInstId();
                 String actReceiver = actInstEntity.getActReceiver();
                 List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
-                //短信通知
+                //1.1.短信通知
                 taskAiWarnServiceImpl.sendMsg(actInstId,
                         userSend,
                         null,
@@ -233,36 +230,50 @@ public class SchedulesServiceImpl implements SchedulesService {
                         null,
                         null,
                         0);
+                //1.2修改通知状态
+                ActInstEntity actEntity=new ActInstEntity();
+                actEntity.setActId(actInstEntity.getActId());
+                actEntity.setActMessage(GeneralEnum.STATE_1.getCode());
+                taskActInstMapper.updateAct(actEntity);
             }
         }
-        //2.如果30分钟内未处理
-        List<ActInstEntity> thirtyTask = taskActInstMapper.getUnAiTaskAct(30, null);
+        //2.初审岗：如果30分钟内未处理
+        List<ActInstEntity> thirtyTask = taskActInstMapper.getUnAiTaskAct(3, TaskActEnums.AI_WARN_NODE_02.getCode(),"");
         if(null!=thirtyTask && thirtyTask.size()>0){
             for(int j=0;j<thirtyTask.size();j++){
                 ActInstEntity thirtyEntity = thirtyTask.get(j);
                 String actInstId = thirtyEntity.getActInstId();
                 String actReceiver = thirtyEntity.getActReceiver();
-                int actCode = thirtyEntity.getActCode();
-                String acCode = String.valueOf(actCode);
                 //2.1.初审岗：直接进入下一岗
-                if(TaskActEnums.AI_WARN_NODE_02.getCode().equals(acCode)){
-                    //继续流程
-                    List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
-                    taskAiWarnServiceImpl.review("初审自动通过",actInstId,"automatic",userSend.get(0));
-                }else {
-                    //2.2.其他岗位：再次通知
-                    //短信通知
-                    List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
-                    taskAiWarnServiceImpl.sendMsg(actInstId,
-                            userSend,
-                            null,
-                            null,
-                            null,
-                            null,
-                            0);
-                }
+                //继续流程
+                List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                taskAiWarnServiceImpl.review("初审自动通过",actInstId,"automatic",userSend.get(0));
             }
         }
+        //3.其他岗：如果30分钟内未处理
+        List<ActInstEntity> msTask = taskActInstMapper.getUnAiTaskAct(5, null,"0");
+        if(null!=msTask && msTask.size()>0){
+            for(int m=0;m<msTask.size();m++){
+                ActInstEntity msEntity = msTask.get(m);
+                String actInstId = msEntity.getActInstId();
+                String actReceiver = msEntity.getActReceiver();
+                //3.1短信通知
+                List<String> userSend = JsonUtils.jsonTOList(actReceiver, String.class);
+                taskAiWarnServiceImpl.sendMsg(actInstId,
+                        userSend,
+                        null,
+                        null,
+                        null,
+                        null,
+                        0);
+                //3.2修改通知状态
+                ActInstEntity actEntity=new ActInstEntity();
+                actEntity.setActId(msEntity.getActId());
+                actEntity.setActMessage(GeneralEnum.STATE_1.getCode());
+                taskActInstMapper.updateAct(actEntity);
+            }
+        }
+
 
         //3.如果60分钟内未处理
      /*   List<ActInstEntity> sixtyTask = taskActInstMapper.getUnAiTaskAct(60, null);

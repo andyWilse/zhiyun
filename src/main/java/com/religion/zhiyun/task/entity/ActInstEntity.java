@@ -62,6 +62,9 @@ public class ActInstEntity implements Serializable {
     @Column(name = "ACT_MARK")
     private String actMark;//备注
 
+    @Column(name = "ACT_MESSAGE")
+    private String actMessage;//是否发送短信提醒：0-否；1-是；
+
     //当前处理状态
     private String currentState;
     //节点

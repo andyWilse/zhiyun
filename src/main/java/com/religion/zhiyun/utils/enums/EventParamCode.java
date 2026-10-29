@@ -72,13 +72,4 @@ public enum EventParamCode {
         this.message = message;
     }
 
-    public static String getMessage(String code) {
-        for (EventParamCode item : EventParamCode.values()) {
-            if (item.name().equals(code)) {
-                return item.message;
-            }
-        }
-        return code;
-    }
-
 }
