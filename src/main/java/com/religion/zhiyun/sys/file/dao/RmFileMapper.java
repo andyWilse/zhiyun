@@ -61,8 +61,8 @@ public interface RmFileMapper {
      */
     void addVideoPicture (@Param("vpProcInstId") String vpProcInstId,
                           @Param("vpChannelId") String vpChannelId,
-                          @Param("vpTime") Date vpTmStart,
-                          @Param("vpTime") Date vpTmEnd,
+                          @Param("vpTime") Timestamp vpTmStart,
+                          @Param("vpTime") Timestamp vpTmEnd,
                           @Param("vpTime") Integer vpFrame);
 
     /**
@@ -78,6 +78,9 @@ public interface RmFileMapper {
      * @return
      */
     List<Map<String,Object>> getUnVp();
+    List<Map<String,Object>> getUnVpS();
+    void updateUnVpS();
+
 
     /**
      * 获取截图信息（6张）

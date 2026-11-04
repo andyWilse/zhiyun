@@ -117,4 +117,21 @@
         (select VP_FILE_ID from RM_VIDEO_PICTURE where VP_PROC_INST_ID=#{vpProcInstId})
     </select>
 
+
+    <select id="getUnVpS" resultType="java.util.Map">
+        select
+        vp.VP_ID as vpId,
+        vp.VP_CHANNEL_ID as vpChannelId,
+        vp.VP_TM_START as vpTmStart,
+        vp.VP_TM_END as vpTmEnd,
+        vp.VP_FRAME as vpFrame
+        from RM_VIDEO_PICTURES vp
+        where vp.VP_VALID='0'
+        and vp.VP_TM_START &lt;= NOW()
+    </select>
+
+    <update id="updateUnVpS">
+        update RM_VIDEO_PICTURES vp set VP_VALID='1'
+    </update>
+
 </mapper>

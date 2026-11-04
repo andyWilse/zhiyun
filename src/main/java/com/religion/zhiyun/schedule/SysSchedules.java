@@ -34,58 +34,17 @@ public class SysSchedules {
     @Autowired
     private VideoReceiver videoReceiver;
 
-    /** 自动上报：每隔1分钟执行一次 **/
-    @Scheduled(cron ="0 */5 * * * ?")
-    public void AutoReport() {
-        //自动上报
-        //schedulesService.UrgentAutoReport();
-    }
-
-    /**明火提醒： 每天9点执行一次 **/
-    @Scheduled(cron ="0 20 17 * * ?")
-    public void AutoFill() {
-        //普通通知
-        //schedulesService.CommonAutoFill();
-       /* Map<String, Object> map=new HashMap<>();
-        map.put("phone","18514260203");
-        map.put("venuesAddres","浙江省温州市瓯海区郭溪街道凰桥村燎原中路226-228号");
-        map.put("venuesName","陈岙基督教堂(潘桥)");
-        map.put("event","明火");
-        VoiceCall.voiceCall(map);*/
-    }
-
-    /** 电话提醒：每天8:30-17:30 ,5分钟执行一次 **/
-    @Scheduled(cron ="0 30/5 8-17 * * ? ")
-    public void warnCall() {
-       // schedulesService.warnCallReport();
-    }
-    /** 每天上午9点执行一次 "0 0 9 * * ? "**/
-    @Scheduled(cron ="0 0 9 * * ? ")
-    public void metricRecord() {
-        //schedulesService.metricRecord();
-    }
-
     /** 每隔1分钟执行一次 **/
     @Scheduled(cron ="0 */1 * * * ?")
     public void repeatMessage() {
-        //短信提醒查询提醒人：
+        //未处理流程提醒
         if(Switch.getAlert()){
             schedulesService.repeatMessage();
         }
-    }
 
-    /** 每隔1分钟执行一次 **/
-    @Scheduled(cron ="0 */1 * * * ?")
-    public void cutSyncSchedule() {
-        if(Switch.getCut()){
-            //1.实时视频截图
-            schedulesService.cutSyncPicture();
-
-            //2.下载历史视频：
-            /*schedulesService.handleCutPicture();
-            videoServer.startServer(7082);
-            videoReceiver.receiveVideo("//home//zjzz//dump.bin");
-            videoServer.stopServer();*/
+        //历史播放截图
+        if(Switch.getVideo()){
+            schedulesService.handleCutPicture();
         }
     }
 
@@ -94,10 +53,43 @@ public class SysSchedules {
     public void masSchedule() {
         //MAS短信获取
         if(Switch.getMas()){
-            log.info("mas定时任务开始时间："+ TimeTool.getYmdHms());
             schedulesService.getMasMessage();
-            log.info("mas定时任务结束时间："+ TimeTool.getYmdHms());
         }
     }
+
+/*    *//** 自动上报：每隔5分钟执行一次 **//*
+    public void AutoReport() {
+        //自动上报
+        //schedulesService.UrgentAutoReport();
+    }
+
+    *//**明火提醒： 每天17-20点执行一次 **//*
+    public void AutoFill() {
+        //普通通知
+        //schedulesService.CommonAutoFill();
+       *//* Map<String, Object> map=new HashMap<>();
+        map.put("phone","18514260203");
+        map.put("venuesAddres","浙江省温州市瓯海区郭溪街道凰桥村燎原中路226-228号");
+        map.put("venuesName","陈岙基督教堂(潘桥)");
+        map.put("event","明火");
+        VoiceCall.voiceCall(map);*//*
+    }
+
+    *//** 电话提醒：每天8:30-17:30 ,5分钟执行一次 **//*
+    public void warnCall() {
+        //schedulesService.warnCallReport();
+    }
+    *//** 每天上午9点执行一次 "0 0 9 * * ? "**//*
+    public void metricRecord() {
+        //schedulesService.metricRecord();
+    }
+
+    *//** 每隔1分钟执行一次 **//*
+    public void cutSyncSchedule() {
+        if(Switch.getCut()){
+            //1.实时视频截图
+            schedulesService.cutSyncPicture();
+        }
+    }*/
 
 }

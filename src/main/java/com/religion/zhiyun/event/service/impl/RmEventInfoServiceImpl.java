@@ -8,6 +8,8 @@ import com.religion.zhiyun.event.entity.EventReportMenEntity;
 import com.religion.zhiyun.event.entity.NotifiedEntity;
 import com.religion.zhiyun.event.service.RmEventInfoService;
 import com.religion.zhiyun.interfaces.entity.huawei.FeeInfo;
+import com.religion.zhiyun.interfaces.entity.mas.MasEntity;
+import com.religion.zhiyun.interfaces.entity.xueliang.HisPlayReqParam;
 import com.religion.zhiyun.interfaces.entity.xueliang.PlayEntity;
 import com.religion.zhiyun.interfaces.service.AiEventService;
 import com.religion.zhiyun.interfaces.service.impl.XueLiangServiceImpl;
@@ -2057,62 +2059,78 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     }
 
     @Override
-    public AppResponse aiWarnCutPicture(String vpChannelId) {
+    public AppResponse aiWarnCutPicture(String mas) {
         long code= ResultCode.FAILED.getCode();
-        log.info("mas截图开始时间："+TimeTool.getYmdHms()+";参数（"+vpChannelId+")");
+        log.info("MAS截图开始时间："+TimeTool.getYmdHms()+";参数（"+mas+")");
         String typePic="jpg";
         String imageName=TimeTool.getYmd()+File.separator+"mas"+TimeTool.getYMDHms()+"."+typePic;
         String outputPath = FilePropertiesVo.getMasFolder()+imageName;
         byte[] imageBytes =null;
         try {
-            //实时视频地址
-            PlayEntity xueLiangPlaySync = xueLiangServiceImpl.getPlaySync(vpChannelId);
-            String data = xueLiangPlaySync.getData();
-            PlayEntity playSync= JsonUtils.jsonTOBean(data, PlayEntity.class);
-            // 输出图片路径
-            if(null!=playSync){
-                String flv = playSync.getFlv();
-                log.info("flv地址："+flv);
-                if(!GeneTool.isEmpty(flv)){
-                    // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
-                    String url = flv;
-                    // 创建抓取器
-                    FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(url);
-                    grabber.setOption("rtsp_transport", "tcp"); // RTSP 建议使用 TCP，减少丢包
-                    grabber.start();
-                    // 抓取一帧图像
-                    Frame frame = grabber.grabImage();
-                    log.info("play抓取一帧图像："+frame);
-                    if (frame != null) {
-                        Java2DFrameConverter converter = new Java2DFrameConverter();
-                        BufferedImage bufferedImage = converter.getBufferedImage(frame);
-                        log.info("抓取一帧图像bufferedImage"+bufferedImage);
-                        if (bufferedImage != null) {
-                            //保存图片
-                            File outputFile = new File(outputPath);
-                            log.info("抓取一帧图像outputFile"+outputPath);
-                            // 确保目录存在
-                            if (!outputFile.getParentFile().exists()) {
-                                outputFile.getParentFile().mkdirs();
+            MasEntity masEntity = JsonUtils.jsonTOBean(mas, MasEntity.class);
+            String vpChannelId = masEntity.getMasDeviceId();
+            //开始时间
+            Timestamp masMonitorTime = masEntity.getMasMonitorTime();
+            String startTime = TimeTool.getTimestamp(masMonitorTime);
+            //结束时间
+            masMonitorTime.setTime(masMonitorTime.getTime() + 10000l);
+            String endTime = TimeTool.getTimestamp(masMonitorTime);
+            //获取视频位置
+            HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
+            hisPlayReqParam.setChannelId(vpChannelId);
+            hisPlayReqParam.setStartTime(startTime);
+            hisPlayReqParam.setEndTime(endTime);
+            PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReqParam);
+            String hisCode = hisEntity.getCode();
+            if(!hisCode.equals("0")){
+                log.info("MAS截图出错，原因（"+hisEntity.getMsg()+"）");
+            }else{
+                String data = hisEntity.getData();
+                if(!GeneTool.isEmpty(data)){
+                    PlayEntity playHis= JsonUtils.jsonTOBean(data, PlayEntity.class);
+                    if (null != playHis) {
+                        // 视频流地址（RTSP/RTMP/HTTP/文件都可以）
+                        String flvUrl = playHis.getFlv();
+                        if(!GeneTool.isEmpty(flvUrl)){
+                            // 创建抓取器
+                            FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(flvUrl);
+                            grabber.setOption("rtsp_transport", "tcp"); // RTSP 建议使用 TCP，减少丢包
+                            grabber.start();
+                            // 抓取一帧图像
+                            Frame frame = grabber.grabImage();
+                            log.info("MAS抓取一帧图像："+frame);
+                            if (frame != null) {
+                                Java2DFrameConverter converter = new Java2DFrameConverter();
+                                BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                                if (bufferedImage != null) {
+                                    //保存图片
+                                    File outputFile = new File(outputPath);
+                                    // 确保目录存在
+                                    if (!outputFile.getParentFile().exists()) {
+                                        outputFile.getParentFile().mkdirs();
+                                    }
+                                    ImageIO.write(bufferedImage, typePic, outputFile);
+                                    log.info("MAS截图成功已保存至: " + outputPath);
+                                    //返回字节流
+                                    // 创建一个空的ByteArrayOutputStream对象
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    // 将BufferedImage对象编码为JPEG格式的字节流
+                                    ImageIO.write(bufferedImage, typePic, outputStream);
+                                    // 将ByteArrayOutputStream对象转换为字节数组
+                                    imageBytes = outputStream.toByteArray();
+                                }
                             }
-                            ImageIO.write(bufferedImage, typePic, outputFile);
-                            log.info("成功已保存至: " + outputPath);
 
-                            //返回字节流
-                            // 创建一个空的ByteArrayOutputStream对象
-                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            // 将BufferedImage对象编码为JPEG格式的字节流
-                            ImageIO.write(bufferedImage, typePic, outputStream);
-                            // 将ByteArrayOutputStream对象转换为字节数组
-                            imageBytes = outputStream.toByteArray();
+                            grabber.stop();
+                            grabber.release();
                         }
+                    }else{
+                        log.info("MAS未找到可播放的历史视频！");
                     }
-
-                    grabber.stop();
-                    grabber.release();
+                }else{
+                    log.info("MAS未找到可播放的历史视频！");
                 }
             }
-            log.info("mas截图结束时间："+TimeTool.getYmdHms());
         } catch (RuntimeException r) {
             r.printStackTrace();
             return new AppResponse(code,r.getMessage());

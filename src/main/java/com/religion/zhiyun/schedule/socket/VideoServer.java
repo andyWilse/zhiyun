@@ -1,11 +1,13 @@
 package com.religion.zhiyun.schedule.socket;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@Slf4j
 @Service
 public class VideoServer {
     private ServerSocket serverSocket;
@@ -14,11 +16,11 @@ public class VideoServer {
     public void startServer(int port) {
         try {
             serverSocket = new ServerSocket(port);
-            System.out.println("Socket服务器已启动，等待客户端连接...");
+            log.info("Socket服务器已启动，等待客户端连接...");
             clientSocket = serverSocket.accept();
-            System.out.println("客户端已连接！");
+            log.info("客户端已连接！");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("端口"+port+"监听失败"+e.getMessage());
         }
     }
 
@@ -26,7 +28,7 @@ public class VideoServer {
         try {
             serverSocket.close();
             clientSocket.close();
-            System.out.println("Socket服务器已停止！");
+            log.info("Socket服务器监听已停止！");
         } catch (IOException e) {
             e.printStackTrace();
         }

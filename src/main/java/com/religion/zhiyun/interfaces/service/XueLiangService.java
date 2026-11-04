@@ -24,4 +24,7 @@ public interface XueLiangService {
 
     /* 下载历史视频*/
     Boolean downPlayHistory(HisPlayReqParam hisPlayReqParam) throws Exception;
+
+    /* 播放历史视频*/
+    PlayEntity playHistory(HisPlayReqParam hisPlayReqParam) throws Exception;
 }

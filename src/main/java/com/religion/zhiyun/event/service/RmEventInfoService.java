@@ -187,5 +187,5 @@ public interface RmEventInfoService {
      * ai预警(重点mas截图)
      * @return
      */
-    AppResponse aiWarnCutPicture(String vpChannelId);
+    AppResponse aiWarnCutPicture(String mas);
 }

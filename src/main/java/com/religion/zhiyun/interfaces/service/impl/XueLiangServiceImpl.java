@@ -380,4 +380,38 @@ public class XueLiangServiceImpl implements XueLiangService {
         return res;
     }
 
+    @Override
+    public PlayEntity playHistory(HisPlayReqParam hisPlayReqParam) throws Exception {
+        if(null==hisPlayReqParam){
+            throw new RuntimeException("历史视频下载请求参数丢失，请联系管理员！");
+        }
+
+        /**1.Header**/
+        HttpHeader header=new HttpHeader();
+        //授权信息访问业务数据请求头,Hearder 需要包含 token信息
+        String accessToken = this.getAccessToken(downUserName,downPassword,downBaseUrl);
+        //log.info("授权调用结果:"+accessToken);
+        header.addParam("Authorization","Bearer "+accessToken);
+        header.addParam("Content-Type","application/x-www-form-urlencoded");//浏览器原生表单提交
+
+        /**2.params***/
+        HttpParams params=new HttpParams(HttpMethod.POST);
+        //通道编码
+        params.addParam("channelId",hisPlayReqParam.getChannelId());
+        //开始时间
+        params.addParam("startTime",hisPlayReqParam.getStartTime());
+        //结束时间
+        params.addParam("endTime",hisPlayReqParam.getEndTime());
+
+        log.info("播放历史视频接口调用参数:"+params);
+        /**3.接口调用***/
+        String url=downBaseUrl+"/v3/playback/startPlayback";
+        log.info("播放历史视频接口调用地址:"+url);
+        HttpService httpService=new HttpService(url);
+        String response = httpService.service(url, params,header);
+        log.info("播放历史视频接口调用结果:"+response);
+        PlayEntity entity= JsonUtils.jsonTOBean(response, PlayEntity.class);
+        return entity;
+    }
+
 }

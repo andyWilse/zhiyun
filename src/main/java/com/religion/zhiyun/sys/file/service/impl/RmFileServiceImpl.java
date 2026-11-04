@@ -36,6 +36,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -461,6 +462,13 @@ public class RmFileServiceImpl implements RmFileService {
     public List<Map<String,Object>> getUnVp(){
         return rmFileMapper.getUnVp();
     };
+    public List<Map<String,Object>> getUnVpS(){
+        return rmFileMapper.getUnVpS();
+    };
+
+    public void  updateUnVpS(){
+        rmFileMapper.updateUnVpS();
+    };
 
     /**
      * 修改截图信息
@@ -481,6 +489,7 @@ public class RmFileServiceImpl implements RmFileService {
     public int cutStreamPicture(HisPlayReqParam hisPlayReqParam,Integer vpFrame,String hisFolder) throws Exception {
         //获取视频位置
         Boolean downFlag = xueLiangServiceImpl.downPlayHistory(hisPlayReqParam);
+        xueLiangServiceImpl.playHistory(hisPlayReqParam);
         downFlag=false;
         if(downFlag){
             log.info("截图开始:"+new Date());
@@ -556,6 +565,83 @@ public class RmFileServiceImpl implements RmFileService {
         }
 
         return new AppResponse(code,message);
+    }
+
+    /**
+     * 播放历史视频
+     * @param hisPlayReqParam
+     * @param vpId
+     * @return
+     * @throws Exception
+     */
+    public int cutPlayHisPicture(HisPlayReqParam hisPlayReqParam,Integer vpId) throws Exception {
+        //获取视频位置
+        PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReqParam);
+        String code = hisEntity.getCode();
+        if(!code.equals("0")){
+            log.info("播放历史视频出错，原因（"+hisEntity.getMsg()+"）");
+        }else{
+            String data = hisEntity.getData();
+            if(!GeneTool.isEmpty(data)){
+                PlayEntity playHis= JsonUtils.jsonTOBean(data, PlayEntity.class);
+                if (null != playHis) {
+                    //视频流地址（RTSP/RTMP/HTTP/文件都可以）
+                    String flvUrl = playHis.getFlv();
+                    log.info("播放历史视频地址（"+flvUrl+"）");
+                    //2.创建抓取器
+                    FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(flvUrl);
+                    // RTSP 建议使用 TCP，减少丢包
+                    grabber.setOption("rtsp_transport", "tcp");
+                    grabber.start();
+                    //3.抓取一帧图像
+                    Frame frame = grabber.grabImage();
+                    if (frame != null) {
+                        Java2DFrameConverter converter = new Java2DFrameConverter();
+                        BufferedImage bufferedImage = converter.getBufferedImage(frame);
+                        if (bufferedImage != null) {
+                            String imageName=TimeTool.getYmd()+File.separator+"his"+TimeTool.getYMDHms()+".jpg";
+                            /****************************************************** 保存图片 ********************************************************/
+                            String outputPath = FilePropertiesVo.getMasFolder()+imageName;
+                            //保存图片
+                            File outputFile = new File(outputPath);
+                            // 确保目录存在
+                            if (!outputFile.getParentFile().exists()) {
+                                outputFile.getParentFile().mkdirs();
+                            }
+                            ImageIO.write(bufferedImage, "jpg", outputFile);
+                            log.info("视频历史截图已保存至: " + outputPath);
+                            /****************************************************** 推送图片至手机端 ********************************************************/
+                            //封装字节流
+                            // 创建一个空的ByteArrayOutputStream对象
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            // 将BufferedImage对象编码为JPEG格式的字节流
+                            ImageIO.write(bufferedImage, "jpg", outputStream);
+                            //保存文件信息
+                            FileEntity fileEntity=new FileEntity();
+                            fileEntity.setFilePath(FilePropertiesVo.getImageUrl()+imageName);
+                            fileEntity.setFileType(EventParamCode.FILE_TYPE_01.getCode());
+                            fileEntity.setCreator("AI预警图片cutHis");
+                            fileEntity.setCreateTime(TimeTool.getYmdHms());
+                            fileEntity.setImgPath(outputPath);
+                            rmFileMapper.add(fileEntity);
+                            //更新截图信息
+                            rmFileMapper.updateVideoPicture(vpId,String.valueOf(fileEntity.getFileId()),TimeTool.getTimestamp());
+                        }
+                    }
+                    grabber.stop();
+                    grabber.release();
+                }else{
+                    log.info("未找到可播放的历史视频！");
+                }
+            }else{
+                log.info("未找到可播放的历史视频！");
+            }
+
+        }
+
+
+
+        return 0;
     }
 
 

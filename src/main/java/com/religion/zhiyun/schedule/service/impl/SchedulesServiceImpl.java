@@ -215,7 +215,7 @@ public class SchedulesServiceImpl implements SchedulesService {
     @Override
     public void repeatMessage() {
         //1.初审岗：在15分钟内未处理的预警事件，再次通知
-        List<ActInstEntity> unReviewTask = taskActInstMapper.getUnAiTaskAct(1, TaskActEnums.AI_WARN_NODE_02.getCode(),"0");
+        List<ActInstEntity> unReviewTask = taskActInstMapper.getUnAiTaskAct(15, TaskActEnums.AI_WARN_NODE_02.getCode(),"0");
         if(null!=unReviewTask && unReviewTask.size()>0){
             for(int i=0;i<unReviewTask.size();i++){
                 ActInstEntity actInstEntity = unReviewTask.get(i);
@@ -238,7 +238,7 @@ public class SchedulesServiceImpl implements SchedulesService {
             }
         }
         //2.初审岗：如果30分钟内未处理
-        List<ActInstEntity> thirtyTask = taskActInstMapper.getUnAiTaskAct(3, TaskActEnums.AI_WARN_NODE_02.getCode(),"");
+        List<ActInstEntity> thirtyTask = taskActInstMapper.getUnAiTaskAct(30, TaskActEnums.AI_WARN_NODE_02.getCode(),"");
         if(null!=thirtyTask && thirtyTask.size()>0){
             for(int j=0;j<thirtyTask.size();j++){
                 ActInstEntity thirtyEntity = thirtyTask.get(j);
@@ -251,7 +251,7 @@ public class SchedulesServiceImpl implements SchedulesService {
             }
         }
         //3.其他岗：如果30分钟内未处理
-        List<ActInstEntity> msTask = taskActInstMapper.getUnAiTaskAct(5, null,"0");
+        List<ActInstEntity> msTask = taskActInstMapper.getUnAiTaskAct(30, null,"0");
         if(null!=msTask && msTask.size()>0){
             for(int m=0;m<msTask.size();m++){
                 ActInstEntity msEntity = msTask.get(m);
@@ -300,7 +300,6 @@ public class SchedulesServiceImpl implements SchedulesService {
 
     @Override
     public void handleCutPicture() {
-
         try {
             //获取未截图
             List<Map<String, Object>> unVp = rmFileServiceImpl.getUnVp();
@@ -318,17 +317,9 @@ public class SchedulesServiceImpl implements SchedulesService {
                         //下载视频并截图
                         HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
                         hisPlayReqParam.setChannelId(vpChannelId);
-                        hisPlayReqParam.setDeviceId(vpChannelId);
                         hisPlayReqParam.setStartTime(vpTimeStart);
                         hisPlayReqParam.setEndTime(vpTimeEnd);
-                        hisPlayReqParam.setIpAddr(acceptUrl);
-                        hisPlayReqParam.setPort(acceptIp);
-                        hisPlayReqParam.setSpeed(acceptSpeed);
-                        //流模式，1:udp0:tcp
-                        hisPlayReqParam.setStreamMode(acceptStream);
-                        int fileId = rmFileServiceImpl.cutStreamPicture(hisPlayReqParam,vpFrame,hisFolder);
-                        //更新截图处理表
-                        //rmFileServiceImpl.updateVideoPicture(vpId,String.valueOf(fileId), new Date());
+                        rmFileServiceImpl.cutPlayHisPicture(hisPlayReqParam,vpId);
                     }
                 }
             }
@@ -465,7 +456,8 @@ public class SchedulesServiceImpl implements SchedulesService {
                         /********************************************** 2.大屏端截图 ************************************************/
                         String masCutUrl = FilePropertiesVo.getMasCutUrl();
                         //2.1.访问大屏端
-                        String cutResponse = HttpClientUtil.doPost(masCutUrl,masDeviceId);
+                        String mas = JsonUtils.beanToJson(masEntity);
+                        String cutResponse = HttpClientUtil.doPost(masCutUrl,mas);
                         //2.2.处理返回结果
                         if(!GeneTool.isEmpty(cutResponse)){
                             AppResponse cutRes=JsonUtils.jsonTOBean(cutResponse,AppResponse.class);
@@ -516,13 +508,13 @@ public class SchedulesServiceImpl implements SchedulesService {
                                     String eventJson = JsonUtils.beanToJson(ai);
                                     AppResponse warnResponse = rmEventInfoServiceImpl.addAiWarnEvent(eventJson);
                                     //修改MAS状态
-                                    MasEntity mas=new MasEntity();
-                                    mas.setMasId(masEntity.getMasId());
+                                    MasEntity masEn=new MasEntity();
+                                    masEn.setMasId(masEntity.getMasId());
                                     //mas.setMasVenueId(masEntity.getMasVenueId());
-                                    mas.setMasState(ProcessState.MAS_STATE_02.getCode());
+                                    masEn.setMasState(ProcessState.MAS_STATE_02.getCode());
                                     BigDecimal ev = warnResponse.getCode()==0?BigDecimal.ZERO: new BigDecimal(warnResponse.getCode()) ;
-                                    mas.setMasEventId(ev.intValue());
-                                    monitorBaseMapper.updateMasInfo(mas);
+                                    masEn.setMasEventId(ev.intValue());
+                                    monitorBaseMapper.updateMasInfo(masEn);
                                 }
                             }
                         }
