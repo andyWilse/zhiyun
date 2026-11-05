@@ -2059,28 +2059,16 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
     }
 
     @Override
-    public AppResponse aiWarnCutPicture(String mas) {
+    public AppResponse aiWarnCutPicture(String hisPlayReqParam) {
         long code= ResultCode.FAILED.getCode();
-        log.info("MAS截图开始时间："+TimeTool.getYmdHms()+";参数（"+mas+")");
+        log.info("MAS截图开始时间："+TimeTool.getYmdHms()+";参数（"+hisPlayReqParam+")");
         String typePic="jpg";
         String imageName=TimeTool.getYmd()+File.separator+"mas"+TimeTool.getYMDHms()+"."+typePic;
         String outputPath = FilePropertiesVo.getMasFolder()+imageName;
         byte[] imageBytes =null;
         try {
-            MasEntity masEntity = JsonUtils.jsonTOBean(mas, MasEntity.class);
-            String vpChannelId = masEntity.getMasDeviceId();
-            //开始时间
-            Timestamp masMonitorTime = masEntity.getMasMonitorTime();
-            String startTime = TimeTool.getTimestamp(masMonitorTime);
-            //结束时间
-            masMonitorTime.setTime(masMonitorTime.getTime() + 10000l);
-            String endTime = TimeTool.getTimestamp(masMonitorTime);
-            //获取视频位置
-            HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
-            hisPlayReqParam.setChannelId(vpChannelId);
-            hisPlayReqParam.setStartTime(startTime);
-            hisPlayReqParam.setEndTime(endTime);
-            PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReqParam);
+            HisPlayReqParam hisPlayReq = JsonUtils.jsonTOBean(hisPlayReqParam, HisPlayReqParam.class);
+            PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReq);
             String hisCode = hisEntity.getCode();
             if(!hisCode.equals("0")){
                 log.info("MAS截图出错，原因（"+hisEntity.getMsg()+"）");

@@ -574,12 +574,13 @@ public class RmFileServiceImpl implements RmFileService {
      * @return
      * @throws Exception
      */
-    public int cutPlayHisPicture(HisPlayReqParam hisPlayReqParam,Integer vpId) throws Exception {
+    public void cutPlayHisPicture(HisPlayReqParam hisPlayReqParam,Integer vpId) throws Exception {
         //获取视频位置
-        PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReqParam);
+        //PlayEntity hisEntity = xueLiangServiceImpl.playHistory(hisPlayReqParam);
+        PlayEntity hisEntity = xueLiangServiceImpl.getPlaySync(hisPlayReqParam.getChannelId());
         String code = hisEntity.getCode();
         if(!code.equals("0")){
-            log.info("播放历史视频出错，原因（"+hisEntity.getMsg()+"）");
+            log.info("播放实时视频出错，原因（"+hisEntity.getMsg()+"）");
         }else{
             String data = hisEntity.getData();
             if(!GeneTool.isEmpty(data)){
@@ -587,7 +588,7 @@ public class RmFileServiceImpl implements RmFileService {
                 if (null != playHis) {
                     //视频流地址（RTSP/RTMP/HTTP/文件都可以）
                     String flvUrl = playHis.getFlv();
-                    log.info("播放历史视频地址（"+flvUrl+"）");
+                    log.info("播放实时视频地址（"+flvUrl+"）");
                     //2.创建抓取器
                     FFmpegFrameGrabber grabber = FFmpegFrameGrabber.createDefault(flvUrl);
                     // RTSP 建议使用 TCP，减少丢包
@@ -609,7 +610,7 @@ public class RmFileServiceImpl implements RmFileService {
                                 outputFile.getParentFile().mkdirs();
                             }
                             ImageIO.write(bufferedImage, "jpg", outputFile);
-                            log.info("视频历史截图已保存至: " + outputPath);
+                            log.info("视频实时截图已保存至: " + outputPath);
                             /****************************************************** 推送图片至手机端 ********************************************************/
                             //封装字节流
                             // 创建一个空的ByteArrayOutputStream对象
@@ -631,17 +632,13 @@ public class RmFileServiceImpl implements RmFileService {
                     grabber.stop();
                     grabber.release();
                 }else{
-                    log.info("未找到可播放的历史视频！");
+                    log.info("未找到可播放的实时视频！");
                 }
             }else{
-                log.info("未找到可播放的历史视频！");
+                log.info("未找到可播放的实时视频！");
             }
 
         }
-
-
-
-        return 0;
     }
 
 

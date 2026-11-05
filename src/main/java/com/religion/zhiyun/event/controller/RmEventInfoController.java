@@ -62,8 +62,8 @@ public class RmEventInfoController {
     @DecryptRequest(false)
     @EncryptResponse(false)
     @PostMapping("/cut")
-    public AppResponse cutAiEvent(@RequestBody String mas) {
-        return rmEventInfoService.aiWarnCutPicture(mas);
+    public AppResponse cutAiEvent(@RequestBody String hisPlayReqParam) {
+        return rmEventInfoService.aiWarnCutPicture(hisPlayReqParam);
     }
 
    /* @PostMapping("/pushAiEvent")

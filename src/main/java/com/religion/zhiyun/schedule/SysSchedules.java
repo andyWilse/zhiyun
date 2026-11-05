@@ -49,9 +49,10 @@ public class SysSchedules {
     }
 
     /** 每隔20秒执行一次 **/
-    @Scheduled(cron ="0/20 * 8-17 * * ?")
+    @Scheduled(cron ="0/20 * 7-13 * * ?")
     public void masSchedule() {
         //MAS短信获取
+        //cron ="0/20 * * * * ?" cron ="0/20 * 7-13 * * ?"
         if(Switch.getMas()){
             schedulesService.getMasMessage();
         }

@@ -47,6 +47,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -456,8 +457,20 @@ public class SchedulesServiceImpl implements SchedulesService {
                         /********************************************** 2.大屏端截图 ************************************************/
                         String masCutUrl = FilePropertiesVo.getMasCutUrl();
                         //2.1.访问大屏端
-                        String mas = JsonUtils.beanToJson(masEntity);
-                        String cutResponse = HttpClientUtil.doPost(masCutUrl,mas);
+                        //开始时间
+                        Timestamp masMonitorTime = masEntity.getMasMonitorTime();
+                        masMonitorTime.setTime(masMonitorTime.getTime() - 1000l);
+                        String startTime = TimeTool.getTimestamp(masMonitorTime);
+                        //结束时间
+                        masMonitorTime.setTime(masMonitorTime.getTime() + 11000l);
+                        String endTime = TimeTool.getTimestamp(masMonitorTime);
+                        //获取视频位置
+                        HisPlayReqParam hisPlayReqParam=new HisPlayReqParam();
+                        hisPlayReqParam.setChannelId(masDeviceId);
+                        hisPlayReqParam.setStartTime(startTime);
+                        hisPlayReqParam.setEndTime(endTime);
+                        String hisPlayReq = JsonUtils.beanToJson(hisPlayReqParam);
+                        String cutResponse = HttpClientUtil.doPost(masCutUrl,hisPlayReq);
                         //2.2.处理返回结果
                         if(!GeneTool.isEmpty(cutResponse)){
                             AppResponse cutRes=JsonUtils.jsonTOBean(cutResponse,AppResponse.class);
