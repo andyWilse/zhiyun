@@ -600,7 +600,7 @@ public class RmFileServiceImpl implements RmFileService {
                         Java2DFrameConverter converter = new Java2DFrameConverter();
                         BufferedImage bufferedImage = converter.getBufferedImage(frame);
                         if (bufferedImage != null) {
-                            String imageName=TimeTool.getYmd()+File.separator+"his"+TimeTool.getYMDHms()+".jpg";
+                            String imageName=TimeTool.getYmd()+File.separator+"cut"+TimeTool.getYMDHms()+".jpg";
                             /****************************************************** 保存图片 ********************************************************/
                             String outputPath = FilePropertiesVo.getMasFolder()+imageName;
                             //保存图片
