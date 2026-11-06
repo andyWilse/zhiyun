@@ -225,11 +225,11 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                 venuesName = venues.getVenuesName();
             }
             //短信模板
-            String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！";
+            String contents="【浙江智云科技文化】您好！位于"+venuesAddres+"的"+venuesName+",触发“"+cont+"”预警，请您立刻前去处理！";
             if(EventParamCode.EVENT_TYPE_04.getCode().equals(eventType)){
-                contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
+                contents="【浙江智云科技文化】您好！位于"+venuesAddres+"的"+venuesName+",发现“集聚”活动，请您前往现场核实活动内容！";
             }else if(EventParamCode.EVENT_TYPE_06.getCode().equals(eventType)) {
-                contents = "【智云科技】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
+                contents = "【浙江智云科技文化】您好！位于" + venuesAddres + "的" + venuesName + ",发现摄像头“画面异常”，疑似摄像头被移动位置或遮挡，请您立即前往现场核实！";
             }
                 //封装
             HashMap<String,Object> mapCall=new HashMap<>();
@@ -826,7 +826,7 @@ public class RmEventInfoServiceImpl implements RmEventInfoService {
                     venuesAddres = venues.getVenuesAddres();
                     venuesName = venues.getVenuesName();
                 }
-                String contents="【智云科技】您好！位于"+venuesAddres+"的"+venuesName+",触发“烟感”预警，请您立刻前去处理！！";
+                String contents="【浙江智云科技文化】您好！位于"+venuesAddres+"的"+venuesName+",触发“烟感”预警，请您立刻前去处理！！";
                 HashMap<String,Object> mapCall=new HashMap<>();
                 mapCall.put("eventType", EventParamCode.EVENT_TYPE_01.getCode());
                 mapCall.put("relVenuesId",relVenuesId);

@@ -481,7 +481,7 @@ public class SysLoginServiceImpl implements SysLoginService {
     public String saveCodeRedis (String username) throws Exception {
         //随机生成验证码存入redis
         String verifyCode = String.valueOf(new Random().nextInt(999999));
-        String contents="【智云科技】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
+        String contents="【浙江智云科技文化】"+verifyCode+"(登录验证码，5分钟内有效)。请勿向任何人泄露，以免造成任何损失。";
         List<Map<String,Object>> messageList=new ArrayList<>();
         Map<String,Object> smap=new HashMap<>();
         smap.put("phone",username);
